@@ -160,9 +160,11 @@ gchar *addr_string(address *addr)
 
   if(addr == NULL){
     g_free(buffer);
+    buffer = NULL;
     return NULL;
   }
-  if(buffer) g_free(buffer);
+  if(buffer)
+    g_free(buffer);
 
   if(addr->local_part[0] == 0){
     buffer = g_strdup("<>");

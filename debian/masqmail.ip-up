@@ -10,6 +10,17 @@ IPUP_FETCH=true
 
 [ -r /etc/default/masqmail ] && . /etc/default/masqmail
 
+if [ -n "$PPP_IFACE" ]; then
+	SCHEME="$PPP_IPPARAM"
+	IFACE=$PPP_IFACE
+else
+	SCHEME="${IF_MROUTE:-$IF_NAME}"
+fi
+
+if [ ! x"$IFUP_IFACES" = x"all" ] ; then
+  echo $IFUP_IFACES | grep $IFACE > /dev/null || exit 0
+fi
+
 DETECT="`awk -F'[ \t]*=[ \t]*' '/^online_detect/ \
 	{ print split($2,A,\"\\\"\") == 3 ? A[2] :  $2 }' /etc/masqmail/masqmail.conf`"
 
@@ -32,12 +43,6 @@ if [ -z "$MODE" ]; then
 		    MODE=stop;
 		    ;;
 	esac
-fi
-
-if [ -n "$PPP_IFACE" ]; then
-	SCHEME="$PPP_IPPARAM"
-else
-	SCHEME="${IF_MROUTE:-$IF_NAME}"
 fi
 
 case "$MODE" in
