@@ -1,3 +1,9 @@
+0.2.18	Fri, 06 Dec 2002 14:57:41 +0100
+	* new option connect_error_fail
+	* install /var/{log,spool} before subdirs, so
+	they get correct ownerships, if installing to a tmp. directory
+	Thx to Juergen Daubert.
+	* failure notices and warnings also if connection fails
 0.2.17  Thu, 28 Nov 2002 14:59:24 +0100
 	* fixed errors in man page masqmail.conf.5 about online_detect
 	Thx to Juergen Daubert.

@@ -1,4 +1,5 @@
 # Example route file for masqmail
+# see also: man 5 masqmail.route
 
 #
 # mail properties tested for:
@@ -75,7 +76,8 @@ map_h_from_addresses = "okurth: Oliver Kurth <kurth@innominate.de>"
 
 # if your mail server outside uses the AUTH machanism, set the following.
 # You need to compile masqmail with AUTH support (--enable-auth option for ./configure):
-# for auth_name, only 'cram-md5' is supported.
+# for auth_name, only 'cram-md5' and 'login' are supported.
+# see also: man 5 masqmail.route
 
 #auth_name="cram-md5"
 #auth_login="yourname"
@@ -87,3 +89,4 @@ map_h_from_addresses = "okurth: Oliver Kurth <kurth@innominate.de>"
 # Set it to a get file.
 # You need to compile masqmail with pop3 support (default)
 # pop3_login = "/etc/masqmail/example.get"
+# see also: man 5 masqmail.route, man 5 masqmail.get

@@ -27,6 +27,15 @@ Specify the method how the domain of the server is resolved. Possible values are
 The default is "dns_mx;dns_a;byname".
 .TP
 
+\fBconnect_error_fail\f1 = \fIboolean\f1
+
+If this is set, a connection error will cause a mail delivery to fail, ie. it will be bounced. If it is unset, it will just be defered.
+
+Default is false. The reason for this is that masqmail is designed for non permanent internet connections, where such errors may occur quite often, and a bounce would be annoying.
+
+For the default local_net route is is set to true.
+.TP
+
 \fBhelo_name\f1 = \fIstring\f1
 
 Set the name given with the HELO/EHLO command. If this is not set, \fBhost_name\f1 from \fImasqmail.conf\f1 will be used, if the \fBdo_correct_helo\f1 option (see below) is unset.

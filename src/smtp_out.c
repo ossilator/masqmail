@@ -488,6 +488,8 @@ smtp_base *smtp_out_open(gchar *host, gint port, GList *resolve_list)
       debugf("socket: name.sin_addr = %s\n", inet_ntoa(name.sin_addr));
     }
     return psb;
+  }else{
+    DEBUG(5) debugf("connect_resolvelist failed: %s %s\n", strerror(errno), hstrerror(h_errno));
   }
 
   return NULL;

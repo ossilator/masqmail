@@ -77,7 +77,8 @@ pop3_base *pop3_in_open(gchar *host, gint port, GList *resolve_list, guint flags
 pop3_base *pop3_in_open_child(gchar *cmd, guint flags);
 void pop3_in_close(pop3_base *popb);
 gboolean pop3_get(pop3_base *popb,
-		  gchar *user, gchar *pass, address *rcpt, address *return_path, gint max_size, gint max_count);
+		  gchar *user, gchar *pass, address *rcpt, address *return_path,
+		  gint max_count, gint max_size, gboolean max_size_delete);
 gboolean pop3_login(gchar *host, gint port, GList *resolve_list,
 		    gchar *user, gchar *pass, guint flags);
 

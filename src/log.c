@@ -148,6 +148,8 @@ void vdebugwrite(int pri, const char *fmt, va_list args)
 void logwrite(int pri, const char *fmt, ...)
 {
   va_list args, args_copy;
+  int saved_errno = errno; /* somewhere this is changed to EBADF */
+
   va_start(args, fmt);
 #ifdef ENABLE_DEBUG
   va_copy(args_copy, args);
@@ -159,6 +161,8 @@ void logwrite(int pri, const char *fmt, ...)
   va_end(args_copy);
 #endif
   va_end(args);
+
+  errno = saved_errno;
 }
 
 #ifdef ENABLE_DEBUG

@@ -19,7 +19,7 @@ Delivery to the following recipients has been defered:
 
 @failed_rcpts
 
-Delivery will be tried again, until it is either successfull or a
+Delivery will be tried again, until it is either successful or a
 timeout has been reached. If the latter happens, you will get a
 delivery failure notice.
 

@@ -1,0 +1,15 @@
+For a cross compiler:
+
+Download ipaq-config.site from http://masqmail.cx/ipaq/cross/. There
+are also some more instructions.
+
+export CONFIG_SITE=./ipaq-config.site
+
+./configure --with-glib-prefix=/skiff/local/ \
+	--disable-smtp-server --disable-resolver \
+	--with-group=mail --disable-debug --enable-auth
+make
+
+su
+make DESTDIR=/tmp/masqmail install
+

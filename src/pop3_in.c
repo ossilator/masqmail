@@ -607,7 +607,7 @@ gboolean pop3_in_uidl_dele(pop3_base *popb)
 
 gboolean pop3_get(pop3_base *popb,
 		  gchar *user, gchar *pass, address *rcpt, address *return_path,
-		  gint max_count, gint max_size)
+		  gint max_count, gint max_size, gboolean max_size_delete)
 {
   gboolean ok = FALSE;
   gint num_children = 0;
@@ -723,6 +723,9 @@ gboolean pop3_get(pop3_base *popb,
 		  else{
 		    logwrite(LOG_NOTICE|LOG_VERBOSE, "size of message #%d (%d) > max_size (%d)\n",
 			     info->number, info->size, max_size);
+		    if(max_size_delete)
+			if(popb->flags & POP3_FLAG_DELETE)
+			  pop3_in_dele(popb, info->number);
 		  }
 		}/* if(do_get_this) ... */
 		else{

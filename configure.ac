@@ -6,7 +6,7 @@ AC_PREREQ(2.50)
 AC_CONFIG_SRCDIR([configure.ac])
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(masqmail, 0.2.17)
+AM_INIT_AUTOMAKE(masqmail, 0.2.18)
 
 AC_PREFIX_DEFAULT(/usr)
 

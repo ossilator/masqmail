@@ -100,6 +100,7 @@ struct _connect_route
 
   interface *mail_host;
   gchar *wrapper;
+  gboolean connect_error_fail;
 
   gchar *helo_name;
   gboolean do_correct_helo;
@@ -145,6 +146,7 @@ typedef struct _get_conf
   gboolean do_uidl;
   gboolean do_uidl_dele;
   gint max_size;
+  gboolean max_size_delete;
   gint max_count;
 
   GList *resolve_list;
