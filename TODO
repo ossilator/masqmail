@@ -1,0 +1,21 @@
+general:
+- look carefully were memory is not freed
+- add forwarding support
+- add Mailer-Daemon error messages
+
+deliver:
+- better checking for already routed addresses in deliver()
+- messages should be finished earliaer when sending more at one time
+
+conf:
+- more configuration options
+- make conf more fool proof
+
+lookup:
+- optimize MX lookup
+
+protocols:
+- pop3 client (but this has time)
+
+...and (you guessed it):
+- bug fixing

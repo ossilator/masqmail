@@ -1,0 +1,38 @@
+# Example route file for masqmail
+# This is used when I connect to a cheap provider
+# which has no mail server, at least none that is free...
+# I cannot use the mail server of my university because that
+# checks for relaying, so I send the mails directly.
+#
+# mail properties tested for:
+#
+
+# users that can send mail over this connection:
+# (not yet implemented)
+allowed_mail_locals = "okurth"
+
+# local_hosts and local_nets will be checked before this.
+# cpwright.com uses the dialup up list of dul.maps.vix.com,
+# so I cannot send any mail over this connection to that domain.
+# There are probably many others... :-( (No, this is okay. Nobody
+# wants his mailbox stuffed to the ceiling with spam...)
+not_allowed_rcpt_domains = "cpwright.com"
+
+#
+# settings:
+#
+
+# if this is not set, mail will be sent directly:
+#mail_host = ""
+
+# 'forge' headers:
+
+# The 'MAIL FROM:' part:
+# if we send the mail directly, we can set any valid address here,
+# use the one you prefer to get error messages to:
+set_return_path_domain = "uni-sw.gwdg.de"
+
+# 'From:' header:
+# this not always necessary I think, but it is safer to do:
+set_h_from_domain = "uni-sw.gwdg.de"
+

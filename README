@@ -1,0 +1,81 @@
+MasqMail README
+
+MasqMail is a mail server designed for hosts that are not permanently
+connected to the internet. It handles outgoing messages, i.e. those
+that are to be sent over the non-permanent link (usually a ppp or slip
+connection over a modem or ISDN adapter) specially and delivers them
+only when explicitely told to do so. There is support for multiple
+providers, it is possible to write different configurations for each
+one. The configuration chosen is selected at delivery time, so that if
+for example a delivery of a message failed while connected with
+provider 1, it may be delivered when connected to provider 2. For each
+provider another mail host (or none) can be specified.
+
+MasqMail provides (a yet simple) mechanism to rewrite headers, also
+depending on the current connection. This makes it possible to deliver
+messages with a return address on the local network which will be
+rewitten at delivery time. The purpose of this is:
+
+- to allow delivery failure messages that are produced on the local
+network to be delivered immediately, while those that are produced
+outside can be delivered to a mailbox on the internet, to be retrieved
+later.
+
+- to give mail servers a return address which they can accept if they
+check for spam mail. Many mail servers require a return address which
+has the same domain as the server it is getting the message from. If
+you normally connect to only one provider, this is usually not a
+problem as you can configure your mailer to a fixed address (but then
+there is still the problem with the failure messages...), but it is a
+problem if you use different ones from time to time.
+
+MasqMail shall once be a complete replacement for sendmail (or other
+MTAs such as exim, qmail or smail) on a local network, but it is NOT
+supposed to be installed in a network with a permanent internet
+connection (at least if it is not behind a secure firewall) because
+it has no ability to check for undesired relaying or spam filtering.
+
+Missing, but soon to be realized features:
+
+- .forward file support (alias file is supported)
+- mailer demon messages (mail from the server in cases of delivery failures
+or malformed addresses)
+
+Future plans are:
+
+- an integrated pop3 client (and very soon with apop)
+- initiate connections on its own
+- integration to the masqdialer system (mserver) as an option
+- possibly a pop3 server
+
+For installation instructions, see INSTALL and/or docs/install.html.
+
+Bugs: MasqMail is still very young, and there are probably at lot of
+bugs in it. I need every bug reported to me! If you do, please send me
+the configuration files, the logs, the version, and a good description
+on how to reproduce the error. The more bug reports I get, the better
+masqmail will get!
+
+CREDITS:
+--------
+
+I would like to thank everyone who has submitted suggestions and bug
+reports. Special thanks to:
+
+Gregor Hoffleit for beta testing and his suggestions for delivering
+mail immediately when online.
+Gregor Hoffleit again for supplying a patch which made maqmail work with mutt.
+And again for making the Debian package. And more patches.
+
+Dale Perkel for patiently trying to make MM compile and run with libc5 and
+various bug reports.
+
+For various Patches:
+- Frank Schnekenbuehl
+- Michael Piefel
+- Alberto Gonzalez Palomo
+
+--
+Oliver Kurth <oliver.kurth@innominate.de>
+http://www.innominate.org/~oku/
+last change: Feb. 3, 2000

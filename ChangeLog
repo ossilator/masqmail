@@ -1,0 +1,153 @@
+0.0.12:
+	* warn if spool file could not be deleted (Thanks to Alberto González
+	Palomo)
+	* fixed bug: set len for getsockname
+	* fixed bug: set local_net_routes to NULL if there is no local net
+	(noted by Frank Schnekenbuehl)
+	* say 'mail queue is empty' if mail queue is empty (Thanks to
+	Frank Schnekenbuehl)
+	* fixed bug: setegid in local.c (was noted by both Michael Piefel and
+	Alberto González Palomo)
+0.0.11:
+	* if Bcc: headers have been removed (-t option), and there is no To:
+	or Cc: header,an empty Bcc: header will be created (RFC 822
+	compliance!)
+	* fixed bug: if rcpts are given on command line To: headers were
+	created, even if they already existed. This caused Bcc: recipient
+	addresses to be revealed if they were given on the cmd line.
+	Now a To: header is only created if there is no To:, Cc: or Bcc:
+	header.	Thanks to Richard Clamp for pointing this out.
+	* fixed bug: segfault when -d option was given without arguments
+	* fixed bug: segfault when configuration file not found
+0.0.10:
+	* removed -g option from Makefile
+	* fixed bug: -odq did not work, was broken in some earlier version
+	* addresses with leading '\' will not be expanded any further in
+	aliases
+	* pipe transport implemented
+	* alias support implemented.
+	* changed permissions for queue runs again: got to be root,
+	mail or in group trusted.
+	* some configuration parameters can be read from files
+	* internal changes in routing logics/deliver code, preparing for
+	aliases support.
+	* Gregor Hoffleit sent another patch: use liblockfile if available
+	(Debian!) and DESTDIR will be used. Also updated the NEWS file. Thanks
+	again!
+	* define fdatasync to fsync if not available.
+	* lookup.c includes sys/types.h, some environments need this
+	* fixed bug in RFC 822 parsing: name in brackets after address
+	caused problems. Thanks to David Maslen.
+	* values in tables without leading spaces
+0.0.9:
+	* anyone in group 'trusted' is now allowed to do queue runs. Thanks to
+	Alberto Gonzalez Palomo for the suggestion.
+	* changed umask for spool writing to 026.
+	* removed silly 'no rcpt domain for this route' message
+	* there is now a mailing list
+	(see http://www.innominate.org/mailman/listinfo/masqmail)
+	* Gregor Hoffleit sent a patch to make masqmail work with mutt (and
+	balsa and any other MUA that uses the mutt libs): it now supports
+	'--' in options. Thanks!
+	* accept_message() supports flag ACC_NO_RECVD_HDR (but this is not
+	used in masqmail).
+	* accept_message() is no longer responsible for queuing, makes it
+	easier to recycle the code for other projects (eg. jpilot-Mail)
+0.0.8:
+	* added a FAQ page.
+	* removed all warnings, at least for egcs. Output of make looks
+	pretty now ;-)
+	* added allowed_mail_locals and not_allowed_mail_locals options for
+	routes.
+	* implemented folding und unfolding of headers (but currently used
+	for the Received: header only).
+	* corrected docs: should be 'online_detect', NOT 'detect_online'.
+	* mailq now gives information about the time mails spent in the queue,
+	the message size and the received host.
+	* added allowed_rcpt_domains option for routes.
+	* increased buffer size to 1024 for SMTP responses when delivering.
+	* fixed minor bug: slash in unquoted strings in conf parsing was not
+	allowed.
+0.0.7:
+	* fixed a bug in smtp_out.c: sock was tested before it was initialized.
+	* fixed a bug in the configuration code: for statements in two
+	adjacent lines, the second was not recognized.
+0.0.6:
+	* rewrote part of the configuration parsing code because it caused
+	problems with reading config statements on multiple lines.
+	* added a LF after each mail local mail spool file, as this
+	seems to be required for some MUAs and especially cucipop when
+	it reads mails. Otherwise mails seem to be concatenated. Thanks
+	to Dale Perkel for pointing this out.
+0.0.5:
+	* added  expand_h_sender_domain option (boolean, default: true)
+	because some clients use the Sender: address as the sender address
+	(though it should be the From: address).
+	* changed configure script to better recognize whether libresolv
+	should be linked or not.
+	* fixed a nasty bug: if masqmail -q was called (or qo <name>
+ 	and a mail was not delivered), the headers were lost! Problem was an
+ 	additional LF after received_host in the spool file.
+0.0.4:
+	* 'From' hack is now a 'From ' hack.
+	* configure now accepts options --with-logdir=LOGDIR and
+	--with-spooldir=SPOOLDIR.
+	* the directories /var/masqmail and /var/spool/masqmail will now be
+	created with make install; user and group will be set appropriately
+	* configure now accepts options --with-user=USER and --with-group=GROUP
+	* dove into autoconf: configure now recognizes libc5 and links with
+	libresolv only for libc6 and defines getline for libc5
+	* fixed timeout code when sending. This was broken in some earlier
+	version.
+0.0.3:
+	* fixed bug in spool write code: rcpt address was written incorrectly
+	to spool file under some circumstances (with a LF).
+	* added methods for online detection (file and mserver) and added code
+	to deliver immediately when mail is received at online time.
+	* too many changes to list: rearranged routing code, unified smtp
+	deliveries to the local net with online deliveries, so now route
+	configurations can be used for the local net. Also multiple messages
+	per connection for the local net possible. And reduced code size.
+	* fixed bug: if server does not use neither the esmtp size extension
+	nor pipelining, output after MAIL FROM was not flushed. So MM waited
+	forever for a response...
+0.0.2:
+	* fixed bug: euid was not set properly for local delivery
+	* when debugging, it does not write the whole message to the log
+	any more.
+	* added 'From' hack
+	* qualified address for return path and recipients is now required
+	if not accepted locally, if locally accepted the addresses will be
+	qualified with host_name. (Thereby fixed a seg fault bug)
+	* added -i option (same as -oi)
+	* added more header rewriting (set_ and map_ options)
+	* fixed bug: potential seg fault when writing spool files because it
+	was not read properly
+	* multiple messages per connection now also if mail is sent directly
+	(same for local_nets is still missing, but I will use routes for these
+	anyway in the future)
+	* the queue will now be read in random order
+	* implemented multiple messages per connection (but only online
+	and if mail_host is defined)
+	* implemented rewriting of local parts in return path for online
+	delivery
+	* domain matching is no longer case sensitive (had to define
+	_GNU_SOURCE so that I could use FNM_CASEFOLD for fnmatch)
+	* added do_correct_helo option for routes
+	* fixed bug: corrected retrying hosts if one failed (connect.c).
+0.0.1:
+	* fixed bug: seg fault when delivering online directly and there was
+	more than one rcpt to a single host.
+	* fixed bug: if mail was succesfully delivered in online mode to all
+	rcpts, and if there were additional (local) rcpts for which the mail
+	was not	yet delivered, the mail was deleted from spool.
+	* rearranged smtp_out.c to prepare for multiple messages per connection
+	* log now shows the real host a message is sent to by SMTP (previously
+	it was the one looked for, now it is the one that was found by DNS)
+	* added NOOP, HELP and not recognized replies in smtp_in
+	* fixed bug: forgot to close dup_sock in accept_connect (listen.c)
+	* can now list the queue with the -bp option or when called as mailq
+	* debug_level is now configurable and -d option added
+	* corrected rfc821 address parsing and rearranged code
+0.0.0:
+	* initial release

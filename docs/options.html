@@ -1,0 +1,172 @@
+
+
+
+
+
+
+
+
+<HTML>
+<HEAD>
+<TITLE>MasqMail - Manual
+</TITLE>
+</HEAD>
+  <BODY TEXT="#000000" LINK="#0000ff" BGCOLOR="#ffffff">
+    
+    <center>
+      <table width="80%">
+	<tr><td>
+	    <table width="100%" bgcolor="#0000aa" cellspacing=0 cellpadding=0>
+<tr>
+  <td>
+  <a href="manual.html">
+    <img width="20" src = "../images/u_arrow.gif" alt = "manual">
+  </a>
+  </td>
+<td align=center width="100%"><font size="6" color = "#ffffff">Options</font></td>
+<td>
+  <a href="./install.html">
+    <img width="20" src = "../images/l_arrow.gif" alt = "Installation">
+  </a>
+</td>
+<td>
+  <a href="./alias.html">
+    <img width="20" src = "../images/r_arrow.gif" alt = "Alias Format">
+  </a>
+</td>
+</tr>
+</table>
+
+
+<p>Since masqmail is intended to replace sendmail, it uses the same
+command line options, but not all are implemented. There is also one
+additional option, which is unique to masqmail (-qo
+&lt;connection&gt;) </p>
+
+<b>-- </b>option:<br>
+
+<p>Not a 'real' option, it means that all following arguments are to
+be understood as arguments and not as options even if they begin with a
+leading dash '-'. Mutt is known to call sendmail with this option.</p>
+
+<b>-bd </b>option (daemon):<br>
+
+<p>Run as daemon, accepting connections, usually on port 25 if not
+configured differently. This is usually used in the startup script and
+together with the -q option (see below).</p>
+
+<b>-bi </b>option:<br>
+
+<p>Old sendmail rebuilds its alias database when invoked with this
+option. Masqmail ignores it. Masqmail reads directly from the file
+given with <b>alias_file</b> in the config file.</p>
+
+<b>-bp </b>option:<br>
+
+<p>Show the messages in the queue. Same as calling masqmail as
+'mailq'.</p>
+
+<b>-bs </b>option:<br>
+
+<p>Accept SMTP commands from stdin. Some mailers (eg pine) use this
+option as an interface. It can also be used to call masqmail from
+inetd, but this is yet untested. Try it and send me the results...</p>
+
+<b>-B&lt;arg&gt;</b>option:<br>
+
+<p>arg is usually 8BITMIME. Some mailers use this to indicate that the
+message contains characters &gt; 127. Masqmail is 8-bit clean and
+ignores this, so you do not have to recompile elm, which is very
+painful ;-). Note though that this violates some conventions: masqmail
+<em>does not</em> convert 8 bit messages to any MIME format if it
+encounters a mail server which does not advertise its 8BITMIME capability,
+masqmail does not advertise this itself. This is the same practice as
+that of exim (but different to sendmail).</p>
+
+<p>This <em>may</em> change in the future, but do not rely on it.</p>
+
+<b>-C&lt;filename&gt;</b>option:<br>
+
+<p>Use another configuration than /etc/masqmail.conf. Useful for
+debugging purposes.</p>
+
+<b>-d &lt;number&gt; </b>option:<br>
+
+<p>Set the debug level. This takes precedence before the value of
+<b>debug_level</b> in the configuration file. Read the warning in the
+description of the latter.</p>
+
+<b>-i </b>option:<br>
+
+<p>Same as <b>-oi</b>, see below.</p>
+
+<b>-oem </b>option:<br>
+
+<p>If the <b>-oi</b> ist not also given, always return with a non zero
+return code. Maybe someone tells me what this is good for... </p>
+
+<b>-odb </b>option:<br>
+
+<p>Deliver in background. Masqmail always does this.</p>
+
+<b>-odq </b>option:<br>
+
+<p>Do not attempt to deliver immediately. Any messages will be queued
+until the next queue running process picks them up and delivers
+them. You get the same effect by setting the <i>do_queue</i> option in
+/etc/masqmail.conf.</p>
+
+<b>-oi </b>option:<br>
+
+<p>A dot as a single character in a line does <em>not</em> terminate
+the message.</p>
+
+<b>-q </b>option:<br>
+
+<p>If not given with an argument, run a queue process, ie. try to
+deliver all messages in the queue. Masqmail sends only to those
+addresses that are on the <em>local</em> net, not to those that are
+outside. Use -qo &lt;connection&gt; for those.</p>
+
+<p>If you have configured inetd to start masqmail, you can use this
+option in a cron job which starts in regular time intervals, to mimic
+the same effect as starting masqmail with -bd -q30m.</p>
+
+<p>An argument may be a time interval ie. a numerical value followed
+by one of the letters. s,m,h,d,w which are interpreted as seconds,
+minutes, hours, days or weeks respectively. Example: -q30m. Masqmail
+starts as a daemon and a queue runner process will be started
+automatically once in this time interval. This is usually used
+together with -bd (see above).</p>
+
+<b>-qo&lt;name&gt; </b>option:<br>
+
+<p>Must be followed by a connection name. Use this option in your
+script which starts as soon as a link to the internet has been set up
+(usually ip-up). When masqmail is called with this option, the
+specified route configuration is read and the queued mail with
+destinations on the internet will be sent. The <b>name</b> is defined
+in the configuration (see <b>connect_route.&lt;name&gt;</b>).</p>
+
+<b>-t </b>option:<br>
+
+<p>Read recipients from headers. Delete 'Bcc:' headers. If any
+arguments are given, these are interpreted as recipient addresses and
+the message will <em>not</em> be sent to these.</p>
+	  </td></tr>
+    
+	<tr><td>
+	    <p>
+	    <hr>
+	    <address><a href = "mailto:kurth@innominate.de">Oliver Kurth</a></address>
+	    Last modified: Mon Feb 28 22:27:16 CET 2000
+	    <br>
+	    This page was created using <a href="http://www.freddyfrog.com/hacks/genpage/">Genpage</a> - Version: 1.0.6
+	  </p>
+    
+      </table>
+    </center>
+
+  </BODY>
+</HEAD>
+  
