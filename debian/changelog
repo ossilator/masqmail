@@ -1,3 +1,10 @@
+masqmail (0.2.20-1) unstable; urgency=low
+
+  * new upstream version
+  * regard connect_error_fail when failing for pipes (closes: #186364)
+
+ -- Oliver Kurth <oku@debian.org>  Tue, 03 Jun 2003 17:56:07 +0200
+
 masqmail (0.2.19-1) unstable; urgency=low
 
   * new upstream version (closes: #182950)

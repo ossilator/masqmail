@@ -317,6 +317,9 @@ gboolean get_drop_listing(pop3_base *popb)
 	  break;
 	}
       }
+    }else{
+      popb->error = (len == -1) ? pop3_eof : pop3_timeout;
+      return FALSE;
     }
   }
   return FALSE;

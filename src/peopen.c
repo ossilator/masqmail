@@ -8,6 +8,7 @@
 #include <sys/types.h>
 
 #include "peopen.h"
+#include "sysexits.h"
 
 FILE* peidopen(const char	*command,
 	       const char	*type,
@@ -50,14 +51,23 @@ FILE* peidopen(const char	*command,
     if (close (pipe_fd [mode == Read ? 0 : 1]) != -1 &&
 	dup2 (pipe_fd [mode == Read ? 1 : 0], mode == Read ? STDOUT_FILENO : STDIN_FILENO) != -1) {
       char *argv [] = { "/bin/sh", "-c", (char*) command, NULL };
+      int ret;
 
-      if(uid >= 0) seteuid(0);
-      if(gid >= 0) setgid(gid);
-      if(uid >= 0) setuid(uid);
-      /*
-      if(gid >= 0) setegid(gid);
-      if(uid >= 0) seteuid(uid);
-      */
+      if(uid != (uid_t)-1){
+	if((ret = seteuid(0)) != 0){
+	  exit(EX_NOPERM);
+	}
+      }
+      if(gid != (gid_t)-1){
+	if((ret = setgid(gid)) != 0){
+	  exit(EX_NOPERM);
+	}
+      }
+      if(uid != (uid_t)-1){
+	if((ret = setuid(uid)) != 0){
+	  exit(EX_NOPERM);
+	}
+      }
       execve (*argv, argv, envp);
     }
 	    
