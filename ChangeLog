@@ -1,3 +1,7 @@
+0.2.14	Sat, 26 Oct 2002 14:40:49 +0200
+	* corrected html version of documentation
+	* include masqmail.8 man page (was garbled in 0.2.13)
+	* small lintian fixes for Debian
 0.2.13	Wed, 23 Oct 2002 20:54:39 +0200
 	* fixed a possible buffer overflow (IMHO not exploitable)
 0.2.12	Wed, 23 Oct 2002 18:57:42 +0200

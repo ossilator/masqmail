@@ -6,7 +6,7 @@ Copyright: GPL
 Group: Networking/Daemons
 Distribution: innominate
 Packager: Iain Lea <iain@bricbrac.de>
-Source: http://www.innominate.org/~oku/masqmail/download/masqmail-@VERSION@.tar.gz
+Source: http://masqmail.cx/masqmail/download/masqmail-@VERSION@.tar.gz
 BuildRoot: /var/tmp/masqmail-root/
 
 %description

@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(src/accept.c)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(masqmail, 0.2.13)
+AM_INIT_AUTOMAKE(masqmail, 0.2.14)
 
 AC_PREFIX_DEFAULT(/usr)
 
