@@ -1,8 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(src/accept.c)
 
+AC_PREREQ(2.50)
+
+AC_CONFIG_SRCDIR([configure.ac])
+
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(masqmail, 0.2.16)
+AM_INIT_AUTOMAKE(masqmail, 0.2.17)
 
 AC_PREFIX_DEFAULT(/usr)
 
@@ -253,6 +257,10 @@ AC_ARG_WITH(confdir,
 	)
 AC_DEFINE_UNQUOTED(CONF_DIR, "${with_confdir}")
 AC_SUBST(with_confdir)
+
+dnl well, /me/ thought that autoconf should make things _easy_ ...
+test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+AC_DEFINE_UNQUOTED(DATA_DIR, "`eval echo \""$datadir"\"`/masqmail")
 
 dnl gymnastics to get the correct path where masqmail should be installed
 dnl we need this to call ourselves in failmsg.c

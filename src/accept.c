@@ -297,11 +297,22 @@ accept_error accept_message_prepare(message *msg, guint flags)
       GList *hdr_list;
       header *hdr;
 
+      DEBUG(3) debugf("return_path == NULL\n");
+
       hdr_list = find_header(msg->hdr_list, HEAD_SENDER, NULL);
       if(!hdr_list) hdr_list = find_header(msg->hdr_list, HEAD_FROM, NULL);
       if(hdr_list){
+	gchar *addr;
 	hdr = (header *)(g_list_first(hdr_list)->data);
-	if((msg->return_path = create_address_qualified(hdr->value, FALSE, msg->received_host))){
+
+	DEBUG(5) debugf("hdr->value = '%s'\n", hdr->value);
+
+	addr = g_strdup(hdr->value);
+	g_strchomp(addr);
+
+	if((msg->return_path =
+	    create_address_qualified(addr, FALSE, msg->received_host))
+	   != NULL){
 	  DEBUG(3) debugf("setting return_path to %s\n", addr_string(msg->return_path));
 	  msg->hdr_list =
 	    g_list_append(msg->hdr_list,
@@ -309,6 +320,7 @@ accept_error accept_message_prepare(message *msg, guint flags)
 					"X-Warning: return path set from %s address\n",
 					hdr->id == HEAD_SENDER ? "Sender:" : "From:"));
 	}
+	g_free(addr);
       }
       if(msg->return_path == NULL){ /* no Sender: or From: or create_address_qualified failed */
 	msg->return_path = create_address_qualified("postmaster", TRUE, conf.host_name);

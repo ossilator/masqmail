@@ -130,6 +130,15 @@ This sets the domain of the sender address as given by the Sender: header to the
 Like \fBexpand_h_sender_address\f1, but sets the domain only. Deprecated, will be removed in a later version.
 .TP
 
+\fBlast_route\f1 = \fIboolean\f1
+
+If this is set, a mail which would have been delivered using this route, but has failed temporarily, will not be tried to be delivered using the next route.
+
+If you have set up a special route with filters using the lists 'allowed_rcpt_domains', 'allowed_return_paths', and 'allowed_mail_locals' or their complements (not_), and the mail passing these rules should be delivered using this route only, you should set this to 'true'. Otherwise the mail would be passed to the next route (if any), unless that route has rules which prevent that.
+
+Default is false.
+.TP
+
 \fBauth_name\f1 = \fIstring\f1
 
 Set the authentication type for ESMTP AUTH authentification. Currently only 'cram-md5' and 'login' are supported.

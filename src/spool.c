@@ -163,6 +163,8 @@ gboolean spool_read_header(message *msg)
 	msg->data_size = atoi(&(buf[3]));
       }else if(strncasecmp(buf, "TR:", 3) == 0){
 	msg->received_time = (time_t)(atoi(&(buf[3])));
+      }else if(strncasecmp(buf, "TW:", 3) == 0){
+	msg->warned_time = (time_t)(atoi(&(buf[3])));
       }
       /* so far ignore other tags */
     }
@@ -245,7 +247,10 @@ gboolean spool_write_header(message *msg)
       fprintf(out, "DS: %d\n", msg->data_size);
 
     if(msg->received_time > 0)
-      fprintf(out, "TR: %d\n", (int)(msg->received_time));
+      fprintf(out, "TR: %u\n", (int)(msg->received_time));
+
+    if(msg->warned_time > 0)
+      fprintf(out, "TW: %u\n", (int)(msg->warned_time));
 
     DEBUG(6) debugf("after RH\n");
     fprintf(out, "\n");
@@ -272,6 +277,9 @@ gboolean spool_write_header(message *msg)
     DEBUG(1) debugf("euid = %d, egid = %d\n", geteuid(), getegid());
     ok = FALSE;
   }
+
+  g_free(tmp_file);
+
   return ok;
 }
 
@@ -329,6 +337,7 @@ gboolean spool_write(message *msg, gboolean do_write_data)
 		 strerror(errno));
 	ok = FALSE;
       }
+      g_free(tmp_file);
     }
   }
 

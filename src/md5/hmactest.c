@@ -1,8 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/time.h>
 #include <string.h>
 #include "global.h"
 #include "md5.h"
+#include "hmac_md5.h"
 
 static
 void pad0_copy(char *d, char *s, int sz)

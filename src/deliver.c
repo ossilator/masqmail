@@ -26,7 +26,8 @@
    failure message has been successfully sent */
 gboolean delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
 {
-  gboolean ok = TRUE;
+  gboolean ok_fail = TRUE, ok_warn = TRUE;
+  time_t now = time(NULL);
 
   GList *failed_list = NULL, *defered_list = NULL, *rcpt_node;
   va_list args;
@@ -35,25 +36,25 @@ gboolean delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
   foreach(rcpt_list, rcpt_node){
     address *rcpt = (address *)(rcpt_node->data);
     
+    if(addr_is_defered(rcpt)){
+      if((now - msg->received_time) >= conf.max_defer_time){
+	addr_mark_failed(rcpt);
+      }else
+	defered_list = g_list_prepend(defered_list, rcpt);
+    }
     if(addr_is_failed(rcpt))
       failed_list = g_list_prepend(failed_list, rcpt);
-    /*
-    else if(addr_is_defered(rcpt))
-      defered_list = g_list_prepend(defered_list, rcpt);
-    */
   }
   if(failed_list != NULL){
-    ok = fail_msg(msg, failed_list, err_fmt, args);
+    ok_fail = fail_msg(msg, conf.errmsg_file, failed_list, err_fmt, args);
     g_list_free(failed_list);
   }
-  /*
-    if(defered_list != NULL){
-    warn_msg(msg, host, defered_list, psb->buffer);
+  if(defered_list != NULL){
+    ok_warn = warn_msg(msg, conf.warnmsg_file, defered_list, err_fmt, args);
     g_list_free(defered_list);
-    }
-  */
+  }
   va_end(args);
-  return ok;
+  return ok_fail && ok_warn;
 }
 
 static gint _g_list_strcasecmp(gconstpointer a, gconstpointer b)
@@ -388,7 +389,8 @@ gboolean deliver_msglist_host_smtp(connect_route *route, GList *msgout_list, gch
 		     msgout->return_path, msgout->rcpt_list, msgout->hdr_list);
 
 	ok_fail = delivery_failures(msg, msgout->rcpt_list, 
-				    "while connected with %s, the server replied\n\t%s", host, psb->buffer);
+				    "while connected with %s, the server replied\n\t%s",
+				    host, psb->buffer);
 
 	if((psb->error == smtp_eof) ||
 	   (psb->error == smtp_timeout)){
@@ -414,6 +416,21 @@ gboolean deliver_msglist_host_smtp(connect_route *route, GList *msgout_list, gch
 	 (psb->error == smtp_syntax)){
 
 	smtp_out_quit(psb);
+      }
+    }else{
+      if((psb->error == smtp_fail) ||
+	 (psb->error == smtp_trylater) ||
+	 (psb->error == smtp_syntax)){
+	smtp_out_quit(psb);
+
+	foreach(msgout_list, msgout_node){
+	  msg_out *msgout = (msg_out *)(msgout_node->data);
+	  smtp_out_mark_rcpts(psb, msgout->rcpt_list);
+	  if(delivery_failures(msgout->msg, msgout->rcpt_list, 
+			       "while connected with %s, the server replied\n\t%s",
+			       host, psb->buffer))
+	    deliver_finish(msgout);
+	}
       }
     }
     destroy_smtpbase(psb);
@@ -500,7 +517,7 @@ gboolean deliver_route_msg_list(connect_route *route, GList *msgout_list)
       address *rcpt = (address *)(rcpt_node->data);
       /* failed addresses already have been bounced
 	 - there should be a better way to handle those.*/
-      if(!addr_is_delivered(rcpt) && !addr_is_failed(rcpt))
+      if(!addr_is_delivered(rcpt) && !addr_is_failed(rcpt) && !(rcpt->flags & ADDR_FLAG_LAST_ROUTE))
 	rcpt_list_non_delivered = g_list_append(rcpt_list_non_delivered, rcpt);
     }
     g_list_free(msgout_cloned->rcpt_list);
@@ -519,6 +536,14 @@ gboolean deliver_route_msg_list(connect_route *route, GList *msgout_list)
 	  g_list_free(msgout_cloned->rcpt_list);
 	  msgout_cloned->rcpt_list = rcpt_list_allowed;
 	  
+	  if(route->last_route){
+	    GList *rcpt_node;
+	    foreach(msgout_cloned->rcpt_list, rcpt_node){
+	      address *rcpt = (address *)(rcpt_node->data);
+	      rcpt->flags |= ADDR_FLAG_LAST_ROUTE;
+	    }
+	  }
+
 	  route_prepare_msgout(route, msgout_cloned);
 	  msgout_list_deliver = g_list_append(msgout_list_deliver, msgout_cloned);
 	}else

@@ -4,6 +4,7 @@ docs/README docs/man/m*.[0-9] \
 suse/masqmail suse/masqmail.spec suse/masqmail.spec.in \
 redhat/masqmail redhat/masqmail.spec redhat/masqmail.spec.in \
 tpl/failmsg.tpl tpl/failmsg.tpl.de tpl/failmsg.tpl.fr tpl/failmsg.tpl.it \
+tpl/warnmsg.tpl tpl/warnmsg.tpl.de tpl/warnmsg.tpl.fr \
 INSTALL.agenda agenda-config.site
 
 SUBDIRS = src tests docs debian
@@ -13,17 +14,16 @@ install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir
 conf_dir: $(DESTDIR)@with_confdir@
 
 $(DESTDIR)@with_confdir@:
-	mkdir -p $(DESTDIR)@with_confdir@
+	install -d $(DESTDIR)@with_confdir@
 
-tpl_dir: $(DESTDIR)@with_confdir@/tpl
+tpl_dir: $(DESTDIR)@datadir@/tpl
 
-$(DESTDIR)@with_confdir@/tpl: conf_dir
-	mkdir -p $(DESTDIR)@with_confdir@/tpl
-	cp tpl/failmsg.tpl $(DESTDIR)@with_confdir@/tpl
-	cp tpl/failmsg.tpl.{de,fr,it} $(DESTDIR)@with_confdir@/tpl
-	chown @with_user@.@with_group@ $(DESTDIR)@with_confdir@/tpl
-	chown @with_user@.@with_group@ $(DESTDIR)@with_confdir@/tpl/failmsg.tpl
-	chown @with_user@.@with_group@ $(DESTDIR)@with_confdir@/tpl/failmsg.tpl.{de,fr,it}
+$(DESTDIR)@datadir@/tpl: conf_dir
+	install -d $(DESTDIR)@datadir@/masqmail/tpl
+	install -m 644 tpl/failmsg.tpl $(DESTDIR)@datadir@/masqmail/tpl
+	install -m 644 tpl/failmsg.tpl.{de,fr,it} $(DESTDIR)@datadir@/masqmail/tpl
+	install -m 644 tpl/warnmsg.tpl $(DESTDIR)@datadir@/masqmail/tpl
+	install -m 644 tpl/warnmsg.tpl.{de,fr} $(DESTDIR)@datadir@/masqmail/tpl
 
 log_dir: $(DESTDIR)@with_logdir@
 
@@ -33,13 +33,11 @@ uid_bit: $(DESTDIR)@prefix@/sbin/masqmail
 	chmod u+s $(DESTDIR)@prefix@/sbin/masqmail
 
 $(DESTDIR)@with_logdir@:
-	mkdir -p $(DESTDIR)@with_logdir@
-	chown @with_user@.@with_group@ $(DESTDIR)@with_logdir@
+	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_logdir@
 
 $(DESTDIR)@with_spooldir@:
-	mkdir -p $(DESTDIR)@with_spooldir@
-	mkdir -p $(DESTDIR)@with_spooldir@/lock
-	mkdir -p $(DESTDIR)@with_spooldir@/input
-	mkdir -p $(DESTDIR)@with_spooldir@/popuidl
-	chown -R @with_user@.@with_group@ $(DESTDIR)@with_spooldir@
+	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@
+	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@/lock
+	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@/input
+	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@/popuidl
 

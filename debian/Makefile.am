@@ -2,7 +2,6 @@ EXTRA_DIST = \
 README.Debian \
 README.online \
 changelog \
-conffiles \
 control \
 copyright \
 dirs \

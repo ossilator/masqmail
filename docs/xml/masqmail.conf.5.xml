@@ -372,7 +372,7 @@ set <opt>mda_fromline</opt> above. Default is false.</p>
 <optdesc>
 <p>Defines the method MasqMail uses to detect whether there is
 currently an online connection. It can have the
-values <opt>file</opt> or <opt>mserver</opt>.</p>
+values <opt>file</opt>, <opt>pipe</opt> or <opt>mserver</opt>.</p>
 
 <p>When it is set to <opt>file</opt>, MasqMail first checks for the
 existence of <opt>online_file</opt> (see below) and if it exists, it reads
@@ -380,7 +380,7 @@ it. The content of the file should be the name of the current
 connection as defined with <opt>connect_route.<arg>name</arg></opt> (without
 a trailing newline character).</p>
 
-<p>When it is set to <opt>file</opt>, MasqMail calls the executable given by
+<p>When it is set to <opt>pipe</opt>, MasqMail calls the executable given by
 the <opt>online_pipe</opt> option (see below) and reads the current online
 status from its standard output.</p>
 
@@ -478,7 +478,43 @@ see <opt>mda</opt> above. Additional information can be included with
 @failed_rcpts, @msg_headers and @msg_body, these <b>must</b> be at the
 beginning of a line and will be replaced with the list of the failed recipients,
 the message headers and the message body of the failed message.</p>
-<p>Default is /etc/masqmail/tpl/failmsg.tpl.</p>
+<p>Default is /usr/share/masqmail/tpl/failmsg.tpl.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>warnmsg_file = <arg>file</arg></opt></p>
+<optdesc>
+<p>Set this to a template which will be used to generate delivery warning
+reports. It uses the same mechanisms for variables as <opt>errmsg_file</opt>,
+see above.
+</p>
+<p>Default is /usr/share/masqmail/tpl/warnmsg.tpl.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>warn_intervals</opt> = <arg>list</arg></p>
+<optdesc>
+<p>Set this to a list of time intervals, at which delivery warnings (starting
+with the receiving time of the message) shall be generated.</p>
+<p>A warning will only be generated just after an attempt to deliver the
+mail and if that attempt failed temporarily. So a warning may be generated after
+a longer time, if there was no attempt before.</p>
+<p>Default is "1h;4h;8h;1d;2d;3d"</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>max_defer_time</opt> = <arg>time</arg></p>
+<optdesc>
+<p>This is the maximum time, in which a temporarily failed mail will be kept
+in the spool. When this time is exceeded, it will be handled as a delivery failure,
+and the message will be bounced.</p>
+<p>The excedence of this time will only be noticed if the message was actually
+tried to be delivered. If, for example, the message can only be delivered when
+online, but you have not been online for that time, no bounce will be generated.</p>
+<p>Default is 4d (4 days)</p>
 </optdesc>
 </option>
 
@@ -487,7 +523,7 @@ the message headers and the message body of the failed message.</p>
 <optdesc>
 <p>Replace <arg>name</arg> with a valid local or remote mail address.</p>
 <p>If this option is not empty, then a copy of every mail,
-that passes trought the masqmail system will also be sent to the
+that passes trough the masqmail system will also be sent to the
 given mail address.</p>
 <p>For example you can feed your mails into a program like <i>hypermail</i> for
 archiving purpose by placing an appropriate pipe command in masqmail.alias</p>

@@ -1,5 +1,6 @@
 #!/usr/bin/make -f
-# Sample debian/rules that uses debhelper. GNU copyright 1997 by Joey Hess.
+
+export DH_COMPAT=3
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
@@ -58,22 +59,22 @@ install: build
 	dh_clean -k
 	dh_installdirs
 
-	# Add here commands to install the package into debian/tmp.
-	$(MAKE) DESTDIR=`pwd`/debian/tmp install
-	rmdir debian/tmp/var/spool/masqmail/input \
-                debian/tmp/var/spool/masqmail/lock \
-                debian/tmp/var/spool/masqmail/popuidl \
-		debian/tmp/var/spool/masqmail debian/tmp/var/spool \
-		debian/tmp/var/log/masqmail debian/tmp/var/log \
-		debian/tmp/var
-	rm -f debian/tmp/usr/bin/expandtest debian/tmp/usr/bin/readtest
-	install -m 755 debian/newaliases debian/tmp/usr/bin/.
-	install -m 755 debian/masqmail.ip-up debian/tmp/etc/ppp/ip-up.d/1masqmail
-	install -m 755 debian/masqmail.ip-up debian/tmp/etc/network/if-up.d/1masqmail
-	install -m 755 debian/masqmail.ip-up debian/tmp/etc/ppp/ip-down.d/99masqmail
-	install -m 755 debian/masqmail.ip-up debian/tmp/etc/network/if-down.d/99masqmail
+	# Add here commands to install the package into debian/masqmail.
+	$(MAKE) DESTDIR=`pwd`/debian/masqmail install
+	rmdir debian/masqmail/var/spool/masqmail/input \
+                debian/masqmail/var/spool/masqmail/lock \
+                debian/masqmail/var/spool/masqmail/popuidl \
+		debian/masqmail/var/spool/masqmail debian/masqmail/var/spool \
+		debian/masqmail/var/log/masqmail debian/masqmail/var/log \
+		debian/masqmail/var
+	rm -f debian/masqmail/usr/bin/expandtest debian/masqmail/usr/bin/readtest
+	install -m 755 debian/newaliases debian/masqmail/usr/bin/.
+	install -m 755 debian/masqmail.ip-up debian/masqmail/etc/ppp/ip-up.d/1masqmail
+	install -m 755 debian/masqmail.ip-up debian/masqmail/etc/network/if-up.d/1masqmail
+	install -m 755 debian/masqmail.ip-up debian/masqmail/etc/ppp/ip-down.d/99masqmail
+	install -m 755 debian/masqmail.ip-up debian/masqmail/etc/network/if-down.d/99masqmail
 
-	install -m 644 debian/masqmail.logrotate debian/tmp/etc/logrotate.d/masqmail
+	install -m 644 debian/masqmail.logrotate debian/masqmail/etc/logrotate.d/masqmail
 
 
 # Build architecture-independent files here.
@@ -82,14 +83,14 @@ binary-indep: build install
 
 # Build architecture-dependent files here.
 binary-arch: build install
-	cp debian/masqmail.lintian debian/tmp/usr/share/lintian/overrides/masqmail
+	cp debian/masqmail.lintian debian/masqmail/usr/share/lintian/overrides/masqmail
 #	dh_testversion
 	dh_testdir
 	dh_testroot
 	dh_installdebconf     
 	dh_installdocs
-	rm -f debian/tmp/usr/share/doc/masqmail/INSTALL
-	##cp -r docs debian/tmp/$(DOC)/masqmail/html
+	rm -f debian/masqmail/usr/share/doc/masqmail/INSTALL
+	##cp -r docs debian/masqmail/$(DOC)/masqmail/html
 	dh_installexamples examples/* tests
 #	dh_installmenu
 #	dh_installemacsen
