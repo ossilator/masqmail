@@ -85,7 +85,7 @@ GList *find_header(GList *hdr_list, header_id id, gchar *hdr_str)
       header *hdr = (header *)(node->data);
       gchar buf[64], *q = buf, *p = hdr->header;
       
-      while(*p != ':' && q < buf+64 && *p) *(q++) = *(p++);
+      while(*p != ':' && q < buf+63 && *p) *(q++) = *(p++);
       *q = 0;
       
       if(strcasecmp(buf, hdr_str) == 0)

@@ -373,7 +373,7 @@ gboolean check_init_response(pop3_base *popb)
     gint i = 0;
     if(*p){
       while(*p && (*p != '<')) p++;
-      while(*p && (*p != '>') && (i < 255))
+      while(*p && (*p != '>') && (i < 254))
 	buf[i++] = *(p++);
       buf[i++] = '>';
       buf[i] = 0;
