@@ -23,11 +23,15 @@
 
 masqmail_conf conf;
 
-static
 void init_conf()
 {
   struct passwd *passwd;
   struct group *group;
+
+  memset(&conf, 0, sizeof(masqmail_conf));
+
+  conf.orig_uid = getuid();
+  conf.orig_gid = getgid();
 
   if((passwd = getpwnam(DEF_MAIL_USER)))
     conf.mail_uid = passwd->pw_uid;
@@ -119,7 +123,7 @@ GList *parse_list(gchar *line, gboolean read_file)
   while(*p != 0){
     q = buf;
 
-    while(*p && (*p != ';'))
+    while(*p && (*p != ';') && (q < buf+255))
       *(q++) = *(p++);
     *q = 0;
 
@@ -197,7 +201,7 @@ interface *parse_interface(gchar *line, gint def_port)
 
   p = line;
   q = buf;
-  while((*p != 0) && (*p != ':'))
+  while((*p != 0) && (*p != ':') && (q < buf+255))
     *(q++) = *(p++);
   *q = 0;
 
@@ -225,7 +229,7 @@ struct in_addr *parse_network(gchar *line, gint def_port)
 
   p = line;
   q = buf;
-  while((*p != 0) && (*p != '/'))
+  while((*p != 0) && (*p != '/') && (q < buf+255))
     *(q++) = *(p++);
   *q = 0;
 
@@ -407,11 +411,7 @@ gboolean read_conf(gchar *filename)
   FILE *in;
   int dbg_lvl = conf.debug_level;
 
-  memset(&conf, 0, sizeof(masqmail_conf));
   conf.debug_level = dbg_lvl;
-
-  conf.orig_uid = getuid();
-  conf.orig_gid = getgid();
 
   conf.log_max_pri = 7;
 
@@ -421,8 +421,6 @@ gboolean read_conf(gchar *filename)
 
   conf.alias_local_cmp = strcmp;
 
-  init_conf();
-
   if((in = fopen(filename, "r"))){
     gchar lval[256], rval[2048];
     while(read_statement(in, lval, 256, rval, 2048)){
@@ -430,9 +428,11 @@ gboolean read_conf(gchar *filename)
 	if(conf.debug_level == -1)
 	  conf.debug_level = atoi(rval);
       }
-      else if(strcmp(lval, "run_as_user") == 0)
-	conf.run_as_user = parse_boolean(rval);
-      else if(strcmp(lval, "use_syslog") == 0)
+      else if(strcmp(lval, "run_as_user") == 0){
+	if(!conf.run_as_user) /* you should not be able
+				 to reset that flag */
+	  conf.run_as_user = parse_boolean(rval);
+      }else if(strcmp(lval, "use_syslog") == 0)
 	conf.use_syslog = parse_boolean(rval);
       else if(strcmp(lval, "mail_dir") == 0)
 	conf.mail_dir = g_strdup(rval);

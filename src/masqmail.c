@@ -80,7 +80,7 @@ gint time_interval(gchar *str, gint *pos)
   gchar *p = str, *q = buf;
   gint factor = 1, val;
 
-  while(*p && isdigit(*p)){
+  while(*p && isdigit(*p) && (q < buf+15)){
     *(q++) = *(p++);
     (*pos)++;
   }
@@ -646,12 +646,7 @@ main(int argc, char *argv[])
       close(i);
   }
 
-  read_conf(conf_file);
-
-  chdir("/");
-
-  if(do_queue) conf.do_queue = TRUE;
-  if(do_verbose) conf.do_verbose = TRUE;
+  init_conf();
 
   /* if we are not privileged, and the config file was changed we
      implicetely set the the run_as_user flag and give up all
@@ -669,6 +664,13 @@ main(int argc, char *argv[])
       setgid(conf.orig_gid);
     }
   }
+
+  read_conf(conf_file);
+
+  if(do_queue) conf.do_queue = TRUE;
+  if(do_verbose) conf.do_verbose = TRUE;
+
+  chdir("/");
 
   if(!conf.run_as_user){
     if(setgid(0) != 0){

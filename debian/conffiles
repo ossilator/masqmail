@@ -1,5 +1,6 @@
 /etc/masqmail/tpl/failmsg.tpl
 /etc/masqmail/tpl/failmsg.tpl.de
+/etc/masqmail/tpl/failmsg.tpl.fr
 /etc/masqmail/tpl/failmsg.tpl.it
 /etc/init.d/masqmail
 /etc/logrotate.d/masqmail

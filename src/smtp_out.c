@@ -217,7 +217,7 @@ gchar *get_response_arg(gchar *response)
 
   while(*p && (*p != '\n') && isspace(*p)) p++;
   if(*p && (*p != '\n')){
-    while(*p && (*p != '\n') && (*p != '\r')) *(q++) = *(p++);
+    while(*p && (*p != '\n') && (*p != '\r') && (q < buf+SMTP_BUF_LEN-1)) *(q++) = *(p++);
     *q = 0;
     return g_strdup(buf);
   }

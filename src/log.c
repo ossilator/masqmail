@@ -64,7 +64,7 @@ gboolean logopen()
     filename = g_strdup_printf("%s/masqmail.log", conf.log_dir);
     logfile = fopen(filename, "a");
     if(!logfile){
-      fprintf(stderr, "could not open log '%s'\n", filename);
+      fprintf(stderr, "could not open log '%s': %s\n", filename, strerror(errno));
       return FALSE;
     }
     g_free(filename);
