@@ -66,10 +66,10 @@ gboolean get_address(gchar *line, gchar *addr)
   p++;
 
   /* skip spaces: */
-  while(isspace(*p)) p++;
+  while(*p && isspace(*p)) p++;
 
   /* get address: */
-  while(!isspace(*p)) *(q++) = *(p++);
+  while(*p && !isspace(*p) && (q < addr+MAX_ADDRESS-1)) *(q++) = *(p++);
   *q = 0;
 
   return TRUE;

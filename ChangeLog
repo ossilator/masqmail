@@ -1,3 +1,6 @@
+0.1.17:	Wed, 06 Nov 2002 12:19:55 +0100
+	* fixed buffer overflows in conf.c. Thanks to Damian M Gryski.
+	* read conf file _after_ dropping privileges
 0.1.16:
 	* PowerPC fix for varargs functions
 	* g_free fix in src/conf.c

@@ -56,7 +56,7 @@ gint time_interval(gchar *str)
   gchar *p = str, *q = buf;
   gint factor = 1, val;
 
-  while(*p && isdigit(*p)) *(q++) = *(p++);
+  while(*p && isdigit(*p) && (q < buf+15)) *(q++) = *(p++);
   *q = 0;
   val = atoi(buf);
   
@@ -510,8 +510,7 @@ main(int argc, char *argv[])
       close(i);
   }
 
-  read_conf(conf_file);
-  if(do_queue) conf.do_queue = TRUE;
+  init_conf();
 
   /* if we are not privileged, and the config file was changed we
      implicetely set the the run_as_user flag and give up all
@@ -529,6 +528,9 @@ main(int argc, char *argv[])
       setgid(conf.orig_gid);
     }
   }
+
+  read_conf(conf_file);
+  if(do_queue) conf.do_queue = TRUE;
 
   if(!conf.run_as_user){
     DEBUG(5) fprintf(stderr, "setting real user and group\n");

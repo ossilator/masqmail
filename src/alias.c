@@ -52,13 +52,13 @@ GList *parse_list(gchar *line)
     q = buf;
     while(isspace(*p)) p++;
     if(*p != '\"'){
-      while(*p && (*p != ','))
+      while(*p && (*p != ',') && (q < buf+255))
 	*(q++) = *(p++);
       *q = 0;
     }else{
       gboolean escape = FALSE;
       p++;
-      while(*p && (*p != '\"' || escape)){
+      while(*p && (*p != '\"' || escape) && (q < buf+255)){
 	if((*p == '\\') && !escape)
 	  escape = TRUE;
 	else{
