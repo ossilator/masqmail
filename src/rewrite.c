@@ -70,14 +70,14 @@ gboolean set_address_header_domain(header *hdr, gchar *domain)
 
 gboolean map_address_header(header *hdr, GList *table)
 {
-  GList *adr_list = adr_list_append_rfc822(NULL, hdr->value);
+  GList *adr_list = adr_list_append_rfc822(NULL, hdr->value, conf.host_name);
   GList *adr_node;
   gchar *new_hdr = g_strndup(hdr->header, hdr->value - hdr->header);
   gboolean did_change = FALSE;
 
   foreach(adr_list, adr_node){
     address *adr = (address *)(adr_node->data);
-    gchar *rewr_string = (gchar *)table_find(table, adr->local_part);
+    gchar *rewr_string = (gchar *)table_find_fnmatch(table, adr->local_part);
 
     if(rewr_string == NULL)
       rewr_string = adr->address;

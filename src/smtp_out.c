@@ -16,7 +16,7 @@
  */
 
 /*
- send bugs to: okurth@uni-sw.gwdg.de
+ send bugs to: kurth@innominate.de
 */
 
 /*
@@ -25,30 +25,17 @@
   RFC 1869 (ESMTP)
   RFC 1870 (ESMTP SIZE)
   RFC 2197 (ESMTP PIPELINE)
-*/
-
-/*
-#include <glib.h>
-
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <signal.h>
+  RFC 2554 (ESMTP AUTH)
 */
 
 #include "masqmail.h"
 #include "smtp_out.h"
+#include "readsock.h"
 
-volatile gint timeout_seen = 0;
-
-static
-void sig_timeout_handler(int sig)
-{
-  timeout_seen = 1;
-}
+#include "base64/base64.h"
+#include "md5/global.h"
+#include "md5/md5.h"
+#include "md5/hmac_md5.h"
 
 void destroy_smtpbase(smtp_base *psb)
 {
@@ -59,13 +46,62 @@ void destroy_smtpbase(smtp_base *psb)
 
   if(psb->helo_name) g_free(psb->helo_name);
   if(psb->buffer) g_free(psb->buffer);
+  if(psb->auth_names) g_strfreev(psb->auth_names);
+
+  if(psb->auth_name) g_free(psb->auth_name);
+  if(psb->auth_login) g_free(psb->auth_login);
+  if(psb->auth_secret) g_free(psb->auth_secret);
 }
+
+gchar *set_heloname(smtp_base *psb, gchar *default_name, gboolean do_correct)
+{
+  struct sockaddr_in sname;
+  int len = sizeof(struct sockaddr_in);
+  struct hostent *host_entry;
+
+  if(do_correct){
+    getsockname(psb->sock, &sname, &len);
+    DEBUG(5) debugf("socket: name.sin_addr = %s\n", inet_ntoa(sname.sin_addr));
+    host_entry =
+      gethostbyaddr((const char *)&(sname.sin_addr),
+		    sizeof(sname.sin_addr), AF_INET);
+    if(host_entry){
+      psb->helo_name = g_strdup(host_entry->h_name);
+    }else{
+      /* we failed to look up our own name. Instead of giving our local hostname,
+	 we may give our IP number to show the server that we are at least
+	 willing to be honest. For the really picky ones.*/
+      DEBUG(5) debugf("failed to look up own host name.\n");
+      psb->helo_name = g_strdup_printf("[%s]", inet_ntoa(sname.sin_addr));
+    }
+    DEBUG(5) debugf("helo_name = %s\n", psb->helo_name);
+  }
+  if(psb->helo_name == NULL){
+    psb->helo_name = g_strdup(default_name);
+  }
+  return psb->helo_name;
+} 
+
+#ifdef ENABLE_AUTH
+
+gboolean set_auth(smtp_base *psb, gchar *name, gchar *login, gchar *secret)
+{
+  if(strcasecmp(name, "CRAM-MD5") == 0){
+    psb->auth_name = g_strdup(name);
+    psb->auth_login = g_strdup(login);
+    psb->auth_secret = g_strdup(secret);
+    
+    return TRUE;
+  }
+  return FALSE;
+}
+
+#endif
 
 static
 smtp_base *create_smtpbase(gint sock)
 {
   gint dup_sock;
-  gint i;
 
   smtp_base *psb = (smtp_base *)g_malloc(sizeof(smtp_base));
 
@@ -74,6 +110,10 @@ smtp_base *create_smtpbase(gint sock)
   psb->use_esmtp = FALSE;
   psb->use_size = FALSE;
   psb->use_pipelining = FALSE;
+  psb->use_auth = FALSE;
+
+  psb->max_size = 0;
+  psb->auth_names = NULL;
 
   psb->buffer = (gchar *)g_malloc(SMTP_BUF_LEN);
 
@@ -85,61 +125,9 @@ smtp_base *create_smtpbase(gint sock)
 
   psb->helo_name = NULL;
   
-  if(conf.curr_route != NULL){
-    if(conf.curr_route->do_correct_helo){
-      struct sockaddr_in sname;
-      int len = sizeof(struct sockaddr_in);
-      struct hostent *host_entry;
+  psb->auth_name = psb->auth_login = psb->auth_secret = NULL;
 
-      getsockname(sock, &sname, &len);
-      debugf("socket: name.sin_addr = %s\n", inet_ntoa(sname.sin_addr));
-      host_entry =
-	gethostbyaddr((const char *)&(sname.sin_addr),
-		      sizeof(sname.sin_addr), AF_INET);
-      if(host_entry){
-	psb->helo_name = g_strdup(host_entry->h_name);
-      }else{
-	/* we failed to look up our own name. Instead of giving our local hostname,
-	   we may give our IP number to show the server that we are at least
-	   willing to be honest. For the really picky ones.*/
-	DEBUG(5) debugf("failed to look up own host name.\n");
-	psb->helo_name = g_strdup_printf("[%s]", inet_ntoa(sname.sin_addr));
-      }
-      DEBUG(5) debugf("helo_name = %s\n", psb->helo_name);
-    }
-  }
-  if(psb->helo_name == NULL){
-    psb->helo_name = g_strdup(conf.host_name);
-  }
   return psb;
-}
-
-static
-int read_sockline(FILE *in, gchar *buf, int buf_len, int timeout)
-{
-  gint p = 0, len;
-  gint c;
-
-  timeout_seen = 0;
-  alarm(timeout);
-
-  while(isspace(c = getc(in))); ungetc(c, in);
-
-  while((c = getc(in)) != '\n' && (c != EOF)){
-    if(p >= buf_len-1) { alarm(0); return 0; }
-    buf[p++] = c;
-  }
-  alarm(0);
-  if(c == EOF){
-    return 0;
-  }
-  buf[p] = '\n';
-  len = p+1;
-  buf[len] = 0;
-
-  DEBUG(4) debugf("<<< %s", buf);
-
-  return len;
 }
 
 static
@@ -151,12 +139,16 @@ gboolean read_response(smtp_base *psb, int timeout)
 
   do{
     len = read_sockline(psb->in, &(psb->buffer[buf_pos]),
-			SMTP_BUF_LEN - buf_pos, timeout);
-    if(timeout_seen){
+			SMTP_BUF_LEN - buf_pos, timeout, READSOCKL_CHUG);
+    if(len == -3){
       psb->error = smtp_timeout;
       return FALSE;
     }
-    else if(len == 0){
+    else if(len == -2){
+      psb->error = smtp_syntax;
+      return FALSE;
+    }
+    else if(len == -1){
       psb->error = smtp_eof;
       return FALSE;
     }
@@ -207,6 +199,21 @@ gboolean check_init_response(smtp_base *psb)
 }
 
 static
+gchar *get_response_arg(gchar *response)
+{
+  gchar buf[SMTP_BUF_LEN];
+  gchar *p = response, *q = buf;
+
+  while(*p && (*p != '\n') && isspace(*p)) p++;
+  if(*p && (*p != '\n')){
+    while(*p && (*p != '\n') && (*p != '\r')) *(q++) = *(p++);
+    *q = 0;
+    return g_strdup(buf);
+  }
+  return NULL;
+}
+
+static
 gboolean check_helo_response(smtp_base *psb)
 {
   gchar *ptr = psb->buffer;
@@ -215,15 +222,36 @@ gboolean check_helo_response(smtp_base *psb)
     return FALSE;
 
   while(*ptr){
-    /* TODO: we do not look if server advertises its
-       "fixed maximum message size" (RFC 1870). This is
-       not required, but we want a good SMTP client, don't we? */
-
-    if(strncasecmp(&(ptr[4]), "SIZE", 4) == 0)
+    if(strncasecmp(&(ptr[4]), "SIZE", 4) == 0){
+      gchar *arg;
       psb->use_size = TRUE;
+      arg = get_response_arg(&(ptr[8]));
+      if(arg){
+	psb->max_size = atoi(arg);
+	g_free(arg);
+      }
+    }
 
     if(strncasecmp(&(ptr[4]), "PIPELINING", 10) == 0)
       psb->use_pipelining = TRUE;
+
+    if(strncasecmp(&(ptr[4]), "AUTH", 4) == 0){
+      gchar *arg;
+      psb->use_auth = TRUE;
+      arg = get_response_arg(&(ptr[8]));
+      if(arg){
+        psb->auth_names = g_strsplit(arg, " " , 0);
+        g_free(arg);
+
+        DEBUG(4){
+          gint i = 0;
+          while(psb->auth_names[i]){
+            debugf("offered AUTH %s\n", psb->auth_names[i]);
+            i++;
+          }
+        }
+      }
+    }
 
     while(*ptr != '\n') ptr++;
     ptr++;
@@ -232,6 +260,7 @@ gboolean check_helo_response(smtp_base *psb)
   DEBUG(4){
     debugf(psb->use_size ? "uses SIZE\n" : "no size\n");
     debugf(psb->use_pipelining ? "uses PIPELINING\n" : "no pipelining\n");
+    debugf(psb->use_auth ? "uses AUTH\n" : "no auth\n");
   }
 
   return TRUE;
@@ -311,23 +340,27 @@ void smtp_cmd_rcptto(smtp_base *psb, address *rcpt)
 static
 void send_data_line(smtp_base *psb, gchar *data)
 {
-  gchar *ptr;
-
   /* According to RFC 821 each line should be terminated with CRLF.
      Since a dot on a line itself marks the end of data, each line
      beginning with a dot is prepended with another dot.
   */
+  gchar *ptr;
+  gboolean new_line = TRUE; /* previous versions assumed that each item was exactly one line. This is no longer the case */
 
   ptr = data;
-  if(*ptr == '.')
-    putc('.', psb->out);
   while(*ptr){
     int c = (int)(*ptr);
-    if(*ptr == '\n'){
+    if(c == '.')
+      if(new_line)
+	putc('.', psb->out);
+    if(c == '\n'){
       putc('\r', psb->out);
       putc('\n', psb->out);
-    }else
+      new_line = TRUE;
+    }else{
       putc(c, psb->out);
+      new_line = FALSE;
+    }
     ptr++;
   }
 }
@@ -382,39 +415,28 @@ void send_data(smtp_base *psb, message *msg)
 
 void smtp_out_log_failure(smtp_base *psb, message *msg)
 {
-  if(msg == NULL){
-    if(psb->error == smtp_timeout)
-      logwrite(LOG_NOTICE, "host=%s connection timed out.\n",
-	       psb->remote_host);
-    else if(psb->error == smtp_eof)
-      logwrite(LOG_NOTICE,
-	       "host=%s connection terminated prematurely.\n",
-	       psb->remote_host);
-    else if(psb->error == smtp_syntax)
-      logwrite(LOG_NOTICE,
-	       "host=%s got unexpected response: %s\n",
-	       psb->remote_host, psb->buffer);
-    else
-      /* error message should still be in the buffer */
-      logwrite(LOG_NOTICE, "host=%s failed: %s\n",
-	       psb->remote_host, psb->buffer);
-  }else{
-    if(psb->error == smtp_timeout)
-      logwrite(LOG_NOTICE, "%s == host=%s connection timed out.\n",
-	       msg->uid, psb->remote_host);
-    else if(psb->error == smtp_eof)
-      logwrite(LOG_NOTICE,
-	       "%s == host=%s connection terminated prematurely.\n",
-	       msg->uid, psb->remote_host);
-    else if(psb->error == smtp_syntax)
-      logwrite(LOG_NOTICE,
-	       "%s == host=%s got unexpected response: %s\n",
-	       msg->uid, psb->remote_host, psb->buffer);
-    else
-      /* error message should still be in the buffer */
-      logwrite(LOG_NOTICE, "%s == host=%s failed: %s\n",
-	       msg->uid, psb->remote_host, psb->buffer);
-  }
+  gchar *err_str;
+
+  if(psb->error == smtp_timeout)
+    err_str = g_strdup("connection timed out.");
+  else if(psb->error == smtp_eof)
+    err_str = g_strdup("connection terminated prematurely.");
+  else if(psb->error == smtp_syntax)
+    err_str = g_strdup_printf("got unexpected response: %s", psb->buffer);
+  else if(psb->error == smtp_cancel)
+    err_str = g_strdup_printf("delivery was canceled.\n");
+  else
+    /* error message should still be in the buffer */
+    err_str = g_strdup_printf("failed: %s\n", psb->buffer);
+
+  if(msg == NULL)
+    logwrite(LOG_NOTICE, "host=%s %s\n",
+	     psb->remote_host, err_str);
+  else
+    logwrite(LOG_NOTICE, "%s == host=%s %s\n",
+	     msg->uid, psb->remote_host, err_str);
+
+  g_free(err_str);
 }
 
 smtp_base *smtp_out_open(gchar *host, gint port, GList *resolve_list)
@@ -425,17 +447,36 @@ smtp_base *smtp_out_open(gchar *host, gint port, GList *resolve_list)
 
   DEBUG(5) debugf("smtp_out_open entered, host = %s\n", host);
 
-  if(addr = connect_resolvelist(&sock, host, port, resolve_list)){
+  if((addr = connect_resolvelist(&sock, host, port, resolve_list))){
     /* create structure to hold status data: */
     psb = create_smtpbase(sock);
     psb->remote_host = addr->name;
 
     DEBUG(5){
       struct sockaddr_in name;
-      int len = sizeof(struct sockaddr_in);
+      int len = sizeof(struct sockaddr);
       getsockname(sock, &name, &len);
       debugf("socket: name.sin_addr = %s\n", inet_ntoa(name.sin_addr));
     }
+    return psb;
+  }
+
+  return NULL;
+}
+
+smtp_base *smtp_out_open_child(gchar *cmd)
+{
+  smtp_base *psb;
+  gint sock;
+
+  DEBUG(5) debugf("smtp_out_open_child entered, cmd = %s\n", cmd);
+
+  sock = child(cmd);
+
+  if(sock > 0){
+    psb = create_smtpbase(sock);
+    psb->remote_host = NULL;
+
     return psb;
   }
 
@@ -449,7 +490,7 @@ gboolean smtp_out_rset(smtp_base *psb)
   fprintf(psb->out, "RSET\r\n"); fflush(psb->out);
   DEBUG(4) debugf("RSET\n");
 
-  if(ok = read_response(psb, SMTP_CMD_TIMEOUT))
+  if((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
     if(check_response(psb, FALSE))
       return TRUE;
 
@@ -458,16 +499,89 @@ gboolean smtp_out_rset(smtp_base *psb)
   return FALSE;
 }
 
+#ifdef ENABLE_AUTH
+
+gboolean smtp_out_auth(smtp_base *psb)
+{
+  gboolean ok = FALSE;
+  gint i = 0;
+  while(psb->auth_names[i]){
+    if(strcasecmp(psb->auth_names[i], psb->auth_name) == 0)
+      break;
+    i++;
+  }
+  if(psb->auth_names[i]){
+    if(strcasecmp(psb->auth_name, "cram-md5") == 0){
+      fprintf(psb->out, "AUTH %s\r\n", psb->auth_names[i]); fflush(psb->out);
+      DEBUG(4) debugf("AUTH %s\n", psb->auth_names[i]);
+      if((ok = read_response(psb, SMTP_CMD_TIMEOUT))){
+        if((ok = check_response(psb, TRUE))){
+          gchar *chall64 = get_response_arg(&(psb->buffer[4]));
+          gint chall_size;
+          gchar *chall = base64_decode(chall64, &chall_size);
+          guchar digest[16], *reply64, *reply;
+          gchar digest_string[33];
+          gint i;
+          
+          DEBUG(5) debugf("encoded challenge = %s\n", chall64);
+          DEBUG(5) debugf("decoded challenge = %s, size = %d\n", chall, chall_size);
+          
+          DEBUG(5) debugf("secret = %s\n", psb->auth_secret);
+          
+          hmac_md5(chall, chall_size, psb->auth_secret, strlen(psb->auth_secret), digest);
+          
+          for(i = 0; i < 16; i++)
+            sprintf(&(digest_string[i+i]), "%02x", (unsigned int)(digest[i]));
+          digest_string[32] = 0;
+          
+          DEBUG(5) debugf("digest = %s\n", digest_string);
+          
+          reply = g_strdup_printf("%s %s", psb->auth_login, digest_string);
+          DEBUG(5) debugf("unencoded reply = %s\n", reply);
+
+          reply64 = base64_encode(reply, strlen(reply));
+          DEBUG(5) debugf("encoded reply = %s\n", reply64);
+          
+          fprintf(psb->out, "%s\r\n", reply64); fflush(psb->out);
+          DEBUG(4) debugf("%s\n", reply64);
+          
+          if((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
+            ok = check_response(psb, FALSE);
+          
+          g_free(reply64);
+          g_free(reply);
+          g_free(chall);
+          g_free(chall64);
+        }
+      }
+    }else{
+      logwrite(LOG_ERR, "auth method %s not supported\n",  psb->auth_name);
+    }
+  }else{
+    logwrite(LOG_ERR, "no auth method %s found.\n", psb->auth_name);
+  }
+  return ok;
+}
+
+#endif
+
 gboolean smtp_out_init(smtp_base *psb)
 {
   gboolean ok;
 
-  signal(SIGALRM, sig_timeout_handler);
-
-  if(ok = read_response(psb, SMTP_INITIAL_TIMEOUT)){
-    if(ok = check_init_response(psb)){
+  if((ok = read_response(psb, SMTP_INITIAL_TIMEOUT))){
+    if((ok = check_init_response(psb))){
  
-      ok = smtp_helo(psb, psb->helo_name);
+      if((ok = smtp_helo(psb, psb->helo_name))){
+#ifdef ENABLE_AUTH
+	if(psb->auth_name && psb->use_auth){
+	  /* we completely disregard the response of server here. If
+             authentication fails, the server will complain later
+             anyway. I know, this is not polite... */
+	  smtp_out_auth(psb);
+	}
+#endif
+      }
     }
   }
   if(!ok)
@@ -479,12 +593,10 @@ gint smtp_out_msg(smtp_base *psb,
 		  message *msg, address *return_path, GList *rcpt_list,
 		  GList *hdr_list)
 {
-  gint i, tmp, size;
-  /* gshort sock;*/
-  gboolean ok;
-  void (*old_sighandler)(int);
+  gint i, size;
+  gboolean ok = TRUE;
   int rcpt_cnt;
-  int rcpt_accept;
+  int rcpt_accept = 0;
 
   DEBUG(5) debugf("smtp_out_msg entered\n");
 
@@ -497,14 +609,26 @@ gint smtp_out_msg(smtp_base *psb,
     rcpt_list = msg->rcpt_list;
   rcpt_cnt = g_list_length(rcpt_list);
 
-  size = calc_size(msg, TRUE);
-  smtp_cmd_mailfrom(psb, return_path,
-		    psb->use_size ? 
-		    size + SMTP_SIZE_ADD : 0);
-      
-  if(!psb->use_pipelining){
-    if(ok = read_response(psb, SMTP_CMD_TIMEOUT))
-      ok = check_response(psb, FALSE);
+  size = msg_calc_size(msg, TRUE);
+
+  /* respect maximum size given by server: */
+  if((psb->max_size > 0) && (size > psb->max_size)){
+    logwrite(LOG_WARNING,
+	     "%s == host=%s message size (%d) > fixed maximum message size of server (%d)",
+	     msg->uid, psb->remote_host, size, psb->max_size);
+    psb->error = smtp_cancel;
+    ok = FALSE;
+  }
+
+  if(ok){
+    smtp_cmd_mailfrom(psb, return_path,
+		      psb->use_size ? 
+		      size + SMTP_SIZE_ADD : 0);
+    
+    if(!psb->use_pipelining){
+      if((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
+	ok = check_response(psb, FALSE);
+    }
   }
   if(ok){
     GList *rcpt_node;
@@ -516,7 +640,7 @@ gint smtp_out_msg(smtp_base *psb,
       address *rcpt = (address *)(rcpt_node->data);
       smtp_cmd_rcptto(psb, rcpt);
       if(!psb->use_pipelining){
-	if(ok = read_response(psb, SMTP_CMD_TIMEOUT))
+	if((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
 	  if(check_response(psb, FALSE)){
 	    rcpt_accept++;
 	    adr_mark_delivered(rcpt);
@@ -556,14 +680,14 @@ gint smtp_out_msg(smtp_base *psb,
 	   all in between were RCPT TO:
 	*/
 	/* response to MAIL FROM: */
-	if(ok = read_response(psb, SMTP_CMD_TIMEOUT)){
-	  if(ok = check_response(psb, FALSE)){
+	if((ok = read_response(psb, SMTP_CMD_TIMEOUT))){
+	  if((ok = check_response(psb, FALSE))){
 
 	    /* response(s) to RCPT TO:
 	       this is very similar to the sequence above for no pipeline
 	    */
 	    for(i = 0; i < rcpt_cnt; i++){
-	      if(ok = read_response(psb, SMTP_CMD_TIMEOUT)){
+	      if((ok = read_response(psb, SMTP_CMD_TIMEOUT))){
 		address *rcpt = g_list_nth_data(rcpt_list, i);
 		if(check_response(psb, FALSE)){
 		  rcpt_accept++;
@@ -646,6 +770,7 @@ gint smtp_out_msg(smtp_base *psb,
     /* log the failure: */
     smtp_out_log_failure(psb, msg);
   }
+  return rcpt_accept;
 }
 
 gboolean smtp_out_quit(smtp_base *psb)
@@ -655,6 +780,8 @@ gboolean smtp_out_quit(smtp_base *psb)
   DEBUG(4) debugf("QUIT\n");
 
   signal(SIGALRM, SIG_DFL);
+
+  return TRUE;
 }
   
 gint smtp_deliver(gchar *host, gint port, GList *resolve_list,
@@ -664,19 +791,22 @@ gint smtp_deliver(gchar *host, gint port, GList *resolve_list,
 {
   smtp_base *psb;
   smtp_error err;
-  mxip_addr *addr;
 
   DEBUG(5) debugf("smtp_deliver entered\n");
 
-  if(psb = smtp_out_open(host, port, resolve_list)){
+  if(return_path == NULL)
+    return_path = msg->return_path;
 
+  if((psb = smtp_out_open(host, port, resolve_list))){
+    set_heloname(psb, return_path->domain, TRUE);
     /* initiate connection, send message and quit: */
     if(smtp_out_init(psb)){
       smtp_out_msg(psb, msg, return_path, rcpt_list, NULL);
       if(psb->error == smtp_ok ||
 	 (psb->error == smtp_fail) ||
 	 (psb->error == smtp_trylater) ||
-	 (psb->error == smtp_syntax))
+	 (psb->error == smtp_syntax) ||
+	 (psb->error == smtp_cancel))
 	
 	smtp_out_quit(psb);
     }

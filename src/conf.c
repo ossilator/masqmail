@@ -30,13 +30,13 @@ void init_conf()
     struct passwd *passwd;
     struct group *group;
 
-    if(passwd = getpwnam(DEF_MAIL_USER))
+    if((passwd = getpwnam(DEF_MAIL_USER)))
       conf.mail_uid = passwd->pw_uid;
     else{
       fprintf(stderr, "user %s not found! (terminating)\n", DEF_MAIL_USER);
       exit(EXIT_FAILURE);
     }
-    if(group = getgrnam(DEF_MAIL_GROUP))
+    if((group = getgrnam(DEF_MAIL_GROUP)))
       conf.mail_gid = group->gr_gid;
     else{
       fprintf(stderr, "group %s not found! (terminating)\n", DEF_MAIL_GROUP);
@@ -88,7 +88,7 @@ GList *parse_list_file(gchar *fname)
   GList *list = NULL;
   FILE *fptr;
 
-  if(fptr = fopen(fname, "rt")){
+  if((fptr = fopen(fname, "rt"))){
     gchar buf[256];
 
     while(!feof(fptr)){
@@ -99,7 +99,11 @@ GList *parse_list_file(gchar *fname)
       }
     }
     fclose(fptr);
+  }else{
+    logwrite(LOG_ALERT, "could not open %s for reading: %s\n", fname, strerror(errno));
+    exit(EXIT_FAILURE);
   }
+
   return list;
 }
 
@@ -137,13 +141,40 @@ GList *parse_list(gchar *line, gboolean read_file)
 }
 
 static
+GList *parse_resolve_list(gchar *line)
+{
+  GList *list;
+  GList *list_node;
+  GList *res_list = NULL;
+
+  list = parse_list(line, FALSE);
+  if(list){
+    foreach(list, list_node){
+      gchar *item = (gchar *)(list_node->data);
+      if(strcmp(item, "byname") == 0){
+	res_list = g_list_append(res_list, resolve_byname);
+      }else if(strcmp(item, "dns_a") == 0){
+	res_list = g_list_append(res_list, resolve_dns_a);
+      }else if(strcmp(item, "dns_mx") == 0){
+	res_list = g_list_append(res_list, resolve_dns_mx);
+      }else{
+	logwrite(LOG_ALERT, "unknown resolver %s\n", item);
+	exit(EXIT_FAILURE);
+      }
+      g_free(item);
+    }
+    g_list_free(list);
+  }
+  return res_list;
+}
+
+static
 interface *parse_interface(gchar *line, gint def_port)
 {
-  gchar *adr;
-  gchar *port;
   gchar buf[256];
   gchar *p, *q;
   interface *iface;
+  struct hostent *hp;
 
   DEBUG(6) fprintf(stderr, "parse_interface: %s\n", line);
 
@@ -163,6 +194,50 @@ interface *parse_interface(gchar *line, gint def_port)
     iface->port = def_port;
 
   return iface;
+}
+
+static
+struct in_addr *parse_network(gchar *line, gint def_port)
+{
+  gchar buf[256];
+  gchar *p, *q;
+  interface *iface;
+  struct hostent *hp;
+  struct in_addr addr, mask_addr, net_addr, *p_net_addr;
+  guint n;
+
+  DEBUG(6) fprintf(stderr, "parse_network: %s\n", line);
+
+  p = line;
+  q = buf;
+  while((*p != 0) && (*p != '/'))
+    *(q++) = *(p++);
+  *q = 0;
+
+  if((addr.s_addr = inet_addr(buf)) != INADDR_NONE){
+    if(*p){
+      guint i;
+      p++;
+      i = atoi(p);
+      if((i >= 0) && (i <= 32))
+	n = i ? ~((1 << (32 - i)) - 1) : 0;
+      else{
+	fprintf(stderr, "'%d' is not a valid net mask (must be >= 0 and <= 32)\n", i);
+	exit(EXIT_FAILURE);
+      }
+    }else
+      n = 0;
+    
+    mask_addr.s_addr = htonl(n);
+    net_addr.s_addr = mask_addr.s_addr & addr.s_addr;
+  }else{
+    fprintf(stderr, "'%s' is not a valid address (must be ip)\n", buf);
+    exit(EXIT_FAILURE);
+  }
+
+  p_net_addr = g_malloc(sizeof(struct in_addr));
+  p_net_addr->s_addr = net_addr.s_addr;
+  return p_net_addr;
 }
 
 static
@@ -251,7 +326,7 @@ gboolean read_rval(FILE *in, gchar *buf, gint size)
 
   c = fgetc(in);
   if(c != '\"'){
-    while((isalnum(c) || c == '_' || c == '-' || c == '.' || c == '/')
+    while((isalnum(c) || c == '_' || c == '-' || c == '.' || c == '/' || c == '@')
 	  && (ptr < buf+size)
 	  && (c != EOF)
 	  ){
@@ -261,11 +336,16 @@ gboolean read_rval(FILE *in, gchar *buf, gint size)
     *ptr = 0;
     ungetc(c, in);
   }else{
+    gboolean escape = FALSE;
     c = fgetc(in);
-    while((c != '\"')
-	  && (ptr < buf+size)){
+    while(((c != '\"') || escape) && (ptr < buf+size)){
       if(c != '\n'){ /* ignore line breaks */
-	*ptr = c; ptr++;
+	if((c == '\\') && (!escape)){
+	  escape = TRUE;
+	}else{
+	  *ptr = c; ptr++;
+	  escape = FALSE;
+	}
       }
       c = fgetc(in);
     }
@@ -295,7 +375,7 @@ gboolean read_statement(FILE *in,
 
   if(read_lval(in, lval, lsize)){
     DEBUG(6) fprintf(stderr, "lval = %s\n", lval);
-    if(c = fgetc(in) == '='){
+    if((c = fgetc(in) == '=')){
       if(read_rval(in, rval, rsize)){
 	DEBUG(6) fprintf(stderr, "rval = %s\n", rval);
 	return TRUE;
@@ -309,29 +389,24 @@ gboolean read_statement(FILE *in,
 
 gboolean read_conf(gchar *filename)
 {
-  ssize_t len = 256;
   FILE *in;
+  int dbg_lvl = conf.debug_level;
 
-  conf.run_as_user = FALSE;
+  memset(&conf, 0, sizeof(masqmail_conf));
+  conf.debug_level = dbg_lvl;
 
-  conf.use_syslog = FALSE;
+  conf.orig_uid = getuid();
+  conf.orig_gid = getgid();
+
   conf.log_max_pri = 7;
-  conf.do_queue = FALSE;
 
-  conf.alias_file = NULL;
+  conf.remote_port = 25;
 
-  conf.local_nets = NULL;
-
-  conf.local_net_routes = NULL;
-  conf.connect_routes = NULL;
-
-  conf.online_detect = NULL;
-  conf.online_file = NULL;
-  conf.mserver_iface = NULL;
+  conf.alias_local_cmp = strcmp;
 
   init_conf();
 
-  if(in = fopen(filename, "r")){
+  if((in = fopen(filename, "r"))){
     gchar lval[256], rval[2048];
     while(read_statement(in, lval, 256, rval, 2048)){
       if(strcmp(lval, "debug_level") == 0){
@@ -358,8 +433,19 @@ gboolean read_conf(gchar *filename)
 	conf.local_nets = parse_list(rval, FALSE);
       else if(strcmp(lval, "alias_file") == 0){
 	conf.alias_file = g_strdup(rval);
-      }
-      else if(strcmp(lval, "listen_addresses") == 0){
+      }else if(strcmp(lval, "alias_local_caseless") == 0){
+	conf.alias_local_cmp = parse_boolean(rval) ? strcasecmp : strcmp;
+      }else if(strcmp(lval, "mda") == 0){
+	conf.mda = g_strdup(rval);
+      }else if(strcmp(lval, "mda_fromline") == 0){
+	conf.mda_fromline = parse_boolean(rval);
+      }else if(strcmp(lval, "mda_fromhack") == 0){
+	conf.mda_fromhack = parse_boolean(rval);
+      }else if(strcmp(lval, "pipe_fromline") == 0){
+	conf.pipe_fromline = parse_boolean(rval);
+      }else if(strcmp(lval, "pipe_fromhack") == 0){
+	conf.pipe_fromhack = parse_boolean(rval);
+      }else if(strcmp(lval, "listen_addresses") == 0){
 	GList *node;
 	GList *tmp_list = parse_list(rval, FALSE);
 	    
@@ -372,22 +458,34 @@ gboolean read_conf(gchar *filename)
 	}
 	g_list_free(tmp_list);
       }
+      else if(strcmp(lval, "ident_trusted_nets") == 0){
+#ifdef ENABLE_IDENT
+	GList *node;
+	GList *tmp_list = parse_list(rval, FALSE);
+	    
+	conf.ident_trusted_nets = NULL;
+	foreach(tmp_list, node){
+	  conf.ident_trusted_nets =
+	    g_list_append(conf.ident_trusted_nets,
+			  parse_network((gchar *)(node->data), 25));
+	  g_free(node->data);
+	}
+	g_list_free(tmp_list);
+#else
+	fprintf(stderr, "%s ignored: not compiled with ident support\n", lval);
+#endif
+      }
       else if(strncmp(lval, "connect_route.", 14) == 0){
-	connect_route *route = g_malloc(sizeof(connect_route));
-	route->name = g_strdup(&(lval[14]));
-	route->filename = g_strdup(rval);
-	route->is_local_net = FALSE;
-	conf.connect_routes = g_list_append(conf.connect_routes, route);
+	route_file_list *rf_list = g_malloc(sizeof(route_file_list));
+	rf_list->name = g_strdup(&(lval[14]));
+	rf_list->file_list = parse_list(rval, FALSE);
+	conf.connect_routes = g_list_append(conf.connect_routes, rf_list);
       }
       else if(strcmp(lval, "local_net_route") == 0){
-	connect_route *route = create_local_route();
-	route->filename = g_strdup(rval);
-	if(read_route(route, TRUE))
-	  conf.local_net_routes =
-	    g_list_append(conf.local_net_routes, route);
-	else{
-	  g_free(route);
-	}
+	route_file_list *rf_list = g_malloc(sizeof(route_file_list));
+	rf_list->name = g_strdup("local_net");
+	rf_list->file_list = parse_list(rval, FALSE);
+	conf.local_net_routes = rf_list;
       }
       else if(strcmp(lval, "online_detect") == 0)
 	conf.online_detect = g_strdup(rval);
@@ -397,14 +495,20 @@ gboolean read_conf(gchar *filename)
 	conf.mserver_iface = parse_interface(rval, 224);
       else if(strcmp(lval, "do_queue") == 0)
 	conf.do_queue = parse_boolean(rval);
+      else if(strncmp(lval, "get.", 4) == 0){
+#ifdef ENABLE_POP3
+	table_pair *pair = g_malloc(sizeof(table_pair));
+	pair->key = g_strdup(&(lval[4]));
+	pair->value = (gpointer )g_strdup(rval);
+	conf.get_names = g_list_append(conf.get_names, pair);
+#else
+	fprintf(stderr, "get.<name> ignored: not compiled with pop support\n");
+#endif
+      }
       else
-	fprintf(stderr, "var '%s' not yet known, ignored\n", lval);
+	fprintf(stderr, "var '%s' not (yet) known, ignored\n", lval);
     }
     fclose(in);
-
-    if(conf.local_net_routes == NULL)
-      if(conf.local_nets != NULL)
-	conf.local_net_routes = g_list_append(NULL, create_local_route());
 
     return TRUE;
   }else
@@ -412,37 +516,32 @@ gboolean read_conf(gchar *filename)
   return FALSE;
 }
 
-gboolean read_route(connect_route *route, gboolean is_local_net)
+connect_route *read_route(gchar *filename, gboolean is_local_net)
 {
   gboolean ok = FALSE;
   FILE *in;
-  ssize_t len = 256;
+
+  connect_route *route = g_malloc(sizeof(connect_route));
+  memset(route, 0, sizeof(connect_route));
+
+  DEBUG(5) debugf("read_route, filename = %s\n", filename);
+
+  route->filename = g_strdup(filename);
+  route->name = g_strdup(filename); /* quick hack */
+
+  route->protocol = g_strdup("smtp");
 
   route->is_local_net = is_local_net;
 
-  route->mail_host = NULL;
-  route->do_correct_helo = FALSE;
-  route->allowed_mail_locals = NULL;
-  route->allowed_rcpt_domains = NULL;
-  route->not_allowed_rcpt_domains = NULL;
-
-  route->set_h_from_domain = NULL;
-  route->set_h_reply_to_domain = NULL;
-  route->set_return_path_domain = NULL;
-
-  route->map_h_from_addresses = NULL;
-  route->map_h_reply_to_addresses = NULL;
-  route->map_return_path_addresses = NULL;
-
-  route->expand_h_sender_domain = TRUE;
-
-  route->resolve_list = NULL;
-
-  if(in = fopen(route->filename, "r")){
+  if((in = fopen(route->filename, "r"))){
     gchar lval[256], rval[2048];
     while(read_statement(in, lval, 256, rval, 2048)){
-      if(strcmp(lval, "mail_host") == 0)
+      if(strcmp(lval, "protocol") == 0)
+	route->protocol = g_strdup(rval);
+      else if(strcmp(lval, "mail_host") == 0)
 	route->mail_host = g_strdup(rval);
+      else if(strcmp(lval, "wrapper") == 0)
+	route->wrapper = g_strdup(rval);
       else if(strcmp(lval, "do_correct_helo") == 0)
 	route->do_correct_helo = parse_boolean(rval);
       else if(strcmp(lval, "allowed_mail_locals") == 0)
@@ -504,6 +603,44 @@ gboolean read_route(connect_route *route, gboolean is_local_net)
       else if(strcmp(lval, "expand_h_sender_domain") == 0){
 	route->expand_h_sender_domain = parse_boolean(rval);	    
       }
+      else if(strcmp(lval, "expand_h_sender_address") == 0){
+	route->expand_h_sender_address = parse_boolean(rval);	    
+      }
+      else if(strcmp(lval, "resolve_list") == 0)
+	route->resolve_list = parse_resolve_list(rval);
+#ifdef ENABLE_AUTH
+      else if(strcmp(lval, "auth_name") == 0){
+	route->auth_name = g_strdup(rval);
+      }
+      else if(strcmp(lval, "auth_login") == 0){
+	route->auth_login = g_strdup(rval);
+      }
+      else if(strcmp(lval, "auth_secret") == 0){
+	route->auth_secret = g_strdup(rval);
+      }
+#else
+      else if((strcmp(lval, "auth_name") == 0) || (strcmp(lval, "auth_login") == 0) || (strcmp(lval, "auth_secret") == 0)){
+	logwrite(LOG_WARNING, "%s ignored: not compiled with auth support.\n", lval);
+      }
+#endif
+      else if(strcmp(lval, "pop3_login") == 0){
+#ifdef ENABLE_POP3
+	route->pop3_login = g_strdup(rval);
+#else
+	logwrite(LOG_WARNING, "pop3_login ignored: not compiled with pop support.\n");
+#endif
+      }
+      else if(strcmp(lval, "pipe") == 0){
+	route->pipe = g_strdup(rval);
+      }
+      else if(strcmp(lval, "pipe_fromline") == 0){
+	route->pipe_fromline = parse_boolean(rval);
+      }
+      else if(strcmp(lval, "pipe_fromhack") == 0){
+	route->pipe_fromhack = parse_boolean(rval);
+      }
+      else
+	logwrite(LOG_WARNING, "var '%s' not (yet) known, ignored\n", lval);
     }
 
     if(route->resolve_list == NULL){
@@ -521,12 +658,154 @@ gboolean read_route(connect_route *route, gboolean is_local_net)
     }
     fclose(in);
     ok = TRUE;
+
+    /* warn user about misconfigurations: */
+    if((route->map_h_from_addresses != NULL) && (route->set_h_from_domain != NULL)){
+      logwrite(LOG_WARNING, "'map_h_from_addresses' overrides 'set_h_from_domain'\n");
+      g_free(route->set_h_from_domain);
+      route->set_h_from_domain = NULL;
+    }
+    if((route->map_h_reply_to_addresses != NULL) && (route->set_h_reply_to_domain != NULL)){
+      logwrite(LOG_WARNING, "'map_h_reply_to_addresses' overrides 'set_h_reply_to_domain'\n");
+      g_free(route->set_h_reply_to_domain);
+      route->set_h_reply_to_domain = NULL;
+    }
   }else{
-    logwrite(LOG_ALERT, "could not open route file %s:",
+    logwrite(LOG_ALERT, "could not open route file %s: %s\n",
 	     route->filename, strerror(errno));
   }
-  return ok;
+
+  if(!ok){
+    g_free(route);
+    route = NULL;
+  }
+
+  return route;
 }
+
+static
+void _g_list_free_all(GList *list)
+{
+  GList *node;
+  if(list){
+    foreach(list, node)
+      g_free(node->data);
+    g_list_free(list);
+  }
+}
+
+void destroy_route(connect_route *r)
+{
+  if(r->filename) g_free(r->filename);
+  if(r->protocol) g_free(r->protocol);
+  if(r->mail_host) g_free(r->mail_host);
+  if(r->wrapper) g_free(r->wrapper);
+  _g_list_free_all(r->allowed_mail_locals);
+  _g_list_free_all(r->not_allowed_mail_locals);
+  _g_list_free_all(r->allowed_rcpt_domains);
+  _g_list_free_all(r->not_allowed_rcpt_domains);
+  if(r->set_h_from_domain) g_free(r->set_h_from_domain);
+  if(r->set_h_reply_to_domain) g_free(r->set_h_reply_to_domain);
+  if(r->set_return_path_domain) g_free(r->set_return_path_domain);
+  if(r->map_h_reply_to_addresses) destroy_table(r->map_h_reply_to_addresses);
+  if(r->resolve_list) g_list_free(r->resolve_list);
+#ifdef ENABLE_AUTH
+  if(r->auth_name) g_free(r->auth_name);
+  if(r->auth_login) g_free(r->auth_login);
+  if(r->auth_secret) g_free(r->auth_secret);
+#endif
+#ifdef ENABLE_POP3
+  if(r->pop3_login) g_free(r->pop3_login);
+#endif
+  if(r->pipe) g_free(r->pipe);
+  g_free(r);
+}
+
+GList *read_route_list(route_file_list *rf_list, gboolean is_local_net)
+{
+  GList *list = NULL;
+  GList *node;
+
+  DEBUG(5) debugf("read_route_list, rf_list->name = %s\n", rf_list->name);
+
+  foreach(rf_list->file_list, node){
+    gchar *fname = (gchar *)(node->data);
+    connect_route *route = read_route(fname, is_local_net);
+    if(route)
+      list = g_list_append(list, route);
+    else
+      logwrite(LOG_ALERT, "could not read route configuration %s\n", fname);
+  }
+  return list;
+}
+
+void destroy_route_list(GList *list)
+{
+  GList *node;
+
+  foreach(list, node){
+    connect_route *route = (connect_route *)(node->data);
+    destroy_route(route);
+  }
+  g_list_free(list);
+}
+
+#ifdef ENABLE_POP3
+
+get_conf *read_get_conf(gchar *filename)
+{
+  FILE *in;
+
+  get_conf *gc = g_malloc(sizeof(get_conf));
+  memset(gc, 0, sizeof(get_conf));
+
+  gc->protocol = g_strdup("pop3");
+  gc->server_port = 110;
+
+  if((in = fopen(filename, "r"))){
+    gchar lval[256], rval[2048];
+    while(read_statement(in, lval, 256, rval, 2048)){
+      if(strcmp(lval, "protocol") == 0)
+	gc->protocol = g_strdup(rval);
+      else if(strcmp(lval, "server") == 0)
+	gc->server_name = g_strdup(rval);
+      else if(strcmp(lval, "port") == 0)
+	gc->server_port = atoi(rval);
+      else if(strcmp(lval, "wrapper") == 0)
+	gc->wrapper = g_strdup(rval);
+      else if(strcmp(lval, "user") == 0)
+	gc->login_user = g_strdup(rval);
+      else if(strcmp(lval, "pass") == 0)
+	gc->login_pass = g_strdup(rval);
+      else if(strcmp(lval, "address") == 0)
+	gc->address = create_address_qualified(rval, TRUE, conf.host_name);
+      else if(strcmp(lval, "do_keep") == 0)
+	gc->do_keep = parse_boolean(rval);
+      else if(strcmp(lval, "do_uidl") == 0)
+	gc->do_uidl = parse_boolean(rval);
+      else if(strcmp(lval, "max_size") == 0)
+	gc->max_size = atoi(rval);
+      else if(strcmp(lval, "resolve_list") == 0)
+	gc->resolve_list = parse_resolve_list(rval);
+      else
+	logwrite(LOG_WARNING, "var '%s' not (yet) known, ignored\n", lval);
+    }
+    fclose(in);
+
+    if(gc->resolve_list == NULL){
+      gc->resolve_list =
+	g_list_append(NULL, resolve_dns_a);
+    }
+
+    return gc;
+  }
+  logwrite(LOG_ALERT, "could not open get file %s: %s\n", filename, strerror(errno));
+
+  g_free(gc);
+  return NULL;
+}
+
+#endif
 
 connect_route *create_local_route()
 {
@@ -535,12 +814,12 @@ connect_route *create_local_route()
   route = g_malloc(sizeof(connect_route));
   if(route){
     memset(route, 0, sizeof(connect_route));
+    route->protocol = g_strdup("smtp");
     route->is_local_net = TRUE;
-    route->name = g_strdup("local route (default)");
+    route->name = g_strdup("local_net (default)");
     route->expand_h_sender_domain = TRUE;
     route->resolve_list =
       g_list_append(NULL, resolve_byname);
   }
   return route;
 }
-    

@@ -35,7 +35,6 @@ static union {
   HEADER hdr;
   unsigned char buf[PACKETSZ];
 } response;
-static int resp_len;
 static unsigned char *resp_end;
 static unsigned char *resp_pos;
 
@@ -137,7 +136,7 @@ int dns_getip(guint32 *ip)
 {
   int ret;
 
-  if(ret = dns_next()) return ret;
+  if((ret = dns_next())) return ret;
 
   if (rr_type == T_A){
     if (rr_dlen < 4)
@@ -157,7 +156,7 @@ int dns_getmx(int *pref)
 {
   int ret;
 
-  if(ret = dns_next()) return ret;
+  if((ret = dns_next())) return ret;
 
   if (rr_type == T_MX){
     if (rr_dlen < 3)
@@ -175,12 +174,13 @@ int dns_getmx(int *pref)
   return 0;
 }
 
+/*
 static
 int dns_getname(int type)
 {
   int ret;
 
-  if(ret = dns_next()) return ret;
+  if((ret = dns_next())) return ret;
 
   if (rr_type == type){
     if (dn_expand(response.buf, resp_end, resp_pos, name, MAX_DNSNAME) < 0)
@@ -193,6 +193,7 @@ int dns_getname(int type)
   resp_pos += rr_dlen;
   return 0;
 }
+*/
 
 static
 int dns_look_ip(gchar *domain, guint32 *ip)
@@ -229,7 +230,6 @@ int dns_look_ip(gchar *domain, guint32 *ip)
 
 GList *resolve_dns_a(GList *list, gchar *domain)
 {
-  GList *node;
   int ret;
 
   DEBUG(5) debugf("DNS: resolve_dns_a entered\n");
@@ -268,6 +268,7 @@ GList *resolve_dns_mx(GList *list, gchar *domain)
   DEBUG(5) debugf("DNS: resolve_dns_mx entered\n");
 
   if(dns_resolve(domain, T_MX, TRUE) == 0){
+    GList *node_next;
     mxip_addr mxip;
     while((ret = dns_getmx(&(mxip.pref))) != 2){
       if(ret == 1){
@@ -278,7 +279,7 @@ GList *resolve_dns_mx(GList *list, gchar *domain)
       }
     }
 
-    DEBUG(5) debugf("found %d mx records\n", cnt);
+    DEBUG(5) debugf("DNS: found %d mx records\n", cnt);
 
     /* to randomize sequences with equal pref values,
        we temporarily 'misused' the ip field and
@@ -286,23 +287,21 @@ GList *resolve_dns_mx(GList *list, gchar *domain)
     */
     list = g_list_sort(list, _mx_sort_func);
 
-    /* this is really not necessary. When I started coding this,
-       I did not understand much about resolving at this level.
-       Now I see that there is much room for profiling. But till
-       now I am too lazy...*/
-    /* and CNAME resolving has to be added as well. */
-    
-    foreach(list, node){
+    /* CNAME resolving has to be added as well. */
+
+    for(node = g_list_first(list);
+	node != NULL;
+	node = node_next){
+
       mxip_addr *p_mxip = (mxip_addr *)(node->data);
-      /*
-      if(dns_resolve(p_mxip->name, T_A, FALSE) == 0){
-	dns_getip(&(p_mxip->ip));
-      }else{
-	p_mxip->ip = 0;
+      node_next = g_list_next(node);
+
+      if(dns_look_ip(p_mxip->name, &(p_mxip->ip)) != 0){
+	DEBUG(1) debugf("DNS: could not resolve target of mx %s\n", p_mxip->name);
+	list = g_list_remove_link(list, node);
+	g_free(node->data);
+	g_list_free_1(node);
       }
-      */
-      if(dns_look_ip(p_mxip->name, &(p_mxip->ip)) != 0)
-	p_mxip->ip = 0;
     }
   }
   return list;
@@ -316,10 +315,10 @@ GList *resolve_byname(GList *list, gchar *domain)
 
   DEBUG(5) debugf("DNS: resolve_byname entered\n");
 
-  if(hent = gethostbyname(domain)){
+  if((hent = gethostbyname(domain))){
     char *haddr;
     int i = 0;
-    while(haddr = hent->h_addr_list[i++]){
+    while((haddr = hent->h_addr_list[i++])){
       mxip_addr mxip;
       mxip.ip = *(guint32 *)(haddr);
       mxip.pref = 0;

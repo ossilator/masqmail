@@ -1,7 +1,4 @@
 /* smtp_out.h, Copyright (C) Oliver Kurth,
- * part of:
- *   GnoMail
- *   Copyright (C) 1999 Jussi Junni
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
-
-/*
- * send bugs to: okurth@uni-sw.gwdg.de
  */
 
 #include <unistd.h>
@@ -44,8 +37,10 @@ enum _smtp_error{
   smtp_fail,     /* server responded with 5xx */
   smtp_timeout,  /* connection timed out */
   smtp_eof,      /* got unexpected EOF */
-  smtp_syntax    /* unexpected response */
+  smtp_syntax,   /* unexpected response */
+  smtp_cancel    /* we gave up (eg. size) */
 } smtp_error;
+
 
 typedef
 struct _smtp_base{
@@ -64,13 +59,25 @@ struct _smtp_base{
   gboolean use_esmtp;
   gboolean use_size;
   gboolean use_pipelining;
+  gboolean use_auth;
+  
+  gint max_size;
+
+  gchar **auth_names;
+
+  gchar *auth_name;
+  gchar *auth_login;
+  gchar *auth_secret;
 
   smtp_error error;
 
 } smtp_base;
 
+gchar *set_heloname(smtp_base *psb, gchar *default_name, gboolean do_correct);
+gboolean set_auth(smtp_base *psb, gchar *name, gchar *login, gchar *secret);
 void destroy_smtpbase(smtp_base *psb);
 smtp_base *smtp_out_open(gchar *host, gint port, GList *resolve_list);
+smtp_base *smtp_out_open_child(gchar *cmd);
 gboolean smtp_out_rset(smtp_base *psb);
 gboolean smtp_out_init(smtp_base *psb);
 gint smtp_out_msg(smtp_base *psb,

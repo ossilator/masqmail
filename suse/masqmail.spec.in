@@ -1,0 +1,118 @@
+Summary: An offline mail server with pop3 client support
+Name: masqmail
+Version: @VERSION@
+Release: 1
+Copyright: GPL
+Group: Networking/Daemons
+Distribution: innominate
+Packager: Oliver Kurth <kurth@innominate.de>
+Source: http://www.innominate.org/~oku/masqmail/download/MasqMail-@VERSION@.tar.gz
+BuildRoot: /var/tmp/masqmail-root/
+
+%description
+MasqMail is a mail server designed for hosts that do not have a
+permanent internet connection eg. a home network or a single host at
+home. It has special support for connections to different ISPs. It
+replaces sendmail or other MTAs such as qmail or exim.
+
+%prep
+
+%setup -n MasqMail-@VERSION@
+
+%build
+#
+#choose the a line or a combination:
+#
+#CFLAGS="$RPM_OPT_FLAGS" ./configure --disable-pop3
+#CFLAGS="$RPM_OPT_FLAGS" ./configure --enable-auth
+#CFLAGS="$RPM_OPT_FLAGS" ./configure --enable-ident
+CFLAGS="$RPM_OPT_FLAGS" ./configure
+
+CFLAGS="$RPM_OPT_FLAGS" make
+
+%install
+if [ -d $RPM_BUILD_ROOT ] ; then
+	rm -rf $RPM_BUILD_ROOT
+fi
+
+# setup directory environment:
+mkdir $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/var/spool/masqmail
+mkdir -p $RPM_BUILD_ROOT/var/spool/masqmail/input
+mkdir -p $RPM_BUILD_ROOT/var/spool/masqmail/popuidl
+mkdir -p $RPM_BUILD_ROOT/usr/sbin
+mkdir -p $RPM_BUILD_ROOT/usr/bin
+mkdir -p $RPM_BUILD_ROOT/usr/lib
+mkdir -p $RPM_BUILD_ROOT/etc
+mkdir -p $RPM_BUILD_ROOT/etc/masqmail
+mkdir -p $RPM_BUILD_ROOT/var/masqmail
+
+# install
+make DESTDIR=$RPM_BUILD_ROOT install
+/usr/bin/strip $RPM_BUILD_ROOT/usr/sbin/masqmail
+
+# sendmail links
+ln -fs './masqmail' $RPM_BUILD_ROOT/usr/sbin/sendmail
+ln -fs '../sbin/masqmail' $RPM_BUILD_ROOT/usr/bin/mailq
+ln -fs '../sbin/masqmail' $RPM_BUILD_ROOT/usr/lib/sendmail
+
+# SuSE specific startup stuff:
+mkdir -p $RPM_BUILD_ROOT/sbin/init.d/
+mkdir -p $RPM_BUILD_ROOT/sbin/init.d/rc2.d/
+mkdir -p $RPM_BUILD_ROOT/sbin/init.d/rc3.d/
+cp -p suse/masqmail $RPM_BUILD_ROOT/sbin/init.d/
+ln -fs '../masqmail' $RPM_BUILD_ROOT/sbin/init.d/rc2.d/S20masqmail
+ln -fs '../masqmail' $RPM_BUILD_ROOT/sbin/init.d/rc2.d/K20masqmail
+ln -fs '../masqmail' $RPM_BUILD_ROOT/sbin/init.d/rc3.d/S20masqmail
+ln -fs '../masqmail' $RPM_BUILD_ROOT/sbin/init.d/rc3.d/K20masqmail
+ln -fs '../../sbin/init.d/masqmail' $RPM_BUILD_ROOT/usr/sbin/rcmasqmail
+
+# configuration examples:
+cp examples/masqmail.conf $RPM_BUILD_ROOT/etc/
+cp examples/example.route $RPM_BUILD_ROOT/etc/masqmail/
+cp examples/example.get $RPM_BUILD_ROOT/etc/masqmail/
+
+#cp docs/man/masqmail.8 $RPM_BUILD_ROOT/usr/man/man8/
+#cp docs/man/masqmail.conf.5 $RPM_BUILD_ROOT/usr/man/man5/
+#cp docs/man/masqmail.route.5 $RPM_BUILD_ROOT/usr/man/man5/
+#cp docs/man/masqmail.get.5 $RPM_BUILD_ROOT/usr/man/man5/
+#cp docs/man/masqmail.aliases.5 $RPM_BUILD_ROOT/usr/man/man5/
+
+# gzip the man pages:
+gzip $RPM_BUILD_ROOT/usr/man/man8/masqmail.8
+gzip $RPM_BUILD_ROOT/usr/man/man5/masqmail.conf.5
+gzip $RPM_BUILD_ROOT/usr/man/man5/masqmail.route.5
+gzip $RPM_BUILD_ROOT/usr/man/man5/masqmail.get.5
+gzip $RPM_BUILD_ROOT/usr/man/man5/masqmail.aliases.5
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+/usr/sbin/masqmail
+/usr/sbin/sendmail
+/usr/bin/mailq
+/usr/lib/sendmail
+/sbin/init.d/masqmail
+/sbin/init.d/rc2.d/S20masqmail
+/sbin/init.d/rc2.d/K20masqmail
+/sbin/init.d/rc3.d/S20masqmail
+/sbin/init.d/rc3.d/K20masqmail
+/usr/sbin/rcmasqmail
+%config /etc/masqmail.conf
+//etc/masqmail/
+%doc README INSTALL COPYING NEWS
+/usr/man/man8/masqmail.8.gz
+/usr/man/man5/masqmail.conf.5.gz
+/usr/man/man5/masqmail.route.5.gz
+/usr/man/man5/masqmail.get.5.gz
+/usr/man/man5/masqmail.aliases.5.gz
+
+%defattr(-,mail,trusted)
+%dir /var/masqmail/
+%dir /var/spool/masqmail/
+%dir /var/spool/masqmail/popuidl/
+%dir /var/spool/masqmail/input/
+
+

@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999/2000 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,48 +27,31 @@ void sighup_handler(int sig)
   signal(SIGHUP, sighup_handler);
 }
 
-int make_socket (unsigned short port, const char *address)
-{
-  int sock;
-  struct sockaddr_in server;
-  struct hostent *hp;
-        
-  /* Create the socket. */
-  sock = socket (PF_INET, SOCK_STREAM, 0);
-  if (sock < 0){
-    logwrite(LOG_ALERT, "socket: (terminating): %s\n", strerror(errno));
-    exit (EXIT_FAILURE);
-  }
-        
-  /* get address */
-  if ((hp = gethostbyname(address)) == NULL) {
-    logwrite(LOG_ALERT, "local address '%s' unknown. (terminating)\n", address);
-    exit(EXIT_FAILURE);
-  }
-  memcpy(&server.sin_addr, hp->h_addr, hp->h_length);
-
-  /* bind the socket */
-  server.sin_family = AF_INET;
-  server.sin_port = htons (port);
-  if (bind (sock, (struct sockaddr *) &server, sizeof (server)) < 0){
-    logwrite(LOG_ALERT, "bind: (terminating): %s\n", strerror(errno));
-    exit (EXIT_FAILURE);
-  }
-        
-  return sock;
-}
-
 void accept_connect(int listen_sock, int sock, struct sockaddr_in* sock_addr)
 {
   pid_t pid;
   int dup_sock = dup(sock);
   FILE *out, *in;
   gchar *rem_host;
+  gchar *ident = NULL;
 
   rem_host = g_strdup(inet_ntoa(sock_addr->sin_addr));
+#ifdef ENABLE_IDENT
+  {
+    gchar *id = NULL;
+    if((id = (gchar *)ident_id(sock, 60))){
+      ident = g_strdup(id);
+    }
+    logwrite(LOG_NOTICE, "connect from host %s, port %hd ident=%s\n",
+	     rem_host,
+	     ntohs (sock_addr->sin_port),
+	     ident ? ident : "(unknown)");
+  }
+#else
   logwrite(LOG_NOTICE, "connect from host %s, port %hd\n",
 	 rem_host,
 	 ntohs (sock_addr->sin_port));
+#endif
 
   // start child for connection:
   signal(SIGCHLD, SIG_IGN);
@@ -78,20 +61,23 @@ void accept_connect(int listen_sock, int sock, struct sockaddr_in* sock_addr)
     out = fdopen(sock, "w");
     in = fdopen(dup_sock, "r");
     
-    smtp_in(in, out, rem_host);
+    smtp_in(in, out, rem_host, ident);
 
-    exit(EXIT_SUCCESS);
+    _exit(EXIT_SUCCESS);
   }else if(pid < 0){
     logwrite(LOG_WARNING, "could not fork for incoming smtp connection: %s\n",
 	     strerror(errno));
   }
-  //  fclose(out);
-  //  fclose(in);
+
+#ifdef ENABLE_IDENT
+  if(ident != NULL) g_free(ident);
+#endif
+
   close(sock);
   close(dup_sock);
 }
 
-void listen_port(int port, GList *iface_list, gint qival, char *argv[])
+void listen_port(GList *iface_list, gint qival, char *argv[])
 {
   int i;
   fd_set active_fd_set, read_fd_set;
@@ -99,23 +85,30 @@ void listen_port(int port, GList *iface_list, gint qival, char *argv[])
   time_t time_before, time_now;
   struct sockaddr_in clientname;
   size_t size;
-  GList *node;
+  GList *node, *node_next;
   int sel_ret;
 
   /* Create the sockets and set them up to accept connections. */
   FD_ZERO (&active_fd_set);
   for(node = g_list_first(iface_list);
       node;
-      node = g_list_next(node)){
+      node = node_next){
     interface *iface = (interface *)(node->data);
     int sock;
-    sock = make_socket (iface->port, iface->address);
+
+    node_next=g_list_next(node);
+    if ((sock = make_server_socket (iface))<0){
+      iface_list= g_list_remove_link(iface_list, node);
+      g_list_free_1(node);
+      continue;
+    }
     if (listen (sock, 1) < 0){
       logwrite(LOG_ALERT, "listen: (terminating): %s\n", strerror(errno));
       exit (EXIT_FAILURE);
     }
     logwrite(LOG_NOTICE, "listening on interface %s:%d\n",
 	     iface->address, iface->port);
+    DEBUG(5) debugf("sock = %d\n", sock);
     FD_SET (sock, &active_fd_set);
   }
         
@@ -137,7 +130,11 @@ void listen_port(int port, GList *iface_list, gint qival, char *argv[])
     }
   }
 
-  sel_ret = 0;
+  /*  sel_ret = 0;*/
+  time(&time_before);
+  time_before -= qival;
+  sel_ret = -1;
+
   while (1){
 
     /* if we were interrupted by an incoming connection (or a signal)
@@ -192,12 +189,10 @@ void listen_port(int port, GList *iface_list, gint qival, char *argv[])
 			(struct sockaddr *) &clientname,
 			&size);
 	  if (new < 0){
-	    logwrite(LOG_ALERT, "accept: (terminating): %s\n",
+	    logwrite(LOG_ALERT, "accept: (ignoring): %s\n",
 		     strerror(errno));
-	    exit (EXIT_FAILURE);
-	  }
-	
-	  accept_connect(sock, new, &clientname);
+	  }else
+	    accept_connect(sock, new, &clientname);
 	}
       }
     }else{
@@ -208,7 +203,7 @@ void listen_port(int port, GList *iface_list, gint qival, char *argv[])
       if((pid = fork()) == 0){
 	queue_run();
 
-	exit(EXIT_SUCCESS);
+	_exit(EXIT_SUCCESS);
       }
       else if(pid < 0){
 	logwrite(LOG_ALERT, "could not fork for queue run");

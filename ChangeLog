@@ -1,29 +1,157 @@
+0.1.16:
+	* PowerPC fix for varargs functions
+	* g_free fix in src/conf.c
+0.1.15:
+	* security fix, Debian Bug#102092: 'Privilege escalation in masqmail
+	piped alias handling': fixed by using set[ug]id instead of sete[ug]id
+	in peopen.c (noted by Colin Phipps)
+	* synced fix by Edouard G. Parmelan for listen.c: do not terminate on
+	'reset by peer'.
+0.1.14:
+	* fix of Debian Bug#92894 by Gregor Hoffleit
+	(correct error reply for lacking permissions)
+	* fixed 'last line missing' bug
+	* fixed spool locking bug: lock was deleted
+	if unsuccessful (unlocking it)
+0.1.13:
+	* qualify address for get configuration.
+	* better checking for valid From: address when retrieving mail via pop3
+	and this is used as the return path.
+0.1.12:
+	* previous fix auf AUTH broke it - reverted it partially and fixed it again
+	* bug fix in get.c: retrieval via pop from different server could cause mail to be lost
+0.1.11:
+	* bug fix in smtp_out.c: of AUTH methods supplied by server, only the first was recognized
+0.1.10:
+	* added support for IP address as mail_host in routes
+	* include <time.h> in masqmail.h to make it compile with glibc 2.2.2
+0.1.9:
+	* fixed a few typos in man pages
+	* ignore -v option
+	* added patch from Bernhard Ehlers to program aliases runq, rmail, smtpd an in.smtpd
+	* added patch from Edouard G. Parmelan to correct default directories to install
+	* implemtented pipe, pipe_fromhack and pipe_fromline options
+	for routes (for protocol 'pipe')
+	* implememted 'pipe' protocol for routes
+	* memset to 0 of configuration structures (it is safer and easier)
+	* list of routes for each connection
+	* do not be picky about EOF if locally received message is not terminated by a dot
+	* speeded up accept.c for large messages (noted by Falko Flessner)
+0.1.8:
+	* security bug fix (Debian Bug#81079): if local address cannot be
+	resolved, masqmail listened on an arbitrary port (fixed by Adel
+	Belhouane)
+	* bug fix: -d without argument caused segfault (Thanks to Jan Setzer)
+	* added more help for configure
+	* Iain Lea sent a spec file for Redhat. Thanks!
+	* lines can now be indefinetely long for mail acception (well, nearly...)
+	* implemented 'wrapper' options for routes and get configurations for ssl and maybe other purposes
+	* unified read_sockline() for smtp_out.c, smtp_in.c, pop3_in.c, accept.c and mserver.c
+	* escaping of quotes in configuration now possible and now works
+	correctly in alias file (Edouard G. Parmelan sent a patch, but I fixed it differently)
+	* kill -HUP seems to work now.
+	* close all file descriptors >= 3 on start (patch by Edouard G. Parmelan)
+	* replaced exit() with _exit where appropriate (children)
+	* added pipe_fromhack and pipe_fromline options
+	* added mda support and mda_fromhack and mda_fromline options
+	* user can delete his own mail if received via smtp from one of ident_trusted_nets
+	* bug fix in lookup.c: if the name that an MX points could not be resolved, delete entry
+	* added expand_h_sender_address option. expend_h_sender_domain should be obsolete now.
+	* unprivileged user can delete his own mail from queue if received locally
+	* replaced popen() in local.c with peopen() from snippet from sourceforge. Fixed a bug there.
+0.1.7:
+	* debug option can be changed for privileged users only
+	* fixed a security hole: -C option for unprivileged users now implies
+	run_as_user and drops _all_ privileges
+	* environment variables for pipe transport
+	* wildcards for map_* options
+	* rearranged interface handling, IP addresses now possible for
+	listen_addresses and mserver_iface
+	* beautified masqmail.c
+	* revised uid and gid settings in spool.c and local.c (pipe transport)
+	* optionally use ident protocol (RFC 1413) and store user id in spool file
+	* proper spool file locking
+0.1.6:
+	* record user id in spool file (though it is not used anywhere)
+	* command line option to remove messages from queue (-Mrm)
+	* command line option for version information (-bV)
+0.1.5:
+	* implemented -F option
+	* removed bug in accept.c (dot bug, noted by Andre Masloch)
+	* location of main conf is now configurable with ./configure
+	(suggested by Greger Hoffleit). Default is /etc/masqmail.conf.
+	* remote_port defaults to 25 (noted by Andre Masloch)
+	* docu fixes: remote_port documented and typo fix (noted by Andre Masloch. Again :-))
+	* do not return failure on exit on delivery if mail queue was empty (noted by Andre Masloch)
+	* qualify -f address with host_name if unqualified (noted by Andre Masloch)
+0.1.4:
+	* Jens Askengren discovered a segfaulting bug when parsing headers.
+0.1.3:
+	* warn if pop/auth options are given, but compiled without support
+	* fixed allowed_rcpt_domains option (was broken since 0.1.0, but nobody noticed)
+	* exit with 1 if queue run fails for any reason (not for daemon)
+	* fail if alias file cannot be read
+	* better handling of SMTP SIZE error
+	* implemented alias_local_caseless option (suggestion by Andre Masloch)
+	* case insensitive domain matching (noted by Andre Masloch)
+	* removed nearly all warnings if compiled with -Wall
+0.1.2:
+	* some changes in configure.in
+	* continue if get conf could not be read. Thanks to Edouard G. Parmelan!
+	* fixed another bug on pipe addresses in spool.c
+	* Andre Masloch found a bug in spool.c which caused a segfault on pipe addresses. Thanks!
+0.1.1:
+	* Edouard G. Parmelan sent a patch for starting a queue run on start of daemon. Thanks!
+	* rpm packages for SuSE
+	* regard CFLAGS in Makefile.am
+	* implemtented -g <name> option
+	* be more verbose in pop3_get.c
+	* implemented -f option (set return path)
+	* fixed bug: "no debug file, msg was:" in smtp_out.c when debugging was off
+	* internal changes of smtp_out_log_failure()
+	* removed 'no log file' error
+	* complain if host name could not be resolved in connect.c
+	* added option resolve_list for route and get configurations
+	* removed bug in rcptlist_with_one_of_hostlist(): exited when
+	list was empty
+0.1.0:
+	* included ESMTP AUTH support (as client), CRAM-MD5 only
+	* included pop3 client support, with UIDL and APOP, single drop only
+	* rearranged routing code:
+	  - messages will be deleted from spool earlier, as soon as they are delivered
+	  - unified online/offline delivery, making it more simple
+	
+0.0.13:
+        * ignore set_h_{from,reply_to}_domain if map_h_{from,reply_to}_addresses
+        is set and warn in logs about misconfiguration.
+        * fail if there are no recipients
+        * fixed bug: if called with -t, qualify recipient address with host_name
+        * fixed bug: if called with -bi, no longer wait for message on stdin
 0.0.12:
-	* warn if spool file could not be deleted (Thanks to Alberto González
-	Palomo)
-	* fixed bug: set len for getsockname
-	* fixed bug: set local_net_routes to NULL if there is no local net
-	(noted by Frank Schnekenbuehl)
-	* say 'mail queue is empty' if mail queue is empty (Thanks to
-	Frank Schnekenbuehl)
-	* fixed bug: setegid in local.c (was noted by both Michael Piefel and
-	Alberto González Palomo)
+        * warn if spool file could not be deleted (Thanks to Alberto González
+        Palomo)
+        * fixed bug: set len for getsockname
+        * fixed bug: set local_net_routes to NULL if there is no local net
+        (noted by Frank Schnekenbuehl)
+        * say 'mail queue is empty' if mail queue is empty (Thanks to
+        Frank Schnekenbuehl)
+        * fixed bug: setegid in local.c (was noted by both Michael Piefel and
+        Alberto González Palomo)
 0.0.11:
-	* if Bcc: headers have been removed (-t option), and there is no To:
-	or Cc: header,an empty Bcc: header will be created (RFC 822
-	compliance!)
-	* fixed bug: if rcpts are given on command line To: headers were
-	created, even if they already existed. This caused Bcc: recipient
-	addresses to be revealed if they were given on the cmd line.
-	Now a To: header is only created if there is no To:, Cc: or Bcc:
-	header.	Thanks to Richard Clamp for pointing this out.
-	* fixed bug: segfault when -d option was given without arguments
-	* fixed bug: segfault when configuration file not found
+        * if Bcc: headers have been removed (-t option), and there is no To:
+        or Cc: header,an empty Bcc: header will be created (RFC 822
+        compliance!)
+        * fixed bug: if rcpts are given on command line To: headers were
+        created, even if they already existed. This caused Bcc: recipient
+        addresses to be revealed if they were given on the cmd line.
+        Now a To: header is only created if there is no To:, Cc: or Bcc:
+        header. Thanks to Richard Clamp for pointing this out.
+        * fixed bug: segfault when -d option was given without arguments
+        * fixed bug: segfault when configuration file not found
 0.0.10:
 	* removed -g option from Makefile
 	* fixed bug: -odq did not work, was broken in some earlier version
-	* addresses with leading '\' will not be expanded any further in
-	aliases
+	* addresses with leading '\' will not be expanded any further in aliases
 	* pipe transport implemented
 	* alias support implemented.
 	* changed permissions for queue runs again: got to be root,

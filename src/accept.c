@@ -17,22 +17,7 @@
 */
 
 #include "masqmail.h"
-
-header_name header_names[] =
-{
-  "From", HEAD_FROM,
-  "Sender", HEAD_SENDER,
-  "To", HEAD_TO,
-  "Cc", HEAD_CC,
-  "Bcc", HEAD_BCC,
-  "Date", HEAD_DATE,
-  "Message-Id", HEAD_MESSAGE_ID,
-  "Reply-To", HEAD_REPLY_TO,
-  "Subject", HEAD_SUBJECT,
-  "Return-Path", HEAD_RETURN_PATH,
-  "Envelope-To", HEAD_ENVELOPE_TO,
-  "Received", HEAD_RECEIVED
-};
+#include "readsock.h"
 
 gchar *prot_names[] =
 {
@@ -41,43 +26,12 @@ gchar *prot_names[] =
   "smtp",
   "esmtp",
   "pop3",
+  "apop",
   "(unknown)" /* should not happen, but better than crashing. */
 };
 
-gchar *
-rec_timestamp()
-{
-  static gchar buf[64];
-  int len;
-  
-  time_t now = time(NULL);
-  struct tm *t = localtime(&now);
-
-  int diff_hour, diff_min;
-  struct tm local;
-  struct tm *gmt;
-
-  memcpy(&local, t, sizeof(struct tm));
-  gmt = gmtime(&now);
-  diff_min = 60*(local.tm_hour - gmt->tm_hour) + local.tm_min - gmt->tm_min;
-  if (local.tm_year != gmt->tm_year)
-    diff_min += (local.tm_year > gmt->tm_year)? 1440 : -1440;
-  else if (local.tm_yday != gmt->tm_yday)
-    diff_min += (local.tm_yday > gmt->tm_yday)? 1440 : -1440;
-  diff_hour = diff_min/60;
-  diff_min  = abs(diff_min - diff_hour*60);
-
-  len = strftime(buf, sizeof(buf), "%a, ", &local);
-  g_snprintf(buf + len, sizeof(buf) - len, "%02d ", local.tm_mday);
-  len += strlen(buf + len);
-  len += strftime(buf + len, sizeof(buf) - len, "%b %Y %H:%M:%S", &local);
-  g_snprintf(buf + len, sizeof(buf) - len, " %+03d%02d", diff_hour, diff_min);
-
-  return buf;
-}
-
-gchar *
-string_base62(gchar *res, guint value, gchar len)
+static
+gchar *string_base62(gchar *res, guint value, gchar len)
 {
   static gchar base62_chars[] =
     "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -88,232 +42,6 @@ string_base62(gchar *res, guint value, gchar len)
     value /= 62;
   }
   return res;
-}
-
-static
-int volatile sigtimeout_seen = 0;
-
-static
-void sig_timeout_handler(int sig)
-{
-  sigtimeout_seen = TRUE;
-  logwrite(LOG_ERR, "connection timed out (terminating).");
-  exit(EXIT_FAILURE);
-}
-
-static
-void alarm_on(gint timeout)
-{
-  sigtimeout_seen = FALSE;
-  if(timeout > 0)
-    alarm(timeout);
-}
-
-static
-void alarm_off()
-{
-  alarm(0);
-}
-
-static
-gint read_line(FILE *in, gchar *buf, gint buf_len,
-	       gboolean is_smtp, gboolean dot_terminates)
-{
-  gint p = 0;
-  gint c;
-
-  if(is_smtp)
-    alarm_on(5*60);
-
-  while((c = getc(in)) != '\n' && (c != EOF)){
-    if(p >= buf_len-1) { alarm_off(); return 0; }
-    if((p == 0) && (c == '.') && dot_terminates){
-      c = getc(in);
-      if((c == '\r') || (c == '\n')){
-	if(c == '\r')
-	  getc(in);
-	if(is_smtp) alarm_off();
-	return 0;
-      }else
-	c = '.';
-    }
-    buf[p++] = c;
-  }
-
-  if(is_smtp)
-    alarm_off();
-
-  if(c == EOF){
-    /*  if((c == EOF) && dot_terminates){*/
-    return -1;
-  }
-
-  if(p > 0 && buf[p-1] == '\r')
-    p--;
-  buf[p++] = '\n';
-  buf[p] = 0;
-
-  return p;
-}
-
-void header_unfold(header *hdr)
-{
-  gchar *tmp_hdr = g_malloc(strlen(hdr->header));
-  gchar *p = hdr->header, *q = tmp_hdr;
-  gboolean flag = FALSE;
-
-  while(*p){
-    if(*p != '\n')
-      *(q++) = *p;
-    else
-      flag = TRUE;
-    p++;
-  }
-  *(q++) = '\n';
-
-  if(flag){
-    gchar *new_hdr;
-
-    g_free(hdr->header);
-    new_hdr = g_strdup(tmp_hdr);
-    g_free(tmp_hdr);
-    hdr->value = new_hdr + (hdr->value - hdr->header);
-    hdr->header = new_hdr;
-  }
-}
-
-#define MAX_HDR_LEN 72
-void header_fold(header *hdr)
-{
-  gint len = strlen(hdr->header);
-  gchar *p, *q;
-  /* size is probably overestimated, but so we are on the safe side */
-  gchar *tmp_hdr = g_malloc(len + 2*len/MAX_HDR_LEN);
-
-  p = hdr->header;
-  q = tmp_hdr;
-
-  if(p[len-1] == '\n')
-    p[len-1] = 0;
-
-  while(*p){
-    gint i,l;
-    gchar *pp;
-    
-    /* look forward and find potential break points */
-    i = 0; l = -1;
-    pp = p;
-    while(*pp && (i < MAX_HDR_LEN)){
-      if((*pp == ' ') || (*pp == '\t'))
-	l = i;
-      pp++;
-      i++;
-    }
-    if(!*pp) l = pp-p; /* take rest, if EOS found */
-
-    if(l == -1){
-      /* no potential break point was found within MAX_HDR_LEN
-       so advance further until the next */
-      while(*pp && *pp != ' ' && *pp != '\t'){
-	pp++;
-	i++;
-      }
-      l = i;
-    }
-
-    /* copy */
-    i = 0;
-    while(i < l){
-      *(q++) = *(p++);
-      i++;
-    }
-    *(q++) = '\n';
-    *(q++) = *(p++); /* this is either space, tab or 0 */
-  }
-  {
-    gchar *new_hdr;
-    
-    g_free(hdr->header);
-    new_hdr = g_strdup(tmp_hdr);
-    g_free(tmp_hdr);
-    hdr->value = new_hdr + (hdr->value - hdr->header);
-    hdr->header = new_hdr;
-  }
-}
-
-header *create_header(header_id id, gchar *fmt, ...)
-{
-  gchar *p;
-  header *hdr;
-  va_list args;
-  va_start(args, fmt);
-
-  if(hdr = g_malloc(sizeof(header))){
-
-    hdr->id = id;
-    hdr->header = g_strdup_vprintf(fmt, args);
-    hdr->value = NULL;
-
-    p = hdr->header;
-    while(*p && *p != ':') p++;
-    if(*p)
-      hdr->value = p+1;
-  }
-  return hdr;
-}
-
-void destroy_header(header *hdr)
-{
-  if(hdr){
-    if(hdr->header) g_free(hdr->header);
-    g_free(hdr);
-  }
-}
-
-header *copy_header(header *hdr)
-{
-  header *new_hdr = NULL;
-
-  if(hdr){
-    if(new_hdr = g_malloc(sizeof(header))){
-      new_hdr->id = hdr->id;
-      new_hdr->header = g_strdup(hdr->header);
-      new_hdr->value = new_hdr->header + (hdr->value - hdr->header);
-    }
-  }
-  return new_hdr;
-}
-
-header *get_header(gchar *line)
-{
-  gchar *p = line;
-  gchar buf[64], *q = buf;
-  gint i;
-  header *hdr;
-  
-  while(*p != ':' && q < buf+64) *(q++) = *(p++);
-  *q = 0;
-  
-  if(*p != ':') return NULL;
-
-  hdr = g_malloc(sizeof(header));
-
-  hdr->value = NULL;
-  p++;
-  if(*p)
-    hdr->value = p+1;
-
-  for(i = 0; i < HEAD_NUM_IDS; i++){
-    if(strcasecmp(header_names[i].header, buf) == 0)
-      break;
-  }
-  hdr->id = (header_id)i;
-  hdr->header = g_strdup(line);
-  hdr->value = hdr->header + (hdr->value - line);
-
-  DEBUG(4) debugf("header: %d = %s", hdr->id, hdr->header);
-
-  return hdr;
 }
 
 static gint _g_list_addr_isequal(gconstpointer a, gconstpointer b)
@@ -329,24 +57,19 @@ static gint _g_list_addr_isequal(gconstpointer a, gconstpointer b)
    (from To/Cc/Bcc headers if ACC_RCPT_TO is set) rcpt_list.
 */
 
-accept_error accept_message(FILE *in, message *msg, guint flags)
+accept_error accept_message_stream(FILE *in, message *msg, guint flags)
 {
-  gchar *line;
-  size_t line_size = MAX_DATALINE;
+  gchar *line, *line1;
+  int line_size = MAX_DATALINE+1;
   gboolean in_headers = TRUE;
   header *hdr = NULL;
   prot_id prot = msg->received_prot;
   time_t rec_time = time(NULL);
-  struct passwd *passwd = NULL;
-  GList *non_rcpt_list;
   gint line_cnt = 0, data_size = 0;
 
   /* create unique message id */
   msg->uid = g_malloc(14);
-  if(msg->uid == NULL){
-    logwrite(LOG_ALERT, "out of memory\n");
-    exit(EXIT_FAILURE);
-  }
+
   string_base62(msg->uid, rec_time, 6);
   msg->uid[6] = '-';
   string_base62(&(msg->uid[7]), getpid(), 3);
@@ -355,59 +78,84 @@ accept_error accept_message(FILE *in, message *msg, guint flags)
   msg->uid[13] = 0;
 
   line = g_malloc(line_size);
-  if(line == NULL){
-    logwrite(LOG_ALERT, "out of memory\n");
-    exit(EXIT_FAILURE);
-  }
   line[0] = 0;
 
   while(TRUE){
-    int len = read_line(in, line, MAX_DATALINE,
-			(prot != PROT_LOCAL), (flags & ACC_NODOT_TERM) == 0);
+    int len = read_sockline1(in, &line, &line_size-1, 5*60, READSOCKL_CVT_CRLF);
 
-    if(len == 0)
+    line1 = line;
+
+    if((line[0] == '.') && (!(flags & ACC_NODOT_TERM))){
+      if(line[1] == '\n'){
+	g_free(line);
 	break;
-    else if(len < 0){
-      if(flags && ACC_NODOT_TERM)
+      }
+      line1++;
+    }
+    
+    if(len <= 0){
+      if((len == -1) && ((flags & ACC_NODOT_TERM) || (flags & ACC_NODOT_RELAX))){
+	/* we got an EOF, and the last line was not terminated by a CR */
+	gint len1 = strlen(line1);
+	if(len1 > 0){ /* == 0 is 'normal' (EOF after a CR) */
+	  if(line1[len1-1] != '\n'){ /* some mail clients allow unterminated lines */
+	    line1[len1] = '\n';
+	    line1[len1+1] = 0;
+	    msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
+	    data_size += strlen(line1);
+	    line_cnt++;
+	  }
+	}
 	break;
-      else{
-	/* some error occured */
-	if(sigtimeout_seen)
-	  return AERR_TIMEOUT;
-	else
+      }else{
+	g_free(line);
+	if(len == -1){
 	  return AERR_EOF;
+	}else if(len == -2){
+	  /* should not happen any more */
+	  return AERR_OVERFLOW;
+	}else if(len == -3){
+	  return AERR_TIMEOUT;
+	}else{
+	  /* does not happen */
+	  DEBUG(5) debugf("read_sockline returned %d\n", len);
+	  return AERR_UNKNOWN;
+	}
       }
     }
     else{
       if(in_headers){
-	if(line[0] == ' ' || line[0] == '\t'){
+	if(line1[0] == ' ' || line1[0] == '\t'){
 	  /* continuation of 'folded' header: */
 	  if(hdr){
-	    hdr->header = g_strconcat(hdr->header, line, NULL);
+	    hdr->header = g_strconcat(hdr->header, line1, NULL);
 	  }
 
-	}else if(line[0] == '\n'){
+	}else if(line1[0] == '\n'){
 	  /* an empty line marks end of headers */
 	  in_headers = FALSE;
 	}else{
 	  /* in all other cases we expect another header */
-	  if(hdr = get_header(line))
+	  if((hdr = get_header(line1)))
 	    msg->hdr_list = g_list_append(msg->hdr_list, hdr);
 	  else{
 	    /* if get_header() returns NULL, no header was recognized,
 	       so this seems to be the first data line of a broken mailer
 	       which does not send an empty line after the headers */
 	    in_headers = FALSE;
-	    msg->data_list = g_list_append(msg->data_list, g_strdup(line));
+	    msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
 	  }
 	}
       }else{
-	msg->data_list = g_list_append(msg->data_list, g_strdup(line));
-	data_size += strlen(line);
+	msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
+	data_size += strlen(line1);
 	line_cnt++;
       }
     }
   }
+
+  msg->data_list = g_list_reverse(msg->data_list);
+
   DEBUG(4) debugf("received %d lines of data (%d bytes)\n",
 		  line_cnt, data_size);
   /* we get here after we succesfully
@@ -416,9 +164,20 @@ accept_error accept_message(FILE *in, message *msg, guint flags)
   msg->data_size = data_size;
   msg->received_time = time(NULL);
 
+  return AERR_OK;
+}
+
+accept_error accept_message_prepare(message *msg, guint flags)
+{
+  struct passwd *passwd = NULL;
+  GList *non_rcpt_list = NULL;
+
+  DEBUG(5) debugf("accept_message_prepare()\n");
+
   /* if local, get password entry */
   if(msg->received_host == NULL){
     passwd = g_memdup(getpwuid(geteuid()), sizeof(struct passwd));
+    msg->ident = g_strdup(passwd->pw_name);
   }
 
   /* set return path if local */
@@ -475,7 +234,7 @@ accept_error accept_message(FILE *in, message *msg, guint flags)
 	  DEBUG(5) debugf("hdr->value = %s\n", hdr->value);
 	  if(hdr->value){
 	    msg->rcpt_list =
-	      adr_list_append_rfc822(msg->rcpt_list, hdr->value);
+	      adr_list_append_rfc822(msg->rcpt_list, hdr->value, conf.host_name);
 	  }
 	}
 	if((flags & ACC_DEL_BCC) && (hdr->id == HEAD_BCC)){
@@ -493,11 +252,51 @@ accept_error accept_message(FILE *in, message *msg, guint flags)
 	destroy_header(hdr);
 	break;
       case HEAD_RETURN_PATH:
+	if(flags & ACC_MAIL_FROM_HEAD){
+	  /* usually POP3 accept */
+	  msg->return_path = create_address_qualified(hdr->value, TRUE, msg->received_host);
+	  DEBUG(3) debugf("setting return_path to %s@%s\n",
+			  msg->return_path->local_part, msg->return_path->domain);
+	}
 	DEBUG(3) debugf("removing 'Return-Path' header\n");
 	msg->hdr_list = g_list_remove_link(msg->hdr_list, hdr_node);
 	g_list_free_1(hdr_node);
 	destroy_header(hdr);
 	break;
+      default:
+	break; /* make compiler happy */
+      }
+    }
+
+    if(msg->return_path == NULL){
+      /* this can happen for pop3 accept only
+	 and if no Return-path: header was given */
+      GList *hdr_list;
+      header *hdr;
+
+      hdr_list = find_header(msg->hdr_list, HEAD_SENDER, NULL);
+      if(!hdr_list) hdr_list = find_header(msg->hdr_list, HEAD_FROM, NULL);
+      if(hdr_list){
+	hdr = (header *)(g_list_first(hdr_list)->data);
+	if(msg->return_path = create_address_qualified(hdr->value, FALSE, msg->received_host)){
+	  DEBUG(3) debugf("setting return_path to %s@%s\n",
+			  msg->return_path->local_part, msg->return_path->domain);
+	  msg->hdr_list =
+	    g_list_append(msg->hdr_list,
+			  create_header(HEAD_UNKNOWN,
+					"X-Warning: return path set from %s address\n",
+					hdr->id == HEAD_SENDER ? "Sender:" : "From:"));
+	}else
+	  DEBUG(1) debugf("From: or Sender: address is invalid.\n");
+      }
+      if(msg->return_path == NULL){ /* no Sender: or From: or create_address_qualified failed */
+	msg->return_path = create_address_qualified("postmaster", TRUE, conf.host_name);
+	DEBUG(3) debugf("setting return_path to %s@%s\n",
+			msg->return_path->local_part, msg->return_path->domain);
+	msg->hdr_list =
+	  g_list_append(msg->hdr_list,
+			create_header(HEAD_UNKNOWN,
+				      "X-Warning: real return path is unkown\n"));
       }
     }
 
@@ -508,8 +307,8 @@ accept_error accept_message(FILE *in, message *msg, guint flags)
 	  rcpt_node = g_list_next(rcpt_node)){
 	address *rcpt = (address *)(rcpt_node->data);
 	GList *node;
-	if(node = g_list_find_custom(msg->rcpt_list, rcpt,
-				     _g_list_addr_isequal)){
+	if((node = g_list_find_custom(msg->rcpt_list, rcpt,
+				     _g_list_addr_isequal))){
 	  msg->rcpt_list = g_list_remove_link(msg->rcpt_list, node);
 	  g_list_free_1(node);
 	  DEBUG(3) debugf("removing rcpt address %s\n",
@@ -519,13 +318,25 @@ accept_error accept_message(FILE *in, message *msg, guint flags)
       }
     }
 
+    /* here we should have our recipients, fail if not: */
+    if(msg->rcpt_list == NULL){
+      logwrite(LOG_WARNING, "no recipients found in message\n");
+      return AERR_NORCPT;
+    }
+
     if(!(has_sender || has_from)){
       DEBUG(3) debugf("adding 'From' header\n");
       msg->hdr_list =
 	g_list_append(msg->hdr_list,
+		      msg->full_sender_name ?
+		      create_header(HEAD_FROM, "From: \"%s\" <%s@%s>\n",
+				    msg->full_sender_name,
+				    msg->return_path->local_part,
+				    msg->return_path->domain) :
 		      create_header(HEAD_FROM, "From: <%s@%s>\n",
 				    msg->return_path->local_part,
-				    msg->return_path->domain));
+				    msg->return_path->domain)
+		      );
     }
     if((flags & ACC_HEAD_FROM_RCPT) && !has_rcpt){
       GList *node;
@@ -566,11 +377,12 @@ accept_error accept_message(FILE *in, message *msg, guint flags)
   /* At this point because we have to know the rcpts for the 'for' part */
   if(!(flags & ACC_NO_RECVD_HDR)){
     gchar *for_string = NULL;
+    header *hdr = NULL;
 
     DEBUG(3) debugf("adding 'Received:' header\n");
 
     if(g_list_length(msg->rcpt_list) == 1){
-      address *adr = (address *)(msg->rcpt_list->data);
+      address *adr = (address *)(g_list_first(msg->rcpt_list)->data);
       for_string = g_strdup_printf(" for %s@%s", adr->local_part, adr->domain);
     }
 
@@ -580,20 +392,36 @@ accept_error accept_message(FILE *in, message *msg, guint flags)
 			  " with %s (%s %s) id %s%s;"
 			  " %s\n",
 			  passwd->pw_name, conf.host_name,
-			  prot_names[prot],
+			  prot_names[msg->received_prot],
 			  PACKAGE, VERSION,
 			  msg->uid, for_string ? for_string : "",
 			  rec_timestamp());
     }else{
+#ifdef ENABLE_IDENT
+      DEBUG(5) debugf("adding 'Received:' header (5)\n");
+      hdr = create_header(HEAD_RECEIVED,
+			  "Received: from %s (ident=%s) by %s"
+			  " with %s (%s %s) id %s%s;"
+			  " %s\n",
+			  msg->received_host,
+			  msg->ident ? msg->ident : "unknown",
+			  conf.host_name,
+			  prot_names[msg->received_prot],
+			  PACKAGE, VERSION,
+			  msg->uid, for_string ? for_string : "",
+			  rec_timestamp());
+#else
       hdr = create_header(HEAD_RECEIVED,
 			  "Received: from %s by %s"
 			  " with %s (%s %s) id %s%s;"
 			  " %s\n",
-			  msg->received_host, conf.host_name,
-			  prot_names[prot],
+			  msg->received_host,
+			  conf.host_name,
+			  prot_names[msg->received_prot],
 			  PACKAGE, VERSION,
 			  msg->uid, for_string ? for_string : "",
 			  rec_timestamp());
+#endif
     }
     header_fold(hdr);
     msg->hdr_list = g_list_prepend(msg->hdr_list, hdr);
@@ -608,3 +436,15 @@ accept_error accept_message(FILE *in, message *msg, guint flags)
   */
   return AERR_OK;
 }
+
+accept_error accept_message(FILE *in, message *msg, guint flags)
+{
+  accept_error err;
+
+  err = accept_message_stream(in, msg, flags);
+  if(err == AERR_OK)
+    err =  accept_message_prepare(msg, flags);
+
+  return err;
+}
+

@@ -19,6 +19,12 @@ Then do:
 make
 make install
 
+Debian:
+If you compile for Debian, do the configure with at least these options, this makes it compatible with the official debian package:
+./configure --with-liblockfile --with-group=mail --with-conffile=/etc/masqmail/masqmail.conf --with-logdir=/var/log/masqmail/
+you do not need the group 'trusted', use 'mail' instead.
+
+
 Sorry, but after that you are not yet finished. For instruction on how
 to deliver mail using a connection to your ISP see
 docs/install.html. It is probably a good idea to copy the files
@@ -40,6 +46,17 @@ files. It will be created if it does not exist. Default is /var/masqmail/.
 spool files. It will be created if it does not exist. Default is
 /var/spool/masqmail/.
 
+--with-conffile=CONFFILE sets the default configuration file to
+CONFFILE, in case you prefer another location than /etc/masqmail.conf
+
+--enable-auth enables ESMTP AUTH support (disabled by default)
+
+--disable-pop3 disables pop3 support (enabled by default)
+
+--enable-ident enable RFC 1413 support. If you have the libident
+dynamic library installed, this will be linked, otherwise it will be
+statically linked using the sources included in the package.
+
 after make install:
 -------------------
 
@@ -56,13 +73,14 @@ should give output similar to
 drwxr-xr-x   2 mail     trusted      1024 Oct 14 14:29 /var/masqmail/
 drwxr-xr-x   3 mail     trusted      1024 Oct 14 14:27 /var/spool/masqmail
 drwxr-xr-x   2 mail     trusted      1024 Oct 14 18:32 /var/spool/masqmail/input
+drwxr-xr-x   2 mail     trusted      1024 Oct 14 18:32 /var/spool/masqmail/popuidl
 
 (important is the set-user-id bit for /usr/sbin/masqmail and the
 ownership of all items).
 
 Use the example configuration files in examples/ to edit your own. The
 main configuration should go to /etc/masqmail.conf. I recommend to
-make a directory /etc/masqmail for the *.route files.
+make a directory /etc/masqmail for the *.route amd *.get files.
 
 The default destination for the executable 'masqmail' is
 /usr/sbin. Check that it has the set user id bit set. (chmod u+s

@@ -1,6 +1,45 @@
 Here I add changes which may be important for you. See ChangeLog for more
-details and the manual pages (docs/*.html) for a more complete description
+details and the manual pages for a more complete description
 of added options.
+
+0.1.15
+
+- this is a security fix release. When an alias expansion expands to a pipe,
+  only the effective uid was changed to mail, but not the real uid. This way,
+  a command could gain root privileges. This is no longer possible, masqmail
+  drops prvileges completely before executing the pipe command.
+
+0.1.9
+
+- you can use pipes in routes to implement gateways to uucp, fax, sms etc.
+The setup is similar to mda transport. See man pages.
+
+- for each connection (connect_routes), you can now give a list of
+route files, which will be used in the order given. You can use the
+filter rules (allowed_* and not_allowed_* rules) within each route.
+
+0.1.8
+
+- for pop retrieval and smtp sending you can use a wrapper for eg. ssl
+tunneling. See man pages.
+
+- a user can delete his mail from the spool with -Mrm if received
+locally, and if you configure with --enable-ident and set
+ident_trusted_nets also if received via smtp.
+
+- a backslash now works to escape characters in the configuration, so
+you can now use quotes inside quotes. All other characters with a
+leading backslash will be converted to itself (\a becomes a, \\
+becomes \).
+
+- you can now use an mda for local mails. The mda will be called
+*after* alias expansion. See documentation for more.
+
+0.1.0
+- masqmail can now retrieve mail with pop3. See the manual on how to do that.
+- supports now ESMTP AUTH as a client.
+- when called with -qo (without a connection name), the online status
+will be checked with the configured method.
 
 0.0.10
 - there is now alias support. Give the location of the alias file (usually /etc/aliases) with eg.

@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999/2000 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,7 +17,9 @@
 */
 
 #include "masqmail.h"
+#include "readsock.h"
 
+#if 0
 static
 int read_sockline(FILE *in, gchar *buf, int buf_len, int timeout)
 {
@@ -29,7 +31,6 @@ int read_sockline(FILE *in, gchar *buf, int buf_len, int timeout)
   while(isspace(c = getc(in))); ungetc(c, in);
 
   while((c = getc(in)) != '\n' && (c != EOF)){
-    DEBUG(6) debugf("c = %x\n", c);
     if(p >= buf_len-1) { alarm(0); return 0; }
     buf[p++] = c;
   }
@@ -45,33 +46,14 @@ int read_sockline(FILE *in, gchar *buf, int buf_len, int timeout)
 
   return len;
 }
-
-static
-gboolean init_sockaddr (struct sockaddr_in *name,
-			const gchar *hostname,
-			gushort port)
-{
-  struct hostent *hostinfo;
-  
-  name->sin_family = AF_INET;
-  name->sin_port = htons (port);
-  hostinfo = gethostbyname (hostname);
-  if (hostinfo == NULL) {
-      DEBUG(3) debugf("Unknown host %s.\r\n", hostname);
-      return FALSE;
-    }
-  name->sin_addr = *(struct in_addr *) hostinfo->h_addr;
-
-  return TRUE;
-}
+#endif
 
 gchar *mserver_detect_online()
 {
   struct sockaddr_in saddr;
   gchar *ret = NULL;
 
-  if(init_sockaddr(&saddr, conf.mserver_iface->address,
-		   conf.mserver_iface->port)){
+  if(init_sockaddr(&saddr, conf.mserver_iface)){
     int sock = socket(PF_INET, SOCK_STREAM, 0);
     int dup_sock;
     if(connect(sock, &saddr, sizeof(saddr)) == 0){
@@ -82,11 +64,11 @@ gchar *mserver_detect_online()
       out = fdopen(sock, "w");
       in = fdopen(dup_sock, "r");
 
-      if(read_sockline(in, buf, 256, 15)){
+      if(read_sockline(in, buf, 256, 15, READSOCKL_CHUG)){
 	if(strncmp(buf, "READY", 5) == 0){
 	  fprintf(out, "STAT\n"); fflush(out);
 	  DEBUG(5) debugf(">>> STAT\n");
-	  if(read_sockline(in, buf, 256, 15)){
+	  if(read_sockline(in, buf, 256, 15, READSOCKL_CHUG)){
 	    if(strncmp(buf, "DOWN", 4) == 0){
 	      DEBUG(1) debugf("no connection.\n");
 	      ret = NULL;

@@ -1,0 +1,41 @@
+.TH masqmail.aliases 5 User Manuals
+.SH NAME
+masqmail.aliases \- masqmail alias file format
+.SH DESCRIPTION
+
+This man page describes the format of the masqmail alias file. Its usual location is \fI/etc/aliases\f1.
+
+.SH FILE FORMAT
+
+The alias file consists of lines of the form:
+local_part: item1, item2, ...
+Items can be surrounded by quotes '"'. If within the quotes other quotes are needed for an address they can be escaped with a leading backslash '\'.
+
+A leading '\' indicates that this address shall not be further expanded.
+
+A leading pipe symbol '|' indicates that the item shall be treated as a pipe command. The content of the message will then be sent to the standard input of a command. The command will run under the user id and group id masqmail is running as. If quotes are needed, the pipe symbol must appear within the quotes.
+
+Loops will be detected, the offending address will be ignored.
+
+Aliases will be expanded at delivery time. This means that if there is a message still in the queue and you change any alias which matches one of the recipient addresses, the change will have effect next time a delivery is attemped.
+
+There is no need to restart masqmail or run any command when the alias file has been changed.
+
+.SH AUTHOR
+
+masqmail was written by Oliver Kurth <kurth@innominate.de>
+
+You will find the newest version of masqmail at \fBhttp://www.innomininate.org/~oku/masqmail/\f1 or search for it in freshmeat (\fBhttp://www.freshmeat.net\f1). There is also a mailing list, you will find information about it at masqmails main site.
+
+.SH BUGS
+
+You should report them to the mailing list.
+
+.SH SEE ALSO
+
+\fBmasqmail.conf (5)\f1, \fBmasqmail (8)\f1, 
+
+.SH COMMENTS
+
+This man page was written using \fBxml2man (1)\f1 by the same author.
+

@@ -43,12 +43,11 @@ or malformed addresses)
 
 Future plans are:
 
-- an integrated pop3 client (and very soon with apop)
 - initiate connections on its own
 - integration to the masqdialer system (mserver) as an option
 - possibly a pop3 server
 
-For installation instructions, see INSTALL and/or docs/install.html.
+For installation instructions, see INSTALL.
 
 Bugs: MasqMail is still very young, and there are probably at lot of
 bugs in it. I need every bug reported to me! If you do, please send me
@@ -70,12 +69,14 @@ And again for making the Debian package. And more patches.
 Dale Perkel for patiently trying to make MM compile and run with libc5 and
 various bug reports.
 
-For various Patches:
-- Frank Schnekenbuehl
-- Michael Piefel
-- Alberto Gonzalez Palomo
+Andre Masloch for finding most bugs.
 
+Edouard G. Parmelan for many patches and bug reports
+
+Iain Lea for the Redhat spec file
+
+...and many others
 --
-Oliver Kurth <oliver.kurth@innominate.de>
+Oliver Kurth <kurth@innominate.de>
 http://www.innominate.org/~oku/
 last change: Feb. 3, 2000
