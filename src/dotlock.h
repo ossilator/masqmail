@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 2000 Oliver Kurth
+    Copyright (C) 2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,30 +16,7 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "masqmail.h"
+#define MAX_LOCKAGE 300
 
-gint expand(GList *var_list, gchar *format, gchar *result, gint result_len);
-
-void logwrite(int pri, const char *fmt, ...)
-{
-  va_list args;
-  va_start(args, fmt);
-
-  vfprintf(stdout, fmt, args);
-
-  va_end(args);
-}
-
-main(int argc, char *argv[])
-{
-  gchar *tablename = argv[1];
-  gchar result[100];
-  GList *varlist = table_read(tablename, '=');
-
-  printf("input= '%s'\n", argv[2]);
-
-  expand(varlist, argv[2], result, 100);
-
-  printf("%s\n", result);
-}
-
+gboolean dot_lock(gchar *lock_name, gchar *hitch_name);
+gboolean dot_unlock(gchar *lock_name);

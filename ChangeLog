@@ -1,22 +1,141 @@
-0.1.16:
+0.2.12	Wed, 23 Oct 2002 18:57:42 +0200
+	* new do_pipelining option (to switch it off if necessary)
+	* new helo_name option for route
+	* fixed remote_port option (but marked it as deprecated)
+	* swapped setegid/seteuid in maildir_out()
+	* try again on EAGAIN failure for local delivery via mbox
+0.2.11:
+	* make it possible for *.route file to have mode 600, owned by root.
+	Thx to Juergen Daubert for noticing.
+	* do not choke on trailing blanks after comments in conf file. Anonymous
+	again.
+	* try again on EAGAIN failure for local delivery via mda
+	* fixed a potential buffer overflow in conf.c. Thanks to Anonymous
+	again.
+	* set umask 066 for log files. Thanks to Anonymous.
+	* implemented map_h_mail_followup_to_addresses
+	* fixed a bug: masqmail -t with empty body caused weird
+	errors. Thanks to Anonymous.
+	* added do_save_envelope_to option
+0.2.10:
+	* fixed a small bug in mserver.c (atoi) (Thanks to Gert Ohme)
+	* allow ';' in rval also if rval is unqoted
+	* write pidfiles to /var/run/masqmail{,-get}.pid
+	* now runs on freebsd without leaving zombies
+	* use setjmp() in readsock.c for timeouts
+0.2.9:
+	* attempts to make it compile on freebsd
+	- works, but leaves zombies behind (will be done next release, I hope)
+	* removed some bashisms from configure.ac
+	* fixed segfault when called with -t under some circumstances
+	* some fixes about locking when fetching mail (yes, 0 _is_ a valid fd...)
+	* some speedups for uidl handling, and do not bloat log files any more
+0.2.8:
+	* use flock() for locking in retrieving mails (get.c)
+	* can use /etc/mailname as host_name (for Debian)
+	* added ESMTP LOGIN
+	* made uidl handling even more safe
+0.2.7:
+	* fixed stupid locking bug
+	* do not complain about 'unknown mode' when getting mail
+	* added italian version of failmsg.tpl (by Paolo)
+	* changed MIME boundaries in failmsg.tpl (Paolo)
+	* applied patches from Paolo (Gabel - ):
+	mostly replacing g_strdup_printf() with g_strdup(), a few ticks ('),
+	changed SENDER_LOCAL environment variable and fixed missing '\' in
+	debian/masqmail.ip-up
+0.2.6:
+	* rediscovered previously undocumented allowed_return_paths option for
+	routes and made it usable for null sender addresses.
+	* added mbox_default, and {mbox,mda,maildir}_users options
+	* changes to vsnprintf function use in pop3_in.c and smtp_in.c (by egp)
+	* fixes to ip-up/ip-down scripts (by Ben Low)
+	* ENABLE_SMTP_SERVER define was incorrectly written as
+	ENABLE_MODE_SMTP (by Ben Low)
+	* fixed bug in get_header() in src/header.c (by egp)
+0.2.5:
 	* PowerPC fix for varargs functions
-	* g_free fix in src/conf.c
-0.1.15:
+	* relay checking: if do_relay is set to false, do not allow non local
+	to non local addresses
+	* alias is always caseless for postmaster (disregarding
+	alias_local_caseless option)
+	* do not rebounce to postmaster
+	* implemented Maildir support
+	* rearranged append_file in local.c
+	* use sysexits.h for correct error reply for failure messages (mda only)
+0.2.4:
+	* fixed uidl bug: uidl list was not written if a mail was not
+	fetched because it was in the list
+	* fixed bug in src/conf.c: g_free'd twice in destroy_route()
 	* security fix, Debian Bug#102092: 'Privilege escalation in masqmail
 	piped alias handling': fixed by using set[ug]id instead of sete[ug]id
 	in peopen.c (noted by Colin Phipps)
-	* synced fix by Edouard G. Parmelan for listen.c: do not terminate on
-	'reset by peer'.
-0.1.14:
+	* limit count of children in pop3_in.c and wait for them
+	* ignore SIGPIPE signal
+	* docu updates by Uli Funcke
+	* find path to masqmail via --prefix or --exec-prefix option for configure
+	* implemented -v (log to stdout) option
+0.2.3:
+	* local_addresses and not_local_addreses option (patch by Uli Funcke)
+	* replaced /usr/sbin/masqmail in fail_msg.c with /usr/sbin/sendmail
+	* typo in man pages (noted by Sebastian Inacker)
+	* hostnames can now begin with a digit (noted by CatcherInTheRye)
+	* chdir to '/' (on some systems getcwd() failes when changing uid)
+	* implemented lock_dir option
+	* ignore EINVAL after fdatasync
+	* configure option to link with libcrypto
+	* configure option to disable resolver support
+	* configure option to enable mserver support
+	* configure option to disable smtp server
+	* configure option to link glib statically
+	* msg_count option for get configuration
+	* bug fix: do not terminate if accept() return
+	error (patch by Edouard G. Parmelan)
+	* removed some files from package in
+	debian (by Edouard G. Parmelan))
+	* mailrm alias (by Edouard G. Parmelan)
+	* bug fix: removed superfluous g_free from
+	dot_unlock() (by Edouard G. Parmelan)
+	* write uidl list to temporary file first
+	* write uidl list each time a message was retrieved
+	(avoid duplicate mails when interupted)
+0.2.2:
 	* fix of Debian Bug#92894 by Gregor Hoffleit
 	(correct error reply for lacking permissions)
 	* fixed 'last line missing' bug
 	* fixed spool locking bug: lock was deleted
 	if unsuccessful (unlocking it)
-0.1.13:
+	* added patch from Uli Funcke for log_user
+	(user getting all delivered mail)
+	* implemented get daemon
+	* create lock file when getting mail
+	* use tables for finding route and get lists
+0.2.1:
+	* expand_h_sender_address now defaults to true (as described in docs)
+	* included documentation patch by Marc Herbert (masqmail call in ifup configuration)
+	* complain to log if failure message template cannot be opened
+	* errmsg_file defaults to /etc/masqmail/tpl/failmsg.tpl
+	* corrected error message for insufficient permissions (Debian Bug #92894)
+	* get mail depending on connection: -go option and online_get
+0.2.0:
+	* included the debian/ directory from the debian package.
+	* added return_path option for get configuration
+	* added max_messages option for get configuration
+	* added independent program 'mservdetect', which can be used with
+	online_detect=pipe as replacement for online_detect=mserver
+	* added online detection method 'pipe'
+	* replaced configure option --with-conffile with --with-confdir, default
+	is now /etc/masqmail/ (/etc/masqmail/masqmail.conf for the conf file).
+	* added do_uidl_dele option (delete messages in uid listing on server)
 	* qualify address for get configuration.
 	* better checking for valid From: address when retrieving mail via pop3
 	and this is used as the return path.
+	* port number for mail_host in routes possible
+	* introduce delivery failue notices
+	* added addr_string() function for easy output of addresses
+	* expire spool lock files after a while (currently 300s)
+	* started development branch 0.2.x
+	
 0.1.12:
 	* previous fix auf AUTH broke it - reverted it partially and fixed it again
 	* bug fix in get.c: retrieval via pop from different server could cause mail to be lost
@@ -28,7 +147,7 @@
 0.1.9:
 	* fixed a few typos in man pages
 	* ignore -v option
-	* added patch from Bernhard Ehlers to program aliases runq, rmail, smtpd an in.smtpd
+	* added patch from Bernhard Ehlers to program aliases runq, rmail, smtpd and in.smtpd
 	* added patch from Edouard G. Parmelan to correct default directories to install
 	* implemtented pipe, pipe_fromhack and pipe_fromline options
 	for routes (for protocol 'pipe')

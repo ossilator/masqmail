@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "masqmail.h"
 #include <sys/stat.h>
+#include "dotlock.h"
 
 static
 gint read_line(FILE *in, gchar *buf, gint buf_len)
@@ -44,7 +45,7 @@ gint read_line(FILE *in, gchar *buf, gint buf_len)
 static
 void spool_write_rcpt(FILE *out, address *rcpt)
 {
-  gchar dlvrd_char = adr_is_delivered(rcpt) ? 'X' : ' ';
+  gchar dlvrd_char = addr_is_delivered(rcpt) ? 'X' : (addr_is_failed(rcpt) ? 'F' : ' ');
 
   if(rcpt->local_part[0] != '|'){
     /* this is a paranoid check, in case it slipped through: */
@@ -55,7 +56,7 @@ void spool_write_rcpt(FILE *out, address *rcpt)
       logwrite(LOG_WARNING, "please report this bug.\n");
       rcpt->domain = g_strdup(conf.host_name);
     }
-    fprintf(out, "RT:%c<%s@%s>\n", dlvrd_char, rcpt->local_part, rcpt->domain);
+    fprintf(out, "RT:%c%s\n", dlvrd_char, addr_string(rcpt));
   }else{
     fprintf(out, "RT:%c%s\n", dlvrd_char, rcpt->local_part);
   }
@@ -72,10 +73,11 @@ address *spool_scan_rcpt(gchar *line)
     }else{
       rcpt = create_address_pipe(&(line[4]));
     }
-    if(line[3] == 'X')
-      adr_mark_delivered(rcpt);
-
-    DEBUG(3) debugf("spool_read: RCPT TO %s: %s", adr_is_delivered(rcpt) ? "(delivered)" : "", rcpt->address);
+    if(line[3] == 'X'){
+      addr_mark_delivered(rcpt);
+    }else if(line[3] == 'F'){
+      addr_mark_failed(rcpt);
+    }
   }
   return rcpt;
 }
@@ -135,12 +137,12 @@ gboolean spool_read_header(message *msg)
 	DEBUG(3) debugf("spool_read: MAIL FROM: %s",
 			msg->return_path->address);
       }else if(strncasecmp(buf, "RT:", 3) == 0){
-	address *adr;
-	adr = spool_scan_rcpt(buf);
-	if(!adr_is_delivered(adr)){
-	  msg->rcpt_list = g_list_append(msg->rcpt_list, adr);
+	address *addr;
+	addr = spool_scan_rcpt(buf);
+	if(!addr_is_delivered(addr) && !addr_is_failed(addr)){
+	  msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
 	}else{
-	  msg->non_rcpt_list = g_list_append(msg->non_rcpt_list, adr);
+	  msg->non_rcpt_list = g_list_append(msg->non_rcpt_list, addr);
 	}
       }else if(strncasecmp(buf, "PR:", 3) == 0){
 	prot_id i;
@@ -220,8 +222,7 @@ gboolean spool_write_header(message *msg)
     DEBUG(6) debugf("opened tmp_file %s\n", tmp_file);
 
     fprintf(out, "%s\n", msg->uid);
-    fprintf(out, "MF:<%s@%s>\n",
-	    msg->return_path->local_part, msg->return_path->domain);
+    fprintf(out, "MF:%s\n", addr_string(msg->return_path));
 
     DEBUG(6) debugf("after MF\n");
     foreach(msg->rcpt_list, node){
@@ -254,7 +255,11 @@ gboolean spool_write_header(message *msg)
       fprintf(out, "HD:%s", hdr->header);
     }
     if(fflush(out) == EOF) ok = FALSE;
-    else if(fdatasync(fileno(out)) != 0) ok = FALSE;
+    else if(fdatasync(fileno(out)) != 0){
+      if(errno != EINVAL) /* some fs do not support this..
+			     I hope this also means that it is not necessary */
+	ok = FALSE;
+    }
     fclose(out);
     if(ok){
       spool_file = g_strdup_printf("%s/input/%s-H", conf.spool_dir, msg->uid);
@@ -263,7 +268,7 @@ gboolean spool_write_header(message *msg)
       g_free(spool_file);
     }
   }else{
-    logwrite(LOG_ALERT, "could not open temporary header spool file: %s\n", strerror(errno));
+    logwrite(LOG_ALERT, "could not open temporary header spool file '%s': %s\n", tmp_file, strerror(errno));
     DEBUG(1) debugf("euid = %d, egid = %d\n", geteuid(), getegid());
     ok = FALSE;
   }
@@ -306,7 +311,11 @@ gboolean spool_write(message *msg, gboolean do_write_data)
 
 	/* possibly paranoid ;-) */
 	if(fflush(out) == EOF) ok = FALSE;
-	else if(fdatasync(fileno(out)) != 0) ok = FALSE;
+	else if(fdatasync(fileno(out)) != 0){
+	  if(errno != EINVAL) /* some fs do not support this..
+				 I hope this also means that it is not necessary */
+	    ok = FALSE;
+	}
 	fclose(out);
 	if(ok){
 	  spool_file = g_strdup_printf("%s/input/%s-D",
@@ -333,60 +342,40 @@ gboolean spool_write(message *msg, gboolean do_write_data)
   return ok;
 }
 
+#define MAX_LOCKAGE 300
+
 gboolean spool_lock(gchar *uid)
 {
   uid_t saved_uid, saved_gid;
   gchar *hitch_name;
   gchar *lock_name;
-  int fd;
+  gboolean ok = FALSE;
+
+  hitch_name = g_strdup_printf("%s/%s-%d.lock", conf.lock_dir, uid, getpid());
+  lock_name = g_strdup_printf("%s/%s.lock", conf.lock_dir, uid);
 
   /* set uid and gid to the mail ids */
   if(!conf.run_as_user){
     set_euidgid(conf.mail_uid, conf.mail_gid, &saved_uid, &saved_gid);
   }
 
-  hitch_name = g_strdup_printf("%s/input/%s-%d.lock", conf.spool_dir, uid, getpid());
-  lock_name = g_strdup_printf("%s/input/%s.lock", conf.spool_dir, uid);
-
-  fd = open(hitch_name, O_WRONLY | O_CREAT | O_EXCL, 0);
-  if(fd != -1){
-    struct stat stat_buf;
-
-    close(fd);
-    link(hitch_name, lock_name);
-    if(stat(hitch_name, &stat_buf) == 0){
-      if(stat_buf.st_nlink == 2){
-	g_free(hitch_name);
-	g_free(lock_name);
-
-	/* set uid and gid back */
-	if(!conf.run_as_user){
-	  set_euidgid(saved_uid, saved_gid, NULL, NULL);
-	}
-
-	return TRUE;
-      }
-    }
-    unlink(hitch_name);
-  }
-
-  logwrite(LOG_WARNING, "spool file %s is locked\n", uid);
-
-  g_free(hitch_name);
-  g_free(lock_name);
+  ok = dot_lock(lock_name, hitch_name);
+  if(!ok) logwrite(LOG_WARNING, "spool file %s is locked\n", uid);
 
   /* set uid and gid back */
   if(!conf.run_as_user){
     set_euidgid(saved_uid, saved_gid, NULL, NULL);
   }
 
-  return FALSE;
+  g_free(lock_name);
+  g_free(hitch_name);
+
+  return ok;
 }
 
 gboolean spool_unlock(gchar *uid)
 {
   uid_t saved_uid, saved_gid;
-  gchar *hitch_name;
   gchar *lock_name;
 
   /* set uid and gid to the mail ids */
@@ -394,13 +383,8 @@ gboolean spool_unlock(gchar *uid)
     set_euidgid(conf.mail_uid, conf.mail_gid, &saved_uid, &saved_gid);
   }
 
-  hitch_name = g_strdup_printf("%s/input/%s-%d.lock", conf.spool_dir, uid, getpid());
-  lock_name = g_strdup_printf("%s/input/%s.lock", conf.spool_dir, uid);
-
-  if(unlink(hitch_name) == 0)
-    unlink(lock_name);
-
-  g_free(hitch_name);
+  lock_name = g_strdup_printf("%s/%s.lock", conf.lock_dir, uid);
+  dot_unlock(lock_name);
   g_free(lock_name);
 
   /* set uid and gid back */

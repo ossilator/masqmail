@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -73,8 +73,6 @@ void msg_free_data(message *msg)
 {
   GList *node;
 
-  DEBUG(5) debugf("msg_free_data entered\n");
-
   if(msg->data_list){
     for(node = g_list_first(msg->data_list); node; node = g_list_next(node)){
       if(node->data)
@@ -88,8 +86,6 @@ void msg_free_data(message *msg)
 void destroy_message(message *msg)
 {
   GList *node;
-
-  DEBUG(6) debugf("destroy_message entered\n");
 
   if(msg->uid) g_free(msg->uid);
   if(msg->ident) g_free(msg->ident);
@@ -125,8 +121,6 @@ void destroy_message(message *msg)
 void destroy_msg_list(GList *msg_list)
 {
   GList *msg_node;
-
-  DEBUG(6) debugf("destroy_msg_list entered\n");
 
   foreach(msg_list, msg_node){
     message *msg = (message *)(msg_node->data);
@@ -187,8 +181,6 @@ GList *create_msg_out_list(GList *msg_list)
 
 void destroy_msg_out(msg_out *msgout)
 {
-  DEBUG(6) debugf("destroy_msg_out entered\n");
-
   if(msgout){
     if(msgout->return_path)
       destroy_address(msgout->return_path);
@@ -204,126 +196,15 @@ void destroy_msg_out(msg_out *msgout)
     }
     g_free(msgout);
   }
-  DEBUG(6) debugf("destroy_msg_out returning\n");
 }
 
 void destroy_msg_out_list(GList *msgout_list)
 {
   GList *msgout_node;
-  DEBUG(6) debugf("destroy_msg_out_list entered\n");
 
   foreach(msgout_list, msgout_node){
     msg_out *msgout = (msg_out *)(msgout_node->data);
     destroy_msg_out(msgout);
   }
   g_list_free(msgout_list);
-
-  DEBUG(6) debugf("destroy_msg_out_list returning\n");
 }
-
-address *create_address(gchar *path, gboolean is_rfc821)
-{
-  address *adr;
-  adr = _create_address(path, NULL, is_rfc821);
-  
-  if(adr != NULL){
-    adr_unmark_delivered(adr);
-  }
-  return adr;
-}
-
-address *create_address_qualified(gchar *path, gboolean is_rfc821,
-				  gchar *domain)
-{
-  address *adr = create_address(path, is_rfc821);
-  if(adr->domain == NULL)
-    adr->domain = g_strdup(domain);
-
-  return adr;
-}
-
-/* nothing special about pipes here,
-   but its only called for that purpose */
-address *create_address_pipe(gchar *path)
-{
-  address *addr = g_malloc(sizeof(address));
-
-  if(addr){
-    memset(addr, 0, sizeof(address));
-    addr->address = g_strchomp(g_strdup(path));
-    addr->local_part = g_strdup(addr->address);
-  
-    addr->domain = g_strdup("localhost"); /* quick hack */
-  }
-  return addr;
-}
-
-void destroy_address(address *adr)
-{
-  DEBUG(6) debugf("destroy_address entered\n");
-
-  g_free(adr->address);
-  g_free(adr->local_part);
-  g_free(adr->domain);
-
-  g_free(adr);
-}
-
-address *copy_modify_address(const address *orig, gchar *l_part, gchar *dom)
-{
-  address *adr = NULL;
-
-  if(orig){
-    adr = g_malloc(sizeof(address));
-    if(adr){
-      adr->address = g_strdup(orig->address);
-
-      if(l_part == NULL)
-	adr->local_part = g_strdup(orig->local_part);
-      else
-	adr->local_part = g_strdup(l_part);
-
-      if(dom == NULL)
-	adr->domain = g_strdup(orig->domain);
-      else
-	adr->domain = g_strdup(dom);
-
-      adr->flags = 0;
-      adr->children = NULL;
-      adr->parent = NULL;
-    }
-  }
-  return adr;
-}
-
-gboolean addr_isequal(address *adr1, address *adr2)
-{
-  return
-    (strcmp(adr1->local_part, adr2->local_part) == 0) &&
-    (strcasecmp(adr1->domain, adr2->domain) == 0);
-}
-
-/* careful, this is recursive */
-gboolean adr_is_delivered_children(address *adr)
-{
-  GList *adr_node;
-
-  DEBUG(6) debugf("adr_is_delivered_children() entered\n"); 
-
-  if(adr->children == NULL) return adr_is_delivered(adr);
-
-  foreach(adr->children, adr_node){
-    address *adr = (address *)(adr_node->data);
-    if(!adr_is_delivered_children(adr))
-      return FALSE;
-  }
-  return TRUE;
-}
-
-/* find original address */
-address *addr_find_ancestor(address *adr)
-{
-  while(adr->parent) adr = adr->parent;
-  return adr;
-}
-

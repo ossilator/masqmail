@@ -26,7 +26,10 @@
 
 #define POP3_FLAG_DELETE 0x01
 #define POP3_FLAG_UIDL 0x02
-#define POP3_FLAG_APOP 0x04
+#define POP3_FLAG_UIDL_DELE 0x04
+#define POP3_FLAG_APOP 0x08
+
+#define POP3_MAX_CHILDREN 2
 
 typedef
 enum _pop3_error{
@@ -49,6 +52,7 @@ typedef struct pop3_base{
 
   gint next_id;
   gint msg_cnt;
+  gint uidl_known_cnt;
   gint mbox_size;
 
   GList *list_uid_old;
@@ -66,13 +70,14 @@ typedef struct _msg_info{
   gint size;
   gchar *uid;
   gboolean is_fetched;
+  gboolean is_in_uidl;
 } msg_info;
 
 pop3_base *pop3_in_open(gchar *host, gint port, GList *resolve_list, guint flags);
 pop3_base *pop3_in_open_child(gchar *cmd, guint flags);
 void pop3_in_close(pop3_base *popb);
 gboolean pop3_get(pop3_base *popb,
-		  gchar *user, gchar *pass, address *rcpt, gint max_size);
+		  gchar *user, gchar *pass, address *rcpt, address *return_path, gint max_size, gint max_count);
 gboolean pop3_login(gchar *host, gint port, GList *resolve_list,
 		    gchar *user, gchar *pass, guint flags);
 

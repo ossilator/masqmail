@@ -10,6 +10,7 @@
 <cmd>/usr/sbin/masqmail [-q]</cmd>
 <cmd>/usr/sbin/masqmail [-qo [<arg>name</arg>]]</cmd>
 <cmd>/usr/sbin/masqmail [-odq] [-g [<arg>name</arg>]]</cmd>
+<cmd>/usr/sbin/masqmail [-odq] [-go [<arg>name</arg>]]</cmd>
 <cmd>/usr/sbin/masqmail [-t] [-oi] [-f <arg>address</arg>] [--] <arg>address...</arg></cmd>
 <cmd>/usr/sbin/mailq</cmd>
 </synopsis>
@@ -82,8 +83,9 @@ sendmail).</p></optdesc></option>
 
 <option>
 <p><opt>-C </opt><arg>filename</arg></p>
-<optdesc><p>Use another configuration than <file>/etc/masqmail.conf</file>. Useful for
-debugging purposes.</p></optdesc>
+<optdesc><p>Use another configuration than <file>/etc/masqmail/masqmail.conf</file>. Useful for
+debugging purposes. If not invoked by a privileged user, masqmail will drop all privileges.
+</p></optdesc>
 </option>
 
 <option>
@@ -123,6 +125,30 @@ name = "masqmail.get" section="5" href="masqmail.get.5.html"/></p>
 </option>
 
 <option>
+<p><opt>-go [<arg>interval</arg>] [<arg>name</arg>]</opt></p>
+<optdesc>
+<p>Can be followed by a connection name. Use this option in your
+script which starts as soon as a link to the internet has been set up
+(usually ip-up). When masqmail is called with this option, the
+specified get configuration(s) is(are) read and mail will be
+retrieved from servers on the internet.
+The <arg>name</arg> is defined
+in the configuration (see <opt>online_gets.<arg>name</arg></opt>).
+</p><p>
+If called with an interval option (recognized by a digit
+as the first characater), masqmail starts as a daemon and tries to
+get mail in these intervals. It checks for the online status first.
+Example: masqmail -go 5m will retrieve mail
+all five minutes.
+</p><p>
+If called without <arg>name</arg> the online status is determined with
+the configured method (see <opt>online_detect</opt> in <a
+href="config.html">config.html</a>).
+</p>
+</optdesc>
+</option>
+
+<option>
 <p><opt>-i</opt></p>
 <optdesc><p>Same as <b>-oi</b>, see below.</p></optdesc>
 </option>
@@ -140,7 +166,8 @@ return code. Maybe someone tells me what this is good for...</p></optdesc>
 
 <option>
 <p><opt>-odb</opt></p>
-<optdesc><p>Deliver in background. Masqmail always does this.</p></optdesc>
+<optdesc><p>Deliver in background. Masqmail always does this, which
+makes this option pretty much useless.</p></optdesc>
 </option>
 
 <option>
@@ -148,7 +175,7 @@ return code. Maybe someone tells me what this is good for...</p></optdesc>
 <optdesc><p>Do not attempt to deliver immediately. Any messages will be queued
 until the next queue running process picks them up and delivers
 them. You get the same effect by setting the <i>do_queue</i> option in
-/etc/masqmail.conf.</p></optdesc>
+/etc/masqmail/masqmail.conf.</p></optdesc>
 </option>
 
 <option>
@@ -186,10 +213,10 @@ script which starts as soon as a link to the internet has been set up
 (usually ip-up). When masqmail is called with this option, the
 specified route configuration is read and the queued mail with
 destinations on the internet will be sent. The <arg>name</arg> is defined
-in the configuration (see <b>connect_route.<arg>name</arg></b>).
+in the configuration (see <opt>online_routes.<arg>name</arg></opt>).
 </p><p>
 If called without <arg>name</arg> the online status is determined with
-the configured method (see <b>online_detect</b> in <a
+the configured method (see <opt>online_detect</opt> in <a
 href="config.html">config.html</a>)
 </p>
 </optdesc>
@@ -200,6 +227,15 @@ href="config.html">config.html</a>)
 <optdesc><p>Read recipients from headers. Delete 'Bcc:' headers. If any
 arguments are given, these are interpreted as recipient addresses and
 the message will <em>not</em> be sent to these.</p></optdesc>
+</option>
+
+<option>
+<p><opt>-v</opt></p>
+<optdesc><p>Log also to stdout. Currently, some log messages are
+marked as 'write to stdout' and additionally, all messages with
+priority 'LOG_ALERT' and 'LOG_WARNING' will be written to stdout
+if this option is given. It is disabled in daemon mode.
+</p></optdesc>
 </option>
 
 </options>
@@ -220,13 +256,15 @@ completely discarded and newly set up. These are:</p>
 </section>
 
 <section name = "Files">
-<p><file>/etc/masqmail.conf</file> is the main configuration
+<p><file>/etc/masqmail/masqmail.conf</file> is the main configuration
 for masqmail. Depending on the settings in this file, you will also
 have other configuration files in <file>/etc/masqmail/</file>.</p>
+<p><file>/etc/aliases</file> is the alias file, if not set differently
+in <file>/etc/masqmail/masqmail.conf</file>.</p>
 <p><file>/var/spool/masqmail/</file> is the spool directory where masqmail
 stores its spooled messages and the uniq pop ids.</p>
 <p><file>/var/spool/mail/</file> is the directory where locally delivered mail will be put, if not configured differently in <file>masqmail.conf</file>.</p>
-<p><file>/var/masqmail/</file> is the directory where masqmail stores
+<p><file>/var/log/masqmail/</file> is the directory where masqmail stores
 its log mesages. This can also be somewhere else if configured
 differently by your sysadmin or the package mantainer.</p>
 </section>
@@ -240,8 +278,8 @@ differently by your sysadmin or the package mantainer.</p>
 
 <section name = "Author">
 <p>masqmail was written by Oliver Kurth
-&lt;kurth@innominate.de&gt;</p><p>You will find the newest version of
-masqmail at <url href="http://www.innomininate.org/~oku/masqmail/"/> or search for it
+&lt;oku@masqmail.cx&gt;</p><p>You will find the newest version of
+masqmail at <url href="http://masqmail.cx/masqmail/"/> or search for it
 in freshmeat (<url href="http://www.freshmeat.net"/>). There is also a mailing list,
 you will find information about it at masqmails main site.</p>
 </section>
@@ -257,7 +295,8 @@ you will find information about it at masqmails main site.</p>
 </section>
 
 <section name = "Comments">
-<p>This man page was written using <manref name="xml2man" section="1" href="http://www.innominate.org/~oku/xml2man/"/> by the same author.</p>
+<p>This man page was written using <manref name="xml2man" section="1"
+href="http://masqmail.cx/xml2man/"/> by the same author.</p>
 </section>
 
 </manpage>

@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 #include <config.h>
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +27,7 @@
 #include <pwd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <time.h>
 #include <sys/time.h>
 #include <netinet/in.h>
@@ -65,9 +67,17 @@ typedef struct _address
   struct _address *parent;
 } address;
 
-#define adr_mark_delivered(adr) { adr->flags |= ADDR_FLAG_DELIVERED; }
-#define adr_unmark_delivered(adr) { adr->flags &= ~ADDR_FLAG_DELIVERED; }
-#define adr_is_delivered(adr) ((adr->flags & ADDR_FLAG_DELIVERED) != 0 )
+#define addr_mark_delivered(addr) { addr->flags |= ADDR_FLAG_DELIVERED; }
+#define addr_unmark_delivered(addr) { addr->flags &= ~ADDR_FLAG_DELIVERED; }
+#define addr_is_delivered(addr) ((addr->flags & ADDR_FLAG_DELIVERED) != 0 )
+
+#define addr_mark_defered(addr) { addr->flags |= ADDR_FLAG_DEFERED; }
+#define addr_unmark_defered(addr) { addr->flags &= ~ADDR_FLAG_DEFERED; }
+#define addr_is_defered(addr) ((addr->flags & ADDR_FLAG_DEFERED) != 0 )
+
+#define addr_mark_failed(addr) { addr->flags |= ADDR_FLAG_FAILED; }
+#define addr_unmark_failed(addr) { addr->flags &= ~ADDR_FLAG_FAILED; }
+#define addr_is_failed(addr) ((addr->flags & ADDR_FLAG_FAILED) != 0 )
 
 typedef
 struct _connect_route
@@ -79,15 +89,19 @@ struct _connect_route
 
   gboolean is_local_net;
 
+  GList *allowed_return_paths;
+  GList *not_allowed_return_paths;
   GList *allowed_mail_locals;
   GList *not_allowed_mail_locals;
   GList *allowed_rcpt_domains;
   GList *not_allowed_rcpt_domains;
 
-  gchar *mail_host;
+  interface *mail_host;
   gchar *wrapper;
 
+  gchar *helo_name;
   gboolean do_correct_helo;
+  gboolean do_pipelining;
 
   gchar *set_h_from_domain;
   gchar *set_h_reply_to_domain;
@@ -95,6 +109,7 @@ struct _connect_route
 
   GList *map_h_from_addresses;
   GList *map_h_reply_to_addresses;
+  GList *map_h_mail_followup_to_addresses;
   GList *map_return_path_addresses;
 
   gboolean expand_h_sender_domain;
@@ -114,12 +129,6 @@ struct _connect_route
   gboolean pipe_fromhack;
 } connect_route;
 
-typedef struct _route_file_list
-{
-  gchar *name;
-  GList *file_list;
-} route_file_list;
-
 typedef struct _get_conf
 {
   gchar *protocol;
@@ -129,9 +138,12 @@ typedef struct _get_conf
   gchar *login_user;
   gchar *login_pass;
   address *address;
+  address *return_path;
   gboolean do_keep;
   gboolean do_uidl;
+  gboolean do_uidl_dele;
   gint max_size;
+  gint max_count;
 
   GList *resolve_list;
 
@@ -149,6 +161,7 @@ struct _masqmail_conf
   gboolean run_as_user;
 
   gchar *mail_dir;
+  gchar *lock_dir;
   gchar *spool_dir;
   gchar *log_dir;
 
@@ -158,13 +171,26 @@ struct _masqmail_conf
 
   gchar *host_name;
   GList *local_hosts;
+  GList *local_addresses;
+  GList *not_local_addresses;
   GList *local_nets;
   GList *listen_addresses;
   guint remote_port;
 
+  gboolean do_save_envelope_to;
+
+  gboolean do_relay;
+
   GList *ident_trusted_nets;
 
   gboolean do_queue;
+
+  gboolean do_verbose;
+
+  gchar *mbox_default;
+  GList *mbox_users;
+  GList *mda_users;
+  GList *maildir_users;
 
   gchar *mda;
   gboolean mda_fromline;
@@ -176,14 +202,20 @@ struct _masqmail_conf
   gchar *alias_file;
   int (*alias_local_cmp)(const char *, const char *);
 
-  route_file_list *local_net_routes;
-  GList *connect_routes; /* list of route_list */
+  GList *local_net_routes;
+  GList *connect_routes; /* list of pairs which point to lists */
 
   gchar *online_detect;
   gchar *online_file;
+  gchar *online_pipe;
   interface *mserver_iface;
 
   GList *get_names;
+  GList *online_gets; /* list of pairs which point to lists */
+
+  gchar *errmsg_file;
+  gchar *warnmsg_file;
+  gchar *log_user;
 } masqmail_conf;
 
 extern masqmail_conf conf;
@@ -300,6 +332,7 @@ struct _msgout_perhost
 #define ACC_NO_RECVD_HDR   0x20 /* do not create a Received: header */
 #define ACC_MAIL_FROM_HEAD 0x40 /* get return path from header */
 #define ACC_NODOT_RELAX    0x80 /* do not be picky if message ist not terminated by a dot on a line */
+#define ACC_SAVE_ENVELOPE_TO 0x0100 /* save an existent Envelope-to header as X-Orig-Envelope-to */
 
 #define DLVR_LOCAL 0x01
 #define DLVR_LAN 0x02
@@ -367,20 +400,32 @@ struct _smtp_connection
 }smtp_connection;
 
 /* alias.c*/
+gboolean addr_is_local(address *addr);
 GList *alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list);
+
+/* child.c */
+int child(const char *command);
 
 /* conf.c */
 gboolean read_conf(gchar *filename);
 connect_route *read_route(gchar *filename, gboolean is_local_net);
-GList *read_route_list(route_file_list *r_list, gboolean is_local_net);
+GList *read_route_list(GList *rf_list, gboolean is_local_net);
+void destroy_route(connect_route *r);
+void destroy_route_list(GList *list);
 get_conf *read_get_conf(gchar *filename);
+void destroy_get_conf(get_conf *gc);
 connect_route *create_local_route();
+
+/* expand.c */
+GList *var_table_rcpt(GList *var_table, address *rcpt);
+GList *var_table_msg(GList *var_table, message *msg);
+GList *var_table_conf(GList *var_table);
+gint expand(GList *var_list, gchar *format, gchar *result, gint result_len);
 
 /* message.c */
 message *create_message(void);
 void destroy_message(message *msg);
 void destroy_msg_list(GList *msg_list);
-
 void msg_free_data(message *msg);
 gint msg_calc_size(message *msg, gboolean is_smtp);
 
@@ -390,19 +435,26 @@ GList *create_msg_out_list(GList *msg_list);
 void destroy_msg_out(msg_out *msgout);
 void destroy_msg_out_list(GList *msgout_list);
 
+/* address.c */
 address *create_address(gchar *path, gboolean is_rfc821);
 address *create_address_qualified(gchar *path, gboolean is_rfc821,
 				  gchar *domain);
 address *create_address_pipe(gchar *path);
-void destroy_address(address *adr);
+void destroy_address(address *addr);
 address *copy_modify_address(const address *orig, gchar *l_part, gchar *dom);
-#define copy_address(adr) copy_modify_address(adr, NULL, NULL)
-address *addr_find_ancestor(address *adr);
-gboolean adr_is_delivered_children(address *adr);
+#define copy_address(addr) copy_modify_address(addr, NULL, NULL)
+gboolean addr_isequal(address *addr1, address *addr2);
+gboolean addr_isequal_parent(address *addr1, address *addr2);
+address *addr_find_ancestor(address *addr);
+gboolean addr_is_delivered_children(address *addr);
+gboolean addr_is_finished_children(address *addr);
+gchar *addr_string(address *addr);
+gint addr_match(address *addr1, address *addr2);
 
 /* accept.c */
 accept_error accept_message(FILE *in, message *msg,
 			    guint flags);
+accept_error accept_message_prepare(message *msg, guint flags);
 
 /* header.c */
 gchar *rec_timestamp();
@@ -418,7 +470,7 @@ header *get_header(gchar *line);
 void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident);
 
 /* listen.c */
-void listen_port(GList *adr_list, gint qival, char *argv[]);
+void listen_port(GList *addr_list, gint qival, char *argv[]);
 
 /* parse.c */
 gboolean split_address(const gchar *path, gchar **local_part, gchar **domain,
@@ -434,8 +486,8 @@ gboolean parse_address_rfc821(gchar *string,
 address *_create_address(gchar *string, gchar **end, gboolean is_rfc821);
 address *create_address_rfc821(gchar *string, gchar **end);
 address *create_address_rfc822(gchar *string, gchar **end);
-GList *adr_list_append_rfc822(GList *adr_list, gchar *string, gchar *domain);
-gboolean addr_isequal(address *adr1, address *adr2);
+GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain);
+gboolean addr_isequal(address *addr1, address *addr2);
 
 /* connect.c */
 mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port,
@@ -454,17 +506,28 @@ gboolean deliver_finish_list(GList *msgout_list);
 gboolean deliver_msg_list(GList *msg_list, guint flags);
 gboolean deliver(message *msg);
 
+/* fail_msg.c */
+gboolean fail_msg(message *msg, GList *failed_rcpts, gchar *err_fmt, va_list args);
+
 /* get.c */
 gboolean get_from_file(gchar *fname);
 gboolean get_from_name(gchar *name);
 gboolean get_all(void);
+void get_online(void);
+void get_daemon(gint gival, char *argv[]);
 gboolean pop_before_smtp(gchar *fname);
+
+/* interface.c */
+gboolean init_sockaddr(struct sockaddr_in *name, interface *iface);
+int make_server_socket(interface *iface);
 
 /* local.c */
 gboolean append_file(message *msg, GList *hdr_list, gchar *user);
+gboolean maildir_out(message *msg, GList *hdr_list, gchar *user, guint flags);
 gboolean pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags);
 
 /* log.c */
+gchar *ext_strerror(int err);
 gboolean logopen(void);
 void logclose(void);
 void vlogwrite(int pri, const char *fmt, va_list args);
@@ -472,9 +535,6 @@ void logwrite(int pri, const char *fmt, ...);
 void debugf(const char *fmt, ...);
 void vdebugf(const char *fmt, va_list args);
 void maillog(const char *fmt, ...);
-
-/* mserver.c */
-gchar *mserver_detect_online();
 
 /* spool.c */
 gboolean spool_read_data(message *msg);
@@ -498,7 +558,7 @@ void set_online_name(gchar *name);
 
 /* permissions.c */
 gboolean is_ingroup(uid_t uid, gid_t gid);
-void set_euidgid(gint uid, gint gid, gint *old_uid, gint *old_gid);
+void set_euidgid(gint uid, gint gid, uid_t *old_uid, gid_t *old_gid);
 void set_identity(uid_t old_uid, gchar *task_name);
 
 /* rewrite.c */
@@ -506,20 +566,23 @@ gboolean set_address_header_domain(header *hdr, gchar *domain);
 gboolean map_address_header(header *hdr, GList *table);
 
 /* route.c */
-route_file_list *find_route_file_list(GList *list, gchar *name);
 msgout_perhost *create_msgout_perhost(gchar *host);
 void destroy_msgout_perhost(msgout_perhost *mo_ph);
 void rewrite_headers(msg_out *msgout, connect_route *route);
 void rcptlist_with_one_of_hostlist(GList *rcpt_list, GList *host_list,
 				     GList **, GList **);
+void rcptlist_with_addr_is_local(GList *rcpt_list,
+				   GList **p_rcpt_list, GList **p_non_rcpt_list);
 gboolean route_strip_msgout(connect_route *route, msg_out *msgout);
 msg_out *route_prepare_msgout(connect_route *route, msg_out *msgout);
 GList *route_msgout_list(connect_route *route, GList *msgout_list);
+gboolean route_is_allowed_return_path(connect_route *route, address *ret_path);
 gboolean route_is_allowed_mail_local(connect_route *route, address *ret_path);
 void msg_rcptlist_route(connect_route *route, GList *rcpt_list,
 			GList **p_rcpt_list, GList **p_non_rcpt_list);
 
 /* tables.c */
+table_pair *create_pair(gchar *key, gpointer value);
 table_pair *create_pair_string(gchar *key, gpointer value);
 table_pair *parse_table_pair(gchar *line, char delim);
 gpointer *table_find_func(GList *table_list, gchar *key, int (*cmp_func)(const char *, const char *));
@@ -529,6 +592,9 @@ gpointer *table_find_fnmatch(GList *table_list, gchar *key);
 GList *table_read(gchar *fname, gchar delim);
 void destroy_table(GList *table);
 
+/* permissions.c */
+gboolean is_privileged_user(uid_t uid);
+
 /* other things */
 
 #define foreach(list, node)\
@@ -536,7 +602,14 @@ for((node) = g_list_first(list);\
     (node);\
     (node) = g_list_next(node))
 
+#ifdef ENABLE_DEBUG
 #define DEBUG(level) if(level <= conf.debug_level)
+#else
+/* hopefully the compiler optmizes this away... */
+#define DEBUG(level) if(0)
+#endif
+
+#define LOG_VERBOSE 0x100
 
 #ifndef HAVE_GETLINE
 #define getline(buf, size, file) getdelim(buf, size, '\n', file)
@@ -546,9 +619,13 @@ for((node) = g_list_first(list);\
 #define fdatasync(fd) fsync(fd)
 #endif
 
-#ifndef CONF_FILE
-#define CONF_FILE "/etc/masqmail.conf"
+#ifndef CONF_DIR
+#define CONF_DIR "/etc/masqmail"
 #endif
+
+#define CONF_FILE CONF_DIR"/masqmail.conf"
+
+#define PIDFILEDIR "/var/run"
 
 #ifndef va_copy
 #ifdef __va_copy
@@ -558,3 +635,5 @@ for((node) = g_list_first(list);\
 #endif
 #endif
 
+/* *BSD needs this: */
+extern char **environ;

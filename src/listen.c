@@ -17,8 +17,10 @@
 */
 
 #include "masqmail.h"
+#include <sys/wait.h>
+#include <sys/types.h>
 
-int volatile sighup_seen = 0;
+static int volatile sighup_seen = 0;
 
 static
 void sighup_handler(int sig)
@@ -27,6 +29,26 @@ void sighup_handler(int sig)
   signal(SIGHUP, sighup_handler);
 }
 
+static
+void sigchld_handler(int sig)
+{
+  pid_t pid;
+  int status;
+  
+  pid = waitpid(0, &status, 0);
+  if(pid > 0){
+    if(WEXITSTATUS(status) != EXIT_SUCCESS)
+      logwrite(LOG_WARNING, "process %d exited with %d\n",
+	       pid, WEXITSTATUS(status));
+    if(WIFSIGNALED(status))
+      logwrite(LOG_WARNING,
+	       "process with pid %d got signal: %d\n",
+	       pid, WTERMSIG(status));
+  }
+  signal(SIGCHLD, sigchld_handler);
+}
+
+#ifdef ENABLE_SMTP_SERVER
 void accept_connect(int listen_sock, int sock, struct sockaddr_in* sock_addr)
 {
   pid_t pid;
@@ -54,7 +76,7 @@ void accept_connect(int listen_sock, int sock, struct sockaddr_in* sock_addr)
 #endif
 
   // start child for connection:
-  signal(SIGCHLD, SIG_IGN);
+  signal(SIGCHLD, sigchld_handler);
   pid = fork();
   if(pid == 0){
     close(listen_sock);
@@ -76,6 +98,7 @@ void accept_connect(int listen_sock, int sock, struct sockaddr_in* sock_addr)
   close(sock);
   close(dup_sock);
 }
+#endif /*ifdef ENABLE_SMTP_SERVER*/
 
 void listen_port(GList *iface_list, gint qival, char *argv[])
 {
@@ -90,6 +113,7 @@ void listen_port(GList *iface_list, gint qival, char *argv[])
 
   /* Create the sockets and set them up to accept connections. */
   FD_ZERO (&active_fd_set);
+#ifdef ENABLE_SMTP_SERVER
   for(node = g_list_first(iface_list);
       node;
       node = node_next){
@@ -111,9 +135,11 @@ void listen_port(GList *iface_list, gint qival, char *argv[])
     DEBUG(5) debugf("sock = %d\n", sock);
     FD_SET (sock, &active_fd_set);
   }
-        
+#endif
+
   /* setup handler for HUP signal: */
   signal(SIGHUP, sighup_handler);
+  signal(SIGCHLD, sigchld_handler);
 
   /* now that we have our socket(s),
      we can give up root privileges */
@@ -180,6 +206,7 @@ void listen_port(GList *iface_list, gint qival, char *argv[])
       }
     }
     else if(sel_ret > 0){
+#ifdef ENABLE_SMTP_SERVER
       for(i = 0; i < FD_SETSIZE; i++){
 	if (FD_ISSET (i, &read_fd_set)){
 	  int sock = i;
@@ -195,11 +222,14 @@ void listen_port(GList *iface_list, gint qival, char *argv[])
 	    accept_connect(sock, new, &clientname);
 	}
       }
+#else
+      ;
+#endif
     }else{
       /* If select returns 0, the interval time has elapsed.
 	 We start a new queue runner process */
       int pid;
-      signal(SIGCHLD, SIG_IGN);
+      signal(SIGCHLD, sigchld_handler);
       if((pid = fork()) == 0){
 	queue_run();
 

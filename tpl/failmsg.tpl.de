@@ -1,0 +1,51 @@
+Subject: Mail Delivery Failure Notice
+From: MAILER-DAEMON@${host_name}
+To: ${return_path}
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+        boundary="${uid}/${host_name}"
+
+Dies ist eine MIME-formatierte Nachricht.
+This is a MIME-encapsulated message.
+
+--${uid}/${host_name}
+Content-Description: Notification
+Content-Type: text/plain
+
+Diese Nachricht wurde Ihnen von dem Mail Agenten
+(${package} ${version}) auf ${host_name} geschickt.
+(This message was sent to you by the mailer daemon (${package} ${version})
+at ${host_name}.)
+
+Bedauerlicherweise konnte Ihre Mail nicht an alle Empfänger weitergeleitet
+werden.
+(Sorry, but your mail could not be delivered to all recipients.)
+
+Die Zustellung zu den folgenden Empfängern ist permanent
+fehlgeschlagen. Es wird kein weiterer Versuch unternommen:
+(Delivery to the following recipients failed permanently and has been given
+up:)
+
+@failed_rcpts
+
+Diese Fehlermeldung könnte einen Hinweis über die Ursache geben:
+(This error message may give you a hint about what caused the
+failure:)
+
+${err_msg}
+
+Für weitere Hilfe, schreiben Sie an <postmaster@${host_name}>.
+(If you need help, write to <postmaster@${host_name}>.)
+
+Ihre Nachricht folgt im Anhang, einschliesslich aller Header:
+(Your message follows attached, including all headers:)
+
+--${uid}/${host_name}
+Content-Description: Undelivered Message
+Content-Type: message/rfc822
+
+@msg_headers
+
+@msg_body
+
+--${uid}/${host_name}--

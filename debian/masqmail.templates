@@ -1,0 +1,240 @@
+Template: masqmail/note_pcmcia_scripts
+Type: note
+Description: Removed executable bit in scripts in /etc/pcmcia/ip-{up,down}.d/
+ The scripts in /etc/pcmcia/ip-{up,down}.d/ are deprecated
+ and are replaced with the scripts /etc/network/if-{up,down}.d/1masqmail, which
+ will work for _any_ network card (not just pcmcia). The executable bit of the
+ old scripts has been removed, because otherwise they and the new scripts would be
+ exececuted, which is not desired.
+ .
+ You should remove these scripts from /etc/pcmcia/ip-{up,down}.d/. If you still want
+ to use them, just reset the executable bit.
+ .
+ Whatever you do, you will never see the note again.
+
+Template: masqmail/manage_config_with_debconf
+Type: boolean
+Default: true
+Description: Manage masqmail.conf using debconf?
+ The /etc/masqmail/masqmail.conf file can be handled automatically
+ by debconf, or manually by you.
+ .
+ Note that only specific, marked sections of the configuration file will be
+ handled by debconf if you select this option; if those markers are absent,
+ you will have to update the file manually, or move or delete the file.
+
+Template: masqmail/move_existing_nondebconf_config
+Type: boolean
+Default: false
+Description: Replace existing /etc/masqmail/masqmail.conf file?
+ The existing /etc/masqmail/masqmail.conf file currently on the system does
+ not contain a marked section for debconf to write its data.
+ .
+ If you select this option, the existing configuration
+ file will be backed up to /etc/masqmail/masqmail.conf.debconf-backup and a
+ new file written to /etc/masqmail/masqmail.conf.  If you do not select this
+ option, the existing configuration file will not be managed by debconf,
+ and no further questions about masqmail configuration will be
+ asked.
+
+Template: masqmail/host_name
+Type: string
+Default:
+Description: The name with which masqmail identifies itself to others
+ This is most likely your hostname. It is used in its SMTP greeting
+ banner, for expanding unqualified addresses, the Message ID and so on.
+
+Template: masqmail/local_hosts
+Type: string
+Default:
+Description: hosts considered local
+ This is a list of hosts, separated with semicolons (;), which are
+ considered 'local', ie. mail to this host will be delivered to a
+ mailbox (or Maildir or MDA) on this host.
+ .
+ You will most likely insert 'localhost', your hostname in its fully
+ qualified version, and just the simple hostname here.
+ .
+ You can also use wildcard expressions like '*' and '?'.
+
+Template: masqmail/local_nets
+Type: string
+Default:
+Description: nets considered local, for immediate delivery attempts
+ This is a list of hosts, separated with semicolons (;), which are
+ on your local network, ie. they are always reachable, without a
+ dialup connection. Mail to these hosts will be delivered immediately,
+ without checking for the online status.
+ .
+ You can use wildcards expressions like '*' and '?', eg. *.yournet.local
+ .
+ If you have only one box, you can leave this empty. If you do not want
+ to use masqmail as an offline MTA, and the whole internet or another mail
+ server which accepts outgoing mail is all time
+ reachable to you, just insert '*'.
+
+Template: masqmail/listen_addresses
+Type: string
+Default: localhost:25
+Description: accept connections on these interfaces
+ masqmail, for security reasons, does not listen an all network interfaces
+ by default. If there are no other hosts connected to your host, just leave
+ this 'localhost:25'. If there are other hosts that may want to send SMTP
+ messages to this host, add the address of you network interface here,
+ eg.: localhost:25;192.168.1.2:25.
+ .
+ Of course you can also replace the '25' with another port number, but
+ this is unusual.
+
+Template: masqmail/use_syslog
+Type: boolean
+Default: false
+Description: use syslogd for logs?
+ You can decide whether masmail should log via syslog or not. If not,
+ logs will be written to /var/log/masqmail/masqmail.log.
+
+Template: masqmail/online_detect
+Type: select
+Choices: file, pipe
+Default: file
+Description: the online detection method
+ masqmail has different methods to determine whether it is online or not,
+ these are 'file','pipe'.
+ .
+ For 'file', masqmail checks for the existence of a file, and, if it
+ exists, reads from it the name of the connection.
+ .
+ For 'pipe', masqmail calls a program or script, which outputs the name
+ if online or nothing if not. You can use eg. the program guessnet for this.
+
+Template: masqmail/online_file
+Type: string
+Default: /tmp/connect_route
+Description: the name of the file to determine the online status
+
+Template: masqmail/online_pipe
+Type: string
+Default:
+Description: the name of the program to determine the online status
+ Note that, when this program is called, masqmail has the user id 'mail'.
+
+Template: masqmail/mbox_default
+Type: select
+Choices: mbox, mda, maildir
+Default: mbox
+Description: local delivery style
+ Local mail can be delivered to a mailbox, to an MDA (eg. procmail)
+ or to a qmail style maildir in the users home dir.
+ .
+ You can select the default style here. You can configure this also
+ on a per-user basis with the options mbox_users, mda_users and
+ maildir_users.
+
+Template: masqmail/mda
+Type: string
+Default: /usr/bin/procmail -Y -d ${rcpt_local}
+Description: The MDA command line including options
+ Give here the path to the mda, including its arguments. You can use
+ substitution values here, eg. ${rcpt_local} for the user name.
+ .
+ For other substitutions please see the man page.
+ .
+ (This question is also asked if you did not set mbox_default to mda,
+ since you can use mda for a set of users specially)
+
+Template: masqmail/alias_local_caseless
+Type: boolean
+Default: false
+Description: Alias expansion regarding case or not
+ masqmail uses the file /etc/aliases to redirect local addresses.
+ The search for a match in /etc/aliases can be regarding upper/lower
+ case or insensitive to case.
+
+Template: masqmail/init_smtp_daemon
+Type: boolean
+Default: true
+Description: Start SMTP listening daemon?
+ Select 'yes' if you want masqmail to start as an SMTP listening
+ daemon. You will need this if:
+ .
+ - there are other hosts in your local network that may want to send mail via this host
+ .
+ - you use a mail client that sends mail via SMTP (netscape, mozilla are examples)
+ .
+ If in doubt, select 'yes'.
+
+Template: masqmail/init_queue_daemon
+Type: boolean
+Default: true
+Description: Start SMTP queue running daemon?
+ Select 'yes' if you want masqmail to start as a queue running daemon. You will
+ need this very likely. It is used for mail that cannot delivered immediately,
+ either because of delivery failures or because you were not online on
+ the first attempt to send a mail.
+ .
+ If in doubt, select 'yes'.
+
+Template: masqmail/queue_daemon_ival
+Type: string
+Default: -q10m
+Description: The interval for the queue running daemon
+ Set the interval for the queue running daemon. -q10m means flush the queue every
+ 10 minutes.
+ .
+ The format is -q, followed by an numeric value and one of the letters s,m,h,d,w for
+ seconds, minutes, hours, days or weeks respectively.
+ .
+ Reasonable values are between 5 minutes (-q5m) and 2 hours (-q2h).
+
+Template: masqmail/init_fetch_daemon
+Type: boolean
+Default: false
+Description: Start POP3 fetch daemon?
+ Select 'yes' if you want masqmail to start as a fetch daemon. If you say 'yes',
+ masqmail will try to fetch mail from pop servers that you configure in regular
+ intervals, detecting the online status first.
+ .
+ No matter what you choose here, you can later select whether you want to fetch
+ mail the moment you get online.
+
+Template: masqmail/fetch_daemon_ival
+Type: string
+Default: -go5m
+Description: The interval for the fetch daemon
+ Set the interval for the fetch daemon. -go5m means try to fetch mail every
+ 5 minutes.
+ .
+ The format is -go, followed by an numeric value and one of the letters s,m,h,d,w for
+ seconds, minutes, hours, days or weeks respectively.
+ .
+ Reasonable values are between 2 minutes (-go2m) and 2 hours (-go2h).
+
+Template: masqmail/ipup_runqueue
+Type: boolean
+Default: true
+Description: flush mail queue when you get online?
+ Select 'yes' if you want masqmail to immediately flush its mail queue as soon
+ as you go online. This will be done in the ip-up script in /etc/ppp/ip-up or
+ in /etc/network/if-up.d/.
+
+Template: masqmail/ipup_fetch
+Type: boolean
+Default: false
+Description: fetch mail when you get online?
+ Select 'yes' if you want masqmail to immediately fetch mail from POP3
+ servers as soon as you go online. This will be done in the ip-up script
+ in /etc/ppp/ip-up or in /etc/network/if-up.d/.
+
+Template: masqmail/you_are_not_finished
+Type: note
+Description: You are not finished
+ Although masqmail is not as feature rich as other MTAs like sendmail
+ or exim, this debconf does not (yet) do all configurations for you.
+ .
+ To make use of masqmail, you still have to create some sub configuration
+ files for sending mail to some ISP and/or to fetch mail. masqmail has
+ lots of man pages and examples which are hopefully clear enough to
+ explain to you how to do it.
+ .
+ You should start with the man pages masqmail.conf, masqmail.route
+ and masqmail.get.

@@ -30,6 +30,7 @@
 #define debugf g_print
 #endif
 
+#ifdef ENABLE_RESOLVER
 
 static union {
   HEADER hdr;
@@ -306,6 +307,8 @@ GList *resolve_dns_mx(GList *list, gchar *domain)
   }
   return list;
 }
+
+#endif
 
 /* now something completely different... */
 

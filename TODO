@@ -1,27 +1,21 @@
 general:
 - look carefully were memory is not freed
 - add forwarding support
-- add Mailer-Daemon error messages
+- improve Mailer-Daemon error messages
+- ODMR support
+- temporary delivery delay notifications
 
 conf:
 - more configuration options
 - make conf more fool proof
 
-deliver:
-- routes should be a list, so more than one route can be used for a connection
-
 pop:
-- online daemon mode
 - multidrop support
 
 lookup:
 - optimize MX lookup
 
-queue:
-- users should be able to delete their own spool files
-
-route:
-- delivery via pipe (eg. uucp)
+...update this file from time to time...
 
 ...and (you guessed it):
 - bug fixing

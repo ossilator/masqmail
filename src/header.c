@@ -198,6 +198,8 @@ header *create_header(header_id id, gchar *fmt, ...)
     if(*p)
       hdr->value = p+1;
   }
+
+  va_end(args);
   return hdr;
 }
 
@@ -239,8 +241,9 @@ header *get_header(gchar *line)
 
   hdr->value = NULL;
   p++;
-  if(*p)
-    hdr->value = p+1;
+
+  while(*p == ' ' || *p == '\t') p++;
+  hdr->value = p;
 
   for(i = 0; i < HEAD_NUM_IDS; i++){
     if(strcasecmp(header_names[i].header, buf) == 0)

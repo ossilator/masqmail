@@ -52,6 +52,7 @@ void debugf(const char *fmt, ...)
   va_end(args);
 }
 
+int
 main(int argc, char *argv[])
 {
   gchar *helo_name = g_malloc(64);

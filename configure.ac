@@ -1,0 +1,281 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(src/accept.c)
+
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(masqmail, 0.2.12)
+
+AC_PREFIX_DEFAULT(/usr)
+
+dnl Checks for programs.
+
+dnl Checks for libraries.
+
+AC_PROG_CC
+AC_ISC_POSIX
+AC_STDC_HEADERS
+dnl AC_ARG_PROGRAM
+AC_PROG_RANLIB
+
+AM_PATH_GLIB
+
+dnl resolver support (default is use it)
+AC_ARG_ENABLE(resolver,
+	[  --disable-resolver       disable resolver support],
+	if test "$enable_resolver" != 'no'; then
+		resolver_enabled='yes'
+	fi,
+	resolver_enabled='yes'
+	)
+
+if test "$resolver_enabled" = yes; then
+	AC_DEFINE(ENABLE_RESOLVER, 1)
+dnl checks necessary for libc5:
+dnl if there is res_search in libc, it is probably libc5
+dnl if not, it is probably libc6 and we need libresolv
+	AC_CHECK_LIB(c, res_search, need_resolv=no, need_resolv=yes)
+	if test "$need_resolv" = yes; then
+		AC_CHECK_LIB(resolv, res_search,has_resolv=yes,AC_MSG_ERROR("no libresolv"))
+		RESOLV_LIBS='-lresolv'
+	else
+		RESOLV_LIBS=''
+	fi
+else
+	RESOLV_LIBS=''
+fi
+AC_SUBST(RESOLV_LIBS)
+
+dnl if there is no getline, we define it using getdelim in src/masqmail.h
+AC_CHECK_FUNCS(getline)
+
+dnl if there is no fdatasync, we define it to fsync in src/masqmail.h
+AC_CHECK_FUNCS(fdatasync)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h sys/time.h syslog.h unistd.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_HEADER_TIME
+AC_STRUCT_TM
+
+dnl Checks for library functions.
+AC_FUNC_FNMATCH
+AC_TYPE_SIGNAL
+AC_FUNC_STRFTIME
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS(select socket strerror strstr)
+
+dnl user and group configuration
+AC_ARG_WITH(user,
+	[  --with-user=USER         set user [mail]],
+	)
+if test "x$with_user" = 'x'; then
+	with_user='mail'
+fi
+
+AC_ARG_WITH(group,
+	[  --with-group=GROUP       set group [trusted]],
+	)
+if test "x$with_group" = 'x'; then
+	with_group='trusted'
+fi
+
+dnl debugging support (default is use it)
+AC_ARG_ENABLE(debug,
+	[  --disable-debug          disable debugging],
+	if test "x$enable_debug" != 'xno'; then
+		debug_enabled='yes'
+	fi,
+	debug_enabled='yes'
+	)
+if test "x$debug_enabled" = xyes; then
+	AC_DEFINE(ENABLE_DEBUG, 1)
+fi
+
+AC_DEFINE_UNQUOTED(DEF_MAIL_USER, "${with_user}")
+AC_SUBST(with_user)
+AC_DEFINE_UNQUOTED(DEF_MAIL_GROUP, "${with_group}")
+AC_SUBST(with_group)
+
+dnl link glib statically?
+AC_ARG_WITH(glib_static,
+	[  --with-glib-static=path  link glib statically (path mandatory!)],
+	)
+if test "x$with_glib_static" != 'x'; then
+	GLIB_LIBS=$with_glib_static
+	AC_SUBST(GLIB_LIBS)
+fi
+
+dnl optional features
+MD5_LIBS=''
+BASE64_LIBS=''
+
+dnl smtp server support (default is use it)
+AC_ARG_ENABLE(smtp_server,
+	[  --disable-smtp-server    disable smtp server support],
+	if test "x$enable_smtp_server" != 'xno'; then
+		smtp_server_enabled='yes'
+	fi,
+	smtp_server_enabled='yes'
+	)
+if test "x$smtp_server_enabled" = xyes; then
+	AC_DEFINE(ENABLE_SMTP_SERVER, 1)
+fi
+
+dnl pop support (default is use it)
+AC_ARG_ENABLE(pop3,
+	[  --disable-pop3           disable pop3 support],
+	if test "x$enable_pop3" != 'xno'; then
+		pop3_enabled='yes'
+	fi,
+	pop3_enabled='yes'
+	)
+if test "x$pop3_enabled" = xyes; then
+	AC_DEFINE(ENABLE_POP3, 1)
+#	MD5_LIBS='md5/libmd5c.a'
+	need_md5='yes'
+fi
+
+dnl auth support (default is to not use it)
+AC_ARG_ENABLE(auth,
+	[  --enable-auth            enable AUTH (RFC 2554) client support],
+	if test "x$enable_auth" != 'xno'; then
+		auth_enabled='yes'
+	fi,
+	)
+if test "x$auth_enabled" = xyes; then
+	AC_DEFINE(ENABLE_AUTH, 1)
+	BASE64_LIBS='base64/libbase64.a'
+#	MD5_LIBS='md5/libmd5c.a'
+	need_md5='yes'
+fi
+AC_SUBST(BASE64_LIBS)
+
+dnl maildir support (default is to not use it)
+AC_ARG_ENABLE(maildir,
+	[  --enable-maildir            enable qmail style maildir support],
+	if test "x$enable_maildir" != 'xno'; then
+		maildir_enabled='yes'
+	fi,
+	)
+if test "x$maildir_enabled" = xyes; then
+	AC_DEFINE(ENABLE_MAILDIR, 1)
+fi
+
+dnl libcrypto
+AC_ARG_WITH(libcrypto,
+	[  --with-libcrypto         use libcrypto],
+	)
+if test "x$with_libcrypto" != 'xyes'; then
+	with_libcrypto='no'
+fi
+
+if test "x$need_md5" = 'xyes'; then
+dnl check whether we have md5 in libcrypto if md5 needed and we shall link with libcrypto
+	if test "x$with_libcrypto" = "xyes"; then
+		AC_CHECK_LIB(crypto, MD5, has_crypto='yes', AC_MSG_ERROR('no libcrypto'))
+		if test "x$has_crypto" = 'xyes'; then
+			AC_DEFINE(USE_LIB_CRYPTO, 1)
+			MD5_LIBS='-lcrypto'
+		fi
+	else
+		MD5_LIBS='md5/libmd5c.a'
+	fi
+fi
+AC_SUBST(MD5_LIBS)
+
+dnl ident support (default is to not use it)
+IDENT_LIBS=''
+AC_ARG_ENABLE(ident,
+	[  --enable-ident           enable ident (RFC 1413) support],
+	if test "x$enable_ident" != 'xno'; then
+		ident_enabled='yes'
+	fi,
+	)
+AC_SUBST(has_ident)
+if test "x$ident_enabled" = xyes; then
+	AC_DEFINE(ENABLE_IDENT, 1)
+	AC_CHECK_LIB(ident, ident_id, IDENT_LIBS='-lident', IDENT_LIBS='libident/libident.a')
+fi
+AC_SUBST(IDENT_LIBS)
+
+dnl mserver support (default is to not use it)
+AC_ARG_ENABLE(mserver,
+	[  --enable-mserver         enable mserver support],
+	if test "x$enable_mserver" != 'xno'; then
+		mserver_enabled='yes'
+	fi,
+	)
+if test "x$mserver_enabled" = xyes; then
+	AC_DEFINE(ENABLE_MSERVER, 1)
+fi
+
+dnl liblockfile
+AC_ARG_WITH(liblockfile,
+	[  --with-liblockfile       use liblock (for Debian)],
+	)
+if test "x$with_liblockfile" != 'x'; then
+	with_liblockfile='yes'
+fi
+if test "x$with_liblockfile" = xyes; then
+	AC_CHECK_LIB(lockfile, maillock, has_lockfile=yes, AC_MSG_ERROR("no liblockfile"))
+	LOCKFILE_LIBS='-llockfile'
+	AC_DEFINE(USE_LIBLOCKFILE, 1)
+else
+	LOCKFILE_LIBS=''
+fi
+AC_SUBST(LOCKFILE_LIBS)
+AC_SUBST(USE_LIBLOCKFILE)
+
+dnl log and spool directories
+AC_ARG_WITH(logdir,
+	[  --with-logdir=DIR        set log directory [/var/masqmail]],
+	,
+        with_logdir='/var/log/masqmail/'
+	)
+AC_SUBST(with_logdir)
+
+AC_ARG_WITH(spooldir,
+	[  --with-spooldir=DIR      set spool directory [/var/spool/masqmail]],
+	,
+	with_spooldir='/var/spool/masqmail/'
+	)
+AC_SUBST(with_spooldir)
+
+dnl configuration file
+AC_ARG_WITH(confdir,
+	[  --with-confdir           directory for configuration [/etc/masqmail]],
+	,
+	with_confdir='/etc/masqmail'
+	)
+AC_DEFINE_UNQUOTED(CONF_DIR, "${with_confdir}")
+AC_SUBST(with_confdir)
+
+dnl gymnastics to get the correct path where masqmail should be installed
+dnl we need this to call ourselves in failmsg.c
+if test "x${exec_prefix}" != 'xNONE'; then
+	AC_DEFINE_UNQUOTED(SBINDIR, "${exec_prefix}/sbin")
+else
+	if test "x${prefix}" != 'xNONE'; then
+		AC_DEFINE_UNQUOTED(SBINDIR, "${prefix}/sbin")
+	else
+		AC_DEFINE_UNQUOTED(SBINDIR, "/usr/sbin")
+	fi
+fi
+
+AC_OUTPUT(Makefile \
+	debian/Makefile \
+	docs/Makefile \
+	docs/man/Makefile \
+	docs/xml/Makefile \
+	tests/Makefile \
+	src/Makefile \
+	src/base64/Makefile \
+	src/md5/Makefile \
+	src/libident/Makefile \
+	suse/masqmail.spec \
+	redhat/masqmail.spec
+	)

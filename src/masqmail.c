@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ typedef enum _mta_mode
   MODE_ACCEPT = 0, /* accept message on stdin */
   MODE_DAEMON,     /* run as daemon */
   MODE_RUNQUEUE,   /* single queue run, online or offline */
+  MODE_GET_DAEMON, /* run as get (retrieve) daemon */
   MODE_SMTP,       /* accept SMTP on stdin */
   MODE_LIST,       /* list queue */
   MODE_MCMD,       /* do queue manipulation */
@@ -50,16 +51,44 @@ typedef enum _mta_mode
   MODE_NONE        /* to prevent default MODE_ACCEPT */    
 }mta_mode;
 
-gint time_interval(gchar *str)
+char *pidfile = NULL;
+volatile int sigterm_in_progress = 0;
+
+static
+void sigterm_handler(int sig)
+{
+  if(sigterm_in_progress)
+    raise(sig);
+  sigterm_in_progress = 1;
+
+  if(pidfile){
+    uid_t uid;
+    uid = seteuid(0);
+    if(unlink(pidfile) != 0)
+      logwrite(LOG_WARNING, "could not delete pid file %s: %s\n",
+	       pidfile, strerror(errno));
+    seteuid(uid); /* we exit anyway after this, just to be sure */
+  }
+
+  signal(sig, SIG_DFL);
+  raise(sig);
+}
+
+gint time_interval(gchar *str, gint *pos)
 {
   gchar buf[16];
   gchar *p = str, *q = buf;
   gint factor = 1, val;
 
-  while(*p && isdigit(*p)) *(q++) = *(p++);
+  while(*p && isdigit(*p)){
+    *(q++) = *(p++);
+    (*pos)++;
+  }
+  (*pos)++;
   *q = 0;
   val = atoi(buf);
   
+  /* fall through: */
   switch(*p){
   case 'w':
     factor *= 7;
@@ -122,6 +151,20 @@ gchar *get_progname(gchar *arg0)
   return p;
 }
 
+gboolean write_pidfile(gchar *name)
+{
+  FILE *fptr;
+
+  if((fptr = fopen(name, "wt"))){
+    fprintf(fptr, "%d\n", getpid());
+    fclose(fptr);
+    pidfile = strdup(name);
+    return TRUE;
+  }
+  logwrite(LOG_WARNING, "could not write pid file: %s\n", strerror(errno));
+  return FALSE;
+}
+
 static
 void mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 {
@@ -142,6 +185,11 @@ void mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
     exit(EXIT_FAILURE);
   }
 
+  signal(SIGTERM, sigterm_handler);
+  write_pidfile(PIDFILEDIR"/masqmail.pid");
+
+  conf.do_verbose = FALSE;
+
   fclose(stdin);
   fclose(stdout);
   fclose(stderr);
@@ -150,6 +198,41 @@ void mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	      queue_interval, argv);
 }
 
+#ifdef ENABLE_POP3
+static
+void mode_get_daemon(gint get_interval, char *argv[])
+{
+  guint pid;
+
+  /* daemon */
+  if(!conf.run_as_user){
+    if((conf.orig_uid != 0) && (conf.orig_uid != conf.mail_uid)){
+      fprintf(stderr, "must be root or %s for daemon.\n", DEF_MAIL_USER);
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  if((pid = fork()) > 0){
+    exit(EXIT_SUCCESS);
+  }else if(pid < 0){
+    logwrite(LOG_ALERT, "could not fork!");
+    exit(EXIT_FAILURE);
+  }
+
+  signal(SIGTERM, sigterm_handler);
+  write_pidfile(PIDFILEDIR"/masqmail-get.pid");
+
+  conf.do_verbose = FALSE;
+
+  fclose(stdin);
+  fclose(stdout);
+  fclose(stderr);
+
+  get_daemon(get_interval, argv);
+}
+#endif
+
+#ifdef ENABLE_SMTP_SERVER
 static void mode_smtp()
 {
   /* accept smtp message on stdin */
@@ -158,7 +241,11 @@ static void mode_smtp()
   struct sockaddr_in saddr;
   gchar *peername = NULL;
   int dummy = sizeof(saddr);
+#ifdef ENABLE_IDENT
   gchar *ident = NULL;
+#endif
+
+  conf.do_verbose = FALSE;
 
   if(!conf.run_as_user){
     seteuid(conf.orig_uid);
@@ -167,7 +254,7 @@ static void mode_smtp()
 
   DEBUG(5) debugf("accepting smtp message on stdin\n");
 
-  if(getpeername(0, &saddr, &dummy) == 0){
+  if(getpeername(0, (struct sockaddr *)(&saddr), &dummy) == 0){
     peername = g_strdup(inet_ntoa(saddr.sin_addr));
 #ifdef ENABLE_IDENT
     {
@@ -187,8 +274,10 @@ static void mode_smtp()
   if(ident) g_free(ident);
 #endif
 }
+#endif
 
-static void mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags, char **addresses, int adr_cnt)
+static void mode_accept(address *return_path, gchar *full_sender_name,
+			guint accept_flags, char **addresses, int addr_cnt)
 {
   /* accept message on stdin */
   accept_error err;
@@ -196,9 +285,11 @@ static void mode_accept(address *return_path, gchar *full_sender_name, guint acc
   gint i;
 
   if(return_path != NULL){
-    if((conf.orig_uid != 0) && (conf.orig_uid != conf.mail_uid) && (!is_ingroup(conf.orig_uid, conf.mail_gid))){
+    if((conf.orig_uid != 0) &&
+       (conf.orig_uid != conf.mail_uid) &&
+       (!is_ingroup(conf.orig_uid, conf.mail_gid))){
       fprintf(stderr,
-	      "must be root, %s, or in group %s for setting return path.\n",
+	      "must be in root, %s or in group %s for setting return path.\n",
 	      DEF_MAIL_USER, DEF_MAIL_GROUP);
       exit(EXIT_FAILURE);
     }
@@ -212,7 +303,7 @@ static void mode_accept(address *return_path, gchar *full_sender_name, guint acc
   DEBUG(5) debugf("accepting message on stdin\n");
 
   msg->received_prot = PROT_LOCAL;
-  for(i = 0; i < adr_cnt; i++){
+  for(i = 0; i < addr_cnt; i++){
     if(addresses[i][0] != '|')
       msg->rcpt_list =
 	g_list_append(msg->rcpt_list,
@@ -232,13 +323,15 @@ static void mode_accept(address *return_path, gchar *full_sender_name, guint acc
   if((err = accept_message(stdin, msg, accept_flags)) == AERR_OK){
     if(spool_write(msg, TRUE)){
       pid_t pid;
-      logwrite(LOG_NOTICE, "%s <= <%s@%s> with %s\n",
-	       msg->uid, msg->return_path->local_part,
-	       msg->return_path->domain, prot_names[PROT_LOCAL]);
+      logwrite(LOG_NOTICE, "%s <= %s with %s\n",
+	       msg->uid, addr_string(msg->return_path),
+	       prot_names[PROT_LOCAL]);
 
       if(!conf.do_queue){
 
 	if((pid = fork()) == 0){
+
+	  conf.do_verbose = FALSE;
 
 	  fclose(stdin);
 	  fclose(stdout);
@@ -262,6 +355,9 @@ static void mode_accept(address *return_path, gchar *full_sender_name, guint acc
     case AERR_EOF:
       fprintf(stderr, "unexpected EOF.\n");
       exit(EXIT_FAILURE);
+    case AERR_NORCPT:
+      fprintf(stderr, "no recipients.\n");
+      exit(EXIT_FAILURE);
     default:
       /* should never happen: */
       fprintf(stderr, "Unknown error (%d)\r\n", err);
@@ -278,6 +374,7 @@ main(int argc, char *argv[])
   gchar *conf_file = CONF_FILE;
   gint arg = 1;
   gboolean do_get = FALSE;
+  gboolean do_get_online = FALSE;
 
   gboolean do_listen = FALSE;
   gboolean do_runq = FALSE;
@@ -285,9 +382,12 @@ main(int argc, char *argv[])
 
   gboolean do_queue = FALSE;
 
+  gboolean do_verbose = FALSE;
+
   mta_mode mta_mode = MODE_ACCEPT;
 
   gint queue_interval = 0;
+  gint get_interval = 0;
   gboolean opt_t = FALSE;
   gboolean opt_i = FALSE;
   gboolean opt_odb = FALSE;
@@ -308,6 +408,8 @@ main(int argc, char *argv[])
 
   if(strcmp(progname, "mailq") == 0)
     { mta_mode = MODE_LIST; }
+  else if(strcmp(progname, "mailrm") == 0)
+    { mta_mode = MODE_MCMD; M_cmd = "rm"; }
   else if(strcmp(progname, "runq") == 0)
     { mta_mode = MODE_RUNQUEUE; do_runq = TRUE; }
   else if(strcmp(progname, "rmail") == 0)
@@ -396,8 +498,24 @@ main(int argc, char *argv[])
       case 'g':
 	do_get = TRUE;
 	if(!mta_mode) mta_mode = MODE_NONE; /* to prevent default MODE_ACCEPT */
-	if((optarg = get_optarg(argv, argc, &arg, &pos))){
-	  get_name = get_optarg(argv, argc, &arg, &pos);
+	if(argv[arg][pos] == 'o'){
+	  pos++;
+	  do_get_online = TRUE;
+	  /* can be NULL, then we use online detection method */
+	  route_name = get_optarg(argv, argc, &arg, &pos);
+
+	  if(route_name != NULL){
+	    if(isdigit(route_name[0])){
+	      get_interval = time_interval(route_name, &pos);
+	      route_name = get_optarg(argv, argc, &arg, &pos);
+	      mta_mode = MODE_GET_DAEMON;
+	      do_get = FALSE;
+	    }
+	  }
+	}else{
+	  if((optarg = get_optarg(argv, argc, &arg, &pos))){
+	    get_name = get_optarg(argv, argc, &arg, &pos);
+	  }
 	}
 	break;
       case 'i':
@@ -449,7 +567,7 @@ main(int argc, char *argv[])
 	    route_name = get_optarg(argv, argc, &arg, &pos);
 	  }else if((optarg = get_optarg(argv, argc, &arg, &pos))){
 	    mta_mode = MODE_DAEMON;
-	    queue_interval = time_interval(optarg);
+	    queue_interval = time_interval(optarg, &pos);
 	  }
 	}
 	break;
@@ -462,7 +580,8 @@ main(int argc, char *argv[])
 	}
 	break;
       case 'v':
-	break; /* currently ignored */
+	do_verbose = TRUE;
+	break;
       default:
 	fprintf(stderr, "unrecognized option '%s'\n", argv[arg]);
 	exit(EXIT_FAILURE);
@@ -481,25 +600,42 @@ main(int argc, char *argv[])
   }
 
   if(mta_mode == MODE_VERSION){
-    gchar *with_pop3 = "", *with_auth = "", *with_ident = "";
+    gchar *with_resolver = "", *with_smtp_server = "", *with_pop3 = "", *with_auth = "", 
+      *with_maildir = "", *with_ident = "", *with_mserver = "";
     
+#ifdef ENABLE_RESOLVER
+    with_resolver = " +resolver";
+#endif
+#ifdef ENABLE_SMTP_SERVER
+    with_smtp_server = " +smtp-server";
+#endif
 #ifdef ENABLE_POP3
     with_pop3 = " +pop3";
 #endif
 #ifdef ENABLE_AUTH
     with_auth = " +auth";
 #endif
+#ifdef ENABLE_MAILDIR
+    with_maildir = " +maildir";
+#endif
 #ifdef ENABLE_IDENT
     with_ident = " +ident";
 #endif
+#ifdef ENABLE_MSERVER
+    with_mserver = " +mserver";
+#endif
 
-    printf("%s %s%s%s%s\n", PACKAGE, VERSION, with_pop3, with_auth, with_ident);
+    printf("%s %s%s%s%s%s%s%s%s\n", PACKAGE, VERSION,
+	   with_resolver, with_smtp_server, with_pop3, with_auth,
+	   with_maildir, with_ident, with_mserver);
       
     exit(EXIT_SUCCESS);
   }
 
   /* initialize random generator */
   srand(time(NULL));
+  /* ignore SIGPIPE signal */
+  signal(SIGPIPE, SIG_IGN);
 
   /* close all possibly open file descriptors */
   {
@@ -511,7 +647,11 @@ main(int argc, char *argv[])
   }
 
   read_conf(conf_file);
+
+  chdir("/");
+
   if(do_queue) conf.do_queue = TRUE;
+  if(do_verbose) conf.do_verbose = TRUE;
 
   /* if we are not privileged, and the config file was changed we
      implicetely set the the run_as_user flag and give up all
@@ -531,7 +671,6 @@ main(int argc, char *argv[])
   }
 
   if(!conf.run_as_user){
-    DEBUG(5) fprintf(stderr, "setting real user and group\n");
     if(setgid(0) != 0){
       fprintf(stderr,
 	      "could not set gid to 0. Is the setuid bit set? : %s\n",
@@ -578,10 +717,18 @@ main(int argc, char *argv[])
 
       set_identity(conf.orig_uid, "getting mail");
 
-      if(get_name)
-	get_from_name(get_name);
-      else
-	get_all();
+      if(do_get_online){
+	if(route_name != NULL){
+	  conf.online_detect = g_strdup("argument");
+	  set_online_name(route_name);
+	}
+	get_online();
+      }else{
+	if(get_name)
+	  get_from_name(get_name);
+	else
+	  get_all();
+      }
     }else{
       logwrite(LOG_ALERT, "get (-g) only allowed alone or together with queue run (-q)\n");
     }
@@ -611,11 +758,23 @@ main(int argc, char *argv[])
       }
     }
     break;
-  case MODE_SMTP:
-
-    mode_smtp();
+  case MODE_GET_DAEMON:
+#ifdef ENABLE_POP3
+    if(route_name != NULL){
+      conf.online_detect = g_strdup("argument");
+      set_online_name(route_name);
+    }
+    mode_get_daemon(get_interval, argv);
+#endif
     break;
 
+  case MODE_SMTP:
+#ifdef ENABLE_SMTP_SERVER
+    mode_smtp();
+#else
+    fprintf(stderr, "smtp server support not compiled in\n");
+#endif
+    break;
   case MODE_LIST:
 
     queue_list();
@@ -672,7 +831,7 @@ main(int argc, char *argv[])
     }
     break;
 
-  case MODE_ACCEPT:
+    case MODE_ACCEPT:
     {
       guint accept_flags =
 	(opt_t ? ACC_DEL_RCPTS|ACC_DEL_BCC|ACC_RCPT_FROM_HEAD : ACC_HEAD_FROM_RCPT) |
@@ -683,10 +842,13 @@ main(int argc, char *argv[])
       exit(exit_failure ? EXIT_FAILURE : EXIT_SUCCESS);
     }
     break;
+  case MODE_NONE:
+      break;
   default:
-    break;
-  }
-
+      fprintf(stderr, "unknown mode: %d\n", mta_mode);
+      break;
+    }
+    
   logclose();
 
   exit(exit_code);

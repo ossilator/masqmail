@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,12 +18,45 @@
 
 #include "masqmail.h"
 
+#include "sysexits.h"
+
+static char *_sysexit_strings[] = {
+  "command line usage error",
+  "data format error",
+  "cannot open input",
+  "addressee unknown",
+  "host name unknown",
+  "service unavailable",
+  "internal software error",
+  "system error (e.g., can't fork)",
+  "critical OS file missing",
+  "can't create (user) output file",
+  "input/output error",
+  "temp failure; user is invited to retry",
+  "remote error in protocol",
+  "permission denied",
+  "configuration error"
+};
+
+gchar *ext_strerror(int err)
+{
+  if(err < 1024)
+    return strerror(err);
+  else
+    if(err > 1024 + EX__BASE &&
+       (err - 1024 - EX__BASE < sizeof(_sysexit_strings)/sizeof(_sysexit_strings[0])))
+      return _sysexit_strings[err - 1024 - EX__BASE];
+
+  return "unknown error";
+}
+
 static FILE *logfile = NULL;
 static FILE *debugfile = NULL;
 
 gboolean logopen()
 {
   gchar *filename;
+  mode_t saved_mode = umask(066);
 
   if(conf.use_syslog){
     openlog(PACKAGE, LOG_PID, LOG_MAIL);
@@ -37,6 +70,7 @@ gboolean logopen()
     g_free(filename);
   }
 
+#ifdef ENABLE_DEBUG
   if(conf.debug_level > 0){
     filename = g_strdup_printf("%s/debug.log", conf.log_dir);
     debugfile = fopen(filename, "a");
@@ -46,6 +80,8 @@ gboolean logopen()
     }
     g_free(filename);
   }
+#endif
+  umask(saved_mode);
   return TRUE;
 }
 
@@ -60,23 +96,36 @@ void logclose()
 
 void vlogwrite(int pri, const char *fmt, va_list args)
 {
-  if(conf.use_syslog)
-    vsyslog(pri, fmt, args);
-  else{
-    if(pri <= conf.log_max_pri){
-      FILE *file = logfile ? logfile : stderr;
-      time_t now = time(NULL);
-      struct tm *t = localtime(&now);
-      gchar buf[24];
-      strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
-      fprintf(file, "%s [%d] ", buf, getpid());
+  if((conf.do_verbose && (pri & LOG_VERBOSE)) || (pri == LOG_ALERT) || (pri == LOG_WARNING)){
+    va_list args_copy;
+    va_copy(args_copy, args);
+    vfprintf(stdout, fmt, args_copy);
+    va_end(args_copy);
+    fflush(stdout); /* is this necessary? */
+  }
 
-      vfprintf(file, fmt, args);
-      fflush(file);
+  pri &= ~LOG_VERBOSE;
+  if(pri){
+
+    if(conf.use_syslog)
+      vsyslog(pri, fmt, args);
+    else{
+      if(pri <= conf.log_max_pri){
+	FILE *file = logfile ? logfile : stderr;
+	time_t now = time(NULL);
+	struct tm *t = localtime(&now);
+	gchar buf[24];
+	strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
+	fprintf(file, "%s [%d] ", buf, getpid());
+	
+	vfprintf(file, fmt, args);
+	fflush(file);
+      }
     }
   }
 }  
 
+#ifdef ENABLE_DEBUG
 void vdebugwrite(int pri, const char *fmt, va_list args)
 {
   time_t now = time(NULL);
@@ -94,22 +143,25 @@ void vdebugwrite(int pri, const char *fmt, va_list args)
     vfprintf(stderr, fmt, args);
   }
 }
+#endif
 
 void logwrite(int pri, const char *fmt, ...)
 {
   va_list args, args_copy;
   va_start(args, fmt);
+#ifdef ENABLE_DEBUG
   va_copy(args_copy, args);
-
+#endif
   vlogwrite(pri, fmt, args);
-  if(debugfile){
+#ifdef ENABLE_DEBUG
+  if(debugfile)
     vdebugwrite(pri, fmt, args_copy);
-  }
-
   va_end(args_copy);
+#endif
   va_end(args);
 }
 
+#ifdef ENABLE_DEBUG
 void debugf(const char *fmt, ...)
 {
   va_list args;
@@ -124,6 +176,7 @@ void vdebugf(const char *fmt, va_list args)
 {
   vdebugwrite(LOG_DEBUG, fmt, args);
 }
+#endif
 
 void maillog(const char *fmt, ...)
 {

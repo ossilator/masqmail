@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,14 +16,49 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "masqmail.h"
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include "masqmail.h"
+#include "mserver.h"
+#include "peopen.h"
 
 gchar *connection_name;
 
 void set_online_name(gchar *name)
 {
   connection_name = g_strdup(name);
+}
+
+static
+gchar *detect_online_pipe(const gchar *pipe)
+{
+  pid_t pid;
+  void (*old_signal)(int);
+  int status;
+  FILE *in;
+  gchar *name = NULL;
+
+  old_signal = signal(SIGCHLD, SIG_DFL);
+
+  in = peopen(pipe, "r", environ, &pid);
+  if(in != NULL){
+    gchar output[256];
+    if(fgets(output, 255, in)){
+      g_strchomp(output);
+      name = g_strdup(output);
+    }
+    fclose(in);
+    waitpid(pid, &status, 0);
+    if(WEXITSTATUS(status) != EXIT_SUCCESS){
+      g_free(name);
+      name = NULL;
+    }
+  }else
+    logwrite(LOG_ALERT, "could not open pipe '%s': %s\n", pipe, strerror(errno));
+
+  signal(SIGCHLD, old_signal);
+
+  return name;
 }
 
 gchar *detect_online()
@@ -59,9 +94,21 @@ gchar *detect_online()
 	logwrite(LOG_ALERT,
 		 "online detection mode is 'file', "
 		 "but online_file is undefined\n");
+#ifdef ENABLE_MSERVER
     }else if(strcmp(conf.online_detect, "mserver") == 0){
       DEBUG(3) debugf("connection method 'mserver'\n");
-      return mserver_detect_online();
+      return mserver_detect_online(conf.mserver_iface);
+#endif
+    }else if(strcmp(conf.online_detect, "pipe") == 0){
+      DEBUG(3) debugf("connection method 'pipe'\n");
+      if(conf.online_pipe)
+	return detect_online_pipe(conf.online_pipe);
+      else{
+	logwrite(LOG_ALERT,
+		 "online detection mode is 'pipe', "
+		 "but online_pipe is undefined\n");
+	return NULL;
+      }
     }else if(strcmp(conf.online_detect, "argument") == 0){
       return connection_name;
     }else{

@@ -1,0 +1,42 @@
+.TH mservdetect 8 User Manuals
+.SH NAME
+mservdetect \- Helper for masqmail and masqdialer
+.SH SYNOPSIS
+\fB/usr/bin/masqmail \fIhost\f1\fB \fIport\f1\fB
+
+\fB
+.SH DESCRIPTION
+
+mservdetect is a small helper application for masqmail to detect its online status if the modem server masqdialer is used. It connects to the\fIhost\f1 at \fIport\f1 and prints the connection name to stdout.
+
+If you want to use it, set \fBonline_detect\f1=\fIpipe\f1 and \fBonline_pipe\f1=\fI"/usr/bin/mservdetect host port"\f1.
+
+.SH OPTIONS
+.TP
+
+\fBhost\f1
+
+The hostname where the masqdialer server is running.
+.TP
+
+\fBport\f1
+
+The port number where the masqdialer server is listening.
+.SH AUTHOR
+
+masqmail was written by Oliver Kurth <oku@masqmail.cx>
+
+You will find the newest version of masqmail at \fBhttp://masqmail.cx/masqmail/\f1 or search for it in freshmeat (\fBhttp://www.freshmeat.net\f1). There is also a mailing list, you will find information about it at masqmails main site.
+
+.SH BUGS
+
+You should report them to the mailing list.
+
+.SH SEE ALSO
+
+\fBmasqmail.conf (5)\f1
+
+.SH COMMENTS
+
+This man page was written using \fBxml2man (1)\f1 by the same author.
+

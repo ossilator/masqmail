@@ -1,0 +1,18 @@
+#!/bin/sh -e
+
+##$DEBIAN_SCRIPT_DEBUG || set -v -x 
+
+if [ "$1" = "upgrade" ] ; then
+  if dpkg --compare-versions "$2" lt "0.1.6-1" ; then
+
+    # move config file to new location
+    if [ -e /etc/masqmail.conf ]; then
+	if [ ! -d /etc/masqmail ]; then
+	    mkdir /etc/masqmail
+	    mv -f /etc/masqmail.conf /etc/masqmail/
+	fi
+    fi
+  fi
+fi
+
+#DEBHELPER#

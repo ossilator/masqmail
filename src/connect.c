@@ -28,10 +28,9 @@ GList *resolve_ip(GList *list, gchar *ip)
     mxip.pref = 0;
     mxip.ip = (guint32) *(guint32 *)(&ia);
     list = g_list_append(list, g_memdup(&mxip, sizeof(mxip)));
-  }else{
-    logwrite(LOG_ALERT, "invalid address '%s': inet_aton() failed\n", ip);
-    return NULL;
   }
+  /* logwrite(LOG_ALERT, "invalid address '%s': inet_aton() failed\n", ip);*/
+  return NULL;
 }
 
 mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port,
@@ -57,7 +56,7 @@ mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port,
     /* clumsy, but makes compiler happy: */
     saddr.sin_addr = *(struct in_addr*)(&(addr->ip));
     DEBUG(5) debugf("trying ip %s port %d\n", inet_ntoa(saddr.sin_addr), port);
-    if(connect(*psockfd, &saddr, sizeof(saddr)) == 0){
+    if(connect(*psockfd, (struct sockaddr *)(&saddr), sizeof(saddr)) == 0){
       DEBUG(5) debugf("connected to %s\n", inet_ntoa(saddr.sin_addr));
       return addr;
     }else{
@@ -88,7 +87,7 @@ mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port,
 */
 
 mxip_addr *connect_resolvelist(int *psockfd, gchar *host, guint port,
-			     GList *res_func_list)
+			       GList *res_func_list)
 {
   GList *res_node;
   GList *addr_list;
@@ -99,39 +98,43 @@ mxip_addr *connect_resolvelist(int *psockfd, gchar *host, guint port,
     mxip_addr *addr;
     
     addr_list = resolve_ip(NULL, host);
-    addr = connect_hostlist(psockfd, host, port, addr_list);
-    g_list_free(addr_list);
-    return addr;
-  }else{
+    if(addr_list){
+      addr = connect_hostlist(psockfd, host, port, addr_list);
+      g_list_free(addr_list);
+      return addr;
+    }
+    /* previous versions complained, until someone tried to use a hostname
+       out there that begins with a digit. eg. '3dwars.de'. */
+  }
 
-    if(res_func_list == NULL){
-      logwrite(LOG_ALERT, "res_funcs == NULL !!!\n");
+  if(res_func_list == NULL){
+    logwrite(LOG_ALERT, "res_funcs == NULL !!!\n");
+    exit(EXIT_FAILURE);
+  }
+
+  foreach(res_func_list, res_node){
+    resolve_func res_func;
+    DEBUG(6) debugf("connect_resolvelist 1a\n");
+    res_func = (resolve_func)(res_node->data);
+      
+    if(res_func == NULL){
+      logwrite(LOG_ALERT, "res_func == NULL !!!\n");
       exit(EXIT_FAILURE);
     }
-
-    foreach(res_func_list, res_node){
-      resolve_func res_func;
-      DEBUG(6) debugf("connect_resolvelist 1a\n");
-      res_func = (resolve_func)(res_node->data);
       
-      if(res_func == NULL){
-	logwrite(LOG_ALERT, "res_func == NULL !!!\n");
-	exit(EXIT_FAILURE);
-      }
-      
-      if((addr_list = res_func(NULL, host))){
+    if((addr_list = res_func(NULL, host))){
 	
-	mxip_addr *addr;
-	if((addr = connect_hostlist(psockfd, host, port, addr_list)))
-	  return addr;
+      mxip_addr *addr;
+      if((addr = connect_hostlist(psockfd, host, port, addr_list)))
+	return addr;
 	
-	g_list_free(addr_list);
-      }else{
-	if(!g_list_next(res_node))
-	  logwrite(LOG_ALERT, "could not resolve %s\n", host);
-      }
+      g_list_free(addr_list);
+    }else{
+      if(!g_list_next(res_node))
+	logwrite(LOG_ALERT, "could not resolve %s\n", host);
     }
-    return NULL;
   }
+  return NULL;
+
 }
 
