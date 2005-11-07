@@ -66,8 +66,8 @@ install: build
                 debian/masqmail/var/spool/masqmail/lock \
                 debian/masqmail/var/spool/masqmail/popuidl \
 		debian/masqmail/var/spool/masqmail debian/masqmail/var/spool \
-		debian/masqmail/var/log/masqmail debian/masqmail/var/log \
-		debian/masqmail/var
+		debian/masqmail/var/log/masqmail debian/masqmail/var/log
+
 	rm -f debian/masqmail/usr/bin/expandtest debian/masqmail/usr/bin/readtest
 	install -m 755 debian/newaliases debian/masqmail/usr/bin/.
 	install -m 755 debian/masqmail.ip-up debian/masqmail/etc/ppp/ip-up.d/1masqmail

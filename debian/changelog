@@ -1,3 +1,18 @@
+masqmail (0.2.21-1) unstable; urgency=low
+
+  * security fixes (closes: #329307)
+  - do not use shell when executing sub programs
+  - do not accept backtick in email adresses
+  - write log files as 'mail' user
+  * changed default online status file to /var/run/masqmail/masqmail-route
+    (closes: #332841)
+  * depend on debconf | debconf-2.0 (closes: #332023)
+  * add debug.log to logrotate script (closes: #332960)
+  * fix typo in templates ('failure') (closes: #224273)
+  * use glib2 instead of old glib1.2 (closes: #337921)
+
+ -- Oliver Kurth <oku@debian.org>  Sat, 17 Sep 2005 13:45:11 -0700
+
 masqmail (0.2.20-1) unstable; urgency=low
 
   * new upstream version

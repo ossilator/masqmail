@@ -3,12 +3,52 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
 
 #include "peopen.h"
 #include "sysexits.h"
+
+#include "masqmail.h"
+
+static
+void destroy_argv(char **arr)
+{
+  char *p = arr[0];
+  int i = 0;
+
+  while(p){
+    free(p);
+    p = arr[i++];
+  }
+  free(arr);
+}
+
+static
+char **create_argv(const char *cmd, int count)
+{
+  char buf[strlen(cmd)+1];
+  char **arr, *q;
+  const char *p;
+  int i = 0;
+
+  arr = (char **)malloc(sizeof(char *) * count);
+  
+  p = cmd;
+  while(*p && i < (count-1)){
+    while(*p && isspace(*p)) p++;
+    q = buf;
+    while(*p && !isspace(*p)) *q++ = *p++;
+    *q = 0;
+    arr[i++] = strdup(buf);
+    while(*p && isspace(*p)) p++;
+  }
+  arr[i] = NULL;
+
+  return arr;
+}
 
 FILE* peidopen(const char	*command,
 	       const char	*type,
@@ -50,7 +90,8 @@ FILE* peidopen(const char	*command,
     }
     if (close (pipe_fd [mode == Read ? 0 : 1]) != -1 &&
 	dup2 (pipe_fd [mode == Read ? 1 : 0], mode == Read ? STDOUT_FILENO : STDIN_FILENO) != -1) {
-      char *argv [] = { "/bin/sh", "-c", (char*) command, NULL };
+      //      char *argv [] = { "/bin/sh", "-c", (char*) command, NULL };
+      char **argv = create_argv(command, 10);
       int ret;
 
       if(uid != (uid_t)-1){

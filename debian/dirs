@@ -3,6 +3,7 @@ usr/sbin
 usr/bin
 var/log
 var/spool
+var/run/masqmail
 etc/logrotate.d
 etc/ppp/ip-up.d
 etc/ppp/ip-down.d

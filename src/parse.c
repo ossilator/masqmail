@@ -29,7 +29,7 @@
    Those things really should not happen.
 */
 
-static gchar *specials = "()<>@,;:\\\".[]";
+static gchar *specials = "()<>@,;:\\\".[]`";
 
 char *parse_error = NULL;
 

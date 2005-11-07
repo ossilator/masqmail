@@ -9,7 +9,7 @@ INSTALL.agenda INSTALL.ipaq agenda-config.site
 
 SUBDIRS = src tests docs debian
 
-install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir
+install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir run_dir
 
 conf_dir: $(DESTDIR)@with_confdir@
 
@@ -31,6 +31,9 @@ spool_dir: $(DESTDIR)@with_spooldir@
 
 uid_bit: $(DESTDIR)@prefix@/sbin/masqmail
 	chmod u+s $(DESTDIR)@prefix@/sbin/masqmail
+
+run_dir:
+	install -d -o @with_user@ -g @with_group@ $(DESTDIR)/var/run/masqmail
 
 $(DESTDIR)@with_logdir@:
 	[ -d `dirname $(DESTDIR)@with_logdir@` ] || \

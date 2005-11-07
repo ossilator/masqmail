@@ -13,6 +13,11 @@ if [ "$1" = "upgrade" ] ; then
 	fi
     fi
   fi
+
+  if dpkg --compare-versions "$2" le "0.2.20-1" ; then
+    [ -d /var/log/masqmail ] && chown -R mail:mail /var/log/masqmail/
+  fi
+
 fi
 
 #DEBHELPER#

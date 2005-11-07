@@ -20,6 +20,8 @@ INIT_FETCH_DAEMON=false
 QUEUE_DAEMON_IVAL=-q10m
 FETCH_DAEMON_IVAL=-go5m
 
+RUN_DIR=/var/run/masqmail
+
 [ -r /etc/default/masqmail ] && . /etc/default/masqmail
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
@@ -54,25 +56,25 @@ case "$1" in
     if [ x"$INIT_DAEMON" = x"true" ] ; then
 	update-inetd --disable smtp
 	start-stop-daemon --start --startas $DAEMON \
-	    --pidfile /var/run/masqmail.pid -- $DAEMON_ARGS
+	    --pidfile $RUN_DIR/masqmail.pid -- $DAEMON_ARGS
 	echo -n " listen/queue"
     fi
     if [ x"$INIT_FETCH_DAEMON" = x"true" ] ; then
 	start-stop-daemon --start --startas $DAEMON \
-	    --pidfile /var/run/masqmail-get.pid -- $FETCH_DAEMON_IVAL
+	    --pidfile $RUN_DIR/masqmail-get.pid -- $FETCH_DAEMON_IVAL
 	echo -n " fetch"
     fi
     echo "."
     ;;
   stop)
     echo -n "Stopping $DESC: "
-    if [ -f /var/run/masqmail.pid ] ; then
-	start-stop-daemon --stop --oknodo --retry 1 --name $NAME --pidfile /var/run/masqmail.pid
+    if [ -f $RUN_DIR/masqmail.pid ] ; then
+	start-stop-daemon --stop --oknodo --retry 1 --name $NAME --pidfile $RUN_DIR/masqmail.pid
 	update-inetd --enable smtp
 	echo -n " listen/queue"
     fi
-    if [ -f /var/run/masqmail-get.pid ] ; then
-	start-stop-daemon --stop --oknodo --retry 1 --name $NAME --pidfile /var/run/masqmail-get.pid
+    if [ -f $RUN_DIR/masqmail-get.pid ] ; then
+	start-stop-daemon --stop --oknodo --retry 1 --name $NAME --pidfile $RUN_DIR/masqmail-get.pid
 	echo -n " fetch"
     fi
     echo "."
@@ -83,12 +85,12 @@ case "$1" in
     ;;
   reload|force-reload)
     echo -n "Reloading $DESC configuration files: "
-    if [ -f /var/run/masqmail.pid ] ; then
-	start-stop-daemon --stop --signal 1 --pidfile /var/run/masqmail.pid
+    if [ -f $RUN_DIR/masqmail.pid ] ; then
+	start-stop-daemon --stop --signal 1 --pidfile $RUN_DIR/masqmail.pid
 	echo -n " listen/queue"
     fi
-    if [ -f /var/run/masqmail-get.pid ] ; then
-	start-stop-daemon --stop --signal 1 --pidfile /var/run/masqmail-get.pid
+    if [ -f $RUN_DIR/masqmail-get.pid ] ; then
+	start-stop-daemon --stop --signal 1 --pidfile $RUN_DIR/masqmail-get.pid
 	echo -n " fetch"
     fi
     echo "."
