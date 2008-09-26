@@ -1,11 +1,2 @@
-Since version 0.1.1 the documentation within the masqmail package is
-in man pages. The source is in in xml, the xml sources can be
-converted to man pages or html pages with the perl scripts xml2man and
-xmlman2html.
-
-The xml sources are availabe in another package.
-
-The perl scripts will be available at http://masqmail.cx/xml2man/
-
-If you want to conribute to the documentation, please use the xml
-sources, changes in html or man pages will be lost.
+Since masqmail-0.3, documentation is maintained in troff (man page) format.
+The old XML sources are no longer used.
