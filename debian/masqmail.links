@@ -1,5 +1,0 @@
-/usr/sbin/masqmail /usr/lib/sendmail
-/usr/sbin/masqmail /usr/sbin/sendmail
-/usr/sbin/masqmail /usr/bin/mailq
-/usr/sbin/masqmail /usr/bin/mailrm
-
