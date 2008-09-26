@@ -1,4 +1,0 @@
-# has to be setuid:
-masqmail: setuid-binary usr/sbin/masqmail 4755 root/root
-# worked around that in debian/masqmail.config:
-masqmail: init-script-suggests-versioned-depends postinst
