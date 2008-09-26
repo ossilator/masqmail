@@ -289,9 +289,6 @@ fi
 
 AC_OUTPUT(Makefile \
 	debian/Makefile \
-	docs/Makefile \
-	docs/man/Makefile \
-	docs/xml/Makefile \
 	tests/Makefile \
 	src/Makefile \
 	src/base64/Makefile \
