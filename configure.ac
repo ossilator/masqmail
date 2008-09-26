@@ -288,12 +288,9 @@ else
 fi
 
 AC_OUTPUT(Makefile \
-	debian/Makefile \
 	tests/Makefile \
 	src/Makefile \
 	src/base64/Makefile \
 	src/md5/Makefile \
-	src/libident/Makefile \
-	suse/masqmail.spec \
-	redhat/masqmail.spec
+	src/libident/Makefile
 	)
