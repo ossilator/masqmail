@@ -1,7 +1,5 @@
 #!/usr/bin/make -f
 
-export DH_COMPAT=3
-
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 DOC = usr/doc
@@ -44,7 +42,9 @@ clean:
 	# Add here commands to clean up after the build process.
 	-$(MAKE) clean
 	-$(MAKE) distclean
-	rm -f tests/{test.conf,local.sh,smtpout.sh}
+	rm -f tests/test.conf
+	rm -f tests/local.sh
+	rm -f tests/smtpout.sh
 	# see /usr/share/doc/autotools-dev/README.Debian.gz
 	-test -r /usr/share/misc/config.sub && \
 		cp -f /usr/share/misc/config.sub config.sub

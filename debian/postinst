@@ -74,7 +74,7 @@ write_db_conf (){
         sed -n 1,$(( $LINES - 1 ))p < $CONFIGFILE > $WORKTMP
       fi
       cat $DEBCONFTMP >> $WORKTMP
-      sed -n '/^### END DEBCONF SECTION/,$p' < $CONFIGFILE | tail +2 >> $WORKTMP
+      sed -n '/^### END DEBCONF SECTION/,$p' < $CONFIGFILE | tail -n +2 >> $WORKTMP
     else
       echo "Existing $CONFIGFILE has missing or half-open debconf region;" >&2;
       echo "not writing masqmail configuration file." >&2;

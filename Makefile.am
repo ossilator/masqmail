@@ -21,9 +21,9 @@ tpl_dir: $(DESTDIR)@datadir@/tpl
 $(DESTDIR)@datadir@/tpl: conf_dir
 	install -d $(DESTDIR)@datadir@/masqmail/tpl
 	install -m 644 tpl/failmsg.tpl $(DESTDIR)@datadir@/masqmail/tpl
-	install -m 644 tpl/failmsg.tpl.{de,fr,it} $(DESTDIR)@datadir@/masqmail/tpl
+	install -m 644 tpl/failmsg.tpl.* $(DESTDIR)@datadir@/masqmail/tpl
 	install -m 644 tpl/warnmsg.tpl $(DESTDIR)@datadir@/masqmail/tpl
-	install -m 644 tpl/warnmsg.tpl.{de,fr} $(DESTDIR)@datadir@/masqmail/tpl
+	install -m 644 tpl/warnmsg.tpl.* $(DESTDIR)@datadir@/masqmail/tpl
 
 log_dir: $(DESTDIR)@with_logdir@
 

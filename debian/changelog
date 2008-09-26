@@ -1,3 +1,70 @@
+masqmail (0.2.21-4) unstable; urgency=low
+
+  * QA upload.
+  * Fix maintainer-script-calls-init-script-directly config:161 and use
+    invoke-rc.d instead.
+  * Add patch by Radoslaw Grzanka to improve isdn support (Closes: #224275). 
+  * Changed debian/compat from 6 to 4. WTF?
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Mon, 03 Mar 2008 19:47:27 +0100
+
+masqmail (0.2.21-3) unstable; urgency=low
+
+  * QA upload.
+  * Add LSB header to init.d script documenting its dependencies.
+  * Add dependency on update-inetd.  Based on patch from Ubuntu.
+  * Make sure init.d script create /var/run/masqmail/ if it is
+    missing, to handle /var/run/ as a tmpfs (Closes: #353948, #376766,
+    #390996).  Patch from Zak B. Elep.
+  * Change postinst to use new tail syntax (Closes: #404359)
+  * Acknowledge NMU (Closes: #254720).
+  * Moved debhelper compatibility level from rules to compat.
+  * Upgraded debhelper compatibility level from 3 to 6.
+  * Updated standards-version from 3.5.7 to 7.3.7.  No changes needed.
+  * Debconf templates translations:
+    - Portugese by Américo Monteiro (Closes: #434458).
+
+ -- Petter Reinholdtsen <pere@debian.org>  Sun, 13 Jan 2008 01:17:10 +0100
+
+masqmail (0.2.21-2) unstable; urgency=low
+
+  * QA upload.
+  * Set Maintainer to QA Group. The previous Maintainer email is
+    bouncing.
+
+ -- Lucas Nussbaum <lucas@lucas-nussbaum.net>  Thu, 10 Jan 2008 09:10:26 +0100
+
+masqmail (0.2.21-1.2) unstable; urgency=low
+
+  * Non-maintainer upload to fix longstanding l10n issues
+  * Switch to po-debconf for debconf templates. Closes: #235493
+  * Rewrite debconf templates to better fit the Developer's Reference write
+    style recommendations
+  * Removed annoying debconf notes:
+    - masqmail/note_moved_tpl and  masqmail/note_pcmcia_scripts are useless as
+      taking care of a now unsupported upgrade path
+    - masqmail/you_are_not_finished is blatant debconf abuse, sorry.
+      This closes: #388928
+  * Removed typo in the package description. Closes: #300010
+  * Removed bashism in the clean target of the debian/rules file
+  * Removed bashisms in Makefile files. Closes: #379711
+  * Debconf templates translations:
+    - Vietnamese added. Sent during the call for updates of the NMU campaign
+    - Russian added. Sent during the call for updates of the NMU campaign
+    - Czech added. Sent during the call for updates of the NMU campaign
+    - French added. Sent during the call for updates of the NMU campaign
+    - German added. Sent during the call for updates of the NMU campaign
+
+ -- Christian Perrier <bubulle@debian.org>  Sun, 26 Nov 2006 15:06:53 +0100
+
+masqmail (0.2.21-1.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix configure.ac to prevent FTBFS (closes: 254720).
+    (NMU allowed by developper, so no delayed queue)
+
+ -- Pierre Habouzit <madcoder@debian.org>  Fri,  7 Apr 2006 17:08:57 +0200
+
 masqmail (0.2.21-1) unstable; urgency=low
 
   * security fixes (closes: #329307)
@@ -10,8 +77,9 @@ masqmail (0.2.21-1) unstable; urgency=low
   * add debug.log to logrotate script (closes: #332960)
   * fix typo in templates ('failure') (closes: #224273)
   * use glib2 instead of old glib1.2 (closes: #337921)
+  * use /var/run/masqmail for pid files
 
- -- Oliver Kurth <oku@debian.org>  Sat, 17 Sep 2005 13:45:11 -0700
+ -- Oliver Kurth <oku@debian.org>  Mon, 07 Nov 2005 14:09:21 -0800
 
 masqmail (0.2.20-1) unstable; urgency=low
 
