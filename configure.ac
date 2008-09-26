@@ -38,10 +38,23 @@ dnl if there is res_search in libc, it is probably libc5
 dnl if not, it is probably libc6 and we need libresolv
 	AC_CHECK_LIB(c, res_search, need_resolv=no, need_resolv=yes)
 	if test "$need_resolv" = yes; then
-		AC_CHECK_LIB(resolv, res_search,has_resolv=yes,AC_MSG_ERROR("no libresolv"))
-		RESOLV_LIBS='-lresolv'
-	else
-		RESOLV_LIBS=''
+		AC_CHECK_LIB(resolv, res_search,
+			has_resolv=yes; RESOLV_LIBS="-lresolv",
+			has_resolv=no)
+		if test "$has_resolv" = no; then
+			saved_LIBS="$LIBS"
+			LIBS="$LIBS -lresolv"
+			AC_MSG_CHECKING(for res_search in -lresolv)
+			AC_TRY_LINK([#include <resolv.h>],
+				[res_search (0, 0, 0, 0, 0);],
+				RESOLV_LIBS="-lresolv"; has_resolv=yes; AC_MSG_RESULT(yes),
+				AC_MSG_RESULT(no));
+			LIBS="$saved_LIBS"
+		fi
+		if test "$has_resolv" = no; then
+			AC_MSG_ERROR("no libresolv")
+			RESOLV_LIBS=''
+		fi
 	fi
 else
 	RESOLV_LIBS=''

@@ -50,6 +50,9 @@ case "$MODE" in
 		if [ -n "$SCHEME" ] ; then
 		    echo -n "$SCHEME" > "$ROUTEFILE"
 		    chmod 0644 "$ROUTEFILE"
+		else
+		    echo -n "$PPP_IFACE" > "$ROUTEFILE"
+		    chmod 0644 "$ROUTEFILE"
 		fi
 		if [ x"$IPUP_RUNQUEUE" = x"true" ] ; then
 		    /usr/sbin/masqmail -qo &
