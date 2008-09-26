@@ -1,13 +1,11 @@
 EXTRA_DIST = \
 examples/example.get examples/example.route examples/masqmail.conf \
 docs/README docs/m*.[0-9] \
-suse/masqmail suse/masqmail.spec suse/masqmail.spec.in \
-redhat/masqmail redhat/masqmail.spec redhat/masqmail.spec.in \
 tpl/failmsg.tpl tpl/failmsg.tpl.de tpl/failmsg.tpl.fr tpl/failmsg.tpl.it \
 tpl/warnmsg.tpl tpl/warnmsg.tpl.de tpl/warnmsg.tpl.fr \
 INSTALL.agenda INSTALL.ipaq agenda-config.site
 
-SUBDIRS = src tests docs debian
+SUBDIRS = src tests docs
 
 install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir run_dir
 
