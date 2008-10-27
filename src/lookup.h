@@ -5,7 +5,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -18,16 +18,15 @@
 
 #define MAX_DNSNAME MAXDNAME
 
-typedef
-struct{
-  guint32 ip;
-  int pref;
-  guchar *name;
+typedef struct {
+	guint32 ip;
+	int pref;
+	guchar *name;
 } mxip_addr;
 
 
-typedef GList *(*resolve_func)(GList *, gchar *);
+typedef GList *(*resolve_func) (GList *, gchar *);
 
-GList *resolve_dns_a(GList *list, gchar *domain);
-GList *resolve_dns_mx(GList *list, gchar *domain);
-GList *resolve_byname(GList *list, gchar *domain);
+GList *resolve_dns_a(GList * list, gchar * domain);
+GList *resolve_dns_mx(GList * list, gchar * domain);
+GList *resolve_byname(GList * list, gchar * domain);

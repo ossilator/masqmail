@@ -45,11 +45,9 @@
 
 #include "lookup.h"
 
-typedef
-struct _interface
-{
-  gchar *address;
-  gint port;
+typedef struct _interface {
+	gchar *address;
+	gint port;
 } interface;
 
 #define ADDR_FLAG_DELIVERED 0x01
@@ -58,14 +56,13 @@ struct _interface
 #define ADDR_FLAG_LAST_ROUTE 0x40
 #define ADDR_FLAG_NOEXPAND 0x80
 
-typedef struct _address
-{
-  gchar *address;
-  gchar *local_part;
-  gchar *domain;
-  gint flags;
-  GList *children;
-  struct _address *parent;
+typedef struct _address {
+	gchar *address;
+	gchar *local_part;
+	gchar *domain;
+	gint flags;
+	GList *children;
+	struct _address *parent;
 } address;
 
 #define addr_mark_delivered(addr) { addr->flags |= ADDR_FLAG_DELIVERED; }
@@ -80,269 +77,247 @@ typedef struct _address
 #define addr_unmark_failed(addr) { addr->flags &= ~ADDR_FLAG_FAILED; }
 #define addr_is_failed(addr) ((addr->flags & ADDR_FLAG_FAILED) != 0 )
 
-typedef
-struct _connect_route
-{
-  gchar *name;
-  gchar *filename;
+typedef struct _connect_route {
+	gchar *name;
+	gchar *filename;
 
-  gchar *protocol;
+	gchar *protocol;
 
-  gboolean is_local_net;
-  gboolean last_route;
+	gboolean is_local_net;
+	gboolean last_route;
 
-  GList *allowed_return_paths;
-  GList *not_allowed_return_paths;
-  GList *allowed_mail_locals;
-  GList *not_allowed_mail_locals;
-  GList *allowed_rcpt_domains;
-  GList *not_allowed_rcpt_domains;
+	GList *allowed_return_paths;
+	GList *not_allowed_return_paths;
+	GList *allowed_mail_locals;
+	GList *not_allowed_mail_locals;
+	GList *allowed_rcpt_domains;
+	GList *not_allowed_rcpt_domains;
 
-  interface *mail_host;
-  gchar *wrapper;
-  gboolean connect_error_fail;
+	interface *mail_host;
+	gchar *wrapper;
+	gboolean connect_error_fail;
 
-  gchar *helo_name;
-  gboolean do_correct_helo;
-  gboolean do_pipelining;
+	gchar *helo_name;
+	gboolean do_correct_helo;
+	gboolean do_pipelining;
 
-  gchar *set_h_from_domain;
-  gchar *set_h_reply_to_domain;
-  gchar *set_return_path_domain;
+	gchar *set_h_from_domain;
+	gchar *set_h_reply_to_domain;
+	gchar *set_return_path_domain;
 
-  GList *map_h_from_addresses;
-  GList *map_h_reply_to_addresses;
-  GList *map_h_mail_followup_to_addresses;
-  GList *map_return_path_addresses;
+	GList *map_h_from_addresses;
+	GList *map_h_reply_to_addresses;
+	GList *map_h_mail_followup_to_addresses;
+	GList *map_return_path_addresses;
 
-  gboolean expand_h_sender_domain;
-  gboolean expand_h_sender_address;
+	gboolean expand_h_sender_domain;
+	gboolean expand_h_sender_address;
 
-  GList *resolve_list;
+	GList *resolve_list;
 
-  gchar *auth_name;
-  gchar *auth_login;
-  gchar *auth_secret;
+	gchar *auth_name;
+	gchar *auth_login;
+	gchar *auth_secret;
 
-  gchar *pop3_login;
+	gchar *pop3_login;
 
-  gchar *pipe;
-  
-  gboolean pipe_fromline;
-  gboolean pipe_fromhack;
+	gchar *pipe;
+
+	gboolean pipe_fromline;
+	gboolean pipe_fromhack;
 } connect_route;
 
-typedef struct _get_conf
-{
-  gchar *protocol;
-  gchar *server_name;
-  guint server_port;
-  gchar *wrapper;
-  gchar *login_user;
-  gchar *login_pass;
-  address *address;
-  address *return_path;
-  gboolean do_keep;
-  gboolean do_uidl;
-  gboolean do_uidl_dele;
-  gint max_size;
-  gboolean max_size_delete;
-  gint max_count;
+typedef struct _get_conf {
+	gchar *protocol;
+	gchar *server_name;
+	guint server_port;
+	gchar *wrapper;
+	gchar *login_user;
+	gchar *login_pass;
+	address *address;
+	address *return_path;
+	gboolean do_keep;
+	gboolean do_uidl;
+	gboolean do_uidl_dele;
+	gint max_size;
+	gboolean max_size_delete;
+	gint max_count;
 
-  GList *resolve_list;
+	GList *resolve_list;
 
 } get_conf;
 
-typedef
-struct _masqmail_conf
-{
-  gint mail_uid;
-  gint mail_gid;
+typedef struct _masqmail_conf {
+	gint mail_uid;
+	gint mail_gid;
 
-  gint orig_uid;
-  gint orig_gid;
+	gint orig_uid;
+	gint orig_gid;
 
-  gboolean run_as_user;
+	gboolean run_as_user;
 
-  gchar *mail_dir;
-  gchar *lock_dir;
-  gchar *spool_dir;
-  gchar *log_dir;
+	gchar *mail_dir;
+	gchar *lock_dir;
+	gchar *spool_dir;
+	gchar *log_dir;
 
-  gint debug_level;
-  gboolean use_syslog;
-  guint log_max_pri;
+	gint debug_level;
+	gboolean use_syslog;
+	guint log_max_pri;
 
-  gchar *host_name;
-  GList *local_hosts;
-  GList *local_addresses;
-  GList *not_local_addresses;
-  GList *local_nets;
-  GList *listen_addresses;
+	gchar *host_name;
+	GList *local_hosts;
+	GList *local_addresses;
+	GList *not_local_addresses;
+	GList *local_nets;
+	GList *listen_addresses;
 
-  guint remote_port;
+	guint remote_port;
 
-  gboolean do_save_envelope_to;
+	gboolean do_save_envelope_to;
 
-  gboolean defer_all;
-  gboolean do_relay;
+	gboolean defer_all;
+	gboolean do_relay;
 
-  GList *ident_trusted_nets;
+	GList *ident_trusted_nets;
 
-  gboolean do_queue;
+	gboolean do_queue;
 
-  gboolean do_verbose;
+	gboolean do_verbose;
 
-  gchar *mbox_default;
-  GList *mbox_users;
-  GList *mda_users;
-  GList *maildir_users;
+	gchar *mbox_default;
+	GList *mbox_users;
+	GList *mda_users;
+	GList *maildir_users;
 
-  gchar *mda;
-  gboolean mda_fromline;
-  gboolean mda_fromhack;
+	gchar *mda;
+	gboolean mda_fromline;
+	gboolean mda_fromhack;
 
-  gboolean pipe_fromline;
-  gboolean pipe_fromhack;
+	gboolean pipe_fromline;
+	gboolean pipe_fromhack;
 
-  gchar *alias_file;
-  int (*alias_local_cmp)(const char *, const char *);
+	gchar *alias_file;
+	int (*alias_local_cmp) (const char *, const char *);
 
-  GList *local_net_routes;
-  GList *connect_routes; /* list of pairs which point to lists */
+	GList *local_net_routes;
+	GList *connect_routes;  /* list of pairs which point to lists */
 
-  gchar *online_detect;
-  gchar *online_file;
-  gchar *online_pipe;
-  interface *mserver_iface;
+	gchar *online_detect;
+	gchar *online_file;
+	gchar *online_pipe;
+	interface *mserver_iface;
 
-  GList *get_names;
-  GList *online_gets; /* list of pairs which point to lists */
+	GList *get_names;
+	GList *online_gets;  /* list of pairs which point to lists */
 
-  gchar *errmsg_file;
-  gchar *warnmsg_file;
-  GList *warn_intervals;
-  gint max_defer_time;
+	gchar *errmsg_file;
+	gchar *warnmsg_file;
+	GList *warn_intervals;
+	gint max_defer_time;
 
-  gchar *log_user;
+	gchar *log_user;
 } masqmail_conf;
 
 extern masqmail_conf conf;
 
-typedef
-struct _table_pair
-{
-  gchar *key;
-  gpointer *value;
+typedef struct _table_pair {
+	gchar *key;
+	gpointer *value;
 } table_pair;
 
 
-typedef
-enum _prot_id
-{
-  PROT_LOCAL = 0,
-  PROT_BSMTP,
-  PROT_SMTP,
-  PROT_ESMTP,
-  PROT_POP3,
-  PROT_APOP,
-  PROT_NUM
-}prot_id;
+typedef enum _prot_id {
+	PROT_LOCAL = 0,
+	PROT_BSMTP,
+	PROT_SMTP,
+	PROT_ESMTP,
+	PROT_POP3,
+	PROT_APOP,
+	PROT_NUM
+} prot_id;
 
 extern gchar *prot_names[];
 
-typedef
-enum _header_id
-{
-  HEAD_FROM = 0,
-  HEAD_SENDER,
-  HEAD_TO,
-  HEAD_CC,
-  HEAD_BCC,
-  HEAD_DATE,
-  HEAD_MESSAGE_ID,
-  HEAD_REPLY_TO,
-  HEAD_SUBJECT,
-  HEAD_RETURN_PATH,
-  HEAD_ENVELOPE_TO,
-  HEAD_RECEIVED,
-  HEAD_NUM_IDS,
-  HEAD_STATUS,
-  HEAD_UNKNOWN = HEAD_NUM_IDS,
-  HEAD_NONE = -1,
-}header_id;
+typedef enum _header_id {
+	HEAD_FROM = 0,
+	HEAD_SENDER,
+	HEAD_TO,
+	HEAD_CC,
+	HEAD_BCC,
+	HEAD_DATE,
+	HEAD_MESSAGE_ID,
+	HEAD_REPLY_TO,
+	HEAD_SUBJECT,
+	HEAD_RETURN_PATH,
+	HEAD_ENVELOPE_TO,
+	HEAD_RECEIVED,
+	HEAD_NUM_IDS,
+	HEAD_STATUS,
+	HEAD_UNKNOWN = HEAD_NUM_IDS,
+	HEAD_NONE = -1,
+} header_id;
 
-typedef
-struct _header_name
-{
-  gchar *header;
-  header_id id;
-}header_name;
+typedef struct _header_name {
+	gchar *header;
+	header_id id;
+} header_name;
 
-typedef
-struct _header
-{
-  header_id id;
-  gchar *header;
-  gchar *value;
-}header;
+typedef struct _header {
+	header_id id;
+	gchar *header;
+	gchar *value;
+} header;
 
 
-typedef
-struct _message
-{
-  gchar *uid;
+typedef struct _message {
+	gchar *uid;
 
-  gchar *received_host;
-  prot_id received_prot;
-  gchar *ident;
-  gint transfer_id; /* for multiple messages per transfer */
+	gchar *received_host;
+	prot_id received_prot;
+	gchar *ident;
+	gint transfer_id;  /* for multiple messages per transfer */
 
-  address *return_path;
-  GList *rcpt_list;
-  GList *non_rcpt_list;
+	address *return_path;
+	GList *rcpt_list;
+	GList *non_rcpt_list;
 
-  GList *hdr_list;
-  GList *data_list;
+	GList *hdr_list;
+	GList *data_list;
 
-  gint data_size;
-  time_t received_time;
-  time_t warned_time;
+	gint data_size;
+	time_t received_time;
+	time_t warned_time;
 
-  gchar *full_sender_name;
-}message;
+	gchar *full_sender_name;
+} message;
 
-typedef
-struct _msg_out
-{
-  message *msg;
-  
-  address *return_path;
-  GList *rcpt_list;
+typedef struct _msg_out {
+	message *msg;
 
-  GList *hdr_list;
-  GList *xtra_hdr_list;
-}msg_out;
+	address *return_path;
+	GList *rcpt_list;
 
-typedef
-struct _msgout_perhost
-{
-  gchar *host;
-  GList *msgout_list;
+	GList *hdr_list;
+	GList *xtra_hdr_list;
+} msg_out;
+
+typedef struct _msgout_perhost {
+	gchar *host;
+	GList *msgout_list;
 } msgout_perhost;
 
 /* flags for accept() */
 /*#define ACC_LOCAL      0x01 (we better use received_host == NULL) */
-#define ACC_HEAD_FROM_RCPT 0x01 /* create To: Header from rcpt_list (cmd line) */
-#define ACC_DEL_RCPTS      0x02 /* -t option, delete rcpts */
-#define ACC_DEL_BCC        0x04 /* -t option, delete Bcc header */
-#define ACC_RCPT_FROM_HEAD 0x08 /* -t option, get rcpts from headers */
-#define ACC_NODOT_TERM     0x10 /* a dot on a line itself does not end
-				   the message (-oi option) */
-#define ACC_NO_RECVD_HDR   0x20 /* do not create a Received: header */
-#define ACC_MAIL_FROM_HEAD 0x40 /* get return path from header */
-#define ACC_NODOT_RELAX    0x80 /* do not be picky if message ist not terminated by a dot on a line */
-#define ACC_SAVE_ENVELOPE_TO 0x0100 /* save an existent Envelope-to header as X-Orig-Envelope-to */
+#define ACC_HEAD_FROM_RCPT 0x01  /* create To: Header from rcpt_list (cmd line) */
+#define ACC_DEL_RCPTS      0x02  /* -t option, delete rcpts */
+#define ACC_DEL_BCC        0x04  /* -t option, delete Bcc header */
+#define ACC_RCPT_FROM_HEAD 0x08  /* -t option, get rcpts from headers */
+#define ACC_NODOT_TERM     0x10  /* a dot on a line itself does not end the message (-oi option) */
+#define ACC_NO_RECVD_HDR   0x20  /* do not create a Received: header */
+#define ACC_MAIL_FROM_HEAD 0x40  /* get return path from header */
+#define ACC_NODOT_RELAX    0x80  /* do not be picky if message ist not terminated by a dot on a line */
+#define ACC_SAVE_ENVELOPE_TO 0x0100  /* save an existent Envelope-to header as X-Orig-Envelope-to */
 
 #define DLVR_LOCAL 0x01
 #define DLVR_LAN 0x02
@@ -353,192 +328,171 @@ struct _msgout_perhost
 #define MSGSTR_FROMLINE 0x01
 #define MSGSTR_FROMHACK 0x02
 
-typedef
-enum _accept_error
-{
-  AERR_OK = 0,
-  AERR_TIMEOUT,
-  AERR_EOF,
-  AERR_OVERFLOW,
-  AERR_SYNTAX,
-  AERR_NOSPOOL,
-  AERR_NORCPT,
-  AERR_UNKNOWN
-}accept_error;
+typedef enum _accept_error {
+	AERR_OK = 0,
+	AERR_TIMEOUT,
+	AERR_EOF,
+	AERR_OVERFLOW,
+	AERR_SYNTAX,
+	AERR_NOSPOOL,
+	AERR_NORCPT,
+	AERR_UNKNOWN
+} accept_error;
 
 #define BUF_LEN 1024
 #define MAX_ADDRESS 256
 #define MAX_DATALINE 4096
 
-typedef
-enum _smtp_cmd_id
-{
-  SMTP_HELO = 0,
-  SMTP_EHLO,
-  SMTP_MAIL_FROM,
-  SMTP_RCPT_TO,
-  SMTP_DATA,
-  SMTP_QUIT,
-  SMTP_RSET,
-  SMTP_NOOP,
-  SMTP_HELP,
-  SMTP_NUM_IDS,
-  SMTP_EOF = -1,
-  SMTP_ERROR = -2,
+typedef enum _smtp_cmd_id {
+	SMTP_HELO = 0,
+	SMTP_EHLO,
+	SMTP_MAIL_FROM,
+	SMTP_RCPT_TO,
+	SMTP_DATA,
+	SMTP_QUIT,
+	SMTP_RSET,
+	SMTP_NOOP,
+	SMTP_HELP,
+	SMTP_NUM_IDS,
+	SMTP_EOF = -1,
+	SMTP_ERROR = -2,
 } smtp_cmd_id;
 
-typedef
-struct _smtp_cmd
-{
-  smtp_cmd_id id;
-  gchar *cmd;
+typedef struct _smtp_cmd {
+	smtp_cmd_id id;
+	gchar *cmd;
 } smtp_cmd;
 
-typedef
-struct _smtp_connection
-{
-  gchar *remote_host;
+typedef struct _smtp_connection {
+	gchar *remote_host;
 
-  prot_id prot;
-  gint next_id;
-  
-  gboolean helo_seen;
-  gboolean from_seen;
-  gboolean rcpt_seen;
+	prot_id prot;
+	gint next_id;
 
-  message *msg;
-}smtp_connection;
+	gboolean helo_seen;
+	gboolean from_seen;
+	gboolean rcpt_seen;
+
+	message *msg;
+} smtp_connection;
 
 /* alias.c*/
-gboolean addr_is_local(address *addr);
-GList *alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list);
+gboolean addr_is_local(address * addr);
+GList *alias_expand(GList * alias_table, GList * rcpt_list, GList * non_rcpt_list);
 
 /* child.c */
 int child(const char *command);
 
 /* conf.c */
 void init_conf();
-gboolean read_conf(gchar *filename);
-connect_route *read_route(gchar *filename, gboolean is_local_net);
-GList *read_route_list(GList *rf_list, gboolean is_local_net);
-void destroy_route(connect_route *r);
-void destroy_route_list(GList *list);
-get_conf *read_get_conf(gchar *filename);
-void destroy_get_conf(get_conf *gc);
+gboolean read_conf(gchar * filename);
+connect_route *read_route(gchar * filename, gboolean is_local_net);
+GList *read_route_list(GList * rf_list, gboolean is_local_net);
+void destroy_route(connect_route * r);
+void destroy_route_list(GList * list);
+get_conf *read_get_conf(gchar * filename);
+void destroy_get_conf(get_conf * gc);
 connect_route *create_local_route();
 
 /* expand.c */
-GList *var_table_rcpt(GList *var_table, address *rcpt);
-GList *var_table_msg(GList *var_table, message *msg);
-GList *var_table_conf(GList *var_table);
-gint expand(GList *var_list, gchar *format, gchar *result, gint result_len);
+GList *var_table_rcpt(GList * var_table, address * rcpt);
+GList *var_table_msg(GList * var_table, message * msg);
+GList *var_table_conf(GList * var_table);
+gint expand(GList * var_list, gchar * format, gchar * result, gint result_len);
 
 /* message.c */
 message *create_message(void);
-void destroy_message(message *msg);
-void destroy_msg_list(GList *msg_list);
-void msg_free_data(message *msg);
-gint msg_calc_size(message *msg, gboolean is_smtp);
+void destroy_message(message * msg);
+void destroy_msg_list(GList * msg_list);
+void msg_free_data(message * msg);
+gint msg_calc_size(message * msg, gboolean is_smtp);
 
-msg_out *create_msg_out(message *msg);
-msg_out *clone_msg_out(msg_out *msgout_orig);
-GList *create_msg_out_list(GList *msg_list);
-void destroy_msg_out(msg_out *msgout);
-void destroy_msg_out_list(GList *msgout_list);
+msg_out *create_msg_out(message * msg);
+msg_out *clone_msg_out(msg_out * msgout_orig);
+GList *create_msg_out_list(GList * msg_list);
+void destroy_msg_out(msg_out * msgout);
+void destroy_msg_out_list(GList * msgout_list);
 
 /* address.c */
-address *create_address(gchar *path, gboolean is_rfc821);
-address *create_address_qualified(gchar *path, gboolean is_rfc821,
-				  gchar *domain);
-address *create_address_pipe(gchar *path);
-void destroy_address(address *addr);
-address *copy_modify_address(const address *orig, gchar *l_part, gchar *dom);
+address *create_address(gchar * path, gboolean is_rfc821);
+address *create_address_qualified(gchar * path, gboolean is_rfc821, gchar * domain);
+address *create_address_pipe(gchar * path);
+void destroy_address(address * addr);
+address *copy_modify_address(const address * orig, gchar * l_part, gchar * dom);
 #define copy_address(addr) copy_modify_address(addr, NULL, NULL)
-gboolean addr_isequal(address *addr1, address *addr2);
-gboolean addr_isequal_parent(address *addr1, address *addr2);
-address *addr_find_ancestor(address *addr);
-gboolean addr_is_delivered_children(address *addr);
-gboolean addr_is_finished_children(address *addr);
-gchar *addr_string(address *addr);
-gint addr_match(address *addr1, address *addr2);
+gboolean addr_isequal(address * addr1, address * addr2);
+gboolean addr_isequal_parent(address * addr1, address * addr2);
+address *addr_find_ancestor(address * addr);
+gboolean addr_is_delivered_children(address * addr);
+gboolean addr_is_finished_children(address * addr);
+gchar *addr_string(address * addr);
+gint addr_match(address * addr1, address * addr2);
 
 /* accept.c */
-accept_error accept_message(FILE *in, message *msg,
-			    guint flags);
-accept_error accept_message_prepare(message *msg, guint flags);
+accept_error accept_message(FILE * in, message * msg, guint flags);
+accept_error accept_message_prepare(message * msg, guint flags);
 
 /* header.c */
 gchar *rec_timestamp();
-GList *find_header(GList *hdr_list, header_id id, gchar *hdr_str);
-void header_unfold(header *hdr);
-void header_fold(header *hdr);
-header *create_header(header_id id, gchar *fmt, ...);
-void destroy_header(header *hdr);
-header *copy_header(header *hdr);
-header *get_header(gchar *line);
+GList *find_header(GList * hdr_list, header_id id, gchar * hdr_str);
+void header_unfold(header * hdr);
+void header_fold(header * hdr);
+header *create_header(header_id id, gchar * fmt, ...);
+void destroy_header(header * hdr);
+header *copy_header(header * hdr);
+header *get_header(gchar * line);
 
 /* smtp_in.c */
-void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident);
+void smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident);
 
 /* listen.c */
-void listen_port(GList *addr_list, gint qival, char *argv[]);
+void listen_port(GList * addr_list, gint qival, char *argv[]);
 
 /* parse.c */
-gboolean split_address(const gchar *path, gchar **local_part, gchar **domain,
-		       gboolean is_rfc821);
-gboolean parse_address_rfc822(gchar *string,
-		       gchar **local_begin, gchar **local_end,
-		       gchar **domain_begin, gchar **domain_end,
-			      gchar **address_end);
-gboolean parse_address_rfc821(gchar *string,
-			      gchar **local_begin, gchar **local_end,
-			      gchar **domain_begin, gchar **domain_end,
-			      gchar **address_end);
-address *_create_address(gchar *string, gchar **end, gboolean is_rfc821);
-address *create_address_rfc821(gchar *string, gchar **end);
-address *create_address_rfc822(gchar *string, gchar **end);
-GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain);
-gboolean addr_isequal(address *addr1, address *addr2);
+gboolean split_address(const gchar * path, gchar ** local_part, gchar ** domain, gboolean is_rfc821);
+gboolean parse_address_rfc822(gchar * string, gchar ** local_begin, gchar ** local_end, gchar ** domain_begin, gchar ** domain_end, gchar ** address_end);
+gboolean parse_address_rfc821(gchar * string, gchar ** local_begin, gchar ** local_end, gchar ** domain_begin, gchar ** domain_end, gchar ** address_end);
+address *_create_address(gchar * string, gchar ** end, gboolean is_rfc821);
+address *create_address_rfc821(gchar * string, gchar ** end);
+address *create_address_rfc822(gchar * string, gchar ** end);
+GList *addr_list_append_rfc822(GList * addr_list, gchar * string, gchar * domain);
+gboolean addr_isequal(address * addr1, address * addr2);
 
 /* connect.c */
-mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port,
-			  GList *addr_list);
-mxip_addr *connect_resolvelist(int *psockfd, gchar *host, guint port,
-			     GList *res_funcs);
+mxip_addr *connect_hostlist(int *psockfd, gchar * host, guint port, GList * addr_list);
+mxip_addr *connect_resolvelist(int *psockfd, gchar * host, guint port, GList * res_funcs);
 
 /* deliver.c */
-void msg_rcptlist_local(GList *rcpt_list, GList **, GList **);
-gboolean deliver_local(msg_out *msgout);
-gboolean deliver_msglist_host(connect_route *route, GList *msg_list, gchar *host, GList *res_list);
-gboolean deliver_route_msgout_list(connect_route *route, GList *msgout_list);
-gboolean deliver_route_msg_list(connect_route *route, GList *msgout_list);
-gboolean deliver_finish(msg_out *msgout);
-gboolean deliver_finish_list(GList *msgout_list);
-gboolean deliver_msg_list(GList *msg_list, guint flags);
-gboolean deliver(message *msg);
+void msg_rcptlist_local(GList * rcpt_list, GList **, GList **);
+gboolean deliver_local(msg_out * msgout);
+gboolean deliver_msglist_host(connect_route * route, GList * msg_list, gchar * host, GList * res_list);
+gboolean deliver_route_msgout_list(connect_route * route, GList * msgout_list);
+gboolean deliver_route_msg_list(connect_route * route, GList * msgout_list);
+gboolean deliver_finish(msg_out * msgout);
+gboolean deliver_finish_list(GList * msgout_list);
+gboolean deliver_msg_list(GList * msg_list, guint flags);
+gboolean deliver(message * msg);
 
 /* fail_msg.c */
-gboolean fail_msg(message *msg, gchar *template,
-		  GList *failed_rcpts, gchar *err_fmt, va_list args);
-gboolean warn_msg(message *msg, gchar *template,
-		  GList *failed_rcpts, gchar *err_fmt, va_list args);
+gboolean fail_msg(message * msg, gchar * template, GList * failed_rcpts, gchar * err_fmt, va_list args);
+gboolean warn_msg(message * msg, gchar * template, GList * failed_rcpts, gchar * err_fmt, va_list args);
 
 /* get.c */
-gboolean get_from_file(gchar *fname);
-gboolean get_from_name(gchar *name);
+gboolean get_from_file(gchar * fname);
+gboolean get_from_name(gchar * name);
 gboolean get_all(void);
 void get_online(void);
 void get_daemon(gint gival, char *argv[]);
-gboolean pop_before_smtp(gchar *fname);
+gboolean pop_before_smtp(gchar * fname);
 
 /* interface.c */
-gboolean init_sockaddr(struct sockaddr_in *name, interface *iface);
-int make_server_socket(interface *iface);
+gboolean init_sockaddr(struct sockaddr_in *name, interface * iface);
+int make_server_socket(interface * iface);
 
 /* local.c */
-gboolean append_file(message *msg, GList *hdr_list, gchar *user);
-gboolean maildir_out(message *msg, GList *hdr_list, gchar *user, guint flags);
-gboolean pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags);
+gboolean append_file(message * msg, GList * hdr_list, gchar * user);
+gboolean maildir_out(message * msg, GList * hdr_list, gchar * user, guint flags);
+gboolean pipe_out(message * msg, GList * hdr_list, address * rcpt, gchar * cmd, guint flags);
 
 /* log.c */
 gchar *ext_strerror(int err);
@@ -551,63 +505,60 @@ void vdebugf(const char *fmt, va_list args);
 void maillog(const char *fmt, ...);
 
 /* spool.c */
-gboolean spool_read_data(message *msg);
-gboolean spool_read_data(message *msg);
-message *msg_spool_read(gchar *uid, gboolean do_readdata);
-gboolean spool_write(message *msg, gboolean do_writedata);
-gboolean spool_lock(gchar *uid);
-gboolean spool_unlock(gchar *uid);
-gboolean spool_delete_all(message *msg);
+gboolean spool_read_data(message * msg);
+gboolean spool_read_data(message * msg);
+message *msg_spool_read(gchar * uid, gboolean do_readdata);
+gboolean spool_write(message * msg, gboolean do_writedata);
+gboolean spool_lock(gchar * uid);
+gboolean spool_unlock(gchar * uid);
+gboolean spool_delete_all(message * msg);
 
 /* queue.c */
 GList *read_queue(gboolean do_readdata);
 gboolean queue_run(void);
 gboolean queue_run_online(void);
 void queue_list(void);
-gboolean queue_delete(gchar *uid);
+gboolean queue_delete(gchar * uid);
 
 /* online.c */
 gchar *detect_online();
-void set_online_name(gchar *name);
+void set_online_name(gchar * name);
 
 /* permissions.c */
 gboolean is_ingroup(uid_t uid, gid_t gid);
-void set_euidgid(gint uid, gint gid, uid_t *old_uid, gid_t *old_gid);
-void set_identity(uid_t old_uid, gchar *task_name);
+void set_euidgid(gint uid, gint gid, uid_t * old_uid, gid_t * old_gid);
+void set_identity(uid_t old_uid, gchar * task_name);
 
 /* rewrite.c */
-gboolean set_address_header_domain(header *hdr, gchar *domain);
-gboolean map_address_header(header *hdr, GList *table);
+gboolean set_address_header_domain(header * hdr, gchar * domain);
+gboolean map_address_header(header * hdr, GList * table);
 
 /* route.c */
-msgout_perhost *create_msgout_perhost(gchar *host);
-void destroy_msgout_perhost(msgout_perhost *mo_ph);
-void rewrite_headers(msg_out *msgout, connect_route *route);
-void rcptlist_with_one_of_hostlist(GList *rcpt_list, GList *host_list,
-				     GList **, GList **);
-void rcptlist_with_addr_is_local(GList *rcpt_list,
-				   GList **p_rcpt_list, GList **p_non_rcpt_list);
-gboolean route_strip_msgout(connect_route *route, msg_out *msgout);
-msg_out *route_prepare_msgout(connect_route *route, msg_out *msgout);
-GList *route_msgout_list(connect_route *route, GList *msgout_list);
-gboolean route_is_allowed_return_path(connect_route *route, address *ret_path);
-gboolean route_is_allowed_mail_local(connect_route *route, address *ret_path);
-void msg_rcptlist_route(connect_route *route, GList *rcpt_list,
-			GList **p_rcpt_list, GList **p_non_rcpt_list);
+msgout_perhost *create_msgout_perhost(gchar * host);
+void destroy_msgout_perhost(msgout_perhost * mo_ph);
+void rewrite_headers(msg_out * msgout, connect_route * route);
+void rcptlist_with_one_of_hostlist(GList * rcpt_list, GList * host_list, GList **, GList **);
+void rcptlist_with_addr_is_local(GList * rcpt_list, GList ** p_rcpt_list, GList ** p_non_rcpt_list);
+gboolean route_strip_msgout(connect_route * route, msg_out * msgout);
+msg_out *route_prepare_msgout(connect_route * route, msg_out * msgout);
+GList *route_msgout_list(connect_route * route, GList * msgout_list);
+gboolean route_is_allowed_return_path(connect_route * route, address * ret_path);
+gboolean route_is_allowed_mail_local(connect_route * route, address * ret_path);
+void msg_rcptlist_route(connect_route * route, GList * rcpt_list, GList ** p_rcpt_list, GList ** p_non_rcpt_list);
 
 /* tables.c */
-table_pair *create_pair(gchar *key, gpointer value);
-table_pair *create_pair_string(gchar *key, gpointer value);
-table_pair *parse_table_pair(gchar *line, char delim);
-gpointer *table_find_func(GList *table_list, gchar *key, int (*cmp_func)(const char *, const char *));
-gpointer *table_find(GList *table_list, gchar *key);
-gpointer *table_find_case(GList *table_list, gchar *key);
-gpointer *table_find_fnmatch(GList *table_list, gchar *key);
-GList *table_read(gchar *fname, gchar delim);
-void destroy_table(GList *table);
+table_pair *create_pair(gchar * key, gpointer value);
+table_pair *create_pair_string(gchar * key, gpointer value);
+table_pair *parse_table_pair(gchar * line, char delim);
+gpointer *table_find_func(GList * table_list, gchar * key, int (*cmp_func) (const char *, const char *));
+gpointer *table_find(GList * table_list, gchar * key);
+gpointer *table_find_case(GList * table_list, gchar * key);
+gpointer *table_find_fnmatch(GList * table_list, gchar * key);
+GList *table_read(gchar * fname, gchar delim);
+void destroy_table(GList * table);
 
 /* timeival.c */
-gint time_interval(gchar *str, gint *pos);
+gint time_interval(gchar * str, gint * pos);
 
 /* permissions.c */
 gboolean is_privileged_user(uid_t uid);

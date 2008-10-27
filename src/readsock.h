@@ -20,5 +20,5 @@
 #define READSOCKL_CVT_CRLF 0x02
 
 
-int read_sockline(FILE *in, char *buf, int buf_len, int timeout, unsigned int flags);
-int read_sockline1(FILE *in, char **pbuf, int *size, int timeout, unsigned int flags);
+int read_sockline(FILE * in, char *buf, int buf_len, int timeout, unsigned int flags);
+int read_sockline1(FILE * in, char **pbuf, int *size, int timeout, unsigned int flags);

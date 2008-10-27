@@ -19,171 +19,182 @@
 #include "masqmail.h"
 #include <fnmatch.h>
 
-address *create_address(gchar *path, gboolean is_rfc821)
+address*
+create_address(gchar * path, gboolean is_rfc821)
 {
-  address *addr;
-  addr = _create_address(path, NULL, is_rfc821);
-  
-  if(addr != NULL){
-    addr_unmark_delivered(addr);
-  }
-  return addr;
+	address *addr;
+	addr = _create_address(path, NULL, is_rfc821);
+
+	if (addr != NULL) {
+		addr_unmark_delivered(addr);
+	}
+	return addr;
 }
 
-address *create_address_qualified(gchar *path, gboolean is_rfc821,
-				  gchar *domain)
+address*
+create_address_qualified(gchar * path, gboolean is_rfc821, gchar * domain)
 {
-  address *addr = create_address(path, is_rfc821);
-  if(addr != NULL){
-    if(addr->domain == NULL)
-      addr->domain = g_strdup(domain);
-  }
+	address *addr = create_address(path, is_rfc821);
+	if (addr != NULL) {
+		if (addr->domain == NULL)
+			addr->domain = g_strdup(domain);
+	}
 
-  return addr;
+	return addr;
 }
 
 /* nothing special about pipes here,
    but its only called for that purpose */
-address *create_address_pipe(gchar *path)
+address*
+create_address_pipe(gchar * path)
 {
-  address *addr = g_malloc(sizeof(address));
+	address *addr = g_malloc(sizeof(address));
 
-  if(addr){
-    memset(addr, 0, sizeof(address));
-    addr->address = g_strchomp(g_strdup(path));
-    addr->local_part = g_strdup(addr->address);
-  
-    addr->domain = g_strdup("localhost"); /* quick hack */
-  }
-  return addr;
+	if (addr) {
+		memset(addr, 0, sizeof(address));
+		addr->address = g_strchomp(g_strdup(path));
+		addr->local_part = g_strdup(addr->address);
+
+		addr->domain = g_strdup("localhost");  /* quick hack */
+	}
+	return addr;
 }
 
-void destroy_address(address *addr)
+void
+destroy_address(address * addr)
 {
-  DEBUG(6) debugf("destroy_address entered\n");
+	DEBUG(6) debugf("destroy_address entered\n");
 
-  g_free(addr->address);
-  g_free(addr->local_part);
-  g_free(addr->domain);
+	g_free(addr->address);
+	g_free(addr->local_part);
+	g_free(addr->domain);
 
-  g_free(addr);
+	g_free(addr);
 }
 
-address *copy_modify_address(const address *orig, gchar *l_part, gchar *dom)
+address*
+copy_modify_address(const address * orig, gchar * l_part, gchar * dom)
 {
-  address *addr = NULL;
+	address *addr = NULL;
 
-  if(orig){
-    addr = g_malloc(sizeof(address));
-    if(addr){
-      addr->address = g_strdup(orig->address);
+	if (orig) {
+		addr = g_malloc(sizeof(address));
+		if (addr) {
+			addr->address = g_strdup(orig->address);
 
-      if(l_part == NULL)
-	addr->local_part = g_strdup(orig->local_part);
-      else
-	addr->local_part = g_strdup(l_part);
+			if (l_part == NULL)
+				addr->local_part = g_strdup(orig->local_part);
+			else
+				addr->local_part = g_strdup(l_part);
 
-      if(dom == NULL)
-	addr->domain = g_strdup(orig->domain);
-      else
-	addr->domain = g_strdup(dom);
+			if (dom == NULL)
+				addr->domain = g_strdup(orig->domain);
+			else
+				addr->domain = g_strdup(dom);
 
-      addr->flags = 0;
-      addr->children = NULL;
-      addr->parent = NULL;
-    }
-  }
-  return addr;
+			addr->flags = 0;
+			addr->children = NULL;
+			addr->parent = NULL;
+		}
+	}
+	return addr;
 }
 
-gboolean addr_isequal(address *addr1, address *addr2)
+gboolean
+addr_isequal(address * addr1, address * addr2)
 {
-  return
-    (strcmp(addr1->local_part, addr2->local_part) == 0) &&
-    (strcasecmp(addr1->domain, addr2->domain) == 0);
+	return
+		(strcmp(addr1->local_part, addr2->local_part) == 0) &&
+		(strcasecmp(addr1->domain, addr2->domain) == 0);
 }
 
 /* searches in ancestors of addr1 */
-gboolean addr_isequal_parent(address *addr1, address *addr2)
+gboolean
+addr_isequal_parent(address * addr1, address * addr2)
 {
-  address *addr;
+	address *addr;
 
-  for(addr = addr1; addr; addr = addr->parent)
-    if(addr_isequal(addr, addr2))
-      return TRUE;
+	for (addr = addr1; addr; addr = addr->parent)
+		if (addr_isequal(addr, addr2))
+			return TRUE;
 
-  return FALSE;
+	return FALSE;
 }
 
 /* careful, this is recursive */
 /* returns TRUE if ALL children have been delivered */
-gboolean addr_is_delivered_children(address *addr)
+gboolean
+addr_is_delivered_children(address * addr)
 {
-  GList *addr_node;
+	GList *addr_node;
 
-  if(addr->children == NULL) return addr_is_delivered(addr);
+	if (addr->children == NULL)
+		return addr_is_delivered(addr);
 
-  foreach(addr->children, addr_node){
-    address *addr = (address *)(addr_node->data);
-    if(!addr_is_delivered_children(addr))
-      return FALSE;
-  }
-  return TRUE;
+	foreach(addr->children, addr_node) {
+		address *addr = (address *) (addr_node->data);
+		if (!addr_is_delivered_children(addr))
+			return FALSE;
+	}
+	return TRUE;
 }
 
 /* careful, this is recursive */
 /* returns TRUE if ALL children have been either delivered or have failed */
-gboolean addr_is_finished_children(address *addr)
+gboolean
+addr_is_finished_children(address * addr)
 {
-  GList *addr_node;
+	GList *addr_node;
 
-  if(addr->children == NULL) return (addr_is_failed(addr) || addr_is_delivered(addr));
+	if (addr->children == NULL)
+		return (addr_is_failed(addr) || addr_is_delivered(addr));
 
-  foreach(addr->children, addr_node){
-    address *addr = (address *)(addr_node->data);
-    if(!addr_is_finished_children(addr))
-      return FALSE;
-  }
-  return TRUE;
+	foreach(addr->children, addr_node) {
+		address *addr = (address *) (addr_node->data);
+		if (!addr_is_finished_children(addr))
+			return FALSE;
+	}
+	return TRUE;
 }
 
 /* find original address */
-address *addr_find_ancestor(address *addr)
+address*
+addr_find_ancestor(address * addr)
 {
-  while(addr->parent) addr = addr->parent;
-  return addr;
+	while (addr->parent)
+		addr = addr->parent;
+	return addr;
 }
 
-gchar *addr_string(address *addr)
+gchar*
+addr_string(address * addr)
 {
-  static gchar *buffer = NULL;
+	static gchar *buffer = NULL;
 
-  if(addr == NULL){
-    g_free(buffer);
-    buffer = NULL;
-    return NULL;
-  }
-  if(buffer)
-    g_free(buffer);
+	if (addr == NULL) {
+		g_free(buffer);
+		buffer = NULL;
+		return NULL;
+	}
+	if (buffer)
+		g_free(buffer);
 
-  if(addr->local_part[0] == 0){
-    buffer = g_strdup("<>");
-  }else{
-    buffer = g_strdup_printf("<%s@%s>",
-			     addr->local_part ? addr->local_part : "",
-			     addr->domain ? addr->domain : "");
-  }
-  return buffer;
+	if (addr->local_part[0] == 0) {
+		buffer = g_strdup("<>");
+	} else {
+		buffer = g_strdup_printf("<%s@%s>", addr->local_part ? addr->local_part : "", addr->domain ? addr->domain : "");
+	}
+	return buffer;
 }
 
-gint addr_match(address *addr1, address *addr2)
+gint
+addr_match(address * addr1, address * addr2)
 {
-  int res;
+	int res;
 
-  if((res = fnmatch(addr1->local_part, addr2->local_part, 0)) == 0){
-    if((res = fnmatch(addr1->domain, addr2->domain, FNM_CASEFOLD)) == 0)
-      return 0;
-  }
-  return res;
+	if ((res = fnmatch(addr1->local_part, addr2->local_part, 0)) == 0) {
+		if ((res = fnmatch(addr1->domain, addr2->domain, FNM_CASEFOLD)) == 0)
+			return 0;
+	}
+	return res;
 }
-

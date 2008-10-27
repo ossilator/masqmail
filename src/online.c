@@ -24,96 +24,91 @@
 
 gchar *connection_name;
 
-void set_online_name(gchar *name)
+void
+set_online_name(gchar * name)
 {
-  connection_name = g_strdup(name);
+	connection_name = g_strdup(name);
 }
 
-static
-gchar *detect_online_pipe(const gchar *pipe)
+static gchar*
+detect_online_pipe(const gchar * pipe)
 {
-  pid_t pid;
-  void (*old_signal)(int);
-  int status;
-  FILE *in;
-  gchar *name = NULL;
+	pid_t pid;
+	void (*old_signal) (int);
+	int status;
+	FILE *in;
+	gchar *name = NULL;
 
-  old_signal = signal(SIGCHLD, SIG_DFL);
+	old_signal = signal(SIGCHLD, SIG_DFL);
 
-  in = peopen(pipe, "r", environ, &pid);
-  if(in != NULL){
-    gchar output[256];
-    if(fgets(output, 255, in)){
-      g_strchomp(output);
-      name = g_strdup(output);
-    }
-    fclose(in);
-    waitpid(pid, &status, 0);
-    if(WEXITSTATUS(status) != EXIT_SUCCESS){
-      g_free(name);
-      name = NULL;
-    }
-  }else
-    logwrite(LOG_ALERT, "could not open pipe '%s': %s\n", pipe, strerror(errno));
+	in = peopen(pipe, "r", environ, &pid);
+	if (in != NULL) {
+		gchar output[256];
+		if (fgets(output, 255, in)) {
+			g_strchomp(output);
+			name = g_strdup(output);
+		}
+		fclose(in);
+		waitpid(pid, &status, 0);
+		if (WEXITSTATUS(status) != EXIT_SUCCESS) {
+			g_free(name);
+			name = NULL;
+		}
+	} else
+		logwrite(LOG_ALERT, "could not open pipe '%s': %s\n", pipe, strerror(errno));
 
-  signal(SIGCHLD, old_signal);
+	signal(SIGCHLD, old_signal);
 
-  return name;
+	return name;
 }
 
-gchar *detect_online()
+gchar*
+detect_online()
 {
-  if(conf.online_detect != NULL){
-    if(strcmp(conf.online_detect, "file") == 0){
-      DEBUG(3) debugf("online detection method 'file'\n");
-      if(conf.online_file != NULL){
-	struct stat st;
-	if(stat(conf.online_file, &st) == 0){
-	  FILE *fptr = fopen(conf.online_file, "r");
-	  if(fptr){
-	    char buf[256];
-	    fgets(buf, 256, fptr);
-	    g_strchomp(buf);
-	    fclose(fptr);
-	    return g_strdup(buf);
-	  }else{
-	    logwrite(LOG_ALERT, "opening of %s failed: %s\n",
-		     conf.online_file, strerror(errno));
-	    return NULL;
-	  }
-	}
-	else if(errno == ENOENT){
-	  logwrite(LOG_NOTICE, "not online.\n");
-	  return NULL;
-	}else{
-	  logwrite(LOG_ALERT, "stat of %s failed: %s",
-		   conf.online_file, strerror(errno));
-	  return NULL;
-	}
-      }else
-	logwrite(LOG_ALERT,
-		 "online detection mode is 'file', "
-		 "but online_file is undefined\n");
+	if (conf.online_detect != NULL) {
+		if (strcmp(conf.online_detect, "file") == 0) {
+			DEBUG(3) debugf("online detection method 'file'\n");
+			if (conf.online_file != NULL) {
+				struct stat st;
+				if (stat(conf.online_file, &st) == 0) {
+					FILE *fptr = fopen(conf.online_file, "r");
+					if (fptr) {
+						char buf[256];
+						fgets(buf, 256, fptr);
+						g_strchomp(buf);
+						fclose(fptr);
+						return g_strdup(buf);
+					} else {
+						logwrite(LOG_ALERT, "opening of %s failed: %s\n", conf.online_file, strerror(errno));
+						return NULL;
+					}
+				} else if (errno == ENOENT) {
+					logwrite(LOG_NOTICE, "not online.\n");
+					return NULL;
+				} else {
+					logwrite(LOG_ALERT, "stat of %s failed: %s", conf.online_file, strerror(errno));
+					return NULL;
+				}
+			} else
+				logwrite(LOG_ALERT, "online detection mode is 'file', but online_file is undefined\n");
 #ifdef ENABLE_MSERVER
-    }else if(strcmp(conf.online_detect, "mserver") == 0){
-      DEBUG(3) debugf("connection method 'mserver'\n");
-      return mserver_detect_online(conf.mserver_iface);
+		} else if (strcmp(conf.online_detect, "mserver") == 0) {
+			DEBUG(3) debugf("connection method 'mserver'\n");
+			return mserver_detect_online(conf.mserver_iface);
 #endif
-    }else if(strcmp(conf.online_detect, "pipe") == 0){
-      DEBUG(3) debugf("connection method 'pipe'\n");
-      if(conf.online_pipe)
-	return detect_online_pipe(conf.online_pipe);
-      else{
-	logwrite(LOG_ALERT,
-		 "online detection mode is 'pipe', "
-		 "but online_pipe is undefined\n");
+		} else if (strcmp(conf.online_detect, "pipe") == 0) {
+			DEBUG(3) debugf("connection method 'pipe'\n");
+			if (conf.online_pipe)
+				return detect_online_pipe(conf.online_pipe);
+			else {
+				logwrite(LOG_ALERT, "online detection mode is 'pipe', but online_pipe is undefined\n");
+				return NULL;
+			}
+		} else if (strcmp(conf.online_detect, "argument") == 0) {
+			return connection_name;
+		} else {
+			DEBUG(3) debugf("no connection method selected\n");
+		}
+	}
 	return NULL;
-      }
-    }else if(strcmp(conf.online_detect, "argument") == 0){
-      return connection_name;
-    }else{
-      DEBUG(3) debugf("no connection method selected\n");
-    }
-  }
-  return NULL;
 }
