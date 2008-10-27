@@ -20,81 +20,78 @@
 #include "masqmail.h"
 #endif
 
-gboolean set_address_header_domain(header *hdr, gchar *domain)
+gboolean
+set_address_header_domain(header * hdr, gchar * domain)
 {
-  gchar *p = hdr->value;
-  gchar *new_hdr = g_strndup(hdr->header, hdr->value - hdr->header);
-  gint tmp;
+	gchar *p = hdr->value;
+	gchar *new_hdr = g_strndup(hdr->header, hdr->value - hdr->header);
+	gint tmp;
 
-  while(*p){
-    gchar *loc_beg, *loc_end;
-    gchar *dom_beg, *dom_end;
-    gchar *addr_end;
-    gchar *rewr_string;
+	while (*p) {
+		gchar *loc_beg, *loc_end;
+		gchar *dom_beg, *dom_end;
+		gchar *addr_end;
+		gchar *rewr_string;
 
-    if(parse_address_rfc822(p,
-			    &loc_beg, &loc_end, &dom_beg, &dom_end, &addr_end)){
-      gchar *left, *right;
+		if (parse_address_rfc822(p, &loc_beg, &loc_end, &dom_beg, &dom_end, &addr_end)) {
+			gchar *left, *right;
 
-      if(dom_beg != NULL){
-	left = g_strndup(p, dom_beg - p);
-	right = g_strndup(dom_end, addr_end - dom_end);
+			if (dom_beg != NULL) {
+				left = g_strndup(p, dom_beg - p);
+				right = g_strndup(dom_end, addr_end - dom_end);
 
-	rewr_string = g_strconcat(left, domain, right, NULL);
-      }else{
-	left = g_strndup(p, loc_end - p);
-	right = g_strndup(loc_end, addr_end - loc_end);
+				rewr_string = g_strconcat(left, domain, right, NULL);
+			} else {
+				left = g_strndup(p, loc_end - p);
+				right = g_strndup(loc_end, addr_end - loc_end);
 
-	rewr_string = g_strconcat(left, "@", domain, right, NULL);
-      }
-      g_free(left);
-      g_free(right);
+				rewr_string = g_strconcat(left, "@", domain, right, NULL);
+			}
+			g_free(left);
+			g_free(right);
 
-      p = addr_end;
-      if(*p == ',') p++;
+			p = addr_end;
+			if (*p == ',')
+				p++;
 
-      new_hdr =
-	g_strconcat(new_hdr, rewr_string,
-		    *p != 0 ? "," : NULL, NULL);
+			new_hdr = g_strconcat(new_hdr, rewr_string, *p != 0 ? "," : NULL, NULL);
 
-    }else
-      return FALSE;
-  }
-  tmp = (hdr->value - hdr->header);
-  g_free(hdr->header);
-  hdr->header = new_hdr;
-  hdr->value = hdr->header + tmp;
+		} else
+			return FALSE;
+	}
+	tmp = (hdr->value - hdr->header);
+	g_free(hdr->header);
+	hdr->header = new_hdr;
+	hdr->value = hdr->header + tmp;
 
-  return TRUE;
+	return TRUE;
 }
 
-gboolean map_address_header(header *hdr, GList *table)
+gboolean
+map_address_header(header * hdr, GList * table)
 {
-  GList *addr_list = addr_list_append_rfc822(NULL, hdr->value, conf.host_name);
-  GList *addr_node;
-  gchar *new_hdr = g_strndup(hdr->header, hdr->value - hdr->header);
-  gboolean did_change = FALSE;
+	GList *addr_list = addr_list_append_rfc822(NULL, hdr->value, conf.host_name);
+	GList *addr_node;
+	gchar *new_hdr = g_strndup(hdr->header, hdr->value - hdr->header);
+	gboolean did_change = FALSE;
 
-  foreach(addr_list, addr_node){
-    address *addr = (address *)(addr_node->data);
-    gchar *rewr_string = (gchar *)table_find_fnmatch(table, addr->local_part);
+	foreach(addr_list, addr_node) {
+		address *addr = (address *) (addr_node->data);
+		gchar *rewr_string = (gchar *) table_find_fnmatch(table, addr->local_part);
 
-    if(rewr_string == NULL)
-      rewr_string = addr->address;
-    else
-      did_change = TRUE;
+		if (rewr_string == NULL)
+			rewr_string = addr->address;
+		else
+			did_change = TRUE;
 
-    if(rewr_string)
-      new_hdr =
-	g_strconcat(new_hdr, rewr_string,
-		    g_list_next(addr_node) ? "," : "\n", NULL);
-  }
-  if(did_change){
-    g_free(hdr->header);
-    hdr->header = new_hdr;
-  }else
-    g_free(new_hdr);
+		if (rewr_string)
+			new_hdr = g_strconcat(new_hdr, rewr_string, g_list_next(addr_node) ? "," : "\n", NULL);
+	}
+	if (did_change) {
+		g_free(hdr->header);
+		hdr->header = new_hdr;
+	} else
+		g_free(new_hdr);
 
-  return did_change;
+	return did_change;
 }
-

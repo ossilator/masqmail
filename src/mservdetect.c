@@ -32,45 +32,47 @@
 #include "masqmail.h"
 #include "readsock.h"
 #include "mserver.h"
-#endif /* ENABLE_MSERVER */
+#endif  /* ENABLE_MSERVER */
 
-void logwrite(int pri, const char *fmt, ...)
+void
+logwrite(int pri, const char *fmt, ...)
 {
-  va_list args;
-  va_start(args, fmt);
+	va_list args;
+	va_start(args, fmt);
 
-  vfprintf(stdout, fmt, args);
+	vfprintf(stdout, fmt, args);
 
-  va_end(args);
+	va_end(args);
 }
 
-void debugf(const char *fmt, ...)
+void
+debugf(const char *fmt, ...)
 {
-  va_list args;
-  va_start(args, fmt);
+	va_list args;
+	va_start(args, fmt);
 
-  vfprintf(stdout, fmt, args);
+	vfprintf(stdout, fmt, args);
 
-  va_end(args);
+	va_end(args);
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
-  if(argc == 3){
-    interface iface;
-    gchar *name;
+	if (argc == 3) {
+		interface iface;
+		gchar *name;
 
-    iface.address = g_strdup(argv[1]);
-    iface.port = atoi(argv[2]);
+		iface.address = g_strdup(argv[1]);
+		iface.port = atoi(argv[2]);
 
-    name = mserver_detect_online(&iface);
+		name = mserver_detect_online(&iface);
 
-    printf("%s\n", name);
+		printf("%s\n", name);
 
-    exit(EXIT_SUCCESS);
-  }else{
-    fprintf(stderr, "usage %s <host> <port>\n", argv[0]);
-    exit(EXIT_FAILURE);
-  }
+		exit(EXIT_SUCCESS);
+	} else {
+		fprintf(stderr, "usage %s <host> <port>\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
 }
-

@@ -17,243 +17,269 @@
 */
 #include "masqmail.h"
 
-header_name header_names[] =
-{
-  { "From", HEAD_FROM, },
-  { "Sender", HEAD_SENDER, },
-  { "To", HEAD_TO, },
-  { "Cc", HEAD_CC, },
-  { "Bcc", HEAD_BCC, },
-  { "Date", HEAD_DATE, },
-  { "Message-Id", HEAD_MESSAGE_ID, },
-  { "Reply-To", HEAD_REPLY_TO, },
-  { "Subject", HEAD_SUBJECT, },
-  { "Return-Path", HEAD_RETURN_PATH, },
-  { "Envelope-To", HEAD_ENVELOPE_TO, },
-  { "Received", HEAD_RECEIVED },
+header_name header_names[] = {
+	{"From", HEAD_FROM,}
+	,
+	{"Sender", HEAD_SENDER,}
+	,
+	{"To", HEAD_TO,}
+	,
+	{"Cc", HEAD_CC,}
+	,
+	{"Bcc", HEAD_BCC,}
+	,
+	{"Date", HEAD_DATE,}
+	,
+	{"Message-Id", HEAD_MESSAGE_ID,}
+	,
+	{"Reply-To", HEAD_REPLY_TO,}
+	,
+	{"Subject", HEAD_SUBJECT,}
+	,
+	{"Return-Path", HEAD_RETURN_PATH,}
+	,
+	{"Envelope-To", HEAD_ENVELOPE_TO,}
+	,
+	{"Received", HEAD_RECEIVED}
+	,
 };
 
 /* this was borrowed from exim and slightly changed */
-gchar *rec_timestamp()
+gchar*
+rec_timestamp()
 {
-  static gchar buf[64];
-  int len;
-  
-  time_t now = time(NULL);
-  struct tm *t = localtime(&now);
+	static gchar buf[64];
+	int len;
 
-  int diff_hour, diff_min;
-  struct tm local;
-  struct tm *gmt;
+	time_t now = time(NULL);
+	struct tm *t = localtime(&now);
 
-  memcpy(&local, t, sizeof(struct tm));
-  gmt = gmtime(&now);
-  diff_min = 60*(local.tm_hour - gmt->tm_hour) + local.tm_min - gmt->tm_min;
-  if (local.tm_year != gmt->tm_year)
-    diff_min += (local.tm_year > gmt->tm_year)? 1440 : -1440;
-  else if (local.tm_yday != gmt->tm_yday)
-    diff_min += (local.tm_yday > gmt->tm_yday)? 1440 : -1440;
-  diff_hour = diff_min/60;
-  diff_min  = abs(diff_min - diff_hour*60);
+	int diff_hour, diff_min;
+	struct tm local;
+	struct tm *gmt;
 
-  len = strftime(buf, sizeof(buf), "%a, ", &local);
-  g_snprintf(buf + len, sizeof(buf) - len, "%02d ", local.tm_mday);
-  len += strlen(buf + len);
-  len += strftime(buf + len, sizeof(buf) - len, "%b %Y %H:%M:%S", &local);
-  g_snprintf(buf + len, sizeof(buf) - len, " %+03d%02d", diff_hour, diff_min);
+	memcpy(&local, t, sizeof(struct tm));
+	gmt = gmtime(&now);
+	diff_min = 60 * (local.tm_hour - gmt->tm_hour) + local.tm_min - gmt->tm_min;
+	if (local.tm_year != gmt->tm_year)
+		diff_min += (local.tm_year > gmt->tm_year) ? 1440 : -1440;
+	else if (local.tm_yday != gmt->tm_yday)
+		diff_min += (local.tm_yday > gmt->tm_yday) ? 1440 : -1440;
+	diff_hour = diff_min / 60;
+	diff_min = abs(diff_min - diff_hour * 60);
 
-  return buf;
+	len = strftime(buf, sizeof(buf), "%a, ", &local);
+	g_snprintf(buf + len, sizeof(buf) - len, "%02d ", local.tm_mday);
+	len += strlen(buf + len);
+	len += strftime(buf + len, sizeof(buf) - len, "%b %Y %H:%M:%S", &local);
+	g_snprintf(buf + len, sizeof(buf) - len, " %+03d%02d", diff_hour, diff_min);
+
+	return buf;
 }
 
 /* finds list of headers matching id
    if id == HEAD_UNKNOWN and header == NULL finds all unknown headers
    else finds all headers matching header
 */
-GList *find_header(GList *hdr_list, header_id id, gchar *hdr_str)
+GList*
+find_header(GList * hdr_list, header_id id, gchar * hdr_str)
 {
-  GList *found_list = NULL;
-  GList *node;
+	GList *found_list = NULL;
+	GList *node;
 
-  if((id != HEAD_UNKNOWN) || (hdr_str == NULL)){
-    foreach(hdr_list, node){
-      header *hdr = (header *)(node->data);
-      if(hdr->id == id)
-        found_list = g_list_append(found_list, hdr);
-    }
-  }else{
-    foreach(hdr_list, node){
-      header *hdr = (header *)(node->data);
-      gchar buf[64], *q = buf, *p = hdr->header;
-      
-      while(*p != ':' && q < buf+63 && *p) *(q++) = *(p++);
-      *q = 0;
-      
-      if(strcasecmp(buf, hdr_str) == 0)
-        found_list = g_list_append(found_list, hdr);
-    }
-  }
-  return found_list;
+	if ((id != HEAD_UNKNOWN) || (hdr_str == NULL)) {
+		foreach(hdr_list, node) {
+			header *hdr = (header *) (node->data);
+			if (hdr->id == id)
+				found_list = g_list_append(found_list, hdr);
+		}
+	} else {
+		foreach(hdr_list, node) {
+			header *hdr = (header *) (node->data);
+			gchar buf[64], *q = buf, *p = hdr->header;
+
+			while (*p != ':' && q < buf + 63 && *p)
+				*(q++) = *(p++);
+			*q = 0;
+
+			if (strcasecmp(buf, hdr_str) == 0)
+				found_list = g_list_append(found_list, hdr);
+		}
+	}
+	return found_list;
 }
 
-void header_unfold(header *hdr)
+void
+header_unfold(header * hdr)
 {
-  gchar *tmp_hdr = g_malloc(strlen(hdr->header));
-  gchar *p = hdr->header, *q = tmp_hdr;
-  gboolean flag = FALSE;
+	gchar *tmp_hdr = g_malloc(strlen(hdr->header));
+	gchar *p = hdr->header, *q = tmp_hdr;
+	gboolean flag = FALSE;
 
-  while(*p){
-    if(*p != '\n')
-      *(q++) = *p;
-    else
-      flag = TRUE;
-    p++;
-  }
-  *(q++) = '\n';
+	while (*p) {
+		if (*p != '\n')
+			*(q++) = *p;
+		else
+			flag = TRUE;
+		p++;
+	}
+	*(q++) = '\n';
 
-  if(flag){
-    gchar *new_hdr;
+	if (flag) {
+		gchar *new_hdr;
 
-    g_free(hdr->header);
-    new_hdr = g_strdup(tmp_hdr);
-    g_free(tmp_hdr);
-    hdr->value = new_hdr + (hdr->value - hdr->header);
-    hdr->header = new_hdr;
-  }
+		g_free(hdr->header);
+		new_hdr = g_strdup(tmp_hdr);
+		g_free(tmp_hdr);
+		hdr->value = new_hdr + (hdr->value - hdr->header);
+		hdr->header = new_hdr;
+	}
 }
 
 #define MAX_HDR_LEN 72
-void header_fold(header *hdr)
+void
+header_fold(header * hdr)
 {
-  gint len = strlen(hdr->header);
-  gchar *p, *q;
-  /* size is probably overestimated, but so we are on the safe side */
-  gchar *tmp_hdr = g_malloc(len + 2*len/MAX_HDR_LEN);
+	gint len = strlen(hdr->header);
+	gchar *p, *q;
+	/* size is probably overestimated, but so we are on the safe side */
+	gchar *tmp_hdr = g_malloc(len + 2 * len / MAX_HDR_LEN);
 
-  p = hdr->header;
-  q = tmp_hdr;
+	p = hdr->header;
+	q = tmp_hdr;
 
-  if(p[len-1] == '\n')
-    p[len-1] = 0;
+	if (p[len - 1] == '\n')
+		p[len - 1] = 0;
 
-  while(*p){
-    gint i,l;
-    gchar *pp;
-    
-    /* look forward and find potential break points */
-    i = 0; l = -1;
-    pp = p;
-    while(*pp && (i < MAX_HDR_LEN)){
-      if((*pp == ' ') || (*pp == '\t'))
-	l = i;
-      pp++;
-      i++;
-    }
-    if(!*pp) l = pp-p; /* take rest, if EOS found */
+	while (*p) {
+		gint i, l;
+		gchar *pp;
 
-    if(l == -1){
-      /* no potential break point was found within MAX_HDR_LEN
-       so advance further until the next */
-      while(*pp && *pp != ' ' && *pp != '\t'){
-	pp++;
-	i++;
-      }
-      l = i;
-    }
+		/* look forward and find potential break points */
+		i = 0;
+		l = -1;
+		pp = p;
+		while (*pp && (i < MAX_HDR_LEN)) {
+			if ((*pp == ' ') || (*pp == '\t'))
+				l = i;
+			pp++;
+			i++;
+		}
+		if (!*pp)
+			l = pp - p;  /* take rest, if EOS found */
 
-    /* copy */
-    i = 0;
-    while(i < l){
-      *(q++) = *(p++);
-      i++;
-    }
-    *(q++) = '\n';
-    *(q++) = *(p++); /* this is either space, tab or 0 */
-  }
-  {
-    gchar *new_hdr;
-    
-    g_free(hdr->header);
-    new_hdr = g_strdup(tmp_hdr);
-    g_free(tmp_hdr);
-    hdr->value = new_hdr + (hdr->value - hdr->header);
-    hdr->header = new_hdr;
-  }
+		if (l == -1) {
+			/* no potential break point was found within MAX_HDR_LEN so advance further until the next */
+			while (*pp && *pp != ' ' && *pp != '\t') {
+				pp++;
+				i++;
+			}
+			l = i;
+		}
+
+		/* copy */
+		i = 0;
+		while (i < l) {
+			*(q++) = *(p++);
+			i++;
+		}
+		*(q++) = '\n';
+		*(q++) = *(p++);		/* this is either space, tab or 0 */
+	}
+	{
+		gchar *new_hdr;
+
+		g_free(hdr->header);
+		new_hdr = g_strdup(tmp_hdr);
+		g_free(tmp_hdr);
+		hdr->value = new_hdr + (hdr->value - hdr->header);
+		hdr->header = new_hdr;
+	}
 }
 
-header *create_header(header_id id, gchar *fmt, ...)
+header*
+create_header(header_id id, gchar * fmt, ...)
 {
-  gchar *p;
-  header *hdr;
-  va_list args;
-  va_start(args, fmt);
+	gchar *p;
+	header *hdr;
+	va_list args;
+	va_start(args, fmt);
 
-  if((hdr = g_malloc(sizeof(header)))){
+	if ((hdr = g_malloc(sizeof(header)))) {
 
-    hdr->id = id;
-    hdr->header = g_strdup_vprintf(fmt, args);
-    hdr->value = NULL;
+		hdr->id = id;
+		hdr->header = g_strdup_vprintf(fmt, args);
+		hdr->value = NULL;
 
-    p = hdr->header;
-    while(*p && *p != ':') p++;
-    if(*p)
-      hdr->value = p+1;
-  }
+		p = hdr->header;
+		while (*p && *p != ':')
+			p++;
+		if (*p)
+			hdr->value = p + 1;
+	}
 
-  va_end(args);
-  return hdr;
+	va_end(args);
+	return hdr;
 }
 
-void destroy_header(header *hdr)
+void
+destroy_header(header * hdr)
 {
-  if(hdr){
-    if(hdr->header) g_free(hdr->header);
-    g_free(hdr);
-  }
+	if (hdr) {
+		if (hdr->header)
+			g_free(hdr->header);
+		g_free(hdr);
+	}
 }
 
-header *copy_header(header *hdr)
+header*
+copy_header(header * hdr)
 {
-  header *new_hdr = NULL;
+	header *new_hdr = NULL;
 
-  if(hdr){
-    if((new_hdr = g_malloc(sizeof(header)))){
-      new_hdr->id = hdr->id;
-      new_hdr->header = g_strdup(hdr->header);
-      new_hdr->value = new_hdr->header + (hdr->value - hdr->header);
-    }
-  }
-  return new_hdr;
+	if (hdr) {
+		if ((new_hdr = g_malloc(sizeof(header)))) {
+			new_hdr->id = hdr->id;
+			new_hdr->header = g_strdup(hdr->header);
+			new_hdr->value = new_hdr->header + (hdr->value - hdr->header);
+		}
+	}
+	return new_hdr;
 }
 
-header *get_header(gchar *line)
+header*
+get_header(gchar * line)
 {
-  gchar *p = line;
-  gchar buf[64], *q = buf;
-  gint i;
-  header *hdr;
-  
-  while(*p && (*p != ':') && (q < buf+63)) *(q++) = *(p++);
-  *q = 0;
-  
-  if(*p != ':') return NULL;
+	gchar *p = line;
+	gchar buf[64], *q = buf;
+	gint i;
+	header *hdr;
 
-  hdr = g_malloc(sizeof(header));
+	while (*p && (*p != ':') && (q < buf + 63))
+		*(q++) = *(p++);
+	*q = 0;
 
-  hdr->value = NULL;
-  p++;
+	if (*p != ':')
+		return NULL;
 
-  while(*p && (*p == ' ' || *p == '\t')) p++;
-  hdr->value = p;
+	hdr = g_malloc(sizeof(header));
 
-  for(i = 0; i < HEAD_NUM_IDS; i++){
-    if(strcasecmp(header_names[i].header, buf) == 0)
-      break;
-  }
-  hdr->id = (header_id)i;
-  hdr->header = g_strdup(line);
-  hdr->value = hdr->header + (hdr->value - line);
+	hdr->value = NULL;
+	p++;
 
-  DEBUG(4) debugf("header: %d = %s", hdr->id, hdr->header);
+	while (*p && (*p == ' ' || *p == '\t'))
+		p++;
+	hdr->value = p;
 
-  return hdr;
+	for (i = 0; i < HEAD_NUM_IDS; i++) {
+		if (strcasecmp(header_names[i].header, buf) == 0)
+			break;
+	}
+	hdr->id = (header_id) i;
+	hdr->header = g_strdup(line);
+	hdr->value = hdr->header + (hdr->value - line);
+
+	DEBUG(4) debugf("header: %d = %s", hdr->id, hdr->header);
+
+	return hdr;
 }

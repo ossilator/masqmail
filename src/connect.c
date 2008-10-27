@@ -17,67 +17,63 @@
 */
 #include "masqmail.h"
 
-static
-GList *resolve_ip(GList *list, gchar *ip)
+static GList*
+resolve_ip(GList * list, gchar * ip)
 {
-  struct in_addr ia;
-  if(inet_aton(ip, &ia)){
-    mxip_addr mxip;
-    
-    mxip.name = g_strdup(ip);
-    mxip.pref = 0;
-    mxip.ip = (guint32) *(guint32 *)(&ia);
-    list = g_list_append(list, g_memdup(&mxip, sizeof(mxip)));
-  }
-  /* logwrite(LOG_ALERT, "invalid address '%s': inet_aton() failed\n", ip);*/
-  return NULL;
+	struct in_addr ia;
+	if (inet_aton(ip, &ia)) {
+		mxip_addr mxip;
+
+		mxip.name = g_strdup(ip);
+		mxip.pref = 0;
+		mxip.ip = (guint32) * (guint32 *) (&ia);
+		list = g_list_append(list, g_memdup(&mxip, sizeof(mxip)));
+	}
+	/* logwrite(LOG_ALERT, "invalid address '%s': inet_aton() failed\n", ip); */
+	return NULL;
 }
 
-mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port,
-			  GList *addr_list)
+mxip_addr*
+connect_hostlist(int *psockfd, gchar * host, guint port, GList * addr_list)
 {
-  GList *addr_node;
-  struct sockaddr_in saddr;
+	GList *addr_node;
+	struct sockaddr_in saddr;
 
-  DEBUG(5) debugf("connect_hostlist entered\n");
+	DEBUG(5) debugf("connect_hostlist entered\n");
 
-  for(addr_node = g_list_first(addr_list);
-      addr_node;
-      addr_node = g_list_next(addr_node)){
-    mxip_addr *addr = (mxip_addr *)(addr_node->data);
+	for (addr_node = g_list_first(addr_list); addr_node; addr_node = g_list_next(addr_node)) {
+		mxip_addr *addr = (mxip_addr *) (addr_node->data);
 
-    *psockfd = socket(PF_INET, SOCK_STREAM, 0);
+		*psockfd = socket(PF_INET, SOCK_STREAM, 0);
 
-    memset(&saddr, 0, sizeof(saddr));
+		memset(&saddr, 0, sizeof(saddr));
 
-    saddr.sin_family = AF_INET;
-    saddr.sin_port = htons(port);
+		saddr.sin_family = AF_INET;
+		saddr.sin_port = htons(port);
 
-    /* clumsy, but makes compiler happy: */
-    saddr.sin_addr = *(struct in_addr*)(&(addr->ip));
-    DEBUG(5) debugf("trying ip %s port %d\n", inet_ntoa(saddr.sin_addr), port);
-    if(connect(*psockfd, (struct sockaddr *)(&saddr), sizeof(saddr)) == 0){
-      DEBUG(5) debugf("connected to %s\n", inet_ntoa(saddr.sin_addr));
-      return addr;
-    }else{
-      int saved_errno = errno;
+		/* clumsy, but makes compiler happy: */
+		saddr.sin_addr = *(struct in_addr *) (&(addr->ip));
+		DEBUG(5) debugf("trying ip %s port %d\n", inet_ntoa(saddr.sin_addr), port);
+		if (connect(*psockfd, (struct sockaddr *) (&saddr), sizeof(saddr)) == 0) {
+			DEBUG(5) debugf("connected to %s\n", inet_ntoa(saddr.sin_addr));
+			return addr;
+		} else {
+			int saved_errno = errno;
 
-      close(*psockfd);
+			close(*psockfd);
 
-      logwrite(LOG_WARNING, "connection to %s failed: %s\n",
-	       inet_ntoa(saddr.sin_addr), strerror(errno));
+			logwrite(LOG_WARNING, "connection to %s failed: %s\n", inet_ntoa(saddr.sin_addr), strerror(errno));
 
-      errno = saved_errno;
+			errno = saved_errno;
 
-      if((saved_errno != ECONNREFUSED) &&
-	 (saved_errno != ETIMEDOUT) &&
-	 (saved_errno != ENETUNREACH) &&
-	 (saved_errno != EHOSTUNREACH))
-
+			if ((saved_errno != ECONNREFUSED)
+			    && (saved_errno != ETIMEDOUT)
+			    && (saved_errno != ENETUNREACH)
+			    && (saved_errno != EHOSTUNREACH))
+				return NULL;
+		}
+	}
 	return NULL;
-    }
-  }
-  return NULL;
 }
 
 /* Given a list of resolver functions, this function
@@ -89,63 +85,62 @@ mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port,
    if attempt failed for one it should not be tried again.
 */
 
-mxip_addr *connect_resolvelist(int *psockfd, gchar *host, guint port,
-			       GList *res_func_list)
+mxip_addr*
+connect_resolvelist(int *psockfd, gchar * host, guint port, GList * res_func_list)
 {
-  GList *res_node;
-  GList *addr_list;
+	GList *res_node;
+	GList *addr_list;
 
-  DEBUG(5) debugf("connect_resolvelist entered\n");
+	DEBUG(5) debugf("connect_resolvelist entered\n");
 
-  h_errno = 0;
+	h_errno = 0;
 
-  if(isdigit(host[0])){
-    mxip_addr *addr;
-    
-    addr_list = resolve_ip(NULL, host);
-    if(addr_list){
-      addr = connect_hostlist(psockfd, host, port, addr_list);
-      g_list_free(addr_list);
-      return addr;
-    }
-    /* previous versions complained, until someone tried to use a hostname
-       out there that begins with a digit. eg. '3dwars.de'. */
-  }
+	if (isdigit(host[0])) {
+		mxip_addr *addr;
 
-  if(res_func_list == NULL){
-    logwrite(LOG_ALERT, "res_funcs == NULL !!!\n");
-    exit(EXIT_FAILURE);
-  }
+		addr_list = resolve_ip(NULL, host);
+		if (addr_list) {
+			addr = connect_hostlist(psockfd, host, port, addr_list);
+			g_list_free(addr_list);
+			return addr;
+		}
+		/* previous versions complained, until someone tried to use a hostname
+		   out there that begins with a digit. eg. '3dwars.de'. */
+	}
 
-  foreach(res_func_list, res_node){
-    resolve_func res_func;
-    DEBUG(6) debugf("connect_resolvelist 1a\n");
-    res_func = (resolve_func)(res_node->data);
-      
-    if(res_func == NULL){
-      logwrite(LOG_ALERT, "res_func == NULL !!!\n");
-      exit(EXIT_FAILURE);
-    }
-      
-    errno = 0;
-    if((addr_list = res_func(NULL, host))){
-	
-      mxip_addr *addr;
-      if((addr = connect_hostlist(psockfd, host, port, addr_list)))
-	return addr;
+	if (res_func_list == NULL) {
+		logwrite(LOG_ALERT, "res_funcs == NULL !!!\n");
+		exit(EXIT_FAILURE);
+	}
 
-      DEBUG(5){
-	debugf("connect_hostlist failed: %s\n", strerror(errno));
-      }
-	
-      g_list_free(addr_list);
-    }else{
-      if(!g_list_next(res_node)){
-	logwrite(LOG_ALERT, "could not resolve %s: %s\n", host, hstrerror(h_errno));
-      }
-    }
-  }
-  return NULL;
+	foreach(res_func_list, res_node) {
+		resolve_func res_func;
+		DEBUG(6) debugf("connect_resolvelist 1a\n");
+		res_func = (resolve_func) (res_node->data);
+
+		if (res_func == NULL) {
+			logwrite(LOG_ALERT, "res_func == NULL !!!\n");
+			exit(EXIT_FAILURE);
+		}
+
+		errno = 0;
+		if ((addr_list = res_func(NULL, host))) {
+
+			mxip_addr *addr;
+			if ((addr = connect_hostlist(psockfd, host, port, addr_list)))
+				return addr;
+
+			DEBUG(5) {
+				debugf("connect_hostlist failed: %s\n", strerror(errno));
+			}
+
+			g_list_free(addr_list);
+		} else {
+			if (!g_list_next(res_node)) {
+				logwrite(LOG_ALERT, "could not resolve %s: %s\n", host, hstrerror(h_errno));
+			}
+		}
+	}
+	return NULL;
 
 }
-

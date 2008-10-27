@@ -21,34 +21,35 @@
 
 #include "masqmail.h"
 
-gint time_interval(gchar *str, gint *pos)
+gint
+time_interval(gchar * str, gint * pos)
 {
-  gchar buf[16];
-  gchar *p = str, *q = buf;
-  gint factor = 1, val;
+	gchar buf[16];
+	gchar *p = str, *q = buf;
+	gint factor = 1, val;
 
-  while(*p && isdigit(*p) && (q < buf+15)){
-    *(q++) = *(p++);
-    (*pos)++;
-  }
-  (*pos)++;
-  *q = 0;
-  val = atoi(buf);
-  
-  /* fall through: */
-  switch(*p){
-  case 'w':
-    factor *= 7;
-  case 'd':
-    factor *= 24;
-  case 'h':
-    factor *= 60;
-  case 'm':
-    factor *= 60;
-  case 's':
-    break;
-  default:
-    return -1;
-  }
-  return val * factor;
+	while (*p && isdigit(*p) && (q < buf + 15)) {
+		*(q++) = *(p++);
+		(*pos)++;
+	}
+	(*pos)++;
+	*q = 0;
+	val = atoi(buf);
+
+	/* fall through: */
+	switch (*p) {
+	case 'w':
+		factor *= 7;
+	case 'd':
+		factor *= 24;
+	case 'h':
+		factor *= 60;
+	case 'm':
+		factor *= 60;
+	case 's':
+		break;
+	default:
+		return -1;
+	}
+	return val * factor;
 }

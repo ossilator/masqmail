@@ -22,57 +22,57 @@
 
 #ifdef ENABLE_MSERVER
 
-gchar *mserver_detect_online(interface *iface)
+gchar*
+mserver_detect_online(interface * iface)
 {
-  struct sockaddr_in saddr;
-  gchar *ret = NULL;
+	struct sockaddr_in saddr;
+	gchar *ret = NULL;
 
-  if(init_sockaddr(&saddr, iface)){
-    int sock = socket(PF_INET, SOCK_STREAM, 0);
-    int dup_sock;
-    if(connect(sock, (struct sockaddr *)(&saddr), sizeof(saddr)) == 0){
-      FILE *in, *out;
-      char buf[256];
+	if (init_sockaddr(&saddr, iface)) {
+		int sock = socket(PF_INET, SOCK_STREAM, 0);
+		int dup_sock;
+		if (connect(sock, (struct sockaddr *) (&saddr), sizeof(saddr)) == 0) {
+			FILE *in, *out;
+			char buf[256];
 
-      dup_sock = dup(sock);
-      out = fdopen(sock, "w");
-      in = fdopen(dup_sock, "r");
+			dup_sock = dup(sock);
+			out = fdopen(sock, "w");
+			in = fdopen(dup_sock, "r");
 
-      if(read_sockline(in, buf, 256, 15, READSOCKL_CHUG)){
-	if(strncmp(buf, "READY", 5) == 0){
-	  fprintf(out, "STAT\n"); fflush(out);
-	  if(read_sockline(in, buf, 256, 15, READSOCKL_CHUG)){
-	    if(strncmp(buf, "DOWN", 4) == 0){
-	      ret = NULL;
-	    }else if(strncmp(buf, "UP", 2) == 0){
-	      gchar *p = buf+3;
-	      while((*p != ':') && *p) p++;
-	      if(*p){
-		*p = 0;
-		p++;
-		if((atoi(p) >= 0) && *p)
-		  ret = g_strdup(buf+3);
-	      }else
-		logwrite(LOG_ALERT,
-			 "unexpected response from mserver after STAT cmd: %s",
-			 buf);
-	    }else{
-	      logwrite(LOG_ALERT,
-		       "unexpected response from mserver after STAT cmd: %s",
-		       buf);
-	    }
-	  }
+			if (read_sockline(in, buf, 256, 15, READSOCKL_CHUG)) {
+				if (strncmp(buf, "READY", 5) == 0) {
+					fprintf(out, "STAT\n");
+					fflush(out);
+					if (read_sockline(in, buf, 256, 15, READSOCKL_CHUG)) {
+						if (strncmp(buf, "DOWN", 4) == 0) {
+							ret = NULL;
+						} else if (strncmp(buf, "UP", 2) == 0) {
+							gchar *p = buf + 3;
+							while ((*p != ':') && *p)
+								p++;
+							if (*p) {
+								*p = 0;
+								p++;
+								if ((atoi(p) >= 0) && *p)
+									ret = g_strdup(buf + 3);
+							} else
+								logwrite(LOG_ALERT, "unexpected response from mserver after STAT cmd: %s", buf);
+						} else {
+							logwrite(LOG_ALERT, "unexpected response from mserver after STAT cmd: %s", buf);
+						}
+					}
+				}
+				fprintf(out, "QUIT");
+				fflush(out);
+
+				close(sock);
+				close(dup_sock);
+				fclose(in);
+				fclose(out);
+			}
+		}
 	}
-	fprintf(out, "QUIT"); fflush(out);
-
-	close(sock);
-	close(dup_sock);
-	fclose(in);
-	fclose(out);
-      }
-    }
-  }
-  return ret;
+	return ret;
 }
 
 #endif

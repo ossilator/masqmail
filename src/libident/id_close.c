@@ -16,14 +16,13 @@
 #define IN_LIBIDENT_SRC
 #include "ident.h"
 
-int id_close __P1(ident_t *, id)
+int
+id_close __P1(ident_t *, id)
 {
-    int res;
-  
-    res = close(id->fd);
-    free(id);
-    
-    return res;
+	int res;
+
+	res = close(id->fd);
+	free(id);
+
+	return res;
 }
-
-
