@@ -5,7 +5,7 @@ tpl/failmsg.tpl tpl/failmsg.tpl.de tpl/failmsg.tpl.fr tpl/failmsg.tpl.it \
 tpl/warnmsg.tpl tpl/warnmsg.tpl.de tpl/warnmsg.tpl.fr \
 INSTALL.agenda INSTALL.ipaq agenda-config.site
 
-SUBDIRS = src tests
+SUBDIRS = src
 
 install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir run_dir
 
