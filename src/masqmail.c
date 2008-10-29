@@ -212,9 +212,6 @@ mode_smtp()
 	struct sockaddr_in saddr;
 	gchar *peername = NULL;
 	int dummy = sizeof(saddr);
-#ifdef ENABLE_IDENT
-	gchar *ident = NULL;
-#endif
 
 	conf.do_verbose = FALSE;
 
@@ -227,24 +224,10 @@ mode_smtp()
 
 	if (getpeername(0, (struct sockaddr *) (&saddr), &dummy) == 0) {
 		peername = g_strdup(inet_ntoa(saddr.sin_addr));
-#ifdef ENABLE_IDENT
-		{
-			gchar *id = NULL;
-			if ((id = (gchar *) ident_id(0, 60))) {
-				ident = g_strdup(id);
-			}
-		}
-#endif
 	} else if (errno != ENOTSOCK)
 		exit(EXIT_FAILURE);
 
-	//smtp_in(stdin, stdout, peername);
 	smtp_in(stdin, stderr, peername, NULL);
-
-#ifdef ENABLE_IDENT
-	if (ident)
-		g_free(ident);
-#endif
 }
 #endif
 
@@ -567,8 +550,13 @@ main(int argc, char *argv[])
 	}
 
 	if (mta_mode == MODE_VERSION) {
-		gchar *with_resolver = "", *with_smtp_server = "", *with_pop3 = "",
-		*with_auth = "", *with_maildir = "", *with_ident = "", *with_mserver = "";
+		gchar *with_resolver = "";
+		gchar *with_smtp_server = "";
+		gchar *with_pop3 = "";
+		gchar *with_auth = "";
+		gchar *with_maildir = "";
+		gchar *with_ident = "";
+		gchar *with_mserver = "";
 
 #ifdef ENABLE_RESOLVER
 		with_resolver = " +resolver";
