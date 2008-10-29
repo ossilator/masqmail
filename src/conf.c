@@ -118,12 +118,12 @@ parse_list(gchar * line, gboolean read_file)
 	DEBUG(6) fprintf(stderr, "parsing list %s\n", line);
 
 	p = line;
-	while (*p != 0) {
+	while (*p != '\0') {
 		q = buf;
 
 		while (*p && (*p != ';') && (q < buf + 255))
 			*(q++) = *(p++);
-		*q = 0;
+		*q = '\0';
 
 		if ((buf[0] == '/') && (read_file))
 			/* item is a filename, include its contents */
@@ -200,9 +200,9 @@ parse_interface(gchar * line, gint def_port)
 
 	p = line;
 	q = buf;
-	while ((*p != 0) && (*p != ':') && (q < buf + 255))
+	while ((*p != '\0') && (*p != ':') && (q < buf + 255))
 		*(q++) = *(p++);
-	*q = 0;
+	*q = '\0';
 
 	iface = g_malloc(sizeof(interface));
 	iface->address = g_strdup(buf);
@@ -229,9 +229,9 @@ parse_network(gchar * line, gint def_port)
 
 	p = line;
 	q = buf;
-	while ((*p != 0) && (*p != '/') && (q < buf + 255))
+	while ((*p != '\0') && (*p != '/') && (q < buf + 255))
 		*(q++) = *(p++);
-	*q = 0;
+	*q = '\0';
 
 	if ((addr.s_addr = inet_addr(buf)) != INADDR_NONE) {
 		if (*p) {
@@ -322,7 +322,7 @@ read_lval(FILE * in, gchar * buf, gint size)
 		ptr++;
 		c = fgetc(in);
 	}
-	*ptr = 0;
+	*ptr = '\0';
 	ungetc(c, in);
 
 	if (c == EOF) {
@@ -336,7 +336,7 @@ read_lval(FILE * in, gchar * buf, gint size)
 
 	DEBUG(6) fprintf(stderr, "lval = %s\n", buf);
 
-	return buf[0] != 0;
+	return buf[0] != '\0';
 }
 
 static gboolean
@@ -359,7 +359,7 @@ read_rval(FILE * in, gchar * buf, gint size)
 			ptr++;
 			c = fgetc(in);
 		}
-		*ptr = 0;
+		*ptr = '\0';
 		ungetc(c, in);
 	} else {
 		gboolean escape = FALSE;
@@ -376,7 +376,7 @@ read_rval(FILE * in, gchar * buf, gint size)
 			}
 			c = fgetc(in);
 		}
-		*ptr = 0;
+		*ptr = '\0';
 	}
 
 	eat_line_trailing(in);

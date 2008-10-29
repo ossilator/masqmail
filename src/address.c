@@ -177,7 +177,7 @@ addr_string(address * addr)
 	if (buffer)
 		g_free(buffer);
 
-	if (addr->local_part[0] == 0) {
+	if (addr->local_part[0] == '\0') {
 		buffer = g_strdup("<>");
 	} else {
 		buffer = g_strdup_printf("<%s@%s>", addr->local_part ? addr->local_part : "", addr->domain ? addr->domain : "");
