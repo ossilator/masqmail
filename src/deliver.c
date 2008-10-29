@@ -355,8 +355,7 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 		set_heloname(psb, route->helo_name ? route->helo_name : conf.host_name, route->do_correct_helo);
 
 #ifdef ENABLE_AUTH
-		if ((route->auth_name) && (route->auth_login)
-		    && (route->auth_secret))
+		if ((route->auth_name) && (route->auth_login) && (route->auth_secret))
 			set_auth(psb, route->auth_name, route->auth_login, route->auth_secret);
 #endif
 		if (smtp_out_init(psb)) {
