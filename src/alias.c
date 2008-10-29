@@ -67,14 +67,14 @@ parse_list(gchar * line)
 	gchar *p, *q;
 
 	p = line;
-	while (*p != 0) {
+	while (*p != '\0') {
 		q = buf;
 		while (isspace(*p))
 			p++;
 		if (*p != '\"') {
 			while (*p && (*p != ',') && (q < buf + 255))
 				*(q++) = *(p++);
-			*q = 0;
+			*q = '\0';
 		} else {
 			gboolean escape = FALSE;
 			p++;
@@ -87,7 +87,7 @@ parse_list(gchar * line)
 				}
 				p++;
 			}
-			*q = 0;
+			*q = '\0';
 			while (*p && (*p != ','))
 				p++;
 		}

@@ -34,7 +34,7 @@ string_base62(gchar * res, guint value, gchar len)
 {
 	static gchar base62_chars[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	gchar *p = res + len;
-	*p = 0;
+	*p = '\0';
 	while (p > res) {
 		*(--p) = base62_chars[value % 62];
 		value /= 62;
@@ -73,7 +73,7 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 	gint line_cnt = 0, data_size = 0;
 
 	line = g_malloc(line_size);
-	line[0] = 0;
+	line[0] = '\0';
 
 	while (TRUE) {
 		int len = read_sockline1(in, &line, &line_size, 5 * 60, READSOCKL_CVT_CRLF);
@@ -95,7 +95,7 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 				if (len1 > 0) {  /* == 0 is 'normal' (EOF after a CR) */
 					if (line1[len1 - 1] != '\n') {  /* some mail clients allow unterminated lines */
 						line1[len1] = '\n';
-						line1[len1 + 1] = 0;
+						line1[len1 + 1] = '\0';
 						msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
 						data_size += strlen(line1);
 						line_cnt++;
