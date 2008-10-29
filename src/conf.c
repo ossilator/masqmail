@@ -16,10 +16,10 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "masqmail.h"
+#include <pwd.h>
+#include <grp.h>
 
-#include "pwd.h"
-#include "grp.h"
+#include "masqmail.h"
 
 masqmail_conf conf;
 
@@ -107,9 +107,7 @@ parse_list_file(gchar * fname)
 	return list;
 }
 
-/* given a semicolon separated string, this function
-   makes a GList out of it.
-*/
+/* given a semicolon separated string, this function makes a GList out of it. */
 GList*
 parse_list(gchar * line, gboolean read_file)
 {
@@ -354,8 +352,7 @@ read_rval(FILE * in, gchar * buf, gint size)
 
 	c = fgetc(in);
 	if (c != '\"') {
-		while ((isalnum(c) || c == '_' || c == '-' || c == '.' || c == '/'
-		       || c == '@' || c == ';')
+		while ((isalnum(c) || c == '_' || c == '-' || c == '.' || c == '/' || c == '@' || c == ';')
 		       && (ptr < buf + size - 1)
 		       && (c != EOF)) {
 			*ptr = c;
@@ -368,7 +365,7 @@ read_rval(FILE * in, gchar * buf, gint size)
 		gboolean escape = FALSE;
 		c = fgetc(in);
 		while (((c != '\"') || escape) && (ptr < buf + size - 1)) {
-			if (c != '\n') {	/* ignore line breaks */
+			if (c != '\n') {  /* ignore line breaks */
 				if ((c == '\\') && (!escape)) {
 					escape = TRUE;
 				} else {
@@ -410,8 +407,7 @@ read_statement(FILE * in, gchar * lval, gint lsize, gchar * rval, gint rsize)
 				return TRUE;
 			}
 		} else {
-			fprintf(stderr, "'=' expected after %s, char was '%c'\n", lval,
-					c);
+			fprintf(stderr, "'=' expected after %s, char was '%c'\n", lval, c);
 		}
 	}
 	return FALSE;

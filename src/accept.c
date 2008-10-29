@@ -306,14 +306,17 @@ accept_message_prepare(message * msg, guint flags)
 
 				if ((msg->return_path = create_address_qualified(addr, FALSE, msg->received_host)) != NULL) {
 					DEBUG(3) debugf("setting return_path to %s\n", addr_string(msg->return_path));
-					msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_UNKNOWN, "X-Warning: return path set from %s address\n", hdr->id == HEAD_SENDER ? "Sender:" : "From:"));
+					msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_UNKNOWN,
+					                              "X-Warning: return path set from %s address\n",
+					                              hdr->id == HEAD_SENDER ? "Sender:" : "From:"));
 				}
 				g_free(addr);
 			}
 			if (msg->return_path == NULL) {  /* no Sender: or From: or create_address_qualified failed */
 				msg->return_path = create_address_qualified("postmaster", TRUE, conf.host_name);
 				DEBUG(3) debugf("setting return_path to %s\n", addr_string(msg->return_path));
-				msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_UNKNOWN, "X-Warning: real return path is unkown\n"));
+				msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_UNKNOWN,
+				                              "X-Warning: real return path is unkown\n"));
 			}
 		}
 
@@ -342,23 +345,19 @@ accept_message_prepare(message * msg, guint flags)
 			msg->hdr_list = g_list_append(msg->hdr_list,
 			                msg->full_sender_name
 			                ?
-			                  create_header(HEAD_FROM,
-			                  "From: \"%s\" <%s@%s>\n",
-			                  msg->full_sender_name,
-			                  msg->return_path->local_part,
-			                  msg->return_path->
-			                  domain)
+			                  create_header(HEAD_FROM, "From: \"%s\" <%s@%s>\n", msg->full_sender_name,
+			                                msg->return_path->local_part, msg->return_path->domain)
 			                :
 			                  create_header(HEAD_FROM, "From: <%s@%s>\n",
-			                  msg->return_path->local_part,
-			                  msg->return_path->domain)
+			                                msg->return_path->local_part, msg->return_path->domain)
 			                );
 		}
 		if ((flags & ACC_HEAD_FROM_RCPT) && !has_rcpt) {
 			GList *node;
 			DEBUG(3) debugf("adding 'To' header(s)\n");
 			for (node = g_list_first(msg->rcpt_list); node; node = g_list_next(node)) {
-				msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_TO, "To: %s\n", addr_string(msg-> return_path)));
+				msg->hdr_list = g_list_append(msg->hdr_list,
+				                              create_header(HEAD_TO, "To: %s\n", addr_string(msg-> return_path)));
 			}
 		}
 		if ((flags & ACC_DEL_BCC) && !has_to_or_cc) {
@@ -372,7 +371,8 @@ accept_message_prepare(message * msg, guint flags)
 		}
 		if (!has_id) {
 			DEBUG(3) debugf("adding 'Message-ID:' header\n");
-			msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_MESSAGE_ID, "Message-ID: <%s@%s>\n", msg->uid, conf.host_name));
+			msg->hdr_list = g_list_append(msg->hdr_list,
+			                              create_header(HEAD_MESSAGE_ID, "Message-ID: <%s@%s>\n", msg->uid, conf.host_name));
 		}
 	}
 
@@ -390,40 +390,20 @@ accept_message_prepare(message * msg, guint flags)
 		}
 
 		if (msg->received_host == NULL) {
-			hdr = create_header(HEAD_RECEIVED,
-			                    "Received: from %s by %s"
-			                    " with %s (%s %s) id %s%s;"
-			                    " %s\n",
-			                    passwd->pw_name, conf.host_name,
-			                    prot_names[msg->received_prot],
-			                    PACKAGE, VERSION,
-			                    msg->uid, for_string ? for_string : "",
-			                    rec_timestamp());
+			hdr = create_header(HEAD_RECEIVED, "Received: from %s by %s with %s (%s %s) id %s%s; %s\n",
+			                    passwd->pw_name, conf.host_name, prot_names[msg->received_prot],
+			                    PACKAGE, VERSION, msg->uid, for_string ? for_string : "", rec_timestamp());
 		} else {
 #ifdef ENABLE_IDENT
 			DEBUG(5) debugf("adding 'Received:' header (5)\n");
-			hdr = create_header(HEAD_RECEIVED,
-			                    "Received: from %s (ident=%s) by %s"
-			                    " with %s (%s %s) id %s%s;"
-			                    " %s\n",
-			                    msg->received_host,
-			                    msg->ident ? msg->ident : "unknown",
-			                    conf.host_name,
-			                    prot_names[msg->received_prot],
-			                    PACKAGE, VERSION,
-			                    msg->uid, for_string ? for_string : "",
+			hdr = create_header(HEAD_RECEIVED, "Received: from %s (ident=%s) by %s with %s (%s %s) id %s%s; %s\n",
+			                    msg->received_host, msg->ident ? msg->ident : "unknown", conf.host_name,
+			                    prot_names[msg->received_prot], PACKAGE, VERSION, msg->uid, for_string ? for_string : "",
 			                    rec_timestamp());
 #else
-			hdr = create_header(HEAD_RECEIVED,
-			                    "Received: from %s by %s"
-			                    " with %s (%s %s) id %s%s;"
-			                    " %s\n",
-			                    msg->received_host,
-			                    conf.host_name,
-			                    prot_names[msg->received_prot],
-			                    PACKAGE, VERSION,
-			                    msg->uid, for_string ? for_string : "",
-			                    rec_timestamp());
+			hdr = create_header(HEAD_RECEIVED, "Received: from %s by %s with %s (%s %s) id %s%s; %s\n",
+			                    msg->received_host, conf.host_name, prot_names[msg->received_prot],
+			                    PACKAGE, VERSION, msg->uid, for_string ? for_string : "", rec_timestamp());
 #endif
 		}
 		header_fold(hdr);
@@ -435,8 +415,8 @@ accept_message_prepare(message * msg, guint flags)
 
 	/* write message to spool: */
 	/* accept is no longer responsible for this
-	   if(!spool_write(msg, TRUE))
-	   return AERR_NOSPOOL;
+	   if (!spool_write(msg, TRUE))
+	     return AERR_NOSPOOL;
 	 */
 	return AERR_OK;
 }

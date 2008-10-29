@@ -43,8 +43,7 @@ create_address_qualified(gchar * path, gboolean is_rfc821, gchar * domain)
 	return addr;
 }
 
-/* nothing special about pipes here,
-   but its only called for that purpose */
+/* nothing special about pipes here, but its only called for that purpose */
 address*
 create_address_pipe(gchar * path)
 {
@@ -103,9 +102,8 @@ copy_modify_address(const address * orig, gchar * l_part, gchar * dom)
 gboolean
 addr_isequal(address * addr1, address * addr2)
 {
-	return
-		(strcmp(addr1->local_part, addr2->local_part) == 0) &&
-		(strcasecmp(addr1->domain, addr2->domain) == 0);
+	return (strcmp(addr1->local_part, addr2->local_part) == 0)
+	       && (strcasecmp(addr1->domain, addr2->domain) == 0);
 }
 
 /* searches in ancestors of addr1 */
