@@ -29,7 +29,7 @@ fail_msg(message * msg, gchar * template, GList * failed_rcpts, gchar * err_fmt,
 	address *ret_path = NULL;
 
 	/* do not bounce bounces, send to postmaster instead */
-	if (msg->return_path->local_part[0] == 0) {
+	if (msg->return_path->local_part[0] == '\0') {
 		GList *node;
 
 		ret_path = create_address_qualified("postmaster", TRUE, conf.host_name);
@@ -79,8 +79,7 @@ fail_msg(message * msg, gchar * template, GList * failed_rcpts, gchar * err_fmt,
 								fputs(hdr->header, out);
 							}
 						} else if (strncmp(fmt, "@msg_body", 9) == 0) {
-							/* we may have to read the data at this point
-							   and remember if we did */
+							/* we may have to read the data at this point and remember if we did */
 							gboolean flag = (msg->data_list == NULL);
 							if (flag) {
 								if (!spool_read_data(msg)) {

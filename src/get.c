@@ -62,8 +62,10 @@ get_lock(get_conf * gc)
 	   and the server name, to prevent more than one connection at the same time
 	   to the same server and the same user. This way concurrent connections
 	   are possible to different servers or different users */
-	hitch_name = g_strdup_printf("%s/masqmail-get-%s@%s-%d.lock", conf.lock_dir, gc->login_user, gc->server_name, getpid());
-	lock_name = g_strdup_printf("%s/masqmail-get-%s@%s.lock", conf.lock_dir, gc->login_user, gc->server_name);
+	hitch_name = g_strdup_printf("%s/masqmail-get-%s@%s-%d.lock",
+	                             conf.lock_dir, gc->login_user, gc->server_name, getpid());
+	lock_name = g_strdup_printf("%s/masqmail-get-%s@%s.lock",
+	                            conf.lock_dir, gc->login_user, gc->server_name);
 
 	ok = dot_lock(lock_name, hitch_name);
 	if (!ok)
@@ -98,7 +100,8 @@ get_lock(get_conf * gc)
 static gboolean
 get_unlock(get_conf * gc)
 {
-	gchar *lock_name lock_name = g_strdup_printf("%s/masqmail-get-%s@%s.lock", conf.lock_dir, gc->login_user, gc->server_name);
+	gchar *lock_name lock_name = g_strdup_printf("%s/masqmail-get-%s@%s.lock",
+	                                             conf.lock_dir, gc->login_user, gc->server_name);
 
 	dot_unlock(lock_name);
 	g_free(lock_name);
@@ -109,7 +112,8 @@ get_unlock(get_conf * gc)
 static void
 get_unlock(get_conf * gc, int fd)
 {
-	gchar *lock_name = g_strdup_printf("%s/masqmail-get-%s@%s.lock", conf.lock_dir, gc->login_user, gc->server_name);
+	gchar *lock_name = g_strdup_printf("%s/masqmail-get-%s@%s.lock",
+	                                   conf.lock_dir, gc->login_user, gc->server_name);
 
 	flock(fd, LOCK_UN);
 	close(fd);
@@ -351,8 +355,7 @@ get_daemon(gint gival, char *argv[])
 				}
 			}
 		} else {
-			/* If select returns 0, the interval time has elapsed.
-			   We start a new get process */
+			/* If select returns 0, the interval time has elapsed. We start a new get process */
 			int pid;
 			signal(SIGCHLD, sigchld_handler);
 			if ((pid = fork()) == 0) {
@@ -384,7 +387,8 @@ pop_before_smtp(gchar * fname)
 		ok = pop3_login(gc->server_name, gc->server_port, resolve_list, gc->login_user, gc->login_pass, flags);
 	} else if (strcmp(gc->protocol, "apop") == 0) {
 		DEBUG(3) debugf ("attempting to login for user %s, host = %s with apop\n", gc->login_user, gc->server_name);
-		ok = pop3_login(gc->server_name, gc->server_port, resolve_list, gc->login_user, gc->login_pass, flags | POP3_FLAG_APOP);
+		ok = pop3_login(gc->server_name, gc->server_port, resolve_list, gc->login_user,
+		                gc->login_pass, flags | POP3_FLAG_APOP);
 	} else {
 		logwrite(LOG_ALERT, "get protocol %s unknown\n", gc->protocol);
 	}

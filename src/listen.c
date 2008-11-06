@@ -16,9 +16,10 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "masqmail.h"
 #include <sys/wait.h>
 #include <sys/types.h>
+
+#include "masqmail.h"
 
 static int volatile sighup_seen = 0;
 
@@ -132,8 +133,7 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 	signal(SIGHUP, sighup_handler);
 	signal(SIGCHLD, sigchld_handler);
 
-	/* now that we have our socket(s),
-	   we can give up root privileges */
+	/* now that we have our socket(s), we can give up root privileges */
 	if (!conf.run_as_user) {
 		if (setegid(conf.mail_gid) != 0) {
 			logwrite(LOG_ALERT, "could not change gid to %d: %s\n", conf.mail_gid, strerror(errno));
@@ -172,8 +172,7 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 			}
 		}
 		/* Block until input arrives on one or more active sockets,
-		   or signal arrives,
-		   or queuing interval time elapsed (if qival > 0) */
+		   or signal arrives, or queuing interval time elapsed (if qival > 0) */
 		read_fd_set = active_fd_set;
 		if ((sel_ret = select(FD_SETSIZE, &read_fd_set, NULL, NULL, qival > 0 ? &tm : NULL)) < 0) {
 			if (errno != EINTR) {

@@ -31,24 +31,15 @@
 #ifdef ENABLE_SMTP_SERVER
 
 smtp_cmd smtp_cmds[] = {
-	{SMTP_HELO, "HELO",}
-	,
-	{SMTP_EHLO, "EHLO",}
-	,
-	{SMTP_MAIL_FROM, "MAIL FROM:",}
-	,
-	{SMTP_RCPT_TO, "RCPT TO:",}
-	,
-	{SMTP_DATA, "DATA",}
-	,
-	{SMTP_QUIT, "QUIT",}
-	,
-	{SMTP_RSET, "RSET",}
-	,
-	{SMTP_NOOP, "NOOP",}
-	,
-	{SMTP_HELP, "HELP"}
-	,
+	{SMTP_HELO, "HELO",},
+	{SMTP_EHLO, "EHLO",},
+	{SMTP_MAIL_FROM, "MAIL FROM:",},
+	{SMTP_RCPT_TO, "RCPT TO:",},
+	{SMTP_DATA, "DATA",},
+	{SMTP_QUIT, "QUIT",},
+	{SMTP_RSET, "RSET",},
+	{SMTP_NOOP, "NOOP",},
+	{SMTP_HELP, "HELP"},
 };
 
 static smtp_cmd_id
@@ -65,7 +56,6 @@ get_id(const gchar * line)
 /* this is a quick hack: we expect the address to be syntactically correct
    and containing the mailbox only:
 */
-
 static gboolean
 get_address(gchar * line, gchar * addr)
 {

@@ -16,15 +16,15 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "masqmail.h"
-#include "smtp_out.h"
 #include <fnmatch.h>
 #include <sysexits.h>
 #include <netdb.h>
 
+#include "masqmail.h"
+#include "smtp_out.h"
+
 /* collect failed/defered rcpts for failure/warning messages */
-/* returns TRUE if either there are no failures or a
-   failure message has been successfully sent */
+/* returns TRUE if either there are no failures or a failure message has been successfully sent */
 gboolean
 delivery_failures(message * msg, GList * rcpt_list, gchar * err_fmt, ...)
 {
@@ -92,11 +92,8 @@ deliver_local(msg_out * msgout)
 		address *ret_path = msg->return_path;
 		header *retpath_hdr, *envto_hdr;
 
-		/* we need a private copy of the hdr list because we add headers here
-		   that belong to the rcpt only.
-		   g_list_copy copies only the nodes, so it is safe to
-		   g_list_free it
-		 */
+		/* we need a private copy of the hdr list because we add headers here that belong to the rcpt only.
+		   g_list_copy copies only the nodes, so it is safe to g_list_free it */
 		hdr_list = g_list_copy(msg->hdr_list);
 		retpath_hdr = create_header(HEAD_ENVELOPE_TO, "Envelope-to: %s\n", addr_string(env_addr));
 		envto_hdr = create_header(HEAD_RETURN_PATH, "Return-path: %s\n", addr_string(ret_path));
@@ -109,7 +106,8 @@ deliver_local(msg_out * msgout)
 			if (pipe_out(msg, hdr_list, rcpt, &(rcpt->local_part[1]),
 			    (conf.pipe_fromline ? MSGSTR_FROMLINE : 0)
 			    | (conf.pipe_fromhack ? MSGSTR_FROMHACK : 0))) {
-				logwrite(LOG_NOTICE, "%s => %s <%s@%s> with pipe\n", msg->uid, rcpt->local_part, env_addr->local_part, env_addr->domain);
+				logwrite(LOG_NOTICE, "%s => %s <%s@%s> with pipe\n",
+				         msg->uid, rcpt->local_part, env_addr->local_part, env_addr->domain);
 				addr_mark_delivered(rcpt);
 				ok = TRUE;
 			} else {
@@ -216,9 +214,7 @@ deliver_local(msg_out * msgout)
 	return ok;
 }
 
-/* make a list of rcpt's of a message that are local
-   return a new copy of the list
-*/
+/* make a list of rcpt's of a message that are local return a new copy of the list */
 void
 msg_rcptlist_local(GList * rcpt_list, GList ** p_local_list, GList ** p_nonlocal_list)
 {
@@ -315,11 +311,9 @@ deliver_msglist_host_pipe(connect_route * route, GList * msgout_list, gchar * ho
 	return ok;
 }
 
-/* deliver list of messages to one host
-   and finishes them if the message was delivered to at least one rcpt.
+/* deliver list of messages to one host and finishes them if the message was delivered to at least one rcpt.
    Returns TRUE if at least one msg was delivered to at least one rcpt.
 */
-
 gboolean
 deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * host, GList * res_list)
 {
@@ -368,8 +362,7 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 				gboolean flag, ok_msg = FALSE, ok_fail = FALSE;
 				message *msg = msgout->msg;
 
-				/* we may have to read the data at this point
-				   and remember if we did */
+				/* we may have to read the data at this point and remember if we did */
 				flag = (msg->data_list == NULL);
 				if (flag) {
 					if (!spool_read_data(msg)) {
@@ -380,7 +373,8 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 
 				smtp_out_msg(psb, msg, msgout->return_path, msgout->rcpt_list, msgout->hdr_list);
 
-				ok_fail = delivery_failures(msg, msgout->rcpt_list, "while connected with %s, the server replied\n\t%s", host, psb->buffer);
+				ok_fail = delivery_failures(msg, msgout->rcpt_list,
+				                            "while connected with %s, the server replied\n\t%s", host, psb->buffer);
 
 				if ((psb->error == smtp_eof)
 				    || (psb->error == smtp_timeout)) {
@@ -437,11 +431,9 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 					addr_mark_defered(rcpt);
 				}
 				if (route->wrapper
-				    ? delivery_failures(msgout->msg, msgout->rcpt_list,
-				                        "could not open wrapper:\n\t%s",
+				    ? delivery_failures(msgout->msg, msgout->rcpt_list, "could not open wrapper:\n\t%s",
 				                        strerror(errno))
-				    : delivery_failures(msgout->msg, msgout->rcpt_list,
-				                        "could not open connection to %s:%d :\n\t%s",
+				    : delivery_failures(msgout->msg, msgout->rcpt_list, "could not open connection to %s:%d :\n\t%s",
 				                        host, port, h_errno != 0 ? hstrerror(h_errno) : strerror(errno)))
 					deliver_finish(msgout);
 			}
@@ -470,8 +462,7 @@ deliver_route_msgout_list(connect_route * route, GList * msgout_list)
 {
 	gboolean ok = FALSE;
 
-	DEBUG(5)
-		debugf("deliver_route_msgout_list entered, route->name = %s\n", route->name);
+	DEBUG(5) debugf("deliver_route_msgout_list entered, route->name = %s\n", route->name);
 
 	if (route->mail_host != NULL) {
 		/* this is easy... */
@@ -506,8 +497,7 @@ deliver_route_msgout_list(connect_route * route, GList * msgout_list)
 
 /*
   calls route_prepare_msg()
-  delivers messages in msg_list using route
-  by calling deliver_route_msgout_list()
+  delivers messages in msg_list using route by calling deliver_route_msgout_list()
 */
 gboolean
 deliver_route_msg_list(connect_route * route, GList * msgout_list)
@@ -524,12 +514,10 @@ deliver_route_msg_list(connect_route * route, GList * msgout_list)
 		GList *rcpt_list_non_delivered = NULL;
 		GList *rcpt_node;
 
-		/* we have to delete already delivered rcpt's
-		   because a previous route may have delivered to it */
+		/* we have to delete already delivered rcpt's because a previous route may have delivered to it */
 		foreach(msgout_cloned->rcpt_list, rcpt_node) {
 			address *rcpt = (address *) (rcpt_node->data);
-			/* failed addresses already have been bounced
-			   - there should be a better way to handle those. */
+			/* failed addresses already have been bounced - there should be a better way to handle those. */
 			if (!addr_is_delivered(rcpt) && !addr_is_failed(rcpt)
 			    && !(rcpt->flags & ADDR_FLAG_LAST_ROUTE))
 				rcpt_list_non_delivered = g_list_append(rcpt_list_non_delivered, rcpt);
@@ -591,10 +579,9 @@ update_non_rcpt_list(msg_out * msgout)
 	}
 }
 
-/* after delivery attempts, we check if there are any
-   rcpt addresses left in the message.
-   If all addresses have been completed, the spool files will
-   be deleted, otherwise the header spool will be written back.
+/* after delivery attempts, we check if there are any rcpt addresses left in the message.
+   If all addresses have been completed, the spool files will be deleted,
+   otherwise the header spool will be written back.
    We never changed the data spool, so there is no need to write that back.
 
    returns TRUE if all went well.
@@ -616,10 +603,8 @@ deliver_finish(msg_out * msgout)
 		if (!addr_is_finished_children(rcpt))
 			finished = FALSE;
 		else {
-			/* if ALL children have been delivered,
-			   mark parent as delivered.
-			   if there is one or more not delivered,
-			   it must have failed, we mark the parent as failed as well.
+			/* if ALL children have been delivered, mark parent as delivered.
+			   if there is one or more not delivered, it must have failed, we mark the parent as failed as well.
 			 */
 			if (addr_is_delivered_children(rcpt)) {
 				addr_mark_delivered(rcpt);

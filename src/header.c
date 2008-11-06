@@ -18,30 +18,18 @@
 #include "masqmail.h"
 
 header_name header_names[] = {
-	{"From", HEAD_FROM,}
-	,
-	{"Sender", HEAD_SENDER,}
-	,
-	{"To", HEAD_TO,}
-	,
-	{"Cc", HEAD_CC,}
-	,
-	{"Bcc", HEAD_BCC,}
-	,
-	{"Date", HEAD_DATE,}
-	,
-	{"Message-Id", HEAD_MESSAGE_ID,}
-	,
-	{"Reply-To", HEAD_REPLY_TO,}
-	,
-	{"Subject", HEAD_SUBJECT,}
-	,
-	{"Return-Path", HEAD_RETURN_PATH,}
-	,
-	{"Envelope-To", HEAD_ENVELOPE_TO,}
-	,
-	{"Received", HEAD_RECEIVED}
-	,
+	{"From", HEAD_FROM,},
+	{"Sender", HEAD_SENDER,},
+	{"To", HEAD_TO,},
+	{"Cc", HEAD_CC,},
+	{"Bcc", HEAD_BCC,},
+	{"Date", HEAD_DATE,},
+	{"Message-Id", HEAD_MESSAGE_ID,},
+	{"Reply-To", HEAD_REPLY_TO,},
+	{"Subject", HEAD_SUBJECT,},
+	{"Return-Path", HEAD_RETURN_PATH,},
+	{"Envelope-To", HEAD_ENVELOPE_TO,},
+	{"Received", HEAD_RECEIVED},
 };
 
 /* this was borrowed from exim and slightly changed */
@@ -100,7 +88,7 @@ find_header(GList * hdr_list, header_id id, gchar * hdr_str)
 
 			while (*p != ':' && q < buf + 63 && *p)
 				*(q++) = *(p++);
-			*q = 0;
+			*q = '\0';
 
 			if (strcasecmp(buf, hdr_str) == 0)
 				found_list = g_list_append(found_list, hdr);
@@ -149,7 +137,7 @@ header_fold(header * hdr)
 	q = tmp_hdr;
 
 	if (p[len - 1] == '\n')
-		p[len - 1] = 0;
+		p[len - 1] = '\0';
 
 	while (*p) {
 		gint i, l;
@@ -184,7 +172,7 @@ header_fold(header * hdr)
 			i++;
 		}
 		*(q++) = '\n';
-		*(q++) = *(p++);		/* this is either space, tab or 0 */
+		*(q++) = *(p++);  /* this is either space, tab or 0 */
 	}
 	{
 		gchar *new_hdr;
@@ -257,7 +245,7 @@ get_header(gchar * line)
 
 	while (*p && (*p != ':') && (q < buf + 63))
 		*(q++) = *(p++);
-	*q = 0;
+	*q = '\0';
 
 	if (*p != ':')
 		return NULL;

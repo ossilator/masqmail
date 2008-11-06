@@ -54,7 +54,7 @@ set_address_header_domain(header * hdr, gchar * domain)
 			if (*p == ',')
 				p++;
 
-			new_hdr = g_strconcat(new_hdr, rewr_string, *p != 0 ? "," : NULL, NULL);
+			new_hdr = g_strconcat(new_hdr, rewr_string, *p != '\0' ? "," : NULL, NULL);
 
 		} else
 			return FALSE;

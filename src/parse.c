@@ -125,7 +125,8 @@ read_domain(gchar * p, gchar ** b, gchar ** e)
 }
 
 gboolean
-parse_address_rfc822(gchar* string, gchar** local_begin, gchar** local_end, gchar** domain_begin, gchar** domain_end, gchar** address_end)
+parse_address_rfc822(gchar* string, gchar** local_begin, gchar** local_end, gchar** domain_begin,
+                     gchar** domain_end, gchar** address_end)
 {
 	gint angle_brackets = 0;
 
@@ -262,7 +263,8 @@ parse_address_rfc822(gchar* string, gchar** local_begin, gchar** local_end, gcha
 }
 
 gboolean
-parse_address_rfc821(gchar* string, gchar** local_begin, gchar** local_end, gchar** domain_begin, gchar** domain_end, gchar** address_end)
+parse_address_rfc821(gchar* string, gchar** local_begin, gchar** local_end, gchar** domain_begin,
+                     gchar** domain_end, gchar** address_end)
 {
 	gint angle_brackets = 0;
 
@@ -352,7 +354,6 @@ parse_address_rfc821(gchar* string, gchar** local_begin, gchar** local_end, gcha
 
   parses both rfc 821 and rfc 822 addresses, depending on flag is_rfc821
 */
-
 address*
 _create_address(gchar * string, gchar ** end, gboolean is_rfc821)
 {
@@ -364,7 +365,8 @@ _create_address(gchar * string, gchar ** end, gboolean is_rfc821)
 		address *addr = g_malloc(sizeof(address));
 		addr->address = g_strdup("");
 		addr->local_part = g_strdup("");
-		addr->domain = g_strdup("");  /* 'NULL' address (failure notice), "" makes sure it will not be qualified with a hostname */
+		addr->domain = g_strdup("");  /* 'NULL' address (failure notice),
+		                                 "" makes sure it will not be qualified with a hostname */
 		return addr;
 	}
 
@@ -374,7 +376,6 @@ _create_address(gchar * string, gchar ** end, gboolean is_rfc821)
 	{
 		address *addr = g_malloc(sizeof(address));
 		gchar *p = addr_end;
-
 
 		memset(addr, 0, sizeof(address));
 
@@ -397,7 +398,8 @@ _create_address(gchar * string, gchar ** end, gboolean is_rfc821)
 			addr->domain = g_strndup(dom_beg, dom_end - dom_beg);
 		} else {
 			if (addr->local_part[0] == 0)
-				addr->domain = g_strdup("");  /* 'NULL' address (failure notice), "" makes sure it will not be qualified with a hostname */
+				addr->domain = g_strdup("");  /* 'NULL' address (failure notice),
+				                                 "" makes sure it will not be qualified with a hostname */
 			else
 				addr->domain = NULL;
 		}

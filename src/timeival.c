@@ -33,7 +33,7 @@ time_interval(gchar * str, gint * pos)
 		(*pos)++;
 	}
 	(*pos)++;
-	*q = 0;
+	*q = '\0';
 	val = atoi(buf);
 
 	/* fall through: */

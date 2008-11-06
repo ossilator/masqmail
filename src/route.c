@@ -16,8 +16,9 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "masqmail.h"
 #include <fnmatch.h>
+
+#include "masqmail.h"
 
 msgout_perhost*
 create_msgout_perhost(gchar * host)
@@ -85,7 +86,8 @@ rewrite_headers(msg_out * msgout, connect_route * route)
 						DEBUG(6) debugf("header = %s\n", new_hdr->header);
 						msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
 					} else {
-						logwrite(LOG_ALERT, "error in set_address_header_domain(%s, %s)\n", new_hdr->value, route->set_h_from_domain);
+						logwrite(LOG_ALERT, "error in set_address_header_domain(%s, %s)\n",
+						         new_hdr->value, route->set_h_from_domain);
 					}
 				}
 			}
@@ -170,7 +172,8 @@ rewrite_headers(msg_out * msgout, connect_route * route)
 			if (hdr->id == HEAD_SENDER) {
 				header *new_hdr;
 
-				new_hdr = create_header(HEAD_SENDER, "Sender: %s@%s\n", msgout->return_path->local_part, msgout->return_path->domain);
+				new_hdr = create_header(HEAD_SENDER, "Sender: %s@%s\n",
+				                        msgout->return_path->local_part, msgout->return_path->domain);
 				hdr_node->data = new_hdr;
 				/* we need this list only to carefully free the extra headers: */
 				msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
@@ -322,8 +325,7 @@ route_prepare_msgout(connect_route * route, msg_out * msgout)
 			}
 		}
 
-		/* rewrite return path
-		   if there is a table, use that
+		/* rewrite return path if there is a table, use that
 		   if an address is found and if it has a domain, use that
 		 */
 		if (route->map_return_path_addresses) {
@@ -382,9 +384,8 @@ route_msgout_list(connect_route * route, GList * msgout_list)
 				/* there is already a rcpt for this host */
 				msg_out *msgout_last = (msg_out *) ((g_list_last(mo_ph->msgout_list))->data);
 				if (msgout_last->msg == msgout->msg) {
-					/* if it is also the same message, it must be the last one
-					   appended to mo_ph->msgout_list (since outer loop goes through
-					   msgout_list) */
+					/* if it is also the same message, it must be the last one appended
+					   to mo_ph->msgout_list (since outer loop goes through msgout_list) */
 					msgout_last->rcpt_list = g_list_append(msgout_last->rcpt_list, rcpt);
 				} else {
 					/* if not, we append a new msgout */

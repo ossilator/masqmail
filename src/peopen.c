@@ -7,10 +7,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sysexits.h>
 
 #include "peopen.h"
-#include "sysexits.h"
-
 #include "masqmail.h"
 
 static void
@@ -35,6 +34,7 @@ create_argv(const char *cmd, int count)
 	int i = 0;
 
 	arr = (char **) malloc(sizeof(char *) * count);
+	/* FIXME: check return value of malloc() */
 
 	p = cmd;
 	while (*p && i < (count - 1)) {
@@ -43,7 +43,7 @@ create_argv(const char *cmd, int count)
 		q = buf;
 		while (*p && !isspace(*p))
 			*q++ = *p++;
-		*q = 0;
+		*q = '\0';
 		arr[i++] = strdup(buf);
 		while (*p && isspace(*p))
 			p++;
