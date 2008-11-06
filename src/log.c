@@ -16,9 +16,9 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "masqmail.h"
+#include <sysexits.h>
 
-#include "sysexits.h"
+#include "masqmail.h"
 
 static char *_sysexit_strings[] = {
 	"command line usage error",
@@ -109,8 +109,7 @@ logclose()
 void
 vlogwrite(int pri, const char *fmt, va_list args)
 {
-	if ((conf.do_verbose && (pri & LOG_VERBOSE)) || (pri == LOG_ALERT)
-		|| (pri == LOG_WARNING)) {
+	if ((conf.do_verbose && (pri & LOG_VERBOSE)) || (pri == LOG_ALERT) || (pri == LOG_WARNING)) {
 		va_list args_copy;
 		va_copy(args_copy, args);
 		vfprintf(stdout, fmt, args_copy);
@@ -120,7 +119,6 @@ vlogwrite(int pri, const char *fmt, va_list args)
 
 	pri &= ~LOG_VERBOSE;
 	if (pri) {
-
 		if (conf.use_syslog)
 			vsyslog(pri, fmt, args);
 		else {
@@ -159,7 +157,6 @@ vdebugwrite(int pri, const char *fmt, va_list args)
 
 	if (debugfile) {
 		fprintf(debugfile, "%s [%d] ", buf, getpid());
-
 		vfprintf(debugfile, fmt, args);
 		fflush(debugfile);
 	} else {

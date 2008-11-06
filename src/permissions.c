@@ -16,9 +16,10 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "masqmail.h"
 #include <pwd.h>
 #include <grp.h>
+
+#include "masqmail.h"
 
 /* is there really no function in libc for this? */
 gboolean

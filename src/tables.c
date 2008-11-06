@@ -16,8 +16,9 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "masqmail.h"
 #include <fnmatch.h>
+
+#include "masqmail.h"
 
 table_pair*
 create_pair(gchar * key, gpointer value)
@@ -52,9 +53,9 @@ parse_table_pair(gchar * line, char delim)
 
 	p = line;
 	q = buf;
-	while ((*p != 0) && (*p != delim) && q < buf + 255)
+	while ((*p != '\0') && (*p != delim) && q < buf + 255)
 		*(q++) = *(p++);
-	*q = 0;
+	*q = '\0';
 
 	pair = g_malloc(sizeof(table_pair));
 	pair->key = g_strdup(g_strstrip(buf));

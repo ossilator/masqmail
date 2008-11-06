@@ -96,7 +96,7 @@ expand(GList * var_list, gchar * format, gchar * result, gint result_len)
 					j++;
 				}
 			}
-			*vq = 0;
+			*vq = '\0';
 
 			if (j < MAX_VAR) {
 				/* search var */
@@ -120,7 +120,7 @@ expand(GList * var_list, gchar * format, gchar * result, gint result_len)
 			p++;
 		}
 	}
-	*q = 0;
+	*q = '\0';
 
 	if (i >= (result_len - 1))
 		return -3;

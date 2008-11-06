@@ -168,7 +168,7 @@ read_response(smtp_base * psb, int timeout)
 		}
 		for (i = 0; i < 4; i++)
 			code[i] = psb->buffer[buf_pos + i];
-		code[i] = 0;
+		code[i] = '\0';
 		psb->last_code = atoi(code);
 
 		buf_pos += len;
@@ -223,7 +223,7 @@ get_response_arg(gchar * response)
 	if (*p && (*p != '\n')) {
 		while (*p && (*p != '\n') && (*p != '\r') && (q < buf + SMTP_BUF_LEN - 1))
 			*(q++) = *(p++);
-		*q = 0;
+		*q = '\0';
 		return g_strdup(buf);
 	}
 	return NULL;
@@ -356,7 +356,8 @@ send_data_line(smtp_base * psb, gchar * data)
 	   beginning with a dot is prepended with another dot.
 	 */
 	gchar *ptr;
-	gboolean new_line = TRUE;  /* previous versions assumed that each item was exactly one line. This is no longer the case */
+	gboolean new_line = TRUE;  /* previous versions assumed that each item was exactly one line.
+	                              This is no longer the case */
 
 	ptr = data;
 	while (*ptr) {
@@ -567,7 +568,7 @@ smtp_out_auth_cram_md5(smtp_base * psb)
 
 			for (i = 0; i < 16; i++)
 				sprintf(&(digest_string[i + i]), "%02x", (unsigned int) (digest[i]));
-			digest_string[32] = 0;
+			digest_string[32] = '\0';
 
 			DEBUG(5) debugf("digest = %s\n", digest_string);
 
@@ -746,7 +747,8 @@ smtp_out_msg(smtp_base * psb, message * msg, address * return_path, GList * rcpt
 							ok = FALSE;
 							break;
 						} else {
-							logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s", msg->uid, addr_string(rcpt), psb->remote_host, psb->buffer);
+							logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s",
+							         msg->uid, addr_string(rcpt), psb->remote_host, psb->buffer);
 							if (psb->error == smtp_trylater) {
 								addr_mark_defered(rcpt);
 							} else {

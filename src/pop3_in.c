@@ -17,12 +17,12 @@
 
 /* see RFC 1725 */
 
+#include <sys/wait.h>
+#include <sys/stat.h>
+
 #include "masqmail.h"
 #include "pop3_in.h"
 #include "readsock.h"
-
-#include <sys/wait.h>
-#include <sys/stat.h>
 
 #ifdef USE_LIB_CRYPTO
 #include <openssl/md5.h>
@@ -376,7 +376,7 @@ check_init_response(pop3_base * popb)
 			while (*p && (*p != '>') && (i < 254))
 				buf[i++] = *(p++);
 			buf[i++] = '>';
-			buf[i] = 0;
+			buf[i] = '\0';
 
 			popb->timestamp = g_strdup(buf);
 
@@ -448,14 +448,10 @@ pop3_in_open_child(gchar * cmd, guint flags)
 	gint sock;
 
 	DEBUG(5) debugf("pop3_in_open_child entered, cmd = %s\n", cmd);
-
 	sock = child(cmd);
-
 	if (sock > 0) {
-
 		popb = create_pop3base(sock, flags);
 		popb->remote_host = NULL;
-
 		return popb;
 	}
 	logwrite(LOG_ALERT, "child failed (sock = %d): %s\n", sock, strerror(errno));
@@ -566,7 +562,7 @@ pop3_in_retr(pop3_base * popb, gint number, address * rcpt)
 		msg->rcpt_list = g_list_append(NULL, copy_address(rcpt));
 
 		if ((err = accept_message(popb->in, msg, ACC_MAIL_FROM_HEAD
-		    | (conf.do_save_envelope_to ? ACC_SAVE_ENVELOPE_TO : 0)))
+		                          | (conf.do_save_envelope_to ? ACC_SAVE_ENVELOPE_TO : 0)))
 		    == AERR_OK)
 			return msg;
 
@@ -591,11 +587,8 @@ gboolean
 pop3_in_quit(pop3_base * popb)
 {
 	pop3_printf(popb->out, "QUIT\r\n");
-
 	DEBUG(4) debugf("QUIT\n");
-
 	signal(SIGALRM, SIG_DFL);
-
 	return TRUE;
 }
 
@@ -620,7 +613,8 @@ pop3_in_uidl_dele(pop3_base * popb)
 }
 
 gboolean
-pop3_get(pop3_base * popb, gchar * user, gchar * pass, address * rcpt, address * return_path, gint max_count, gint max_size, gboolean max_size_delete)
+pop3_get(pop3_base * popb, gchar * user, gchar * pass, address * rcpt, address * return_path,
+         gint max_count, gint max_size, gboolean max_size_delete)
 {
 	gboolean ok = FALSE;
 	gint num_children = 0;
@@ -634,7 +628,8 @@ pop3_get(pop3_base * popb, gchar * user, gchar * pass, address * rcpt, address *
 			if (pop3_in_stat(popb)) {
 				if (popb->msg_cnt > 0) {
 
-					logwrite(LOG_NOTICE | LOG_VERBOSE, "%d message(s) for user %s at %s\n", popb->msg_cnt, user, popb->remote_host);
+					logwrite(LOG_NOTICE | LOG_VERBOSE, "%d message(s) for user %s at %s\n",
+					         popb->msg_cnt, user, popb->remote_host);
 
 					if (pop3_in_list(popb)) {
 						gboolean do_get = !(popb->flags & POP3_FLAG_UIDL);

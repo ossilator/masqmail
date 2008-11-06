@@ -16,14 +16,15 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-/*#include "masqmail.h"*/
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
 #include <unistd.h>
 #include <ctype.h>
+
 #include "readsock.h"
+/*#include "masqmail.h"*/
 
 jmp_buf jmp_timeout;
 
@@ -80,7 +81,7 @@ _read_line(FILE * in, char *buf, int buf_len, int timeout)
 		c = fgetc(in);
 	}
 
-	buf[p] = 0;
+	buf[p] = '\0';
 
 	if (c == EOF)
 		return -1;
@@ -90,7 +91,7 @@ _read_line(FILE * in, char *buf, int buf_len, int timeout)
 	}
 
 	buf[p++] = c;  /* \n */
-	buf[p] = 0;
+	buf[p] = '\0';
 
 	return p;
 }
@@ -177,7 +178,7 @@ read_sockline1(FILE * in, char **pbuf, int *buf_len, int timeout, unsigned int f
 		if (flags & READSOCKL_CVT_CRLF) {
 			if ((buf[p - 2] == '\r') && (buf[p - 1] == '\n')) {
 				buf[p - 2] = '\n';
-				buf[p - 1] = 0;
+				buf[p - 1] = '\0';
 				p--;
 			}
 		}

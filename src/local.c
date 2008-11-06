@@ -16,9 +16,10 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include <sys/wait.h>
+
 #include "masqmail.h"
 #include "peopen.h"
-#include <sys/wait.h>
 
 static void
 message_stream(FILE * out, message * msg, GList * hdr_list, guint flags)
@@ -92,9 +93,7 @@ append_file(message * msg, GList * hdr_list, gchar * user)
 				if (fcntl(fileno(out), F_SETLK, &lock) != -1) {
 #endif
 					fchmod(fileno(out), 0600);
-
 					message_stream(out, msg, hdr_list, MSGSTR_FROMLINE | MSGSTR_FROMHACK);
-
 					ok = TRUE;
 
 					/* close when still user */
@@ -211,10 +210,9 @@ maildir_out(message * msg, GList * hdr_list, gchar * user, guint flags)
 					if (i == 3) {
 						FILE *out;
 						mode_t saved_mode = umask(066);
-						/* the qmail style unique works only if delivering
-						   with different process. We do not fork for each delivery,
-						   so our uid is more unique. Hope it is compatible with all
-						   MUAs.
+						/* the qmail style unique works only if delivering with different process.
+						   We do not fork for each delivery, so our uid is more unique.
+						   Hope it is compatible with all MUAs.
 						 */
 						gchar *filename = g_strdup_printf("%s/tmp/%s.%s", path, msg->uid, conf.host_name);
 
@@ -227,7 +225,8 @@ maildir_out(message * msg, GList * hdr_list, gchar * user, guint flags)
 							if (fflush(out) == EOF)
 								ok = FALSE;
 							else if (fdatasync(fileno(out)) != 0) {
-								if (errno != EINVAL)  /* some fs do not support this..  I hope this also means that it is not necessary */
+								if (errno != EINVAL)
+									/* some fs do not support this..  I hope this also means that it is not necessary */
 									ok = FALSE;
 							}
 							fclose(out);

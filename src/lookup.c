@@ -23,10 +23,8 @@
 #include "masqmail.h"
 
 #ifdef RESOLV_TEST
-
 #undef DEBUG
 #define DEBUG(x) if(x > 0)
-
 #define debugf g_print
 #endif
 
@@ -343,26 +341,20 @@ main(int argc, char *argv[])
 	GList *addr_list = NULL, *node;
 
 	g_print("starting res_init()\n");
-
 	g_print("retrans = %d, retry = %d\n", _res.retrans, _res.retry);
-
 	if (res_init() == 0) {
-
 		addr_list = resolve_dns_a(NULL, argv[1]);
 		g_print("A:\n");
-
 		foreach(addr_list, node) {
 			mxip_addr *p_mxip = (mxip_addr *) (node->data);
-
 			printf("name = %s\n IP = %s\n", p_mxip->name, inet_ntoa(*(struct in_addr *) &(p_mxip->ip)));
 		}
 		addr_list = resolve_dns_mx(NULL, argv[1]);
 		g_print("MX:\n");
-
 		foreach(addr_list, node) {
 			mxip_addr *p_mxip = (mxip_addr *) (node->data);
-
-			printf("name = %s\n IP = %s pref = %d\n", p_mxip->name, inet_ntoa(*(struct in_addr *) &(p_mxip->ip)), p_mxip->pref);
+			printf("name = %s\n IP = %s pref = %d\n", p_mxip->name,
+			       inet_ntoa(*(struct in_addr *) &(p_mxip->ip)), p_mxip->pref);
 		}
 		{
 			guint32 ip;
@@ -371,6 +363,5 @@ main(int argc, char *argv[])
 		}
 	} else
 		printf("res_init() failed.\n");
-
 }
 #endif

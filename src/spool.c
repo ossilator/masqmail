@@ -16,8 +16,9 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "masqmail.h"
 #include <sys/stat.h>
+
+#include "masqmail.h"
 #include "dotlock.h"
 
 static gint
@@ -39,7 +40,7 @@ read_line(FILE * in, gchar * buf, gint buf_len)
 	if ((p > 0) && (buf[p - 1] == '\r'))
 		p--;
 	buf[p++] = '\n';
-	buf[p] = 0;
+	buf[p] = '\0';
 
 	return p;
 }
@@ -68,7 +69,7 @@ spool_scan_rcpt(gchar * line)
 {
 	address *rcpt = NULL;
 
-	if (line[3] != 0) {
+	if (line[3] != '\0') {
 		if (line[4] != '|') {
 			rcpt = create_address(&(line[4]), TRUE);
 		} else {
