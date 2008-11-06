@@ -46,8 +46,16 @@ detect_online_pipe(const gchar * pipe)
 	if (in != NULL) {
 		gchar output[256];
 		if (fgets(output, 255, in)) {
-			g_strchomp(output);
-			name = g_strdup(output);
+			g_strchomp(g_strchug(output));
+			if (strlen(output) == 0) {
+				logwrite(LOG_ALERT, "only whitespace connection name\n");
+				name = NULL;
+			} else {
+				name = g_strdup(output);
+			}
+		} else {
+			logwrite(LOG_ALERT, "nothing read from pipe %s\n", pipe);
+			name = NULL;
 		}
 		fclose(in);
 		waitpid(pid, &status, 0);
@@ -75,9 +83,17 @@ detect_online()
 					FILE *fptr = fopen(conf.online_file, "r");
 					if (fptr) {
 						char buf[256];
-						fgets(buf, 256, fptr);
-						g_strchomp(buf);
+						if (fgets(buf, 256, fptr) == NULL) {
+							logwrite(LOG_ALERT, "empty online file %s\n", conf.online_file);
+							fclose(fptr);
+							return NULL;
+						}
+						g_strchomp(g_strchug(buf));
 						fclose(fptr);
+						if (strlen(buf) == 0) {
+							logwrite(LOG_ALERT, "only whitespace connection name in %s\n", conf.online_file);
+							return NULL;
+						}
 						return g_strdup(buf);
 					} else {
 						logwrite(LOG_ALERT, "opening of %s failed: %s\n", conf.online_file, strerror(errno));
