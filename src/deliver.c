@@ -681,8 +681,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 	gboolean ok = TRUE;
 
 	if (conf.alias_file) {
-		if (!(alias_table = table_read(conf.alias_file, ':')))
-			return FALSE;
+		alias_table = table_read(conf.alias_file, ':');
 	}
 
 	/* sort messages for different deliveries */

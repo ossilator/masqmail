@@ -125,9 +125,11 @@ table_read(gchar * fname, gchar delim)
 			}
 		}
 		fclose(fptr);
+		if (list == NULL)
+			logwrite(LOG_NOTICE, "empty table file %s\n", fname);
 		return list;
 	}
-	logwrite(LOG_ALERT, "could not open table file %s: %s\n", fname, strerror(errno));
+	logwrite(LOG_ALERT, "could not open table file %s: %s. Thus no aliasing is done\n", fname, strerror(errno));
 
 	return NULL;
 }
