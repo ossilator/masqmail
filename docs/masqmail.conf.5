@@ -86,7 +86,7 @@ to your masqmail.conf.
 
 A semicolon ';' separated list of fully qualified email-addresses which are considered not local although their domain name part is in the list of \fBlocal_hosts\f1. 
 
-This ist the opposite of the previous case. The majority of addresses of a specific domain are local. But some users are not. With this option you can easily exclude these users.
+This is the opposite of the previous case. The majority of addresses of a specific domain are local. But some users are not. With this option you can easily exclude these users.
 
 Example:
 
@@ -122,18 +122,18 @@ Note that this will not protect you from spammers using open relays, but from us
 
 \fBdo_queue = \fIboolean\f1\fB\f1
 
-If this is set, mail will not be delivered immediately when accepted. Same as calling masqmail with the \fB-odq\f1 option.
+If this is set, mail will not be delivered immediately when accepted. Same as calling masqmail with the \fB\-odq\f1 option.
 .TP
 
 \fBonline_routes.\fIname\f1\fB = \fIlist\f1\fB\f1
 
-Replace \fIname\f1 with a name to identify a connection. Set this to a filename (or a list of filenames) for the special route configuration for that connection. You will use that name to call masqmail with the\fB-qo\f1 option every time a connection to your ISP is set up.
+Replace \fIname\f1 with a name to identify a connection. Set this to a filename (or a list of filenames) for the special route configuration for that connection. You will use that name to call masqmail with the \fB\-qo\f1 option every time a connection to your ISP is set up.
 
 Example: Your ISP has the name FastNet. Then you write the following line in the main configuration:
 
 \fBonline_routes.FastNet\f1 = \fI"/etc/masqmail/fastnet.route"\f1
 
-\fI/etc/masqmail/fastnet.route\f1 is the route configuration file, see \fBmasqmail.route (5)\f1. As soon as a link to FastNet has been set up, you call masqmail \fB-qo\f1 \fIFastNet\f1. Masqmail will then read the specified file and send the mails.
+\fI/etc/masqmail/fastnet.route\f1 is the route configuration file, see \fBmasqmail.route (5)\f1. As soon as a link to FastNet has been set up, you call masqmail \fB\-qo\f1 \fIFastNet\f1. Masqmail will then read the specified file and send the mails.
 .TP
 
 \fBconnect_route.\fIname\f1\fB = \fIlist\f1\fB\f1
@@ -210,7 +210,7 @@ rcpt - the complete recipient address.
 
 Example:
 
-mda="/usr/bin/procmail -Y -d ${rcpt_local}"
+mda="/usr/bin/procmail \-Y \-d ${rcpt_local}"
 
 For the mda, as for pipe commands, a few environment variables will be set as well. See \fBmasqmail (8)\f1. To use environment variables for the mda, the '$' sign has to be escaped with a backslash, otherwise they will be tried to be expanded with the internal variables.
 .TP
@@ -235,14 +235,14 @@ When it is set to \fBpipe\f1, MasqMail calls the executable given by the \fBonli
 
 When it is set to \fBmserver\f1, MasqMail connects to the masqdialer server using the value of \fBmserver_iface\f1 and asks it whether a connection exists and for the name, which should be the name of the current connection as defined with \fBconnect_route.\fIname\f1\fB\f1.
 
-No matter how MasqMail detects the online status, only messages that are accepted at online time will be delivered using the connection. The spool still has to be emptied with masqmail \fB-qo\f1\fIconnection\f1.
+No matter how MasqMail detects the online status, only messages that are accepted at online time will be delivered using the connection. The spool still has to be emptied with masqmail \fB\-qo\f1\fIconnection\f1.
 .TP
 
 \fBonline_file = \fIfile\f1\fB\f1
 
 This is the name of the file checked for when MasqMail determines whether it is online. The file should only exist when there is currently a connection. Create it in your ip-up script with eg.
 
-echo -n <name> > /tmp/connect_route
+echo \-n <name> > /tmp/connect_route
 
 chmod 0644 /tmp/connect_route
 
@@ -257,7 +257,7 @@ This is the name of the executable which will be called to determine the online 
 
 
 
-[ -e /tmp/connect_route ] || exit 1
+[ \-e /tmp/connect_route ] || exit 1
 
 cat /tmp/connect_route
 
@@ -273,12 +273,12 @@ The interface the masqdialer server is listening to. Usually this will be "local
 
 \fBget.\fIname\f1\fB = \fIfile\f1\fB\f1
 
-Replace \fIname\f1 with a name to identify a get configuration. Set this to a filename for the get configuration. These files will be used to retrieve mail when called with the -g option.
+Replace \fIname\f1 with a name to identify a get configuration. Set this to a filename for the get configuration. These files will be used to retrieve mail when called with the \-g option.
 .TP
 
 \fBonline_gets.\fIname\f1\fB = \fIlist\f1\fB\f1
 
-Replace \fIname\f1 with a name to identify an online configuration. Set this to a filename (or a list of filenames) for the get configuration. These files will be used to retrieve mail when called with the -go option.
+Replace \fIname\f1 with a name to identify an online configuration. Set this to a filename (or a list of filenames) for the get configuration. These files will be used to retrieve mail when called with the \-go option.
 .TP
 
 \fBident_trusted_nets = \fIlist\f1\fB\f1
