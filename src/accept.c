@@ -128,8 +128,7 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 				if (line1[0] == ' ' || line1[0] == '\t') {
 					/* continuation of 'folded' header: */
 					if (hdr) {
-						hdr->header =
-							g_strconcat(hdr->header, line1, NULL);
+						hdr->header = g_strconcat(hdr->header, line1, NULL);
 					}
 
 				} else if (line1[0] == '\n') {
@@ -196,14 +195,11 @@ accept_message_prepare(message * msg, guint flags)
 	}
 
 	/* set return path if local */
-	if (msg->return_path == NULL) {
-
-		if (msg->received_host == NULL) {
-			gchar *path = g_strdup_printf("<%s@%s>", passwd->pw_name, conf.host_name);
-			DEBUG(3) debugf("setting return_path for local accept: %s\n", path);
-			msg->return_path = create_address(path, TRUE);
-			g_free(path);
-		}
+	if (msg->return_path == NULL && msg->received_host == NULL) {
+		gchar *path = g_strdup_printf("<%s@%s>", passwd->pw_name, conf.host_name);
+		DEBUG(3) debugf("setting return_path for local accept: %s\n", path);
+		msg->return_path = create_address(path, TRUE);
+		g_free(path);
 	}
 
 	/* -t option */
@@ -262,7 +258,8 @@ accept_message_prepare(message * msg, guint flags)
 			case HEAD_ENVELOPE_TO:
 				if (flags & ACC_SAVE_ENVELOPE_TO) {
 					DEBUG(3) debugf("creating 'X-Orig-Envelope-To' header\n");
-					msg->hdr_list = g_list_prepend(msg->hdr_list, create_header(HEAD_UNKNOWN, "X-Orig-Envelope-to: %s", hdr->value));
+					msg->hdr_list = g_list_prepend(msg->hdr_list, create_header(HEAD_UNKNOWN,
+					                               "X-Orig-Envelope-to: %s", hdr->value));
 				}
 				DEBUG(3) debugf("removing 'Envelope-To' header\n");
 				msg->hdr_list = g_list_remove_link(msg->hdr_list, hdr_node);
