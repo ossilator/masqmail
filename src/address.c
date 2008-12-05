@@ -35,11 +35,10 @@ address*
 create_address_qualified(gchar * path, gboolean is_rfc821, gchar * domain)
 {
 	address *addr = create_address(path, is_rfc821);
-	if (addr != NULL) {
-		if (addr->domain == NULL)
+
+	if (addr != NULL && addr->domain == NULL) {
 			addr->domain = g_strdup(domain);
 	}
-
 	return addr;
 }
 
@@ -76,26 +75,29 @@ copy_modify_address(const address * orig, gchar * l_part, gchar * dom)
 {
 	address *addr = NULL;
 
-	if (orig) {
-		addr = g_malloc(sizeof(address));
-		if (addr) {
-			addr->address = g_strdup(orig->address);
-
-			if (l_part == NULL)
-				addr->local_part = g_strdup(orig->local_part);
-			else
-				addr->local_part = g_strdup(l_part);
-
-			if (dom == NULL)
-				addr->domain = g_strdup(orig->domain);
-			else
-				addr->domain = g_strdup(dom);
-
-			addr->flags = 0;
-			addr->children = NULL;
-			addr->parent = NULL;
-		}
+	if (!orig) {
+		return NULL;
 	}
+
+	if ((addr = g_malloc(sizeof(address))) == NULL) {
+		return NULL;
+	}
+
+	addr->address = g_strdup(orig->address);
+
+	if (l_part == NULL)
+		addr->local_part = g_strdup(orig->local_part);
+	else
+		addr->local_part = g_strdup(l_part);
+
+	if (dom == NULL)
+		addr->domain = g_strdup(orig->domain);
+	else
+		addr->domain = g_strdup(dom);
+
+	addr->flags = 0;
+	addr->children = NULL;
+	addr->parent = NULL;
 	return addr;
 }
 
