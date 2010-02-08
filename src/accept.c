@@ -313,7 +313,7 @@ accept_message_prepare(message * msg, guint flags)
 				msg->return_path = create_address_qualified("postmaster", TRUE, conf.host_name);
 				DEBUG(3) debugf("setting return_path to %s\n", addr_string(msg->return_path));
 				msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_UNKNOWN,
-				                              "X-Warning: real return path is unkown\n"));
+				                              "X-Warning: real return path is unknown\n"));
 			}
 		}
 
