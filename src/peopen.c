@@ -1,5 +1,7 @@
 /* This a snippet I found in sourceforge. I just changed the identing
-   style to my own and deleted the main function.  */
+   style to my own and deleted the main function. -- oku
+   The functions destroy_argv() and create_argv() were added by oku.
+*/
 
 #include <errno.h>
 #include <stdio.h>
