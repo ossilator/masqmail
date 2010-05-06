@@ -33,8 +33,7 @@ create_argv(const char *cmd, int count)
 	const char *p;
 	int i = 0;
 
-	arr = (char **) malloc(sizeof(char *) * count);
-	/* FIXME: check return value of malloc() */
+	arr = (char **) g_malloc(sizeof(char *) * count);
 
 	p = cmd;
 	while (*p && i < (count - 1)) {
