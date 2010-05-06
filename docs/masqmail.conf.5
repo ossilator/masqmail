@@ -229,7 +229,7 @@ If this is set, each line beginning with 'From ' is replaced with '>From ' whene
 
 Defines the method MasqMail uses to detect whether there is currently an online connection. It can have the values \fBfile\f1, \fBpipe\f1 or \fBmserver\f1.
 
-When it is set to \fBfile\f1, MasqMail first checks for the existence of \fBonline_file\f1 (see below) and if it exists, it reads it. The content of the file should be the name of the current connection as defined with \fBconnect_route.\fIname\f1\fB\f1 (without a trailing newline character).
+When it is set to \fBfile\f1, MasqMail first checks for the existence of \fBonline_file\f1 (see below) and if it exists, it reads it. The content of the file should be the name of the current connection as defined with \fBconnect_route.\fIname\f1\fB\f1 (trailing whitespace is removed).
 
 When it is set to \fBpipe\f1, MasqMail calls the executable given by the \fBonline_pipe\f1 option (see below) and reads the current online status from its standard output.
 
@@ -251,11 +251,9 @@ Do not forget to delete it in your ip-down script.
 
 \fBonline_pipe = \fIfile\f1\fB\f1
 
-This is the name of the executable which will be called to determine the online status. This executable should just print the name oif the current connection to the standard output and return a zero status code. masqmail assumes it is offline if the script returns with a non zero status. Simple example:
+This is the name of the executable which will be called to determine the online status. This executable should just print the name of the current connection to the standard output and return a zero status code. masqmail assumes it is offline if the script returns with a non zero status. Simple example:
 
 #!/bin/sh
-
-
 
 [ \-e /tmp/connect_route ] || exit 1
 
