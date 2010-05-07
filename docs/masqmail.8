@@ -1,185 +1,265 @@
-.TH masqmail 8 User Manuals
+.TH masqmail 8 2010-05-07 masqmail-0.2.21 "Maintenance Commands"
+
 .SH NAME
 masqmail \- An offline Mail Transfer Agent
+
 .SH SYNOPSIS
-\fB/usr/sbin/masqmail [\-C \fIfile\f1\fB] [\-odq] [\-bd] [\-q\fIinterval\f1\fB]
+\fB/usr/sbin/masqmail \fR[\fB\-C \fIfile\fR] [\fB\-odq\fR] [\fB\-bd\fR] [\fB\-q\fIinterval\fR]
 
-\fB/usr/sbin/masqmail [\-odq] [\-bs]
+\fB/usr/sbin/masqmail \fR[\fB\-odq\fR] [\fB\-bs\fR]
 
-\fB/usr/sbin/masqmail [\-bp]
+\fB/usr/sbin/masqmail \fR[\fB\-bp\fR]
 
-\fB/usr/sbin/masqmail [\-q]
+\fB/usr/sbin/masqmail \fR[\fB\-q\fR]
 
-\fB/usr/sbin/masqmail [\-qo [\fIname\f1\fB]]
+\fB/usr/sbin/masqmail \fR[\fB\-qo \fR[\fIname\fR]]
 
-\fB/usr/sbin/masqmail [\-odq] [\-g [\fIname\f1\fB]]
+\fB/usr/sbin/masqmail \fR[\fB\-odq\fR] [\fB\-g \fR[\fIname\fR]]
 
-\fB/usr/sbin/masqmail [\-odq] [\-go [\fIname\f1\fB]]
+\fB/usr/sbin/masqmail \fR[\fB\-odq\fR] [\fB\-go \fR[\fIname\fR]]
 
-\fB/usr/sbin/masqmail [\-t] [\-oi] [\-f \fIaddress\f1\fB] [\-\-] \fIaddress...\f1\fB
+\fB/usr/sbin/masqmail \fR[\fB\-t\fR] [\fB\-oi\fR] [\fB\-f \fIaddress\fR] [\fB\-\-\fR] \fIaddress...
 
-\fB/usr/sbin/mailq
+\fB/usr/sbin/mailq\fR
 
-\fB
+
 .SH DESCRIPTION
 
-MasqMail is a mail server designed for hosts that do not have a permanent internet connection eg. a home network or a single host at home. It has special support for connections to different ISPs. It replaces sendmail or other MTAs such as qmail or exim. It can also act as a pop3 client.
+Masqmail is a mail server designed for hosts that do not have a permanent internet connection
+e.g. a home network or a single host at home.
+It has special support for connections to different ISPs.
+It replaces sendmail or other MTAs such as qmail or exim.
+It can also act as a pop3 client.
+
 
 .SH OPTIONS
 
-Since masqmail is intended to replace sendmail, it uses the same command line options, but not all are implemented. There are also two additional options, which are unique to masqmail (\-qo \fIconnection\f1 and \-g)
+Since masqmail is intended to replace sendmail, it uses the same command line options,
+but not all are implemented.
+There are also two additional options, which are unique to masqmail
+(\fB\-qo \fIconnection\fR and \fB\-g\fR)
+
 .TP
+\fB\-\-\fR
 
-\fB\-\-\f1
+Not a `real' option, it means that all following arguments are to be understood
+as arguments and not as options even if they begin with a leading dash `\-'.
+Mutt is known to call sendmail with this option.
 
-Not a 'real' option, it means that all following arguments are to be understood as arguments and not as options even if they begin with a leading dash '\-'. Mutt is known to call sendmail with this option.
 .TP
+\fB\-bd\fR
 
-\fB\-bd\f1
+Run as daemon, accepting connections, usually on port 25 if not configured differently.
+This is usually used in the startup script at system boot and together with
+the \fB\-q\fR option (see below).
 
-Run as daemon, accepting connections, usually on port 25 if not configured differently. This is usually used in the startup script at system boot and together with the \-q option (see below).
 .TP
+\fB\-bi\fR
 
-\fB\-bi\f1
+Old sendmail rebuilds its alias database when invoked with this option.
+Masqmail ignores it.
+Masqmail reads directly from the file given with `alias_file' in the config file.
 
-Old sendmail rebuilds its alias database when invoked with this option. Masqmail ignores it. Masqmail reads directly from the file given with alias_file in the config file.
 .TP
+\fB\-bp\fR
 
-\fB\-bp\f1
+Show the messages in the queue. Same as calling masqmail as `mailq'.
 
-Show the messages in the queue. Same as calling masqmail as 'mailq'.
 .TP
+\fB\-bs\fR
 
-\fB\-bs\f1
+Accept SMTP commands from stdin.
+Some mailers (e.g. pine) use this option as an interface.
+It can also be used to call masqmail from inetd.
 
-Accept SMTP commands from stdin. Some mailers (eg pine) use this option as an interface. It can also be used to call masqmail from inetd.
 .TP
+\fB\-B \fIarg\fR
 
-\fB\-B \fIarg\f1\fB\f1
+\fIarg\fR is usually 8BITMIME.
+Some mailers use this to indicate that the message contains characters > 127.
+Masqmail is 8-bit clean and ignores this, so you do not have to recompile elm,
+which is very painful ;-).
+Note though that this violates some conventions:
+masqmail does not convert 8 bit messages to any MIME format if it encounters
+a mail server which does not advertise its 8BITMIME capability,
+masqmail does not advertise this itself.
+This is the same practice as that of exim (but different to sendmail).
 
-\fIarg\f1 is usually 8BITMIME. Some mailers use this to indicate that the message contains characters > 127. Masqmail is 8-bit clean and ignores this, so you do not have to recompile elm, which is very painful ;-). Note though that this violates some conventions: masqmail does not convert 8 bit messages to any MIME format if it encounters a mail server which does not advertise its 8BITMIME capability, masqmail does not advertise this itself. This is the same practice as that of exim (but different to sendmail).
 .TP
-
-\fB\-bV \f1
+\fB\-bV \fR
 
 Show version information.
+
 .TP
+\fB\-C \fIfilename\fR
 
-\fB\-C \f1\fIfilename\f1
+Use another configuration than \fI/etc/masqmail/masqmail.conf\fR.
+Useful for debugging purposes.
+If not invoked by a privileged user, masqmail will drop all privileges.
 
-Use another configuration than \fI/etc/masqmail/masqmail.conf\f1. Useful for debugging purposes. If not invoked by a privileged user, masqmail will drop all privileges.
 .TP
+\fB\-d \fInumber\fR
 
-\fB\-d \fInumber\f1\fB\f1
+Set the debug level.
+This takes precedence before the value of `debug_level' in the configuration file.
+Read the warning in the description of the latter.
 
-Set the debug level. This takes precedence before the value ofdebug_level in the configuration file. Read the warning in the description of the latter.
 .TP
+\fB\-f [\fIaddress\fB]\fR
 
-\fB\-f [\fIaddress\f1\fB]\f1
+Set the return path address to \fIaddress\fR.
+Only root, the user mail and anyone in group mail is allowed to do that.
 
-Set the return path address to \fIaddress\f1. Only root, the user mail and anyone in group mail is allowed to do that.
 .TP
+\fB\-F [\fIstring\fB]\fR
 
-\fB\-F [\fIstring\f1\fB]\f1
+Set the full sender name (in the From: header) to \fIstring\fR.
 
-Set the full sender name (in the From: header) to \fIstring\f1.
 .TP
+\fB\-g [\fIname\fB]\fR
 
-\fB\-g [\fIname\f1\fB]\f1
+Get mail (using pop3 or apop),
+using the configurations given with get.\fIname\fR in the main configuration.
+Without \fIname\fR, all get configurations will be used.
+See also \fBmasqmail.get(5)\fR
 
-Get mail (using pop3 or apop), using the configurations given with get.\fIname\f1 in the main configuration. Without \fIname\f1, all get configurations will be used. See also \fBmasqmail.get (5)\f1
 .TP
+\fB\-go [\fIinterval\fB] [\fIname\fB]\fR
 
-\fB\-go [\fIinterval\f1\fB] [\fIname\f1\fB]\f1
+Can be followed by a connection name.
+Use this option in your script which starts as soon as a link to the internet
+has been set up (usually ip-up).
+When masqmail is called with this option, the specified get configuration(s)
+is(are) read and mail will be retrieved from servers on the internet.
+The \fIname\fR is defined in the configuration (see \fBonline_gets.\fIname\fR).
 
-Can be followed by a connection name. Use this option in your script which starts as soon as a link to the internet has been set up (usually ip-up). When masqmail is called with this option, the specified get configuration(s) is(are) read and mail will be retrieved from servers on the internet. The \fIname\f1 is defined in the configuration (see \fBonline_gets.\fIname\f1\fB\f1).
+If called with an interval option (recognized by a digit as the first characater),
+masqmail starts as a daemon and tries to get mail in these intervals.
+It checks for the online status first.
+Example: `masqmail \-go 5m' will retrieve mail every five minutes.
 
-If called with an interval option (recognized by a digit as the first characater), masqmail starts as a daemon and tries to get mail in these intervals. It checks for the online status first. Example: masqmail \-go 5m will retrieve mail every five minutes.
+If called without \fIname\fR the online status is determined with the configured method
+(see \fBonline_detect\fR in \fBmasqmail.conf(5)\fR).
 
-If called without \fIname\f1 the online status is determined with the configured method (see \fBonline_detect\f1 in \fBmasqmail.conf (5)\f1).
 .TP
+\fB\-i\fR
 
-\fB\-i\f1
+Same as \fB\-oi\fR, see below.
 
-Same as \-oi, see below.
 .TP
+\fB\-Mrm \fIlist\fR
 
-\fB\-Mrm \fIlist\f1\fB\f1
+Remove given messages from the queue.
+Only allowed for privileged users.
 
-Remove given messages from the queue. Only allowed for privileged users.
 .TP
+\fB\-oem\fR
 
-\fB\-oem\f1
+If the \fB\-oi\fR ist not also given, always return with a non zero return code.
+Maybe someone tells me what this is good for...
 
-If the \-oi ist not also given, always return with a non zero return code. Maybe someone tells me what this is good for...
 .TP
+\fB\-odb\fR
 
-\fB\-odb\f1
+Deliver in background.
+Masqmail always does this, which makes this option pretty much useless.
 
-Deliver in background. Masqmail always does this, which makes this option pretty much useless.
 .TP
+\fB\-odq\fR
 
-\fB\-odq\f1
+Do not attempt to deliver immediately.
+Any messages will be queued until the next queue running process picks them up and delivers them.
+You get the same effect by setting the do_queue option in /etc/masqmail/masqmail.conf.
 
-Do not attempt to deliver immediately. Any messages will be queued until the next queue running process picks them up and delivers them. You get the same effect by setting the do_queue option in /etc/masqmail/masqmail.conf.
 .TP
-
-\fB\-oi\f1
+\fB\-oi\fR
 
 A dot as a single character in a line does not terminate the message.
+
 .TP
+\fB\-q [\fIinterval\fB]\fR
 
-\fB\-q [\fIinterval\f1\fB]\f1
+If not given with an argument, run a queue process, i.e. try to deliver all messages in the queue.
+Masqmail sends only to those addresses that are on the local net, not to those that are outside.
+Use \fB\-qo\fR for those.
 
-If not given with an argument, run a queue process, ie. try to deliver all messages in the queue. Masqmail sends only to those addresses that are on the local net, not to those that are outside. Use \-qo for those.
+If you have configured inetd to start masqmail,
+you can use this option in a cron job which starts in regular time intervals,
+to mimic the same effect as starting masqmail with \fB\-bd \-q30m\fR.
 
-If you have configured inetd to start masqmail, you can use this option in a cron job which starts in regular time intervals, to mimic the same effect as starting masqmail with \-bd \-q30m.
+An argument may be a time interval i.e. a numerical value followed by one of the letters.
+s,m,h,d,w which are interpreted as seconds, minutes, hours, days or weeks respectively.
+Example: \fB\-q30m\fR.
+Masqmail starts as a daemon and a queue runner process will be started automatically
+once in this time interval.
+This is usually used together with \fB\-bd\fR (see above).
 
-An argument may be a time interval ie. a numerical value followed by one of the letters. s,m,h,d,w which are interpreted as seconds, minutes, hours, days or weeks respectively. Example: \-q30m. Masqmail starts as a daemon and a queue runner process will be started automatically once in this time interval. This is usually used together with \-bd (see above).
 .TP
+\fB\-qo [\fIname\fB]\fR
 
-\fB\-qo [\fIname\f1\fB]\f1
+Can be followed by a connection name.
+Use this option in your script which starts as soon as a link to the internet
+has been set up (usually ip-up).
+When masqmail is called with this option, the specified route configuration
+is read and the queued mail with destinations on the internet will be sent.
+The \fIname\fR is defined in the configuration (see \fBonline_routes.\fIname\fR).
 
-Can be followed by a connection name. Use this option in your script which starts as soon as a link to the internet has been set up (usually ip-up). When masqmail is called with this option, the specified route configuration is read and the queued mail with destinations on the internet will be sent. The \fIname\f1 is defined in the configuration (see \fBonline_routes.\fIname\f1\fB\f1).
+If called without \fIname\fR the online status is determined with the configured
+method (see \fBonline_detect\fR in \fBmasqmail.conf(5)\fR)
 
-If called without \fIname\f1 the online status is determined with the configured method (see \fBonline_detect\f1 in \fBmasqmail.conf (5)\f1)
 .TP
+\fB\-t\fR
 
-\fB\-t\f1
+Read recipients from headers.
+Delete `Bcc:' headers.
+If any arguments are given, these are interpreted as recipient addresses
+and the message will not be sent to these.
 
-Read recipients from headers. Delete 'Bcc:' headers. If any arguments are given, these are interpreted as recipient addresses and the message will not be sent to these.
 .TP
+\fB\-v\fR
 
-\fB\-v\f1
+Log also to stdout.
+Currently, some log messages are marked as `write to stdout' and additionally,
+all messages with priority `LOG_ALERT' and `LOG_WARNING' will be written to stdout
+if this option is given. It is disabled in daemon mode.
 
-Log also to stdout. Currently, some log messages are marked as 'write to stdout' and additionally, all messages with priority 'LOG_ALERT' and 'LOG_WARNING' will be written to stdout if this option is given. It is disabled in daemon mode.
+
 .SH ENVIRONMENT FOR PIPES AND MDAS
 
-For security reasons, before any pipe command from an alias expansion or an mda is called, the environment variables will be completely discarded and newly set up. These are:
+For security reasons, before any pipe command from an alias expansion or an mda is called,
+the environment variables will be completely discarded and newly set up. These are:
 
-SENDER, RETURN_PATH - the return path.
+SENDER, RETURN_PATH \(en the return path.
 
-SENDER_DOMAIN - the domain part of the return path.
+SENDER_DOMAIN \(en the domain part of the return path.
 
-SENDER_LOCAL - the local part of the return path.
+SENDER_LOCAL \(en the local part of the return path.
 
-RECEIVED_HOST - the host the message was received from (unless local).
+RECEIVED_HOST \(en the host the message was received from (unless local).
 
-LOCAL_PART, USER, LOGNAME - the local part of the (original) recipient.
+LOCAL_PART, USER, LOGNAME \(en the local part of the (original) recipient.
 
-MESSAGE_ID - the unique message id. This is not necessarily identical with the Message ID as given in the Message ID: header.
+MESSAGE_ID \(en the unique message id.
+This is not necessarily identical with the Message ID as given in the Message ID: header.
 
-QUALIFY_DOMAIN - the domain which will be appended to unqualified addresses.
+QUALIFY_DOMAIN \(en the domain which will be appended to unqualified addresses.
+
 
 .SH FILES
 
-\fI/etc/masqmail/masqmail.conf\f1 is the main configuration for masqmail. Depending on the settings in this file, you will also have other configuration files in \fI/etc/masqmail/\f1.
+\fI/etc/masqmail/masqmail.conf\fR is the main configuration for masqmail.
+Depending on the settings in this file, you will also have other configuration
+files in \fI/etc/masqmail/\fR.
 
-\fI/var/spool/masqmail/\f1 is the spool directory where masqmail stores its spooled messages and the uniq pop ids.
+\fI/var/spool/masqmail/\fR is the spool directory where masqmail stores
+its spooled messages and the uniq pop ids.
 
-\fI/var/spool/mail/\f1 is the directory where locally delivered mail will be put, if not configured differently in \fImasqmail.conf\f1.
+\fI/var/spool/mail/\fR is the directory where locally delivered mail will be put,
+if not configured differently in \fImasqmail.conf\fR.
 
-\fI/var/log/masqmail/\f1 is the directory where masqmail stores its log mesages. This can also be somewhere else if configured differently by your sysadmin or the package mantainer.
+\fI/var/log/masqmail/\fR is the directory where masqmail stores its log mesages.
+This can also be somewhere else if configured differently by your sysadmin or the package mantainer.
+
 
 .SH CONFORMING TO
 
@@ -191,22 +271,21 @@ RFC 1321 (MD5)
 
 RFC 2195 (CRAM-MD5)
 
+
 .SH AUTHOR
 
-masqmail was written by Oliver Kurth. It is now maintained by Markus Schnalke <meillo@marmaro.de>.
+Masqmail was written by Oliver Kurth.
+It is now maintained by Markus Schnalke <meillo@marmaro.de>.
 
-You will find the newest version of masqmail at \fBhttp://prog.marmaro.de/masqmail/\f1.
+You will find the newest version of masqmail at \fBhttp://prog.marmaro.de/masqmail/\fR.
 There is also a mailing list, you will find information about it at masqmail's main site.
+
 
 .SH BUGS
 
-You should report them to the mailing list.
+Please report them to the mailing list.
+
 
 .SH SEE ALSO
 
-\fBmasqmail.conf (5)\f1, \fBmasqmail.route (5)\f1, \fBmasqmail.get (5)\f1, \fBmasqmail.aliases (5)\f1
-
-.SH COMMENTS
-
-This man page was written using \fBxml2man (1)\f1 by the same author.
-
+\fBmasqmail.conf(5)\fR, \fBmasqmail.route(5)\fR, \fBmasqmail.get(5)\fR, \fBmasqmail.aliases(5)\fR
