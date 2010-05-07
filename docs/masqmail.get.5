@@ -1,100 +1,134 @@
-.TH masqmail.get 5 User Manuals
+.TH masqmail.get 5 2010-05-07 masqmail-0.2.21 "File Formats"
+
 .SH NAME
 masqmail.get \- masqmail get configuration file
+
+
 .SH DESCRIPTION
  
 This man page describes the options available for the masqmail get configuration.
 
+
 .SH OPTIONS
+
 .TP
+\fBprotocol\fR = \fIstring\fR
 
-\fBprotocol\f1 = \fIstring\f1
+The protocol with which you retrieve your mail.
+Currently only `pop3' and `apop' are supported.
+There is no default.
 
-The protocol with which you retrieve your mail. Currently only 'pop3' and 'apop' are supported. There is no default.
 .TP
-
-\fBserver\f1 = \fIstring\f1
+\fBserver\fR = \fIstring\fR
 
 The server you get your mail from.
+
 .TP
+\fBresolve_list\fR = \fIlist\fR
 
-\fBresolve_list\f1 = \fIlist\f1
+Specify the method how the domain of the server is resolved.
+Possible values are dns_mx, dns_a, byname.
+For `dns_mx', the domain is assumed to be an MX pointer to a list of host names,
+these will be tried each in order
+(lowest preference value first, equal preference values in random order).
+For `dns_a', the domain is assumed to be an A pointer.
+For `byname', the library function \fBgethostbyname(3)\fR will be used.
 
-Specify the method how the domain of the server is resolved. Possible values are dns_mx, dns_a, byname. For 'dns_mx', the domain is assumed to be an MX pointer to a list of host names, these will be tried each in order (lowest preference value first, equal preference values in random order). For 'dns_a', the domain is assumed to be an A pointer. For 'byname', the library function \fBgethostbyname (3)\f1 will be used.
+The default is "dns_a;byname".
+It does not make much sense here to use `dns_mx'.
 
-The default is "dns_a;byname". It does not make much sense here to use 'dns_mx'.
 .TP
-
-\fBuser\f1 = \fIstring\f1
+\fBuser\fR = \fIstring\fR
 
 Your login name.
-.TP
 
-\fBpass\f1 = \fIstring\f1
+.TP
+\fBpass\fR = \fIstring\fR
 
 Your password.
+
 .TP
+\fBaddress\fR = \fIaddress\fR
 
-\fBaddress\f1 = \fIaddress\f1
+The address where the retrieved mail should be sent to.
+It can be any address, but you probably want to set this to a local address on your LAN.
 
-The address where the retrieved mail should be sent to. It can be any address, but you probably want to set this to a local address on your LAN.
 .TP
+\fBreturn_path\fR = \fIaddress\fR
 
-\fBreturn_path\f1 = \fIaddress\f1
+If set, masqmail sets the return path to this address.
+Bounces generated during further delivery will be sent to this address.
+If unset, masqmail looks for the Return-Path: header in the mail,
+if this does not exist it uses the From: address and if this fails, postmaster will be used.
 
-If set, masqmail sets the return path to this address. Bounces generated during further delivery will be sent to this address. If unset, masqmail looks for the Return-Path: header in the mail, if this does not exist it uses the From: address and if this fails, postmaster will be used.
+It is in most cases not useful to set this to the same address as the `address'
+option as this may generate multiple bounces.
+postmaster is recommended.
 
-It is in most cases not useful to set this to the same address as the 'address' option as this may generate multiple bounces. postmaster is recommended.
 .TP
+\fBdo_keep\fR = \fIboolean\fR
 
-\fBdo_keep\f1 = \fIboolean\f1
+If you want to keep your mail on the server after you retrieved it, set this to true.
+It is recommended that you also set do_uidl,
+otherwise you will get the mail again each time you connect to the server.
+Masqmail does not check any headers before it retrieves mail, which may mark it as already fetched.
+Note that this behaviour is different to that of fetchmail.
+The default is false.
 
-If you want to keep your mail on the server after you retrieved it, set this to true. It is recommended that you also set do_uidl, otherwise you will get the mail again each time you connect to the server. Masqmail does not check any headers before it retrieves mail, which may mark it as already fetched. Note that this behaviour is different to that of fetchmail. The default is false.
 .TP
+\fBdo_uidl\fR = \fIboolean\fR
 
-\fBdo_uidl\f1 = \fIboolean\f1
+If set, masqmail keeps a list of unique IDs of mails already fetched,
+so that they will not be retrieved again.
+Default is false.
 
-If set, MasqMail keeps a list of unique IDs of mails already fetched, so that they will not be retrieved again. Default is false.
 .TP
+\fBdo_uidl_dele\fR = \fIboolean\fR
 
-\fBdo_uidl_dele\f1 = \fIboolean\f1
+If set, and \fBdo_uidl\fR is also set, MasqMail sends a delete (DELE) command
+to the server for each message uid in the uid listing at the beginning of the session.
+This prevents mail to be left on the server if masqmail gets interrupted during
+a session before it can send the QUIT command to the server.
+Default is false.
 
-If set, and \fBdo_uidl\f1 is also set, MasqMail sends a delete (DELE) command to the server for each message uid in the uid listing at the beginning of the session. This prevents mail to be left on the server if masqmail gets interrupted during a session before it can send the QUIT command to the server. Default is false.
 .TP
+\fBmax_size\fR = \fInumeric\fR
 
-\fBmax_size\f1 = \fInumeric\f1
+If set to a value > 0, only messages smaller than this in bytes will be retrieved.
+The default is 0.
 
-If set to a value > 0, only messages smaller than this in bytes will be retrieved. The default is 0.
 .TP
+\fBmax_count\fR = \fInumeric\fR
 
-\fBmax_count\f1 = \fInumeric\f1
+If set to a value > 0, only \fBmax_count\fR messages will be retrieved.
+The default is 0.
 
-If set to a value > 0, only \fBmax_count\f1 messages will be retrieved. The default is 0.
 .TP
+\fBwrapper\fR = \fIcommand\fR
 
-\fBwrapper\f1 = \fIcommand\f1
-
-If set, instead of opening a connection to a remote server, \fIcommand\f1 will be called and all traffic will be piped to its stdin and from its stdout. Purpose is to tunnel ip traffic, eg. for ssl.
+If set, instead of opening a connection to a remote server,
+\fIcommand\fR will be called and all traffic will be piped to its stdin and from its stdout.
+Purpose is to tunnel ip traffic, e.g. for ssl.
 
 Example for ssl tunneling:
 
 wrapper="/usr/bin/openssl s_client \-quiet \-connect pop.gmx.net:995 2>/dev/null"
+
+
 .SH AUTHOR
 
-masqmail was written by Oliver Kurth. It is now maintained by Markus Schnalke <meillo@marmaro.de>.
+Masqmail was written by Oliver Kurth.
+It is now maintained by Markus Schnalke <meillo@marmaro.de>.
 
-You will find the newest version of masqmail at \fBhttp://prog.marmaro.de/masqmail/\f1.
+You will find the newest version of masqmail at \fBhttp://prog.marmaro.de/masqmail/\fR.
 There is also a mailing list, you will find information about it at masqmail's main site.
+
 
 .SH BUGS
 
-You should report them to the mailing list.
+Please report bugs to the mailing list.
+
 
 .SH SEE ALSO
 
-\fBmasqmail (8)\f1, \fBmasqmail.route (5)\f1, \fBmasqmail.conf (5)\f1
-
-.SH COMMENTS
-
-This man page was written using \fBxml2man (1)\f1 by the same author.
-
+\fBmasqmail(8)\fR, \fBmasqmail.route(5)\fR, \fBmasqmail.conf(5)\fR

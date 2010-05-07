@@ -1,43 +1,49 @@
-.TH mservdetect 8 User Manuals
+.TH mservdetect 8 2010-05-07 masqmail-0.2.21 "Maintenance Commands"
+
 .SH NAME
 mservdetect \- Helper for masqmail and masqdialer
-.SH SYNOPSIS
-\fB/usr/bin/masqmail \fIhost\f1\fB \fIport\f1\fB
 
-\fB
+
+.SH SYNOPSIS
+\fB/usr/bin/masqmail \fIhost port\fR
+
+
 .SH DESCRIPTION
 
-mservdetect is a small helper application for masqmail to detect its online status if the modem server masqdialer is used. It connects to the\fIhost\f1 at \fIport\f1 and prints the connection name to stdout.
+Mservdetect is a small helper application for masqmail to detect its online status
+if the modem server masqdialer is used.
+It connects to the\fIhost\fR at \fIport\fR and prints the connection name to stdout.
 
-If you want to use it, set \fBonline_detect\f1=\fIpipe\f1 and \fBonline_pipe\f1=\fI"/usr/bin/mservdetect host port"\f1.
+If you want to use it, set \fBonline_detect\fR=\fIpipe\fR and
+\fBonline_pipe\fR=\fI"/usr/bin/mservdetect host port"\fR.
 
 .SH OPTIONS
-.TP
 
-\fBhost\f1
+.TP
+\fBhost\fR
 
 The hostname where the masqdialer server is running.
-.TP
 
-\fBport\f1
+.TP
+\fBport\fR
 
 The port number where the masqdialer server is listening.
+
+
 .SH AUTHOR
 
-masqmail was written by Oliver Kurth. It is now maintained by Markus Schnalke <meillo@marmaro.de>.
+Masqmail was written by Oliver Kurth.
+It is now maintained by Markus Schnalke <meillo@marmaro.de>.
 
-You will find the newest version of masqmail at \fBhttp://prog.marmaro.de/masqmail/\f1.
+You will find the newest version of masqmail at \fBhttp://prog.marmaro.de/masqmail/\fR.
 There is also a mailing list, you will find information about it at masqmail's main site.
+
 
 .SH BUGS
 
-You should report them to the mailing list.
+Please report bugs to the mailing list.
+
 
 .SH SEE ALSO
 
-\fBmasqmail.conf (5)\f1
-
-.SH COMMENTS
-
-This man page was written using \fBxml2man (1)\f1 by the same author.
-
+\fBmasqmail.conf(5)\fR

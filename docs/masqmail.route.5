@@ -1,213 +1,308 @@
-.TH masqmail.route 5 User Manuals
+.TH masqmail.route 5 2010-05-07 masqmail-0.2.21 "File Formats"
+
 .SH NAME
 masqmail.route \- masqmail route configuration file
+
+
 .SH DESCRIPTION
 
-This man page describes the syntax of the route configuration files of \fBmasqmail (8)\f1. Their usual locations are in \fI/etc/masqmail/\f1.
+This man page describes the syntax of the route configuration files of \fBmasqmail (8)\fR.
+Their usual locations are in \fI/etc/masqmail/\fR.
 
 .SH OPTIONS
+
 .TP
+\fBprotocol\fR = \fIstring\fR
 
-\fBprotocol\f1 = \fIstring\f1
+\fIstring\fR can be one of `smtp' or `pipe', default is `smtp'.
+If set to `smtp', mail will be sent with the SMTP protocol to its destination.
+If set to `pipe', you also have to set `pipe' to a command, the message will then be piped to a program.
+See option `pipe' below.
 
-\fIstring\f1 can be one of 'smtp' or 'pipe', default is 'smtp'. If set to 'smtp', mail will be sent with the SMTP protocol to its destination. If set to 'pipe', you also have to set 'pipe' to a command, the message will then be piped to a program. See option 'pipe' below.
 .TP
+\fBmail_host\fR = \fIstring\fR
 
-\fBmail_host\f1 = \fIstring\f1
-
-This is preferably the mail server of your ISP. All outgoing messages will be sent to this host which will distribute them to their destinations. If you do not set this mails will be sent directly. Because the mail server is probably 'near' to you, mail transfer will be much faster if you use it.
+This is preferably the mail server of your ISP.
+All outgoing messages will be sent to this host which will distribute them to their destinations.
+If you do not set this mails will be sent directly.
+Because the mail server is probably `near' to you, mail transfer will be much faster if you use it.
 
 You can optionally give a port number following the host name and a colon, eg mail_host="mail.foo.com:25".
+
 .TP
+\fBresolve_list\fR = \fIlist\fR
 
-\fBresolve_list\f1 = \fIlist\f1
-
-Specify the method how the domain of the server is resolved. Possible values are dns_mx, dns_a, byname. For 'dns_mx', the domain is assumed to be an MX pointer to a list of host names, these will be tried each in order (lowest preference value first, equal preference values in random order). For 'dns_a', the domain is assumed to be an A pointer. For 'byname', the library function \fBgethostbyname (3)\f1 will be used.
+Specify the method how the domain of the server is resolved.
+Possible values are dns_mx, dns_a, byname.
+For `dns_mx', the domain is assumed to be an MX pointer to a list of host names,
+these will be tried each in order (lowest preference value first, equal preference values in random order).
+For `dns_a', the domain is assumed to be an A pointer.
+For `byname', the library function \fBgethostbyname(3)\fR will be used.
 
 The default is "dns_mx;dns_a;byname".
+
 .TP
+\fBconnect_error_fail\fR = \fIboolean\fR
 
-\fBconnect_error_fail\f1 = \fIboolean\f1
+If this is set, a connection error will cause a mail delivery to fail, ie. it will be bounced.
+If it is unset, it will just be defered.
 
-If this is set, a connection error will cause a mail delivery to fail, ie. it will be bounced. If it is unset, it will just be defered.
-
-Default is false. The reason for this is that masqmail is designed for non permanent internet connections, where such errors may occur quite often, and a bounce would be annoying.
+Default is false.
+The reason for this is that masqmail is designed for non permanent internet connections,
+where such errors may occur quite often, and a bounce would be annoying.
 
 For the default local_net route is is set to true.
+
 .TP
+\fBhelo_name\fR = \fIstring\fR
 
-\fBhelo_name\f1 = \fIstring\f1
+Set the name given with the HELO/EHLO command. If this is not set,
+\fBhost_name\fR from \fImasqmail.conf\fR will be used,
+if the \fBdo_correct_helo\fR option (see below) is unset.
 
-Set the name given with the HELO/EHLO command. If this is not set, \fBhost_name\f1 from \fImasqmail.conf\f1 will be used, if the \fBdo_correct_helo\f1 option (see below) is unset.
 .TP
+\fBdo_correct_helo\fR = \fIboolean\fR
 
-\fBdo_correct_helo\f1 = \fIboolean\f1
+If this is set, masqmail tries to look up your host name as it appears
+on the internet and sends this in the HELO/EHLO command.
+Some servers are so picky that they want this.
+Which is really crazy.
+It just does not make any sense to lie about ones own identity,
+because it can always be looked up by the server.
+Nobody should believe in the name given by HELO/EHLO anyway.
+If this is not set, \fBhost_name\fR from \fImasqmail.conf\fR or as given with
+the \fBhelo_name\fR (see above) will be used.
 
-If this is set, masqmail tries to look up your host name as it appears on the internet and sends this in the HELO/EHLO command. Some servers are so picky that they want this. Which is really crazy. It just does not make any sense to lie about ones own identity, because it can always be looked up by the server. Nobody should believe in the name given by HELO/EHLO anyway. If this is not set, \fBhost_name\f1 from \fImasqmail.conf\f1 or as given with the \fBhelo_name\f1 (see above) will be used.
 .TP
+\fBdo_pipelining\fR = \fIboolean\fR
 
-\fBdo_pipelining\f1 = \fIboolean\f1
+If this is set to false, masqmail will not use ESMTP PIPELINING,
+even if the server announces that it is able to cope with it.
+Default is true.
 
-If this is set to false, masqmail will not use ESMTP PIPELINING, even if the server announces that it is able to cope with it. Default is true.
+You do not want to set this to false unless the mail setup on the
+remote server side is really broken.
+Keywords: wingate.
 
-You do not want to set this to false unless the mail setup on the remote server side is really broken. Keywords: wingate.
 .TP
+\fBallowed_mail_locals\fR = \fIlist\fR
 
-\fBallowed_mail_locals\f1 = \fIlist\f1
+This is a semicolon `;' separated list of local parts which will be allowed
+to send mail through this connection.
+If unset and \fBnot_allowed_mail_locals\fR is also unset, all users are allowed.
 
-This is a semicolon ';' separated list of local parts which will be allowed to send mail through this connection. If unset and \fBnot_allowed_mail_locals\f1 is also unset, all users are allowed.
 .TP
+\fBnot_allowed_mail_locals\fR = \fIlist\fR
 
-\fBnot_allowed_mail_locals\f1 = \fIlist\f1
+This is a semicolon `;' separated list of local parts which will be not allowed
+to send mail through this connection.
+Local parts in this list will not be allowed to use this route even if they
+are part of \fBallowed_mail_locals\fR (see above).
 
-This is a semicolon ';' separated list of local parts which will be not allowed to send mail through this connection. Local parts in this list will not be allowed to use this route even if they are part of \fBallowed_mail_locals\f1 (see above).
 .TP
+\fBallowed_return_paths\fR = \fIlist\fR
 
-\fBallowed_return_paths\f1 = \fIlist\f1
+This is a semicolon `;' separated list of addresses.
+Messages which have one one of these addresses as the return path will be used using this route
+(if not also in \fBnot_allowed_return_paths\fR or an item in \fBnot_allowed_mail_locals\fR matches).
 
-This is a semicolon ';' separated list of addresses. Messages which have one one of these addresses as the return path will be used using this route (if not also in \fBnot_allowed_return_paths\f1 or an item in \fBnot_allowed_mail_locals\f1 matches).
+Patterns containing `?' and `*' can be used.
+The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
 
-Patterns containing '?' and '*' can be used. The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
 .TP
+\fBnot_allowed_return_paths\fR = \fIlist\fR
 
-\fBnot_allowed_return_paths\f1 = \fIlist\f1
+This is a semicolon `;' separated list of addresses.
+Messages which have one one of these addresses as the return path will not
+be used using this route (even if also in \fBallowed_return_paths\fR
+or an item in \fBallowed_mail_locals\fR matches).
 
-This is a semicolon ';' separated list of addresses. Messages which have one one of these addresses as the return path will not be used using this route (even if also in \fBallowed_return_paths\f1 or an item in \fBallowed_mail_locals\f1 matches).
+Patterns containing `?' and `*' can be used.
+The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
 
-Patterns containing '?' and '*' can be used. The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
 .TP
+\fBallowed_rcpt_domains\fR = \fIlist\fR
 
-\fBallowed_rcpt_domains\f1 = \fIlist\f1
+A list of recipient domains where mail will be sent to.
+This is for example useful if you use this route configuration when connected to another LAN via ppp.
+Patterns containing `?' and `*' can be used.
 
-A list of recipient domains where mail will be sent to. This is for example useful if you use this route configuration when connected to another LAN via ppp. Patterns containing '?' and '*' can be used.
 .TP
+\fBnot_allowed_rcpt_domains\fR = \fIlist\fR
 
-\fBnot_allowed_rcpt_domains\f1 = \fIlist\f1
+A list of recipient domains where mail will not be sent to.
+This is for example useful if you send mail directly (\fBmail_host\fR is not set)
+and you know of hosts that will not accept mail from you because they use a dialup list
+(eg. \fBhttp://maps.vix.com/dul/\fR).
+If any domain matches both \fBallowed_rcpt_domains\fR and \fBnot_allowed_rcpt_domains\fR,
+mail will not be sent to this domain.
+Patterns containing `?' and `*' can be used.
 
-A list of recipient domains where mail will not be sent to. This is for example useful if you send mail directly (\fBmail_host\f1 is not set) and you know of hosts that will not accept mail from you because they use a dialup list (eg. \fBhttp://maps.vix.com/dul/\f1. If any domain matches both \fBallowed_rcpt_domains\f1 and \fBnot_allowed_rcpt_domains\f1, mail will not be sent to this domain. Patterns containing '?' and '*' can be used.
 .TP
+\fBset_h_from_domain\fR = \fIstring\fR
 
-\fBset_h_from_domain\f1 = \fIstring\f1
+Replace the domain part in `From:' headers with this value.
+This may be useful if you use a private, outside unknown address on your local LAN
+and want this to be replaced by the domain of the address of your email addrsss on the internet.
+Note that this is different to \fBset_return_path_domain\fR, see below.
 
-Replace the domain part in 'From:' headers with this value. This may be useful if you use a private, outside unknown address on your local LAN and want this to be replaced by the domain of the address of your email addrsss on the internet. Note that this is different to \fBset_return_path_domain\f1, see below.
 .TP
+\fBset_return_path_domain\fR = \fIstring\fR
 
-\fBset_return_path_domain\f1 = \fIstring\f1
+Sets the domain part of the envelope from address.
+Some hosts check whether this is the same as the net the connection is coming from.
+If not, they reject the mail because they suspect spamming.
+It should be a valid address, because some mail servers also check that.
+You can also use this to set it to your usual address on the internet
+and put a local address only known on your LAN in the configuration of your mailer.
+Only the domain part will be changed, the local part remains unchanged.
+Use \fBmap_return_path_addresses\fR for rewriting local parts.
 
-Sets the domain part of the envelope from address. Some hosts check whether this is the same as the net the connection is coming from. If not, they reject the mail because they suspect spamming. It should be a valid address, because some mail servers also check that. You can also use this to set it to your usual address on the internet and put a local address only known on your LAN in the configuration of your mailer. Only the domain part will be changed, the local part remains unchanged. Use \fBmap_return_path_addresses\f1 for rewriting local parts.
 .TP
+\fBmap_h_from_addresses\fR = \fIlist\fR
 
-\fBmap_h_from_addresses\f1 = \fIlist\f1
-
-This is similar to \fBset_h_from_domain\f1, but more flexible. Set this to a list which maps local parts to a full RFC 822 compliant email address, the local parts (the keys) are separated from the addresses (the values) by colons (':').
+This is similar to \fBset_h_from_domain\fR, but more flexible.
+Set this to a list which maps local parts to a full RFC 822 compliant email address,
+the local parts (the keys) are separated from the addresses (the values) by colons (`:').
 
 Example:
 
 map_h_from_addresses = "john: John Smith <jsmith@mail.academic.edu>; charlie: Charlie Miller <cmiller@mx.commercial.com>"
 
 You can use patterns, eg. * as keys.
+
 .TP
+\fBmap_h_reply_to_addresses\fR = \fIlist\fR
 
-\fBmap_h_reply_to_addresses\f1 = \fIlist\f1
+Same as \fBmap_h_from_addresses\fR, but for the `Reply-To:' header.
 
-Same as \fBmap_h_from_addresses\f1, but for the 'Reply-To:' header.
 .TP
+\fBmap_h_mail_followup_to_addresses\fR = \fIlist\fR
 
-\fBmap_h_mail_followup_to_addresses\f1 = \fIlist\f1
+Same as \fBmap_h_from_addresses\fR, but for the `Mail-Followup-To:' header.
+Useful when replying to mailing lists.
 
-Same as \fBmap_h_from_addresses\f1, but for the 'Mail-Followup-To:' header. Useful when replying to mailing lists.
 .TP
+\fBmap_return_path_addresses\fR = \fIlist\fR
 
-\fBmap_return_path_addresses\f1 = \fIlist\f1
-
-This is similar to \fBset_return_path_domain\f1, but more flexible. Set this to a list which maps local parts to a full RFC 821 compliant email address, the local parts (the keys) are separated from the addresses (the values) by colons (':'). Note that this option takes RFC 821 addresses while \fBmap_h_from_addresses\f1 takes RFC 822 addresses. The most important difference is that RFC 821 addresses have no full name.
+This is similar to \fBset_return_path_domain\fR, but more flexible.
+Set this to a list which maps local parts to a full RFC 821 compliant email address,
+the local parts (the keys) are separated from the addresses (the values) by colons (`:').
+Note that this option takes RFC 821 addresses while \fBmap_h_from_addresses\fR takes RFC 822 addresses.
+The most important difference is that RFC 821 addresses have no full name.
 
 Example:
 
 map_return_path_addresses = "john: <jsmith@mail.academic.edu>; charlie: <cmiller@mx.commercial.com>"
 
 You can use patterns, eg. * as keys.
+
 .TP
+\fBexpand_h_sender_address\fR = \fIboolean\fR
 
-\fBexpand_h_sender_address\f1 = \fIboolean\f1
+This sets the domain of the sender address as given by the Sender: header
+to the same address as in the envelope return path address
+(which can be set by either \fBset_return_path_domain\fR or \fBmap_return_path_addresses\fR).
+This is for mail clients (eg. Microsoft Outlook) which use this address as the sender address.
+Though they should use the From: address, see RFC 821.
+If \fBfetchmail(1)\fR encounters an unqualified Sender: address,
+it will be expanded to the domain of the pop server, which is almost never correct.
+Default is true.
 
-This sets the domain of the sender address as given by the Sender: header to the same address as in the envelope return path address (which can be set by either \fBset_return_path_domain\f1 or \fBmap_return_path_addresses\f1). This is for mail clients (eg. Microsoft Outlook) which use this address as the sender address. Though they should use the From: address, see RFC 821. If \fBfetchmail (1)\f1 encounters an unqualified Sender: address, it will be expanded to the domain of the pop server, which is almost never correct. Default is true.
 .TP
+\fBexpand_h_sender_domain\fR = \fIboolean\fR
 
-\fBexpand_h_sender_domain\f1 = \fIboolean\f1
+Like \fBexpand_h_sender_address\fR, but sets the domain only.
+Deprecated, will be removed in a later version.
 
-Like \fBexpand_h_sender_address\f1, but sets the domain only. Deprecated, will be removed in a later version.
 .TP
+\fBlast_route\fR = \fIboolean\fR
 
-\fBlast_route\f1 = \fIboolean\f1
+If this is set, a mail which would have been delivered using this route,
+but has failed temporarily, will not be tried to be delivered using the next route.
 
-If this is set, a mail which would have been delivered using this route, but has failed temporarily, will not be tried to be delivered using the next route.
-
-If you have set up a special route with filters using the lists 'allowed_rcpt_domains', 'allowed_return_paths', and 'allowed_mail_locals' or their complements (not_), and the mail passing these rules should be delivered using this route only, you should set this to 'true'. Otherwise the mail would be passed to the next route (if any), unless that route has rules which prevent that.
+If you have set up a special route with filters using the lists `allowed_rcpt_domains',
+`allowed_return_paths', and `allowed_mail_locals' or their complements (not_),
+and the mail passing these rules should be delivered using this route only,
+you should set this to `true'.
+Otherwise the mail would be passed to the next route (if any),
+unless that route has rules which prevent that.
 
 Default is false.
+
 .TP
+\fBauth_name\fR = \fIstring\fR
 
-\fBauth_name\f1 = \fIstring\f1
+Set the authentication type for ESMTP AUTH authentication.
+Currently only `cram-md5' and `login' are supported.
 
-Set the authentication type for ESMTP AUTH authentication. Currently only 'cram-md5' and 'login' are supported.
 .TP
-
-\fBauth_login\f1 = \fIstring\f1
+\fBauth_login\fR = \fIstring\fR
 
 Your account name for ESMTP AUTH authentication.
-.TP
 
-\fBauth_secret\f1 = \fIstring\f1
+.TP
+\fBauth_secret\fR = \fIstring\fR
 
 Your secret for ESMTP AUTH authentication.
+
 .TP
+\fBpop3_login\fR = \fIfile\fR
 
-\fBpop3_login\f1 = \fIfile\f1
+If your Mail server requires SMTP-after-POP,
+set this to a get configuration (see \fBmasqmail.get(5)\fR).
+If you login to the POP server before you send, this is not necessary.
 
-If your Mail server requires SMTP-after-POP, set this to a get configuration (see \fBmasqmail.get (5)\f1). If you login to the POP server before you send, this is not necessary.
 .TP
+\fBwrapper\fR = \fIcommand\fR
 
-\fBwrapper\f1 = \fIcommand\f1
-
-If set, instead of opening a connection to a remote server, \fIcommand\f1 will be called and all traffic will be piped to its stdin and from its stdout. Purpose is to tunnel ip traffic, eg. for ssl.
+If set, instead of opening a connection to a remote server,
+\fIcommand\fR will be called and all traffic will be piped to its stdin and from its stdout.
+Purpose is to tunnel ip traffic, eg. for ssl.
 
 Example for ssl tunneling:
 
 wrapper="/usr/bin/openssl s_client \-quiet \-connect pop.gmx.net:995 2>/dev/null"
+
 .TP
+\fBpipe\fR = \fIcommand\fR
 
-\fBpipe\f1 = \fIcommand\f1
+If set, and protocol is set to `pipe',
+\fIcommand\fR will be called and the message will be piped to its stdin.
+Purpose is to use gateways to uucp, fax, sms or whatever else.
 
-If set, and protocol is set to 'pipe', \fIcommand\f1 will be called and the message will be piped to its stdin. Purpose is to use gateways to uucp, fax, sms or whatever else.
+You can use variables to give as arguments to the command,
+these are the same as for the mda in the main configuration, see \fBmasqmail.conf(5)\fR.
 
-You can use variables to give as arguments to the command, these are the same as for the mda in the main configuration, see \fBmasqmail.conf (5)\f1.
 .TP
+\fBpipe_fromline = \fIboolean\fR
 
-\fBpipe_fromline = \fIboolean\f1\fB\f1
+If this is set, and protocol is set to `pipe',
+a from line will be prepended to the output stream whenever a pipe command is called.
+Default is false.
 
-If this is set, and protocol is set to 'pipe', a from line will be prepended to the output stream whenever a pipe command is called. Default is false.
 .TP
+\fBpipe_fromhack = \fIboolean\fR
 
-\fBpipe_fromhack = \fIboolean\f1\fB\f1
+If this is set, and protocol is set to `pipe',
+each line beginning with `From ' is replaced with `>From ' whenever a pipe command is called.
+You probably want this if you have set \fBpipe_fromline\fR above.
+Default is false.
 
-If this is set, and protocol is set to 'pipe', each line beginning with 'From ' is replaced with '>From ' whenever a pipe command is called. You probably want this if you have set \fBpipe_fromline\f1 above. Default is false.
+
 .SH AUTHOR
 
-masqmail was written by Oliver Kurth. It is now maintained by Markus Schnalke <meillo@marmaro.de>.
+Masqmail was written by Oliver Kurth.
+It is now maintained by Markus Schnalke <meillo@marmaro.de>.
 
-You will find the newest version of masqmail at \fBhttp://prog.marmaro.de/masqmail/\f1.
+You will find the newest version of masqmail at \fBhttp://prog.marmaro.de/masqmail/\fR.
 There is also a mailing list, you will find information about it at masqmail's main site.
+
 
 .SH BUGS
 
-You should report them to the mailing list.
+Please report bugs to the mailing list.
 
 .SH SEE ALSO
 
-\fBmasqmail (8)\f1, \fBmasqmail.conf (5)\f1, \fBmasqmail.get (5)\f1
-
-.SH COMMENTS
-
-This man page was written using \fBxml2man (1)\f1 by the same author.
-
+\fBmasqmail(8)\fR, \fBmasqmail.conf(5)\fR, \fBmasqmail.get(5)\fR
