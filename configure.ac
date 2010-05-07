@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(masqmail, 0.2.21, oku@debian.org)
+AC_INIT(masqmail, 0.2.21, meillo@marmaro.de)
 AC_CONFIG_SRCDIR([src/masqmail.c])
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE()
@@ -271,9 +271,12 @@ AC_ARG_WITH(confdir,
 AC_DEFINE_UNQUOTED(CONF_DIR, "${with_confdir}", [The configuration file location])
 AC_SUBST(with_confdir)
 
-dnl well, /me/ thought that autoconf should make things _easy_ ...
 test "x$prefix" = xNONE && prefix="$ac_default_prefix"
-AC_DEFINE_UNQUOTED(DATA_DIR, "`eval echo \""$datadir"\"`/masqmail", [The data directory])
+
+dnl well, /me/ thought that autoconf should make things _easy_ ... -- oku
+dnl I needed the two `eval's to get the variable expanded in all cases -- meillo
+dnl this is just horrible! -- meillo
+AC_DEFINE_UNQUOTED(DATA_DIR, "`eval eval echo $datadir`/masqmail", [The data directory])
 
 dnl gymnastics to get the correct path where masqmail should be installed
 dnl we need this to call ourselves in failmsg.c
@@ -288,7 +291,6 @@ else
 fi
 
 AC_OUTPUT(Makefile \
-	tests/Makefile \
 	src/Makefile \
 	src/base64/Makefile \
 	src/md5/Makefile \
