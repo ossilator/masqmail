@@ -351,9 +351,9 @@ This is the name of the file checked for when masqmail determines whether it is 
 The file should only exist when there is currently a connection.
 Create it in your ip-up script with e.g.
 
-echo \-n <name> > /tmp/connect_route
+echo \-n <name> > /var/run/masqmail/masqmail-route
 
-chmod 0644 /tmp/connect_route
+chmod 0644 /var/run/masqmail/masqmail-route
 
 Do not forget to delete it in your ip-down script.
 
@@ -368,9 +368,9 @@ Simple example:
 
 #!/bin/sh
 
-[ \-e /tmp/connect_route ] || exit 1
+[ \-e /var/run/masqmail/masqmail-route ] || exit 1
 
-cat /tmp/connect_route
+cat /var/run/masqmail/masqmail-route
 
 exit 0
 
