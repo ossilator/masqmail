@@ -48,7 +48,9 @@ read_queue(gboolean do_readdata)
 	gchar *pattern;
 	int i, *idx_arr;
 
-	pattern = g_strdup_printf("%s/input/??????-???-??-H", conf.spool_dir);
+	/* Escaping the question marks prevents them from being
+	   interpreted as trigraphs */
+	pattern = g_strdup_printf("%s/input/?????\?-??\?-?\?-H", conf.spool_dir);
 	gl.gl_offs = 0;
 	glob(pattern, 0, NULL, &gl);
 
