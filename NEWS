@@ -1,6 +1,39 @@
-Here I add changes which may be important for you. See ChangeLog for more
-details and the manual pages for a more complete description
-of added options.
+This files lists changes which may be important for you, especially
+in regard to compatiblity in upgrades.
+
+See ChangeLog file for more details and technical changes that don't
+affect users directly.
+
+The manual pages describe newly added options. Take them for reference.
+
+
+0.3.0
+
+- Hello, I'm meillo, the new maintainer and developer of masqmail. Oku
+handed masqmail over to me, as he wasn't active anymore. I will release
+new code with version numbers starting from 0.3.0 to ease dividing
+between oku's releases and mine.
+
+- This release includes various fixes for problems in 0.2.21, mainly
+based on bugs from Debian.
+
+- Distribution specific data has been excluded from the distribution,
+but is separately available on the website.
+
+- Man pages will not be generated from xml sources in future, but the
+nroff sources will be maintained directly.
+
+- The default online status file is now
+/var/run/masqmail/masqmail-route, as it already was in the Debian
+package.
+
+0.2.21
+
+- Retrospective: Probably, this version was not published in the usual
+way by oku. I (meillo) grabbed it from Debian's package archive. It does
+not introduce new functions but fixes security problems, such as writing
+log files as user `mail'. It also changes the location for pid files;
+they are stored in /var/run/masqmail/ now.
 
 0.2.18
 
@@ -9,8 +42,7 @@ connection to a server fails. Because masqmail is designed for dialup
 networks, a connection failure will merely generate a warning by default.
 If you deliver in a local network and use the default local_net route,
 this would generte a failure. You can change this behaviour by setting
-connect_error_fail
-to either true or false in the route configurations.
+'connect_error_fail' to either true or false in the route configurations.
 
 0.2.17
 
@@ -125,7 +157,7 @@ mail every five minutes, using the detected online configuration.
 
 - there is a new option for the main conf: online_gets. Using this option,
 you can retrieve mail with just calling masqmail -go, masqmail will detect
-whether it is online (similar to conect_routes (which is now called
+whether it is online (similar to connect_routes (which is now called
 online_routes)).
 
 0.2.0
@@ -155,7 +187,7 @@ online_pipe="/usr/bin/mservdetect localhost 222"
 
 instead of
 
-online_etect=mserver
+online_detect=mserver
 mserver_iface="localhost:222"
 
 0.1.9

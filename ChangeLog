@@ -1,9 +1,32 @@
+This file summarizes the (implementation) changes in a technical view.
+
+The code repository log file provides the changes in full detail.
+
+Have a look at the NEWS file for a summary of the changes in a less
+technical speach and with focus on compatibility.
+
+
+0.3.0	Fri, 07 May 2010 16:50:31 +0200
+	* new maintainer: markus schnalke <meillo@marmaro.de>. See NEWS.
+	* fixed expanding of $prefix for template files. Thanks to Johann
+	  Felix Soden.
+	* fixed delivery with empty or non-existent alias files.
+	  Thanks to Marcos Dione.
+	* fixed empty or only-whitespace connection names.
+	* fixed typos, reported by Reuben Thomas.
+	* corrected man page about /etc/aliases. Thanks to Alexis.
+	* further corrections and improvements in man pages. Man pages will
+	  be maintained in the nroff code directly in future.
+	* removed distribution specific data from repo. It is now separately
+	  available on the website.
+	* changed default online status file to /var/run/masqmail/masqmail-route
+	* removed trigraph warnings
+
 0.2.21	Mon, 07 Nov 2005 14:09:21 -0800
 	* do not use shell when executing sub programs (security fix)
 	* do not accept backtick in email adresses (security fix)
 	* write log files as 'mail' user (security fix)
-	* changed default online status file to /var/run/masqmail/masqmail-route
-	* use /var/run/masqmail for pid files
+	* use /var/run/masqmail/ for pid files
 0.2.20	Mon, 19 May 2003 21:14:06 +0200
 	* fixed a segfaulting bug in spool.c caused by folded headers
 	* regard connect_error_fail when failing for pipes (Debian Bug #186364)
