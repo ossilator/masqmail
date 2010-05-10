@@ -1,2 +1,2 @@
-Since masqmail-0.3, documentation is maintained in troff (man page) format directly.
+Since masqmail-0.3.0, documentation is maintained in troff (man page) format directly.
 The old XML sources are no longer used.
