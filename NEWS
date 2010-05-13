@@ -7,12 +7,10 @@ affect users directly.
 The manual pages describe newly added options. Take them for reference.
 
 
-0.3.0
+0.2.22
 
 - Hello, I'm meillo, the new maintainer and developer of masqmail. Oku
-handed masqmail over to me, as he wasn't active anymore. I will release
-new code with version numbers starting from 0.3.0 to ease dividing
-between oku's releases and mine.
+handed masqmail over to me, as he wasn't active anymore.
 
 - This release includes various fixes for problems in 0.2.21, mainly
 based on bugs from Debian.

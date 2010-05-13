@@ -6,7 +6,7 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
-0.3.0	Fri, 07 May 2010 16:50:31 +0200
+0.2.22	Thu, 13 May 2010 17:31:40 +0200
 	* new maintainer: markus schnalke <meillo@marmaro.de>. See NEWS.
 	* fixed expanding of $prefix for template files. Thanks to Johann
 	  Felix Soden.
