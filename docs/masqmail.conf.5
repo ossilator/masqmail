@@ -63,9 +63,18 @@ Valid values are 0 to 6, increasing it further makes no difference.
 Be careful if you set this as high as 5 or higher, the logs may very soon fill your hard drive.
 
 .TP
+\fBlog_dir = \fIfile\fR
+
+The directory where log are stored, if syslog is not used.
+Debug files are stored in this directory anyways.
+\fI/var/log/masqmail\fR is a common value.
+\fIfile\fR must be an absolute path.
+
+.TP
 \fBmail_dir = \fIfile\fR
 
 The directory where local mail is stored, usually \fI/var/spool/mail\fR or \fI/var/mail\fR.
+\fIfile\fR must be an absolute path.
 
 .TP
 \fBspool_dir = \fIfile\fR
@@ -74,6 +83,7 @@ The directory where masqmail stores its spool files (and later also other stuff)
 It must have a subdirectory \fIinput\fR.
 Masqmail needs read and write permissions for this directory.
 I suggest to use \fI/var/spool/masqmail\fR.
+\fIfile\fR must be an absolute path.
 
 .TP
 \fBhost_name = \fIstring\fR
@@ -456,8 +466,8 @@ Default is 4d (4 days)
 
 Replace \fIname\fR with a valid local or remote mail address.
 
-If this option is not empty, then a copy of every mail,
-that passes trough the masqmail system will also be sent to the given mail address.
+If this option is set, then a copy of every mail,
+that passes through the masqmail system will also be sent to the given mail address.
 
 For example you can feed your mails into a program like hypermail
 for archiving purpose by placing an appropriate pipe command in masqmail.alias
