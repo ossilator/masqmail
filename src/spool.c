@@ -238,12 +238,6 @@ spool_write_header(message * msg)
 			address *rcpt = (address *) (node->data);
 			spool_write_rcpt(out, rcpt);
 		}
-		/* TODO: add support for always_bcc, i.e. a way to deliver
-		         each outgoing mail to a configurable address. This
-		         can be useful for archiving purposes.
-		   address* always_bcc = create_address("always_bcc@localhost", TRUE/FALSE);
-		   spool_write_rcpt(out, always_bcc);
-		*/
 		DEBUG(6) debugf("after RT\n");
 		fprintf(out, "PR:%s\n", prot_names[msg->received_prot]);
 		if (msg->received_host != NULL)
