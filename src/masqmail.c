@@ -629,6 +629,13 @@ main(int argc, char *argv[])
 	if (debug_level >= 0)  /* if >= 0, it was given by argument */
 		conf.debug_level = debug_level;
 
+	/* It appears that changing to / ensures that we are never in
+	   a directory which we cannot access. This situation could be
+	   possible after changing identity.
+	   Maybe we should only change to / if we not run as user, to
+	   allow relative paths for log files in test setups for
+	   instance.
+	*/
 	chdir("/");
 
 	if (!conf.run_as_user) {
