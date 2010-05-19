@@ -2,10 +2,11 @@
 # heavily based on Makefile.am written by oliver kurth
 
 all: test.conf local.sh smtpout.sh
-
+	mkdir -p ./input ./lock
 
 test.conf: conf.templ
-	sed s/SMTP_HOST/`hostname`/ conf.templ > test.conf
+	# fails if the current path contains `^'.
+	sed "s/SMTP_HOST/`hostname`/; s^PWD^`pwd`^" conf.templ > test.conf
 
 local.sh: test.templ
 	sed s/RECV_HOST/localhost/ test.templ > local.sh
@@ -17,3 +18,4 @@ smtpout.sh: test.templ
 
 clean:
 	rm -f test.conf local.sh smtpout.sh
+	rm -rf ./input ./lock

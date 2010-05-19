@@ -26,7 +26,7 @@ debug_level = 5
 do_queue = false
 
 # The name with which MasqMail identifies itself to others:
-host_name="blue.patchwork.net"
+host_name="SMTP_HOST"
 
 # Hosts considered local:
 #local_hosts="localhost;blue.patchwork.net;blue"
@@ -42,25 +42,25 @@ listen_addresses="localhost:2525"
 
 # send messages to this port:
 # probably this will also be configurable on host basis
-remote_port=25
+#remote_port=25
 
 # where MasqMail stores its spool files and other stuff:
 #spool_dir="/var/spool/masqmail"
-spool_dir="."
+spool_dir="PWD"
 
 # where local mail will be written to:
 #mail_dir="/var/spool/mail"
-mail_dir="."
+mail_dir="PWD"
 
 # use syslogd for logs?
 use_syslog=false
 
 # directory for log files if not using syslogd:
 #log_dir="/var/masqmail"
-log_dir="."
+log_dir="PWD"
 
 # special routes:
 
-connect_route.GWDG = "src/gwdg.route"
-connect_route.Argon = "src/argon.route"
+#connect_route.GWDG = "src/gwdg.route"
+#connect_route.Argon = "src/argon.route"
 
