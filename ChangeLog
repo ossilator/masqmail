@@ -1,4 +1,5 @@
-This file summarizes the (implementation) changes in a technical view.
+This ChangeLog file summarizes the (implementation) changes from the
+technical view.
 
 The code repository log file provides the changes in full detail.
 
@@ -6,7 +7,7 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
-0.2.22	Thu, 13 May 2010 17:31:40 +0200
+0.2.22	Thu, 20 May 2010 21:19:56 +0200
 	* new maintainer: markus schnalke <meillo@marmaro.de>. See NEWS.
 	* fixed expanding of $prefix for template files. Thanks to Johann
 	  Felix Soden.

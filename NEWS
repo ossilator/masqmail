@@ -1,4 +1,4 @@
-This files lists changes which may be important for you, especially
+This NEWS file lists changes which may be important for you, especially
 in regard to compatiblity in upgrades.
 
 See ChangeLog file for more details and technical changes that don't
@@ -10,13 +10,13 @@ The manual pages describe newly added options. Take them for reference.
 0.2.22
 
 - Hello, I'm meillo, the new maintainer and developer of masqmail. Oku
-handed masqmail over to me, as he wasn't active anymore.
+handed masqmail over to me, because he wasn't active anymore.
 
 - This release includes various fixes for problems in 0.2.21, mainly
 based on bugs from Debian.
 
 - Distribution specific data has been excluded from the distribution,
-but is separately available on the website.
+but is separately available on the project's website.
 
 - Man pages will not be generated from xml sources in future, but the
 nroff sources will be maintained directly.
@@ -24,6 +24,7 @@ nroff sources will be maintained directly.
 - The default online status file is now
 /var/run/masqmail/masqmail-route, as it already was in the Debian
 package.
+
 
 0.2.21
 
@@ -33,9 +34,10 @@ not introduce new functions but fixes security problems, such as writing
 log files as user `mail'. It also changes the location for pid files;
 they are stored in /var/run/masqmail/ now.
 
+
 0.2.18
 
-- delivery warnings and failures are now also implermented if the
+- delivery warnings and failures are now also implemented if the
 connection to a server fails. Because masqmail is designed for dialup
 networks, a connection failure will merely generate a warning by default.
 If you deliver in a local network and use the default local_net route,
