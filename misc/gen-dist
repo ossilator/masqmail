@@ -13,6 +13,11 @@ if [ $# -ne 1 -o -e "$1" ] ; then
 	exit 1
 fi
 
+dir="${1%/*}"
+file="${1##*/}"
+
 hg archive -t tgz "$1"
-md5sum "$1" > "$1.md5sum"
-gpg -ab "$1"
+
+cd "$dir"
+md5sum "$file" >"$file.md5sum"
+gpg -ab "$file"
