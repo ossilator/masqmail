@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# generate a tar.gz archive to distribute
+# generate an md5sum and a detached signature of the archive
+#
+# requires:
+# - mercurial (hg)
+# - md5sum
+# - gnupg
+
+if [ $# -ne 1 -o -e "$1" ] ; then
+	echo "usage: gen-dist DESTINATION" 2>&1
+	exit 1
+fi
+
+hg archive -t tgz "$1"
+md5sum "$1" > "$1.md5sum"
+gpg -ab "$1"
