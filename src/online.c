@@ -84,7 +84,7 @@ detect_online()
 
 	if (strcmp(conf.online_detect, "file") == 0) {
 		DEBUG(3) debugf("online detection method 'file'\n");
-		if (conf.online_file != NULL) {
+		if (conf.online_file == NULL) {
 			logwrite(LOG_ALERT, "online detection mode is 'file', but online_file is undefined\n");
 			return NULL;
 		}
