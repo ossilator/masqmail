@@ -7,6 +7,11 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
+0.2.23  Thu, 27 May 2010 13:27:42 +0200
+	* fixed inverted condition for undefined online_file. Thanks to
+	  Juergen Daubert.
+	* fixed dist-gen (wrong paths for md5sum)
+
 0.2.22	Thu, 20 May 2010 21:19:56 +0200
 	* new maintainer: markus schnalke <meillo@marmaro.de>. See NEWS.
 	* fixed expanding of $prefix for template files. Thanks to Johann

@@ -7,6 +7,13 @@ affect users directly.
 The manual pages describe newly added options. Take them for reference.
 
 
+0.2.23
+
+- This release fixes a major bug in 0.2.22 which made online detection
+by file unusable. Thanks to Juergen Daubert for reporting and providing
+a patch.
+
+
 0.2.22
 
 - Hello, I'm meillo, the new maintainer and developer of masqmail. Oku
