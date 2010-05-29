@@ -9,7 +9,7 @@
 # - gnupg
 
 if [ $# -ne 1 -o -e "$1" ] ; then
-	echo "usage: gen-dist DESTINATION" 2>&1
+	echo "usage: gen-dist DEST.tar.gz" 2>&1
 	exit 1
 fi
 
