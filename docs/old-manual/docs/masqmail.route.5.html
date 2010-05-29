@@ -1,0 +1,385 @@
+<body text="#000000" link="#0000ff" bgcolor="#ffffff"><center><table width="80%">
+<tr><td><h1>masqmail.route</h1>
+<h2>masqmail route configuration file</h2>
+
+
+<h2>Description</h2>
+
+<p>This man page describes the syntax of the route configuration files
+of <a href="masqmail.8.html">masqmail</a>. Their usual locations are in <em>/etc/masqmail/</em>.</p>
+
+
+
+<h2>Options</h2>
+
+
+
+<p><b>protocol</b> = <em>string</em></p>
+
+<p><em>string</em> can be one of 'smtp' or 'pipe', default is
+'smtp'. If set to 'smtp', mail will be sent with the SMTP protocol to
+its destination. If set to 'pipe', you also have to set 'pipe'
+to a command, the message will then be piped to a program. See option 'pipe' below.</p>
+
+
+
+
+<p><b>mail_host</b> = <em>string</em></p>
+
+<p>This is preferably the mail server of your ISP. All outgoing
+messages will be sent to this host which will distribute them to their
+destinations. If you do not set this mails will be sent
+directly. Because the mail server is probably 'near' to you, mail
+transfer will be much faster if you use it.</p>
+<p>You can optionally give a port number following the host name
+and a colon, eg mail_host="mail.foo.com:25".</p>
+
+
+
+
+<p><b>resolve_list</b> = <em>list</em></p>
+
+<p>Specify the method how the domain of the server is resolved. Possible values are
+dns_mx, dns_a, byname. For 'dns_mx', the domain is assumed to be an MX
+pointer to a list of host names, these will be tried each in order
+(lowest preference value first, equal preference values in random
+order). For 'dns_a', the domain is assumed to be an A pointer. For
+'byname', the library function <b>gethostbyname (3)</b> will be used.</p>
+<p>The default is "dns_mx;dns_a;byname".</p>
+
+
+
+
+<p><b>connect_error_fail</b> = <em>boolean</em></p>
+
+<p>If this is set, a connection error will cause a mail delivery to
+fail, ie. it will be bounced. If it is unset, it will just be defered.</p>
+<p>Default is false. The reason for this is that masqmail is designed
+for non permanent internet connections, where such errors may occur
+quite often, and a bounce would be annoying.</p>
+<p>For the default local_net route is is set to true.</p>
+
+
+
+
+<p><b>helo_name</b> = <em>string</em></p>
+
+<p>Set the name given with the HELO/EHLO command. If this is not
+set, <b>host_name</b> from <em>masqmail.conf</em> will be used, if
+the <b>do_correct_helo</b> option (see below) is unset.</p>
+
+
+
+
+<p><b>do_correct_helo</b> = <em>boolean</em></p>
+
+<p>If this is set, masqmail tries to look up your host name as it
+appears on the internet and sends this in the HELO/EHLO command. Some
+servers are so picky that they want this. Which is really
+crazy. It just does not make any sense to lie about ones own identity,
+because it can always be looked up by the server. Nobody should
+believe in the name given by HELO/EHLO anyway. If this is not
+set, <b>host_name</b> from <em>masqmail.conf</em> or as given with
+the <b>helo_name</b> (see above) will be used.</p>
+
+
+
+
+<p><b>do_pipelining</b> = <em>boolean</em></p>
+
+<p>If this is set to false, masqmail will not use ESMTP PIPELINING, even
+if the server announces that it is able to cope with it. Default is true.</p>
+<p>You do not want to set this to false unless the mail setup on the
+remote server side is really broken. Keywords: wingate.</p>
+
+
+
+
+<p><b>allowed_mail_locals</b> = <em>list</em></p>
+
+<p>This is a semicolon ';' separated list of local parts which will be
+allowed to send mail through this connection. If unset
+and <b>not_allowed_mail_locals</b> is also unset, all users are
+allowed.</p>
+
+
+
+
+<p><b>not_allowed_mail_locals</b> = <em>list</em></p>
+
+<p>This is a semicolon ';' separated list of local parts which will be
+not allowed to send mail through this connection. Local
+parts in this list will not be allowed to use this route even if they
+are part of <b>allowed_mail_locals</b> (see above).</p>
+
+
+
+
+<p><b>allowed_return_paths</b> = <em>list</em></p>
+
+<p>This is a semicolon ';' separated list of addresses. Messages which
+have one one of these addresses as the return path will be used using
+this route (if not also in <b>not_allowed_return_paths</b> or an item
+in <b>not_allowed_mail_locals</b> matches).</p>
+<p>Patterns containing '?' and '*' can be used. The special item "<>" matches
+the null sender address (eg. failure notices or delivery notifications).</p>
+
+
+
+
+<p><b>not_allowed_return_paths</b> = <em>list</em></p>
+
+<p>This is a semicolon ';' separated list of addresses. Messages which
+have one one of these addresses as the return path will not be used using
+this route (even if also in <b>allowed_return_paths</b> or an item
+in <b>allowed_mail_locals</b> matches).</p>
+<p>Patterns containing '?' and '*' can be used. The special item "<>" matches
+the null sender address (eg. failure notices or delivery notifications).</p>
+
+
+
+
+<p><b>allowed_rcpt_domains</b> = <em>list</em></p>
+
+<p>A list of recipient domains where mail will be sent to. This is for
+example useful if you use this route configuration when connected to
+another LAN via ppp. Patterns containing '?' and '*' can be used.</p>
+
+
+
+
+<p><b>not_allowed_rcpt_domains</b> = <em>list</em></p>
+
+<p>A list of recipient domains where mail will not be sent
+to. This is for example useful if you send mail directly (<b>mail_host</b> is
+not set) and you know of hosts that will not accept mail from you
+because they use a dialup list (eg. <a href = "http://maps.vix.com/dul/">http://maps.vix.com/dul/</a>. If any domain
+matches both <b>allowed_rcpt_domains</b> and <b>not_allowed_rcpt_domains</b>,
+mail will not be sent to this domain. Patterns containing '?' and '*' can be used.</p>
+
+
+
+
+<p><b>set_h_from_domain</b> = <em>string</em></p>
+
+<p>Replace the domain part in 'From:' headers with this value. This
+may be useful if you use a private, outside unknown address on your
+local LAN and want this to be replaced by the domain of the address of
+your email addrsss on the internet. Note that this is different to <b>
+set_return_path_domain</b>, see below.</p>
+
+
+
+
+<p><b>set_return_path_domain</b> = <em>string</em></p>
+
+<p>Sets the domain part of the envelope from address. Some hosts check
+whether this is the same as the net the connection is coming from. If
+not, they reject the mail because they suspect spamming. It should be
+a valid address, because some mail servers also check
+that. You can also use this to set it to your usual address on the
+internet and put a local address only known on your LAN in the
+configuration of your mailer. Only the domain part will
+be changed, the local part remains unchanged. Use <b>
+map_return_path_addresses</b> for rewriting local parts.</p>
+
+
+
+
+<p><b>map_h_from_addresses</b> = <em>list</em></p>
+
+<p>This is similar to <b>set_h_from_domain</b>, but more flexible. Set
+this to a list which maps local parts to a full RFC 822 compliant
+email address, the local parts (the keys) are separated from
+the addresses (the values) by colons (':').</p>
+
+<p>Example:</p>
+
+<p>map_h_from_addresses = "john: John Smith <jsmith@mail.academic.edu>;
+charlie: Charlie Miller <cmiller@mx.commercial.com>"</p>
+<p>You can use patterns, eg. * as keys.</p>
+
+
+
+
+<p><b>map_h_reply_to_addresses</b> = <em>list</em></p>
+
+<p>Same as <b>map_h_from_addresses</b>, but for the 'Reply-To:' header.</p>
+
+
+
+
+<p><b>map_h_mail_followup_to_addresses</b> = <em>list</em></p>
+
+<p>Same as <b>map_h_from_addresses</b>, but for the 'Mail-Followup-To:'
+header. Useful when replying to mailing lists.</p>
+
+
+
+
+<p><b>map_return_path_addresses</b> = <em>list</em></p>
+
+<p>This is similar to <b>set_return_path_domain</b>, but more
+flexible. Set this to a list which maps local parts to a full RFC 821
+compliant email address, the local parts (the keys) are
+separated from the addresses (the values) by colons
+(':'). Note that this option takes RFC 821 addresses
+while <b>map_h_from_addresses</b> takes RFC 822 addresses. The
+most important difference is that RFC 821 addresses have no full
+name.</p>
+
+<p>Example:</p>
+<p>
+map_return_path_addresses =
+"john: <jsmith@mail.academic.edu>;
+charlie: <cmiller@mx.commercial.com>"
+</p>
+<p>You can use patterns, eg. * as keys.</p>
+
+
+
+
+<p><b>expand_h_sender_address</b> = <em>boolean</em></p>
+
+<p>This sets the domain of the sender address as given by the Sender:
+header to the same address as in the envelope return path address
+(which can be set by either <b>set_return_path_domain</b> or <b>map_return_path_addresses</b>).
+This is for mail clients (eg. Microsoft Outlook) which use this address as the sender
+address. Though they should use the From: address, see RFC
+821. If <a href="http://www.fetchmail.org">fetchmail</a> encounters an unqualified Sender:
+address, it will be expanded to the domain of the pop server, which is
+almost never correct. Default is true.</p>
+
+
+
+
+<p><b>expand_h_sender_domain</b> = <em>boolean</em></p>
+
+<p>Like <b>expand_h_sender_address</b>, but sets the domain only.
+Deprecated, will be removed in a later version.</p>
+
+
+
+
+<p><b>last_route</b> = <em>boolean</em></p>
+
+<p>If this is set, a mail which would have been delivered using this
+route, but has failed temporarily, will not be tried to be delivered
+using the next route.</p>
+<p>If you have set up a special route with filters using the lists
+'allowed_rcpt_domains', 'allowed_return_paths', and
+'allowed_mail_locals' or their complements (not_), and the mail
+passing these rules should be delivered using this route only, you
+should set this to 'true'. Otherwise the mail would be passed to the
+next route (if any), unless that route has rules which prevent
+that.</p>
+<p>Default is false.</p>
+
+
+
+
+<p><b>auth_name</b> = <em>string</em></p>
+
+<p>Set the authentication type for ESMTP AUTH authentification.
+Currently only 'cram-md5' and 'login' are supported.</p>
+
+
+
+
+<p><b>auth_login</b> = <em>string</em></p>
+
+<p>Your account name for ESMTP AUTH authentification.</p>
+
+
+
+
+<p><b>auth_secret</b> = <em>string</em></p>
+
+<p>Your secret for ESMTP AUTH authentification.</p>
+
+
+
+
+<p><b>pop3_login</b> = <em>file</em></p>
+
+<p>If your Mail server requires SMTP-after-POP, set this to a
+get configuration (see <a href="masqmail.get.5.html">masqmail.get</a>).
+If you login to the POP server
+before you send, this is not necessary.</p>
+
+
+
+
+<p><b>wrapper</b> = <em>command</em></p>
+
+<p>If set, instead of opening a connection to a remote server, <em>command</em> will
+be called and all traffic will be piped to its
+stdin and from its stdout. Purpose is to tunnel ip traffic, eg. for ssl.</p>
+<p>Example for ssl tunneling:</p>
+<p>wrapper="/usr/bin/openssl s_client -quiet -connect pop.gmx.net:995 2>/dev/null"</p>
+
+
+
+
+<p><b>pipe</b> = <em>command</em></p>
+
+<p>If set, and protocol is set to 'pipe', <em>command</em> will be
+called and the message will be piped to its stdin. Purpose is to use
+gateways to uucp, fax, sms or whatever else.</p>
+<p>You can use variables to give as arguments to the command, these
+are the same as for the mda in the main configuration, see <a href="masqmail.conf.5.html">masqmail.conf</a>.</p>
+
+
+
+
+<p><b>pipe_fromline = <em>boolean</em></b></p>
+
+<p>If this is set, and protocol is set to 'pipe', a from line will be prepended to the output stream whenever
+a pipe command is called. Default is false.</p>
+
+
+
+
+<p><b>pipe_fromhack = <em>boolean</em></b></p>
+
+<p>If this is set, and protocol is set to 'pipe', each line beginning with 'From '
+is replaced with '>From ' whenever a pipe command is called. You probably want this if you have
+set <b>pipe_fromline</b> above. Default is false.</p>
+
+
+
+
+
+<h2>Author</h2>
+
+<p>masqmail was written by Oliver Kurth
+<oku@masqmail.cx></p><p>You will find the newest version of
+masqmail at <a href = "http://masqmail.cx/masqmail/">http://masqmail.cx/masqmail/</a> or search for it
+in freshmeat (<a href = "http://www.freshmeat.net">http://www.freshmeat.net</a>). There is also a mailing list,
+you will find information about it at masqmails main site.</p>
+
+
+
+<h2>Bugs</h2>
+
+<p>You should report them to the mailing list.</p>
+
+
+
+<h2>See also</h2>
+
+<p>
+<a href="masqmail.8.html">masqmail</a>, <a href="masqmail.conf.5.html">masqmail.conf</a>, <a href="masqmail.get.5.html">masqmail.get</a>
+</p>
+
+
+
+<h2>Comments</h2>
+
+<p>This man page was written using <a href="http://masqmail.cx/xml2man/">xml2man</a> by the same
+author.</p>
+
+
+
+</td></tr></table></center>
+</body>
