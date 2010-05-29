@@ -294,5 +294,6 @@ AC_OUTPUT(Makefile \
 	src/Makefile \
 	src/base64/Makefile \
 	src/md5/Makefile \
-	src/libident/Makefile
+	src/libident/Makefile \
+	docs/Makefile
 	)
