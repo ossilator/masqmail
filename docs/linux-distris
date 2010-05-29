@@ -1,0 +1,34 @@
+Distribution specific stuff
+===========================
+
+Debian
+------
+
+If you compile for Debian, do the configure with at least these options:
+
+	./configure --with-liblockfile --with-group=mail
+
+Use the group `mail' instead of the group `trusted'.
+
+You can also build your own Debian package with
+
+	dpkg-buildpackage -rfakeroot
+
+You need to have fakeroot installed to do this. Or, as root, do:
+
+	dpkg-buildpackage
+
+However, you better have a look at the official masqmail package in
+Debian.
+
+	apt-get source masqmail
+
+is your friend.
+
+
+
+SuSE/Redhat
+-----------
+
+There are spec files for rpm creation on the website. You may have to
+adjust these files.

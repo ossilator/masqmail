@@ -1,46 +1,40 @@
-simple installation instructions, see docs/install.html for more.
+Additional information may be available in docs/ or on the website.
+For installing on GNU/Linux distributions read docs/linux-distris.
 
-To compile MasqMail you need glib 1.2 (http://www.gtk.org).
+
+Installation instructions
+-------------------------
+
+To compile masqmail you need glib 1.2 (http://www.gtk.org).
 
 You need a user and a group for masqmail to run, I suggest user
 'mail' and group 'trusted'. Say:
 
-groupadd -g 42 trusted
-useradd -u 42 -g 42 -d / -s /bin/sh -c "Mail Transfer Agent" mail
+	groupadd -g 42 trusted
+	useradd -u 42 -g 42 -d / -s /bin/sh -c "Mail Transfer Agent" mail
 
 If you use other names than 'mail' and 'trusted' use the options
 described below for configure. The 42 is just a suggestion, you can
 use any number you like, but preferably one < 100. It does not have
 to be the same for the user 'mail' and the group 'trusted'.
 
-Then do:
+Compliling is a matter of the usual procedure. In the source directory,
+after unpacking do:
 
-./configure
-make
-make install
-
-Debian:
-If you compile for Debian, do the configure with at least these options,
-this makes it compatible with the official debian package:
-./configure --with-liblockfile --with-group=mail
-you do not need the group 'trusted', use 'mail' instead.
-
-You can also build your own Debian package with
-dpkg-buildpackage -rfakeroot
-You need to have fakeroot installed to do this. Or, as root, do:
-dpkg-buildpackage
-
-SuSE/Redhat:
-There are spec files for rpm creation in suse/ or redhat/. You may have to adjust these files.
+	./configure
+	make
+	make install
 
 
-Sorry, but after that you are not yet finished. For instruction on how
-to deliver mail using a connection to your ISP see
-docs/install.html. It is probably a good idea to copy the files
-docs/*.html to a directory where you can access them with a browser.
 
-additional options for configure:
----------------------------------
+Additional options for configure
+--------------------------------
+
+See the output of
+
+	./configure -h
+
+Here is additional, but maybe obsolete, explanation:
 
 --with-user=USER sets the user as which MasqMail will run. Default is
 'mail'. USER has to exist before you 'make install'.
@@ -98,6 +92,8 @@ goes wrong. You save 6K.
 BTW, to get 3K of space, call
 strip --remove-section=.comment --remove-section=.note --strip-unneeded src/masqmail
 
+
+
 after make install:
 -------------------
 
@@ -106,30 +102,95 @@ not want to use it.
 
 Check that 'make install' worked correctly. The following command:
 
-ls -ld /usr/sbin/masqmail /var/masqmail/ /var/spool/masqmail /var/spool/masqmail/input
+	ls -ld /usr/sbin/masqmail /etc/masqmail /var/log/masqmail/ \
+	       /var/run/masqmail /var/spool/masqmail/ /var/spool/masqmail/* 
 
 should give output similar to
 
--rwsr-xr-x   1 root     root        86955 Oct 14 14:27 /usr/sbin/masqmail
-drwxr-xr-x   2 mail     trusted      1024 Oct 14 14:29 /var/masqmail/
-drwxr-xr-x   3 mail     trusted      1024 Oct 14 14:27 /var/spool/masqmail
-drwxr-xr-x   2 mail     trusted      1024 Oct 14 18:32 /var/spool/masqmail/input
-drwxr-xr-x   2 mail     trusted      1024 Oct 14 18:32 /var/spool/masqmail/lock
-drwxr-xr-x   2 mail     trusted      1024 Oct 14 18:32 /var/spool/masqmail/popuidl
+	-rwsr-xr-x 1 root root    399356 May 10 12:34 /usr/sbin/masqmail
+	drwxr-xr-x 2 root root      4096 May 10 12:34 /etc/masqmail
+	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/log/masqmail
+	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/run/masqmail
+	drwxr-xr-x 5 mail trusted   4096 May 10 12:34 /var/spool/masqmail
+	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/input
+	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/lock
+	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/popuidl
 
 (important is the set-user-id bit for /usr/sbin/masqmail and the
 ownership of all items).
 
 Use the example configuration files in examples/ to edit your own. The
-main configuration should go to /etc/masqmail.conf. I recommend to
-make a directory /etc/masqmail for the *.route amd *.get files.
+main configuration file `masqmail.conf' and the *.route and *.get files
+should go into /etc/masqmail.
 
-The default destination for the executable 'masqmail' is
-/usr/sbin. Check that it has the set user id bit set. (chmod u+s
-/usr/sbin/masqmail does no harm in any case).
+The default destination for the executable `masqmail' is /usr/sbin.
+Check that it has the set-uid bit set. You can set it with:
+
+	chmod u+s /usr/sbin/masqmail
 
 If you want to replace sendmail, move your old sendmail binary to
-another name and make a symbolic link /usr/sbin/sendmail ->
-/usr/sbin/masqmail.
+another name and make a symbolic link:
+
+	ln -s /usr/sbin/masqmail /usr/sbin/sendmail
+
+Now every mailer that used to call sendmail will now call masqmail. You
+can now kill your old sendmail if it is running and start masqmail.
+
+	/sbin/init.d/sendmail restart
+
+should do that. You can also start masqmail with:
+
+	/usr/sbin/masqmail -bd -q30m
 
 
+
+Configuring for online delivery
+-------------------------------
+
+(This section covers dial-up internet connections.)
+
+Now you have to set up the online configuration. The trick is to tell
+your ip-up script the connection name. You could use the IP number of
+the far side of the ppp link, but this is a pain and may change each
+time. But you can give it an additional argument via pppd with ipparam.
+Somewhere in your dial up script you have a line similar to:
+
+	/usr/sbin/pppd /dev/ttyS1 connect "/usr/sbin/chat -t 90 -f $CHATFILE" \
+	-d -d -d user user@somewhere file "$OPTIONS"
+
+Just add 'ipparam FastNet' in the command line for pppd if your ISP has
+the name FastNet. The ip-up script will then get 'FastNet' as a sixth
+parameter. In your ip-up script you can then call masqmail with
+
+	/usr/sbin/masqmail -qo "$6"
+
+instead of 'sendmail -q', if you had that in the script before.
+Masqmail will then read the route configuration specified for the
+connection name 'FastNet' and deliver the mail destined to the internet.
+See the configuration manual on how to write a route configuration or
+use one of the examples as a template.
+
+I do not know how do configure that for an ISDN adapter, but I am sure
+you will find something similar in the man pages.
+
+If you want mail that is received by masqmail from your local net to be
+delivered immediately using the route configuration, you have two
+possibilities:
+
+* if you are using the masqdialer system, you just have to set the
+  variables online_detect to mserver and mserver_iface to the interface
+  mserver is listening to.
+* otherwise you have to add two commands in your ip-up script:
+	echo -n $6 > /tmp/connect_route
+	chmod 644 /tmp/connect_route
+  and you have to remove the file /tmp/connect_route in your ip-down script:
+	rm /tmp/connect_route.
+  Then you have to set online_detect to file and online_file to
+  /tmp/connect_route.
+
+See the route documentation for more.
+
+
+
+Written by oku.
+Updated by meillo.
