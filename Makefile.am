@@ -1,4 +1,4 @@
-EXTRA_DIST = examples/* docs/* man/* tpl/*
+EXTRA_DIST = examples docs man tpl tests misc
 
 SUBDIRS = src man
 
