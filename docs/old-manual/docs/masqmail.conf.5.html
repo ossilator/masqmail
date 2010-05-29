@@ -1,0 +1,569 @@
+<body text="#000000" link="#0000ff" bgcolor="#ffffff"><center><table width="80%">
+<tr><td><h1>masqmail.conf</h1>
+<h2>masqmail configuration file</h2>
+
+
+<h2>Description</h2>
+
+<p>This man page describes the syntax of the main configuration file
+of masqmail. Its usual location is <em>/etc/masqmail/masqmail.conf</em></p>
+
+<p>The configuration consists of lines of the form</p>
+
+<p><b>val</b> = <em>expression</em></p>
+
+<p>Where <b>val</b> is a variable name and <em>expression</em> a string,
+which can be quoted with '"'. If the expression is on multiple lines
+or contains characters other than letters, digits or the characters
+'.', '-', '_', '/', it must be quoted. You can use quotes inside quotes
+by escaping them with a backslash.</p>
+
+<p>Each val has a type, which can be boolean, numeric, string
+or list. A boolean variable can be set with one of the values 'on',
+'yes', and 'true' or 'off', 'no' and 'false'. List items are separated
+with ';'. For some values patterns (like '*','?') can be used. The
+spaces before and after the '=' are optional.</p>
+
+<p>Most lists (exceptions: <b>local_hosts</b>,
+<b>local_nets</b>, <b>listen_addresses</b>, <b>online_routes</b> and <b>online_gets</b>) accept
+files. These will be recognized by a leading slash '/'. The contents
+of these files will be included at the position of the file name,
+there can be items or other files before and after the file entry. The
+format of the files is different though, within these files each entry
+is on another line. (And not separated by semicolons). This makes it
+easy to include large lists which are common in different
+configuration files, so they do not have to appear in every
+configuration file.</p>
+
+<p>Blank lines and lines starting with '#' are ignored.</p>
+
+
+
+
+<h2>Options</h2>
+
+
+<p><b>run_as_user = <em>boolean</em></b></p>
+
+<p>If this is set, masqmail runs with the user id of the user who
+invoked it and never changes it. This is for debugging purposes 
+only. If the user is not root, masqmail will not be able to
+listen on a port < 1024 and will not be able to deliver local mail
+to others than the user.</p>
+
+
+
+
+<p><b>use_syslog = <em>boolean</em></b></p>
+
+<p>If this is set, masqmail uses syslogd for logging. It uses facility
+MAIL. You still have to set <b>log_dir</b> for debug files.</p>
+
+
+
+
+<p><b>debug_level = <em>n</em></b></p>
+
+<p>Set the debug level. Valid values are 0 to 6, increasing it further
+makes no difference. Be careful if you set this as high as 5 or higher,
+the logs may very soon fill your hard drive.</p>
+
+
+
+
+<p><b>mail_dir = <em>file</em></b></p>
+
+<p>The directory where local mail is stored,
+usually <em>/var/spool/mail</em> or <em>/var/mail</em>.</p>
+
+
+
+
+<p><b>spool_dir = <em>file</em></b></p>
+
+<p>The directory where masqmail stores its spool files (and later also
+other stuff). It must have a subdirectory <em>input</em>.
+Masqmail needs read and write permissions for this
+directory. I suggest to use <em>/var/spool/masqmail</em>.</p>
+
+
+
+
+<p><b>host_name = <em>string</em></b></p>
+
+<p>This is used in different places: Masqmail identifies itself in the
+greeting banner on incoming connections and in the HELO/EHLO command
+for outgoing connections with this name, it is used in the Received:
+header and to qualify the sender of a locally originating message.</p>
+
+<p>If the string begins with a slash '/', it it assumed that it is a
+filename, and the first line of this file will be used. Usually this will
+be '/etc/mailname' to make masqmail conform to Debian policies.</p>
+
+<p>It is not used to find whether an address is local.
+Use <b>local_hosts</b> for that.</p>
+
+
+
+
+<p><b>remote_port = <em>n</em></b></p>
+
+<p>The remote port number to be used. This defaults to port 25.</p>
+<p>This option is deprecated. Use <b>host_name</b> in the route
+configuration instead. See <a href="masqmail.route.5.html">masqmail.route</a>.</p>
+
+
+
+
+<p><b>local_hosts = <em>list</em></b></p>
+
+<p>A semicolon ';' separated list of hostnames which are considered
+local. Normally you set it to "localhost;foo;foo.bar.com" if your host
+has the fully qualified domain name 'foo.bar.com'.</p>
+
+
+
+
+<p><b>local_nets = <em>list</em></b></p>
+
+<p>A semicolon ';' separated list of hostnames which are on the
+'local' net. Delivery to these hosts is attempted immediately. You can
+use patterns with '*', eg. "*.bar.com".</p>
+
+
+
+
+<p><b>local_addresses = <em>list</em></b></p>
+
+<p>A semicolon ';' separated list of fully qualified email-addresses
+which are considered local although their domain name part is not in
+the list of <b>local_hosts</b>. </p>
+<p>For example: There are two people working at your
+LAN: person1@yourdomain and person2@yourdomain. But there are
+other persons @yourdomain which are NOT local. So you can not put
+yourdomain to the list of local_hosts. If person1 now wants
+to write to person2@yourdomain and this mail should not leave the LAN
+then you can put</p>
+<p>local_addresses = "person1@yourdomain;person2@yourdomain"</p>
+<p>to your masqmail.conf.</p>
+
+
+
+
+<p><b>not_local_addresses = <em>list</em></b></p>
+
+<p>A semicolon ';' separated list of fully qualified email-addresses
+which are considered not local although their domain name part is in
+the list of <b>local_hosts</b>. </p>
+<p>This ist the opposite of the previous case. The majority of addresses
+of a specific domain are local. But some users are not. With this
+option you can easily exclude these users.</p>
+<p>Example:</p>
+<p>local_hosts = "localhost;myhost;mydomain.net"</p>
+<p>not_local_addresses = "eric@mydomain.net"</p>
+
+
+
+
+<p><b>listen_addresses = <em>list</em></b></p>
+
+<p>A semicolon ';' separated list of interfaces on which connections
+will be accepted. An interface ist defined by a hostname, optionally
+followed by a colon ':' and a number for the port. If this is left out,
+port 25 will be used.</p>
+<p>You can set this to "localhost:25;foo:25" if your hostname is 'foo'.</p>
+<p>Note that the names are resolved to IP addreses. If your host has
+different names which resolve to the same IP, use only one of them,
+otherwise you will get an error message.
+</p>
+
+
+
+
+<p><b>do_save_envelope_to = <em>boolean</em></b></p>
+
+<p>If this is set to true, a possibly existing Envelope-to: header in an
+incoming mail which is received via either pop3 or smtp will be saved as
+an X-Orig-Envelope-to: header.</p>
+<p>This is useful if you retrieve mail from a pop3 server with either masqmail
+or fetchmail, and the server supports Envelope-to: headers, and you want to make use
+of those with a mail filtering tool, eg. procmail. It cannot be preserved because
+masqmail sets such a header by itself.</p>
+<p>Default is false.</p>
+
+
+
+
+<p><b>do_relay = <em>boolean</em></b></p>
+
+<p>If this is set to false, mail with a return path that is not local and a
+destination that is also not local will not be accepted via smtp and a 550
+reply will be given. Default is true.</p>
+<p>Note that this will not protect you from spammers using open relays, but from
+users unable to set their address in their mail clients.</p>
+
+
+
+
+<p><b>do_queue = <em>boolean</em></b></p>
+
+<p>If this is set, mail will not be delivered immediately when
+accepted. Same as calling masqmail with the <b>-odq</b> option.</p>
+
+
+
+
+<p><b>online_routes.<em>name</em> = <em>list</em></b></p>
+
+
+<p>Replace <em>name</em> with a name to identify a connection. Set this
+to a filename (or a list of filenames) for the special route configuration for that
+connection. You will use that name to call masqmail with the
+ <b>-qo</b> option every time a connection to your ISP is set
+up.</p>
+
+<p>Example: Your ISP has the name FastNet. Then you write the
+following line in the main configuration:</p>
+
+<p><b>online_routes.FastNet</b> = <em>"/etc/masqmail/fastnet.route"</em></p>
+
+<p><em>/etc/masqmail/fastnet.route</em> is the route configuration
+file, see <a href="masqmail.route.5.html">masqmail.route</a>. As soon as a link to FastNet has been set up, you
+call masqmail <b>-qo</b> <em>FastNet</em>. Masqmail will then
+read the specified file and send the mails.</p>
+
+
+
+
+
+<p><b>connect_route.<em>name</em> = <em>list</em></b></p>
+
+<p>Old name for <b>online_routes</b>.</p>
+
+
+
+
+
+<p><b>local_net_route = <em>file</em></b></p>
+
+<p>This is similar to <b>online_routes.<em>name</em></b> but for the
+local net. Recipient addresses that are in local_nets will be
+routed using this route configuration. Main purpose is to define a
+mail server with mail_host in your local network. In simple
+environments this can be left unset. If unset, a default route
+configuration will be used.</p>
+
+
+
+
+<p><b>alias_file = <em>file</em></b></p>
+
+<p>Set this to the location of your alias file. If unset, no aliasing
+will be done.</p>
+
+
+
+
+<p><b>alias_local_caseless = <em>boolean</em></b></p>
+
+<p>If this is set, local parts in the alias file will be matched
+disregarding upper/lower case.</p>
+
+
+
+
+<p><b>pipe_fromline = <em>boolean</em></b></p>
+
+<p>If this is set, a from line will be prepended to the output stream whenever
+a pipe command is called after an alias expansion. Default is false.</p>
+
+
+
+
+<p><b>pipe_fromhack = <em>boolean</em></b></p>
+
+<p>If this is set, each line beginning with 'From ' is replaced with '>From ' whenever
+a pipe command is called after an alias expansion. You probably want this if you have
+set <b>pipe_fromline</b> above. Default is false.</p>
+
+
+
+
+<p><b>mbox_default = <em>string</em></b></p>
+
+<p>The default local delivery method. Can be one of mbox, mda or
+maildir (the latter only if maildir support is enabled at compile
+time). Default is mbox. You can override this for each user by using
+the <b>mbox_users</b>, <b>mda_users</b> or <b>maildir_users</b> options
+(see below).
+</p>
+
+
+
+
+<p><b>mbox_users = <em>list</em></b></p>
+
+<p>A list of users which wish delivery to an mbox style mail folder.</p>
+
+
+
+
+<p><b>mda_users = <em>list</em></b></p>
+
+<p>A list of users which wish local delivery to an mda. You have to
+set <b>mda</b> (see below) as well.</p>
+
+
+
+
+<p><b>maildir_users = <em>list</em></b></p>
+
+<p>A list of users which wish delivery to a qmail style maildir. The
+path to maildir is ~/Maildir/. The maildir will be created if it
+does not exist.</p>
+
+
+
+
+<p><b>mda = <em>expand string</em></b></p>
+
+<p>If you want local delivery to be transferred to an mda (Mail
+Delivery Agent), set this to a command. The argument will be expanded
+on delivery time, you can use variables beginning with a '$' sign,
+optionally enclosed in curly braces. Variables you can use are:</p>
+<p>uid - the unique message id. This is not necessarily identical with
+the Message ID as given in the Message ID: header.</p>
+<p>received_host - the host the mail was received from</p>
+<p>ident - the ident, this is either the ident delivered by the ident
+protocol or the user id of the sender if the message was received locally.</p>
+<p>return_path_local - the local part of the return path (sender).</p>
+<p>return_path_domain - the domain part of the return path (sender).</p>
+<p>return_path - the complete return path (sender).</p>
+<p>rcpt_local - the local part of the recipient.</p>
+<p>rcpt_domain - the domain part of the recipient.</p>
+<p>rcpt - the complete recipient address.</p>
+<p>Example:</p><p>mda="/usr/bin/procmail -Y -d ${rcpt_local}"</p>
+<p>For the mda, as for pipe commands, a few environment variables will
+be set as well. See <a href="masqmail.8.html">masqmail</a>. To use environment variables for the mda,
+the '$' sign has to be escaped with a backslash, otherwise they will
+be tried to be expanded with the internal variables.</p>
+
+
+
+
+
+<p><b>mda_fromline = <em>boolean</em></b></p>
+
+<p>If this is set, a from line will be prepended to the output stream whenever
+a message is delivered to an mda. Default is false.</p>
+
+
+
+
+<p><b>mda_fromhack = <em>boolean</em></b></p>
+
+<p>If this is set, each line beginning with 'From ' is replaced with '>From ' whenever
+a message is delivered to an mda. You probably want this if you have
+set <b>mda_fromline</b> above. Default is false.</p>
+
+
+
+
+<p><b>online_detect = <em>string</em></b></p>
+
+<p>Defines the method MasqMail uses to detect whether there is
+currently an online connection. It can have the
+values <b>file</b>, <b>pipe</b> or <b>mserver</b>.</p>
+
+<p>When it is set to <b>file</b>, MasqMail first checks for the
+existence of <b>online_file</b> (see below) and if it exists, it reads
+it. The content of the file should be the name of the current
+connection as defined with <b>connect_route.<em>name</em></b> (without
+a trailing newline character).</p>
+
+<p>When it is set to <b>pipe</b>, MasqMail calls the executable given by
+the <b>online_pipe</b> option (see below) and reads the current online
+status from its standard output.</p>
+
+<p>When it is set to <b>mserver</b>, MasqMail connects to the
+masqdialer server using the value of <b>mserver_iface</b> and asks it
+whether a connection exists and for the name, which should be the name
+of the current connection as defined with <b>connect_route.<em>name</em></b>.</p>
+
+<p>No matter how MasqMail detects the online status, only messages
+that are accepted at online time will be delivered using the
+connection. The spool still has to be emptied with masqmail <b>-qo</b>
+<em>connection</em>.</p>
+
+
+
+
+<p><b>online_file = <em>file</em></b></p>
+
+<p>This is the name of the file checked for when MasqMail determines
+whether it is online. The file should only exist when there is
+currently a connection. Create it in your ip-up script with eg.</p>
+
+<p>echo -n <name> > /tmp/connect_route</p>
+<p>chmod 0644 /tmp/connect_route</p>
+
+<p>Do not forget to delete it in your ip-down script.</p>
+
+
+
+
+<p><b>online_pipe = <em>file</em></b></p>
+
+<p>This is the name of the executable which will be called to determine
+the online status. This executable should just print the name oif the current
+connection to the standard output and return a zero status code. masqmail assumes
+it is offline if the script returns with a non zero status. Simple example:</p>
+
+<p>#!/bin/sh</p>
+<p></p>
+<p>[ -e /tmp/connect_route ] || exit 1</p>
+<p>cat /tmp/connect_route</p>
+<p>exit 0</p>
+
+<p>Of course, instead of the example above you could as well use <b>file</b> as
+the online detection method, but you can do something more sophisticated.</p>
+
+
+
+
+<p><b>mserver_iface = <em>interface</em></b></p>
+
+<p>The interface the masqdialer server is listening to. Usually this
+will be "localhost:224" if mserver is running on the same host as
+masqmail. But using this option, you can also let masqmail run on
+another host by setting <b>mserver_iface</b> to another hostname,
+eg. "foo:224".</p>
+
+
+
+
+<p><b>get.<em>name</em> = <em>file</em></b></p>
+
+<p>Replace <em>name</em> with a name to identify a get
+configuration. Set this to a filename for the get configuration. These
+files will be used to retrieve mail when called with the -g option.</p>
+
+
+
+
+<p><b>online_gets.<em>name</em> = <em>list</em></b></p>
+
+<p>Replace <em>name</em> with a name to identify an online
+configuration. Set this to a filename (or a list of filenames) for the get configuration. These
+files will be used to retrieve mail when called with the -go option.</p>
+
+
+
+
+<p><b>ident_trusted_nets = <em>list</em></b></p>
+
+<p><em>list</em> is a list of networks of the form a.b.c.d/e
+(eg. 192.168.1.0/24), from which the ident given by the ident protocol
+will be trusted, so a user can delete his mail from the queue if the
+ident is identical to his login name.</p>
+
+
+
+
+<p><b>errmsg_file = <em>file</em></b></p>
+
+<p>Set this to a template which will be used to generate delivery failure
+reports. Variable parts within the template begin with a dollar sign and
+are identical to those which can be used as arguments for the mda command,
+see <b>mda</b> above. Additional information can be included with
+@failed_rcpts, @msg_headers and @msg_body, these must be at the
+beginning of a line and will be replaced with the list of the failed recipients,
+the message headers and the message body of the failed message.</p>
+<p>Default is /usr/share/masqmail/tpl/failmsg.tpl.</p>
+
+
+
+
+<p><b>warnmsg_file = <em>file</em></b></p>
+
+<p>Set this to a template which will be used to generate delivery warning
+reports. It uses the same mechanisms for variables as <b>errmsg_file</b>,
+see above.
+</p>
+<p>Default is /usr/share/masqmail/tpl/warnmsg.tpl.</p>
+
+
+
+
+<p><b>warn_intervals</b> = <em>list</em></p>
+
+<p>Set this to a list of time intervals, at which delivery warnings (starting
+with the receiving time of the message) shall be generated.</p>
+<p>A warning will only be generated just after an attempt to deliver the
+mail and if that attempt failed temporarily. So a warning may be generated after
+a longer time, if there was no attempt before.</p>
+<p>Default is "1h;4h;8h;1d;2d;3d"</p>
+
+
+
+
+<p><b>max_defer_time</b> = <em>time</em></p>
+
+<p>This is the maximum time, in which a temporarily failed mail will be kept
+in the spool. When this time is exceeded, it will be handled as a delivery failure,
+and the message will be bounced.</p>
+<p>The excedence of this time will only be noticed if the message was actually
+tried to be delivered. If, for example, the message can only be delivered when
+online, but you have not been online for that time, no bounce will be generated.</p>
+<p>Default is 4d (4 days)</p>
+
+
+
+
+<p><b>log_user = <em>name</em></b></p>
+
+<p>Replace <em>name</em> with a valid local or remote mail address.</p>
+<p>If this option is not empty, then a copy of every mail,
+that passes trough the masqmail system will also be sent to the
+given mail address.</p>
+<p>For example you can feed your mails into a program like hypermail for
+archiving purpose by placing an appropriate pipe command in masqmail.alias</p>
+
+
+
+
+
+<h2>Author</h2>
+
+<p>masqmail was written by Oliver Kurth
+<oku@masqmail.cx></p><p>You will find the newest version of
+masqmail at <a href = "http://masqmail.cx/masqmail/">http://masqmail.cx/masqmail/</a> or search for it
+in freshmeat (<a href = "http://www.freshmeat.net">http://www.freshmeat.net</a>). There is also a mailing list,
+you will find information about it at masqmails main site.</p>
+
+
+
+<h2>Bugs</h2>
+
+<p>You should report them to the mailing list.</p>
+
+
+
+<h2>See also</h2>
+
+<p>
+<a href="masqmail.8.html">masqmail</a>, <a href="masqmail.route.5.html">masqmail.route</a>, <a href="masqmail.get.5.html">masqmail.get</a>
+</p>
+
+
+
+
+<h2>Comments</h2>
+
+<p>This man page was written using <a href="http://masqmail.cx/xml2man/">xml2man</a> by the same
+author.</p>
+
+
+
+</td></tr></table></center>
+</body>
