@@ -295,5 +295,5 @@ AC_OUTPUT(Makefile \
 	src/base64/Makefile \
 	src/md5/Makefile \
 	src/libident/Makefile \
-	docs/Makefile
+	man/Makefile
 	)
