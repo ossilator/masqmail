@@ -4,7 +4,7 @@ INSTALL.agenda INSTALL.ipaq agenda-config.site
 
 SUBDIRS = src man
 
-install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir run_dir
+install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir run_dir doc_dir
 
 conf_dir: $(DESTDIR)@with_confdir@
 
@@ -19,6 +19,12 @@ $(DESTDIR)@datadir@/tpl: conf_dir
 	install -m 644 tpl/failmsg.tpl.* $(DESTDIR)@datadir@/masqmail/tpl
 	install -m 644 tpl/warnmsg.tpl $(DESTDIR)@datadir@/masqmail/tpl
 	install -m 644 tpl/warnmsg.tpl.* $(DESTDIR)@datadir@/masqmail/tpl
+
+doc_dir: conf_dir
+	install -d $(DESTDIR)@docdir@
+	cp -r docs $(DESTDIR)@docdir@
+	cp -r examples $(DESTDIR)@docdir@
+	cp ChangeLog NEWS AUTHORS COPYING README TODO $(DESTDIR)@docdir@
 
 log_dir: $(DESTDIR)@with_logdir@
 
