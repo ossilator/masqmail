@@ -1,6 +1,3 @@
-Since masqmail-0.2.22, documentation is maintained in troff (man page)
-format directly. The old XML sources are no longer used.
-
 The `old-manual' directory contains the old manual (as expected) and
 html versions of man pages from that time (May/July 2000). The files
 have been copied from the old project website.
