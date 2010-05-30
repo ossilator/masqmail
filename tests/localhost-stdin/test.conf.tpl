@@ -1,20 +1,6 @@
 # Example configuration for MasqMail
 # Copyright (C) 1999 Oliver Kurth
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-#
 
 # this is just for testing. In real life it does not make much sense:
 run_as_user=true
@@ -35,10 +21,10 @@ local_hosts="localhost"
 # Nets considered local, for immediate delivery attempts:
 # ALL hosts not included in either local_host or local_nets are
 # considered to be 'outside', meaning that messages to them will be queued
-local_nets="SMTP_HOST"
+#local_nets="SMTP_HOST"
 
 # accept connections on these interfaces:
-listen_addresses="localhost:2525"
+#listen_addresses="localhost:2525"
 
 # send messages to this port:
 # probably this will also be configurable on host basis
@@ -56,11 +42,4 @@ mail_dir="PWD"
 use_syslog=false
 
 # directory for log files if not using syslogd:
-#log_dir="/var/masqmail"
 log_dir="PWD"
-
-# special routes:
-
-#connect_route.GWDG = "src/gwdg.route"
-#connect_route.Argon = "src/argon.route"
-

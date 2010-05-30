@@ -1,0 +1,14 @@
+localhost-stdin
+---------------
+
+Three mails are sent, using different options, to <you@localhost>.
+local.sh sends mail accepted from stdin and sends them to a fake local
+mailbox, using your login name. If it works, there should be a file
+named with your login name with the mails. You can look at it with cat
+or less, or with an ordinary mail program.
+
+Two log files, masqmail.log and debug.log will also be created within
+this directory. They may give some information if anything went wrong.
+
+Run them from within this directory, preferably NOT as root, but you
+got to have write permission for this directory.

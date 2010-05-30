@@ -1,0 +1,11 @@
+Test hostname-stdin
+-------------------
+
+Sends three mails, using different options, to <you@hostname>. The
+mails are passed on stdin.
+
+Two log files, masqmail.log and debug.log will also be created within
+this directory. They may give some information if anything went wrong.
+
+Run them from within this directory, preferably NOT as root, but you
+got to have write permission for this directory.

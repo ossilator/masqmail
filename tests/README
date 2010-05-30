@@ -1,37 +1,29 @@
-Here a two test programs: local.sh and smtpout.sh. They both send
-three mails, using different options. Run them from within this
-directory, preferably NOT as root, but you got to have write
-permission for this directory.
+This directory contains test cases for masqmail, one in each directory.
 
-local.sh sends mail accepted from stdin and sends them to a fake local
-mailbox, using your login name. If it works, there should be a file
-named with your login name with the mails. You can look at it with cat
-or less, or with an ordinary mail program.
+Build the test scripts be running
+	make
+in the directory. You can build all of them by running
+	make
+in the tests directory.
 
-smtpout.sh sends mail accepted from stdin and sends them to your local
-MTA, so use it only if you have an MTA running on your box (sendmail,
-exim, qmail or whatever, or masqmail when you have it already
-installed). If it works, you should get three mails.
+Run the test by executing
+	./test
+in its directory, preferably NOT as root, but you got to have write
+permission for the directory.
 
-The scripts assume that your login name corresponds to your mailbox
-(quite probable) and that your MTA listens on port 25 with the
-interface which corresponds to the hostname as returned by the shell
-command "hostname" (without quotes...), also very probable. They are
-created with make from test.templ. They use a special configuration
-(test.conf) for masqmail, which is also created with make from
-conf.templ.
 
-Two log files, masqmail.log and debug.log will also be created within
-this directory. They may give some information if anything went wrong.
+Usually, two log files, masqmail.log and debug.log, will be created.
+They may give some information if anything went wrong.
 
-If the log files reveal that your MTA is not willing to relay, you may
-have to qualify the hostname: Say
+The README files in the test case directories explain the tests in
+more detail.
 
-sed s/RECV_HOST/foo.bar.com/ test.templ > smtpout.sh
 
-where you set your fully qualified host name for foo.bar.com.
+FIXME: Currently, the return values of the test scripts don't express
+       if the test was successful or not.
 
-If they do not work, there could be some problem with either the test
+
+If tests do not work, there could be some problem with either the test
 programs, the configuration file or masqmail itself. If you have
 installed masqmail successfully and these scripts do not work, do not
 worry too much :-).

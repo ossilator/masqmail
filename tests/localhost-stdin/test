@@ -1,14 +1,12 @@
 #! /bin/bash
 
-# should be run from within tests dir
-# set if you move this:
-mm_src_dir=../src
-mm_bin=$mm_src_dir/masqmail
+# should be run from within tests dir set if you move this:
+mm_bin=../../src/masqmail
 
 #
-hfrom="\"Fritz Meier\" <`logname`@RECV_HOST>"
+hfrom="\"Fritz Meier\" <`logname`@localhost>"
 hto=$hfrom
-to=`logname`@RECV_HOST
+to=`logname`@localhost
 hsubject="MasqMail stdin Test"
 
 #

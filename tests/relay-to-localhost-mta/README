@@ -1,0 +1,24 @@
+relay-to-localhost-mta
+----------------------
+
+Send three mails, using different options, to stdin of masqmail, which
+relays it per STMP to a local MTA listening at localhost:25.
+
+So use it only if you have an MTA running on your box (sendmail,
+exim, qmail or whatever, or masqmail when you have it already
+installed).
+
+If it works, you should get three mails.
+Two log files, masqmail.log and debug.log will also be created within
+this directory. They may give some information if anything went wrong.
+
+The scripts assume that your login name corresponds to your mailbox
+(quite probable) and that your MTA listens on port 25 with the
+interface which corresponds to the hostname as returned by the shell
+command "hostname" (without quotes...), also very probable.
+
+If the log files reveal that your MTA is not willing to relay, you may
+have to qualify the hostname. You might want to do this in a way
+similar to:
+
+	sed 's/RECV_HOST/foo.example.org/' test.tpl >test
