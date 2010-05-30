@@ -6,8 +6,6 @@ AC_CONFIG_SRCDIR([src/masqmail.c])
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE()
 
-AC_PREFIX_DEFAULT(/usr)
-
 dnl Checks for programs.
 
 dnl Checks for libraries.
