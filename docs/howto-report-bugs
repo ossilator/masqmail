@@ -1,0 +1,34 @@
+Howto report bugs
+=================
+
+All non-trivial software has bugs and so does masqmail.
+
+If you discover a bug then please report it. Your bug reports are an
+important help in improving masqmail.
+
+Valuable bug report include the following information. The first two
+are essential, the others can also be added on request.
+
+- A good description of what you consider to be the bug.
+
+- The version of masqmail that was used. (The output of: masqmail -bV).
+
+- A description on how to reproduce it. This includes information on
+  other software that is involved.
+
+- The configuration files. These are probably the contents of
+  /etc/masqmail/*. Don't forget to substitute confidential data with
+  placeholders.
+
+- The relevant log files. Have a look at the value of use_syslog and
+  log_dir in masqmail.conf. If use_syslog is enabled, the files are
+  probably some of /var/log/mail*. If you don't use syslog, then the
+  files reside unter the path assigned to log_dir, or by default in
+  /var/log/masqmail/. Take care to substitute confidential data if you
+  send debug files. (It's good to run masqmail with `-d 5' or `-d 6' to
+  generate debugging data that may help to track down the bug.
+
+Report the bug to the mailing list <masqmail@marmaro.de>. You don't
+have to be subscribed to write to the list. Please tell us if you're
+not subscribed so that we set you on CC. If you want to subscribe, send
+a mail with subject ``subscribe masqmail'' to <minimalist@marmaro.de>.

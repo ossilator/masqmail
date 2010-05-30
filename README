@@ -1,6 +1,7 @@
-MasqMail README
+Masqmail README
+===============
 
-MasqMail is a mail server designed for hosts that are not permanently
+Masqmail is a mail server designed for hosts that are not permanently
 connected to the internet. It handles outgoing messages, i.e. those
 that are to be sent over the non-permanent link (usually a ppp or slip
 connection over a modem or ISDN adapter) specially and delivers them
@@ -11,7 +12,7 @@ for example a delivery of a message failed while connected with
 provider 1, it may be delivered when connected to provider 2. For each
 provider another mail host (or none) can be specified.
 
-MasqMail provides (a yet simple) mechanism to rewrite headers, also
+Masqmail provides (a yet simple) mechanism to rewrite headers, also
 depending on the current connection. This makes it possible to deliver
 messages with a return address on the local network which will be
 rewitten at delivery time. The purpose of this is:
@@ -29,54 +30,71 @@ problem as you can configure your mailer to a fixed address (but then
 there is still the problem with the failure messages...), but it is a
 problem if you use different ones from time to time.
 
-MasqMail shall once be a complete replacement for sendmail (or other
+Masqmail shall once be a complete replacement for sendmail (or other
 MTAs such as exim, qmail or smail) on a local network, but it is NOT
 supposed to be installed in a network with a permanent internet
 connection (at least if it is not behind a secure firewall) because
 it has no ability to check for undesired relaying or spam filtering.
 
-Missing, but soon to be realized features:
 
-- .forward file support (alias file is supported)
-- mailer demon messages (mail from the server in cases of delivery failures
-or malformed addresses)
+Masqmail's website is:
 
-Future plans are:
+	http://marmaro.de/prog/masqmail
 
-- initiate connections on its own
-- integration to the masqdialer system (mserver) as an option
-- possibly a pop3 server
+The email address of it's mailing list is:
+
+	<masqmail@marmaro.de>
+
+To subscribe yourself to the list, send a mail with the subject
+``subscribe masqmail'' to <minimalist@marmaro.de>. The mailing list
+archive is accessible at: http://lists.marmaro.de/masqmail/ . If you
+have any problems, contact me: markus schnalke <meillo@marmaro.de>.
+
+
+INSTALLATION
+------------
 
 For installation instructions, see INSTALL.
 
-Bugs: MasqMail is still very young, and there are probably at lot of
-bugs in it. I need every bug reported to me! If you do, please send me
-the configuration files, the logs, the version, and a good description
-on how to reproduce the error. The more bug reports I get, the better
-masqmail will get!
 
-CREDITS:
---------
+BUGS
+----
+
+There are probably a lot of bugs in masqmail. Please report any one you
+discover to me. The more bug reports I get, the better masqmail will
+get.
+
+See docs/howto-report-bugs for detailed instructions.
+
+
+CREDITS
+-------
 
 I would like to thank everyone who has submitted suggestions and bug
 reports. Special thanks to:
 
 Gregor Hoffleit for beta testing and his suggestions for delivering
-mail immediately when online.
-Gregor Hoffleit again for supplying a patch which made maqmail work with mutt.
-And again for making the Debian package. And more patches.
+mail immediately when online. And for supplying a patch which made
+masqmail work with mutt. And again for making the Debian package. And
+more patches.
 
-Dale Perkel for patiently trying to make MM compile and run with libc5 and
-various bug reports.
+Dale Perkel for patiently trying to make MM compile and run with libc5
+and various bug reports.
 
 Andre Masloch for finding most bugs.
 
-Edouard G. Parmelan for many patches and bug reports
+Edouard G. Parmelan for many patches and bug reports.
 
-Iain Lea for the Redhat spec file
+Iain Lea for the Redhat spec file.
 
-...and many others
---
-Oliver Kurth <oku@masqmail.cx>
-http://masqmail.cx/
-last change: Feb. 3, 2000
+Juergen Daubert for excellent bug reports including patches and various
+feedback.
+
+... and many others.
+See ChangeLog, the code repository log, and the mailing list for more.
+Feel free to tell me if you think you are missing on this list.
+
+
+
+This file was originally written by by Oliver Kurth <oku@masqmail.cx>.
+Later updated and extended by markus schnalke <meillo@marmaro.de>.
