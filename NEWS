@@ -13,6 +13,18 @@ The manual pages describe newly added options. Take them for reference.
 by file unusable. Thanks to Juergen Daubert for reporting and providing
 a patch.
 
+- Masqmail installs to /usr/local by default now. Previously it
+installed to /usr. To regain the old behavior, add
+	--prefix=/usr
+to the configure call.
+
+- Man pages get installed again; in 0.2.22 they were not. Again thanks
+to Juergen Daubert. Docs and examples do get installed now too.
+
+- Updated the docs. Moved the man pages from docs/ to man/. Added the
+old manual from the old website to the distribution. Added a bug
+reporting howto.
+
 
 0.2.22
 
