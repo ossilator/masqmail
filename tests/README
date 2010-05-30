@@ -27,3 +27,7 @@ If tests do not work, there could be some problem with either the test
 programs, the configuration file or masqmail itself. If you have
 installed masqmail successfully and these scripts do not work, do not
 worry too much :-).
+
+
+The original test scripts are by oku.
+They were rearranged and extended by meillo.

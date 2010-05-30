@@ -1,33 +1,34 @@
-
-# this is just for testing. In real life it does not make much sense:
+# running as user is enough for testing purposes
 run_as_user=true
 
 # set debug level (0 = no debugging, 5 = very much, 6 = too much)
-# can also be set with the -d option on the cmd line
 debug_level = 5
 
+# deliver at once
 do_queue = false
 
-# The name with which MasqMail identifies itself to others:
+# identify with some name that is *not* the one of the our machine
+# maybe we should not define a name at all, but this may lead to
+# problems. Could be we even need a FQDN here.
 host_name="MASQMAIL-TEST"
 
-# where MasqMail stores its spool files and other stuff:
-spool_dir="PWD"
-
-# where local mail will be written to:
-mail_dir="PWD"
-
-# use syslogd for logs?
-use_syslog=false
-
-# directory for log files if not using syslogd:
-log_dir="PWD"
-
-online_routes.test = "PWD/test.route"
-
-errmsg_file="PWD/../../tpl/failmsg.tpl"
-warnmsg_file="PWD/../../tpl/warnmsg.tpl"
-
+# we want to deliver through a route named `test' to a local MTA
+# thus we do not define any hosts or nets as local
+# all mail should go through the `test' route.
 online_detect = "file"
 online_file = "PWD/online"
+online_routes.test = "PWD/test.route"
 
+# spool files in the current directory
+spool_dir="PWD"
+
+# deliver local mails into the current directory
+mail_dir="PWD"
+
+# log into the current directory
+use_syslog=false
+log_dir="PWD"
+
+# relative paths to the warn/failure message templates
+errmsg_file="PWD/../../tpl/failmsg.tpl"
+warnmsg_file="PWD/../../tpl/warnmsg.tpl"

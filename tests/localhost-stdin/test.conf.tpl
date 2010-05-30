@@ -1,45 +1,28 @@
-# Example configuration for MasqMail
-# Copyright (C) 1999 Oliver Kurth
-
-
-# this is just for testing. In real life it does not make much sense:
+# running as user is enough for testing purposes
 run_as_user=true
 
 # set debug level (0 = no debugging, 5 = very much, 6 = too much)
-# can also be set with the -d option on the cmd line
 debug_level = 5
 
+# deliver at once
 do_queue = false
 
-# The name with which MasqMail identifies itself to others:
+#
 host_name="SMTP_HOST"
 
-# Hosts considered local:
-#local_hosts="localhost;blue.patchwork.net;blue"
+# we want to deliver a message to localhost
 local_hosts="localhost"
 
-# Nets considered local, for immediate delivery attempts:
-# ALL hosts not included in either local_host or local_nets are
-# considered to be 'outside', meaning that messages to them will be queued
-#local_nets="SMTP_HOST"
-
-# accept connections on these interfaces:
-#listen_addresses="localhost:2525"
-
-# send messages to this port:
-# probably this will also be configurable on host basis
-#remote_port=25
-
-# where MasqMail stores its spool files and other stuff:
-#spool_dir="/var/spool/masqmail"
+# spool dir is the current directory
 spool_dir="PWD"
 
-# where local mail will be written to:
-#mail_dir="/var/spool/mail"
+# deliver local mail into the current directory
 mail_dir="PWD"
 
-# use syslogd for logs?
+# log into the current directory
 use_syslog=false
-
-# directory for log files if not using syslogd:
 log_dir="PWD"
+
+# relative paths to warn/failure message templates
+errmsg_file="PWD/../../tpl/failmsg.tpl"
+warnmsg_file="PWD/../../tpl/warnmsg.tpl"

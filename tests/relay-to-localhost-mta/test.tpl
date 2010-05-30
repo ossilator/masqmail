@@ -1,12 +1,12 @@
-#! /bin/bash
+#!/bin/sh
 
-# should be run from within tests dir set if you move this:
+# path to the masqmail executable
 mm_bin=../../src/masqmail
 
 hfrom="\"Fritz Meier\" <`logname`@RECV_HOST>"
 hto="$hfrom"
 to=`logname`@RECV_HOST
-hsubject="MasqMail stdin Test"
+hsubject="Masqmail test: relay-to-localhost-mta"
 
 
 # Testing with rcpt on cmd line
@@ -21,7 +21,6 @@ To: $hto
 Subject: $hsubject
 
 Hallo Fritz!
-
 ..
 there is a dot above (Yes, one and not two).
 
@@ -32,7 +31,7 @@ Fritz
 
 EOF
 
-#
+
 # Testing with rcpt on cmd line with -oi option
 # (dot does not end)
 #
@@ -54,7 +53,7 @@ Fritz
 
 EOF
 
-#
+
 # Testing with rcpt read from headers (-t option)
 # (dot does end)
 #
