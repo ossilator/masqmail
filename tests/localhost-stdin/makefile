@@ -6,7 +6,7 @@ all: test.conf
 
 test.conf: test.conf.tpl
 	# fails if the current path contains `^'.
-	sed "s^PWD^`pwd`^" $< >$@
+	sed "s/SMTP_HOST/`hostname`/; s^PWD^`pwd`^" $< >$@
 
 clean:
 	rm -f test.conf
