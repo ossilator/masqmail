@@ -6,7 +6,7 @@ mm_bin=../../src/masqmail
 hfrom="\"Fritz Meier\" <`logname`@RECV_HOST>"
 hto="$hfrom"
 to=`logname`@RECV_HOST
-hsubject="Masqmail test: `basename pwd`"
+hsubject="Masqmail test: hostname-stdin"
 
 
 # Testing with rcpt on cmd line
