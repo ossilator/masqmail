@@ -161,9 +161,15 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 
 	conf.do_verbose = FALSE;
 
+	/* closing and reopening the log ensures that it is open afterwards
+	   because it is possible that the log is assigned to fd 1 and gets
+	   thus closes by fclose(stdout). Similar for the debugfile.
+	*/
+	logclose();
 	fclose(stdin);
 	fclose(stdout);
 	fclose(stderr);
+	logopen();
 
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval, argv);
 }
@@ -194,9 +200,15 @@ mode_get_daemon(gint get_interval, char *argv[])
 
 	conf.do_verbose = FALSE;
 
+	/* closing and reopening the log ensures that it is open afterwards
+	   because it is possible that the log is assigned to fd 1 and gets
+	   thus closes by fclose(stdout). Similar for the debugfile.
+	*/
+	logclose();
 	fclose(stdin);
 	fclose(stdout);
 	fclose(stderr);
+	logopen();
 
 	get_daemon(get_interval, argv);
 }
