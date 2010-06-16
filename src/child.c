@@ -27,14 +27,6 @@
 
 #include "masqmail.h"
 
-int volatile sigchild_seen = 0;
-
-static void
-sigchild_handler(int sig)
-{
-	sigchild_seen = 1;
-	signal(SIGHUP, sigchild_handler);
-}
 
 int
 child(const char *command)
@@ -43,11 +35,6 @@ child(const char *command)
 
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, pipe) == 0) {
 		pid_t pid;
-
-		/*
-		   sigchild_seen = 0;
-		   signal(SIGCHLD, sigchild_handler);
-		 */
 
 		pid = fork();
 		if (pid == 0) {
