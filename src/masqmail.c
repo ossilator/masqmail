@@ -149,11 +149,14 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 		}
 	}
 
-	if ((pid = fork()) > 0) {
-		exit(EXIT_SUCCESS);
-	} else if (pid < 0) {
-		logwrite(LOG_ALERT, "could not fork!");
-		exit(EXIT_FAILURE);
+	/* reparent to init only if init is not already the parent */
+	if (getppid() != 1) {
+		if ((pid = fork()) > 0) {
+			exit(EXIT_SUCCESS);
+		} else if (pid < 0) {
+			logwrite(LOG_ALERT, "could not fork!");
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	signal(SIGTERM, sigterm_handler);
@@ -188,11 +191,14 @@ mode_get_daemon(gint get_interval, char *argv[])
 		}
 	}
 
-	if ((pid = fork()) > 0) {
-		exit(EXIT_SUCCESS);
-	} else if (pid < 0) {
-		logwrite(LOG_ALERT, "could not fork!");
-		exit(EXIT_FAILURE);
+	/* reparent to init only if init is not already the parent */
+	if (getppid() != 1) {
+		if ((pid = fork()) > 0) {
+			exit(EXIT_SUCCESS);
+		} else if (pid < 0) {
+			logwrite(LOG_ALERT, "could not fork!");
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	signal(SIGTERM, sigterm_handler);
