@@ -7,6 +7,19 @@ affect users directly.
 The manual pages describe newly added options. Take them for reference.
 
 
+0.2.24
+
+- This version keeps on logging after an restart of the deamon, for
+instance when sending SIGHUP to the daemon process for rereading its
+config.
+
+- Now the daemon keeps the same process id when it receives SIGHUP to
+reread the config.
+
+- Mail messages with lines longer than 4096 characters do not get
+truncated anymore.
+
+
 0.2.23
 
 - This release fixes a major bug in 0.2.22 which made online detection
