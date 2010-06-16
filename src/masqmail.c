@@ -603,7 +603,7 @@ main(int argc, char *argv[])
 	/* ignore SIGPIPE signal */
 	signal(SIGPIPE, SIG_IGN);
 
-	/* close all possibly open file descriptors */
+	/* close all possibly open file descriptors, except std{in,out,err} */
 	{
 		int i, max_fd = sysconf(_SC_OPEN_MAX);
 
