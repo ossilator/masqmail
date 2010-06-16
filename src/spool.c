@@ -29,7 +29,9 @@ read_line(FILE * in, gchar * buf, gint buf_len)
 
 	while ((c = getc(in)) != '\n' && (c != EOF)) {
 		if (p >= buf_len - 1) {
-			return 0;
+			buf[buf_len-1] = '\0';
+			ungetc(c, in);
+			return buf_len;
 		}
 		buf[p++] = c;
 	}
