@@ -2,6 +2,8 @@ EXTRA_DIST = examples docs man tpl tests misc
 
 SUBDIRS = src man
 
+bin_SCRIPTS = contrib/rmail
+
 install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir run_dir doc_dir
 
 

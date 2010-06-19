@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Dummy UUCP rmail command for postfix/qmail systems
+#
+# written by luciano l. mannucci <luke@nameron.smd.sublink.org>
+# improved by Wietse Venema <wietse@porcupine.org>
+# see: 
+#      List:       postfix-users
+#      Subject:    Rmail: very small fix
+#      From:       luke@nameron.smd.sublink.org (luciano l. mannucci)
+#      Date:       2000-09-13 14:31:30
+#      URL:        http://marc.info/?l=postfix-users&m=96885536302087
+#
+# taken from postfix-2.5.5/auxiliary/rmail/rmail
+
+
+SENDMAIL="/usr/sbin/sendmail"
+IFS=" " read junk from junk junk junk junk junk junk junk relay
+
+case "$from" in
+ *[@!]*) ;;
+      *) from="$from@$relay";;
+esac
+
+exec $SENDMAIL -i -f "$from" -- "$@"
