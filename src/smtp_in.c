@@ -1,5 +1,6 @@
 /*  MasqMail
     Copyright (C) 1999-2001 Oliver Kurth
+    Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,8 +48,9 @@ get_id(const gchar * line)
 {
 	gint i;
 	for (i = 0; i < SMTP_NUM_IDS; i++) {
-		if (strncasecmp(smtp_cmds[i].cmd, line, strlen(smtp_cmds[i].cmd)) == 0)
+		if (strncasecmp(smtp_cmds[i].cmd, line, strlen(smtp_cmds[i].cmd)) == 0) {
 			return (smtp_cmd_id) i;
+		}
 	}
 	return SMTP_ERROR;
 }
@@ -59,20 +61,24 @@ get_id(const gchar * line)
 static gboolean
 get_address(gchar * line, gchar * addr)
 {
-	gchar *p = line, *q = addr;
+	gchar *p = line;
+	gchar *q = addr;
 
 	/* skip MAIL FROM: and RCPT TO: */
-	while (*p && (*p != ':'))
+	while (*p && (*p != ':')) {
 		p++;
+	}
 	p++;
 
 	/* skip spaces: */
-	while (*p && isspace(*p))
+	while (*p && isspace(*p)) {
 		p++;
+	}
 
 	/* get address: */
-	while (*p && !isspace(*p) && (q < addr + MAX_ADDRESS - 1))
+	while (*p && !isspace(*p) && (q < addr + MAX_ADDRESS - 1)) {
 		*(q++) = *(p++);
+	}
 	*q = 0;
 
 	return TRUE;
@@ -82,19 +88,20 @@ static smtp_connection*
 create_base(gchar * remote_host)
 {
 	smtp_connection *base = g_malloc(sizeof(smtp_connection));
-	if (base) {
-		base->remote_host = g_strdup(remote_host);
-
-		base->prot = PROT_SMTP;
-		base->next_id = 0;
-		base->helo_seen = 0;
-		base->from_seen = 0;
-		base->rcpt_seen = 0;
-		base->msg = NULL;
-
-		return base;
+	if (!base) {
+		return NULL;
 	}
-	return NULL;
+
+	base->remote_host = g_strdup(remote_host);
+
+	base->prot = PROT_SMTP;
+	base->next_id = 0;
+	base->helo_seen = 0;
+	base->from_seen = 0;
+	base->rcpt_seen = 0;
+	base->msg = NULL;
+
+	return base;
 }
 
 static void
@@ -135,214 +142,233 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 	psc->msg = msg;
 
 	buffer = (gchar *) g_malloc(BUF_LEN);
-	if (buffer) {
-		/* send greeting string, containing ESMTP: */
-		smtp_printf(out, "220 %s MasqMail %s ESMTP\r\n", conf.host_name, VERSION);
+	if (!buffer) {
+		/* this check is actually unneccessary as g_malloc()
+		   aborts on failure */
+		return;
+	}
 
-		while ((len = read_sockline(in, buffer, BUF_LEN, 5 * 60, READSOCKL_CHUG)) >= 0) {
-			cmd_id = get_id(buffer);
+	/* send greeting string, containing ESMTP: */
+	smtp_printf(out, "220 %s MasqMail %s ESMTP\r\n", conf.host_name, VERSION);
 
-			switch (cmd_id) {
-			case SMTP_EHLO:
-				psc->prot = PROT_ESMTP;
-				/* fall through */
-			case SMTP_HELO:
-				psc->helo_seen = TRUE;
+	while ((len = read_sockline(in, buffer, BUF_LEN, 5 * 60, READSOCKL_CHUG)) >= 0) {
+		cmd_id = get_id(buffer);
 
-				if (!conf.defer_all) {  /* I need this to debug delivery failures */
-					if (psc->prot == PROT_ESMTP) {
-						smtp_printf(out, "250-%s Nice to meet you with ESMTP\r\n", conf.host_name);
-						/* not yet: fprintf(out, "250-SIZE\r\n"); */
-						smtp_printf(out, "250-PIPELINING\r\n" "250 HELP\r\n");
-					} else {
-						smtp_printf(out, "250 %s pretty old mailer, huh?\r\n", conf.host_name);
-					}
-					break;
-				} else {
-					smtp_printf(out, "421 %s service temporarily unavailable.\r\n", conf.host_name);
-				}
+		switch (cmd_id) {
+		case SMTP_EHLO:
+			psc->prot = PROT_ESMTP;
+			/* fall through */
+		case SMTP_HELO:
+			psc->helo_seen = TRUE;
 
-			case SMTP_MAIL_FROM:
-				if (psc->helo_seen && !psc->from_seen) {
-					gchar buf[MAX_ADDRESS];
-					address *addr;
-
-					msg = create_message();
-					msg->received_host = remote_host ? g_strdup(remote_host) : NULL;
-					msg->received_prot = psc->prot;
-					msg->ident = ident ? g_strdup(ident) : NULL;
-					/* get transfer id and increment for next one */
-					msg->transfer_id = (psc->next_id)++;
-
-					get_address(buffer, buf);
-					if ((addr = remote_host
-					    ? create_address(buf, TRUE)
-					    : create_address_qualified(buf, TRUE, conf.host_name))) {
-						if (addr->domain != NULL) {
-							psc->from_seen = TRUE;
-							msg->return_path = addr;
-							smtp_printf(out, "250 OK %s is a nice guy.\r\n", addr->address);
-						} else {
-							smtp_printf(out, "501 return path must be qualified.\r\n", buf);
-						}
-					} else {
-						smtp_printf(out, "501 %s: syntax error.\r\n", buf);
-					}
-				} else {
-					if (!psc->helo_seen)
-						smtp_printf(out, "503 need HELO or EHLO\r\n");
-					else
-						smtp_printf(out, "503 MAIL FROM: already given.\r\n");
-				}
-				break;
-
-			case SMTP_RCPT_TO:
-
-				if (psc->helo_seen && psc->from_seen) {
-					char buf[MAX_ADDRESS];
-					address *addr;
-
-					get_address(buffer, buf);
-					if ((addr = remote_host
-					    ? create_address(buf, TRUE)
-					    : create_address_qualified(buf, TRUE, conf.host_name))) {
-						if (addr->local_part[0] != '|') {
-							if (addr->domain != NULL) {
-								gboolean do_relay = conf.do_relay;
-								if (!do_relay) {
-									if ((do_relay = addr_is_local(msg->return_path))) {
-									}
-									if (!do_relay) {
-										do_relay = addr_is_local(addr);
-									}
-								}
-								if (do_relay) {
-									psc->rcpt_seen = TRUE;
-									msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
-									smtp_printf(out, "250 OK %s is our friend.\r\n", addr->address);
-								} else {
-									smtp_printf(out, "550 relaying to %s denied.\r\n", addr_string(addr));
-								}
-							} else {
-								smtp_printf(out, "501 recipient address must be qualified.\r\n", buf);
-							}
-						} else
-							smtp_printf(out, "501 %s: no pipe allowed for SMTP connections\r\n", buf);
-					} else {
-						smtp_printf(out, "501 %s: syntax error in address.\r\n", buf);
-					}
-				} else {
-
-					if (!psc->helo_seen)
-						smtp_printf(out, "503 need HELO or EHLO.\r\n");
-					else
-						smtp_printf(out, "503 need MAIL FROM: before RCPT TO:\r\n");
-				}
-				break;
-
-			case SMTP_DATA:
-				if (psc->helo_seen && psc->rcpt_seen) {
-					accept_error err;
-
-					smtp_printf(out, "354 okay, and do not forget the dot\r\n");
-
-					if ((err = accept_message(in, msg, conf.do_save_envelope_to ? ACC_SAVE_ENVELOPE_TO : 0)) == AERR_OK) {
-						if (spool_write(msg, TRUE)) {
-							pid_t pid;
-							smtp_printf(out, "250 OK id=%s\r\n", msg->uid);
-
-							if (remote_host != NULL)
-								logwrite(LOG_NOTICE, "%s <= <%s@%s> host=%s with %s\n", msg->uid, msg->return_path->local_part,
-								         msg->return_path->domain, remote_host, prot_names[psc->prot]);
-							else
-								logwrite(LOG_NOTICE, "%s <= <%s@%s> with %s\n", msg->uid, msg->return_path->local_part,
-								         msg->return_path->domain, prot_names[psc->prot]);
-
-							if (!conf.do_queue) {
-								if ((pid = fork()) == 0) {
-
-									if (deliver(msg))
-										_exit(EXIT_SUCCESS);
-									else
-										_exit(EXIT_FAILURE);
-
-								} else if (pid < 0) {
-									logwrite(LOG_ALERT, "could not fork for delivery, id = %s", msg->uid);
-								}
-							} else {
-								DEBUG(1) debugf("queuing forced by configuration or option.\n");
-							}
-						} else {
-							smtp_printf(out, "451 Could not write spool file\r\n");
-							return;
-						}
-					} else {
-						switch (err) {
-						case AERR_TIMEOUT:
-							return;
-						case AERR_EOF:
-							return;
-						default:
-							/* should never happen: */
-							smtp_printf(out, "451 Unknown error\r\n");
-							return;
-						}
-					}
-					psc->rcpt_seen = psc->from_seen = FALSE;
-					destroy_message(msg);
-					msg = NULL;
-				} else {
-					if (!psc->helo_seen)
-						smtp_printf(out, "503 need HELO or EHLO.\r\n");
-					else
-						smtp_printf(out, "503 need RCPT TO: before DATA\r\n");
-				}
-				break;
-			case SMTP_QUIT:
-				smtp_printf(out, "221 goodbye\r\n");
-				if (msg != NULL)
-					destroy_message(msg);
-				return;
-			case SMTP_RSET:
-				psc->from_seen = psc->rcpt_seen = FALSE;
-				if (msg != NULL)
-					destroy_message(msg);
-				msg = NULL;
-				smtp_printf(out, "250 OK\r\n");
-				break;
-			case SMTP_NOOP:
-				smtp_printf(out, "250 OK\r\n");
-				break;
-			case SMTP_HELP:
-				{
-					int i;
-
-					smtp_printf(out, "214-supported commands:\r\n");
-					for (i = 0; i < SMTP_NUM_IDS - 1; i++) {
-						smtp_printf(out, "214-%s\r\n", smtp_cmds[i].cmd);
-					}
-					smtp_printf(out, "214 %s\r\n", smtp_cmds[i].cmd);
-				}
-				break;
-			default:
-				smtp_printf(out, "501 command not recognized\r\n");
-				DEBUG(1) debugf("command not recognized, was '%s'\n", buffer);
+			if (conf.defer_all) {  /* I need this to debug delivery failures */
+				smtp_printf(out, "421 %s service temporarily unavailable.\r\n", conf.host_name);
 				break;
 			}
-		}
-		switch (len) {
-		case -3:
-			logwrite(LOG_NOTICE, "connection timed out\n");
+
+			if (psc->prot == PROT_ESMTP) {
+				smtp_printf(out, "250-%s Nice to meet you with ESMTP\r\n", conf.host_name);
+				/* not yet: fprintf(out, "250-SIZE\r\n"); */
+				smtp_printf(out, "250-PIPELINING\r\n" "250 HELP\r\n");
+			} else {
+				smtp_printf(out, "250 %s pretty old mailer, huh?\r\n", conf.host_name);
+			}
 			break;
-		case -2:
-			logwrite(LOG_NOTICE, "line overflow\n");
+
+		case SMTP_MAIL_FROM:
+			{
+				gchar buf[MAX_ADDRESS];
+				address *addr;
+	
+				if (!psc->helo_seen) {
+					smtp_printf(out, "503 need HELO or EHLO\r\n");
+					break;
+				}
+				if (psc->from_seen) {
+					smtp_printf(out, "503 MAIL FROM: already given.\r\n");
+					break;
+				}
+	
+				msg = create_message();
+				msg->received_host = remote_host ? g_strdup(remote_host) : NULL;
+				msg->received_prot = psc->prot;
+				msg->ident = ident ? g_strdup(ident) : NULL;
+				/* get transfer id and increment for next one */
+				msg->transfer_id = (psc->next_id)++;
+	
+				get_address(buffer, buf);
+				if (remote_host) {
+					addr = create_address(buf, TRUE);
+				} else {
+					addr = create_address_qualified(buf, TRUE, conf.host_name);
+				}
+				if (!addr) {
+					smtp_printf(out, "501 %s: syntax error.\r\n", buf);
+				} else if (!addr->domain) {
+					smtp_printf(out, "501 return path must be qualified.\r\n", buf);
+				} else {
+					psc->from_seen = TRUE;
+					msg->return_path = addr;
+					smtp_printf(out, "250 OK %s is a nice guy.\r\n", addr->address);
+				}
+			}
 			break;
-		case -1:
-			logwrite(LOG_NOTICE, "received EOF\n");
+
+		case SMTP_RCPT_TO:
+			{
+				char buf[MAX_ADDRESS];
+				address *addr;
+	
+				if (!psc->helo_seen) {
+					smtp_printf(out, "503 need HELO or EHLO.\r\n");
+					break;
+				}
+				if (!psc->from_seen) {
+					smtp_printf(out, "503 need MAIL FROM: before RCPT TO:\r\n");
+					break;
+				}
+	
+				get_address(buffer, buf);
+				if (remote_host) {
+					addr = create_address(buf, TRUE);
+				} else {
+					addr = create_address_qualified(buf, TRUE, conf.host_name);
+				}
+				if (!addr) {
+					smtp_printf(out, "501 %s: syntax error in address.\r\n", buf);
+					break;
+				}
+				if (addr->local_part[0] == '|') {
+					smtp_printf(out, "501 %s: no pipe allowed for SMTP connections\r\n", buf);
+					break;
+				}
+				if (!addr->domain) {
+					smtp_printf(out, "501 recipient address must be qualified.\r\n", buf);
+					break;
+				}
+				gboolean do_relay = conf.do_relay;
+				if (!do_relay) {
+					do_relay = addr_is_local(msg->return_path);
+					if (!do_relay) {
+						do_relay = addr_is_local(addr);
+					}
+				}
+				if (!do_relay) {
+					smtp_printf(out, "550 relaying to %s denied.\r\n", addr_string(addr));
+					break;
+				}
+				psc->rcpt_seen = TRUE;
+				msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
+				smtp_printf(out, "250 OK %s is our friend.\r\n", addr->address);
+			}
 			break;
+
+		case SMTP_DATA:
+			if (!psc->helo_seen) {
+				smtp_printf(out, "503 need HELO or EHLO.\r\n");
+				break;
+			}
+			if (!psc->rcpt_seen) {
+				smtp_printf(out, "503 need RCPT TO: before DATA\r\n");
+				break;
+			}
+			accept_error err;
+
+			smtp_printf(out, "354 okay, and do not forget the dot\r\n");
+
+			err = accept_message(in, msg, conf.do_save_envelope_to ? ACC_SAVE_ENVELOPE_TO : 0);
+			if (err != AERR_OK) {
+				if (err == AERR_TIMEOUT || err == AERR_EOF) {
+					return;
+				}
+				/* should never happen: */
+				smtp_printf(out, "451 Unknown error\r\n");
+				return;
+			}
+
+
+			if (!spool_write(msg, TRUE)) {
+				smtp_printf(out, "451 Could not write spool file\r\n");
+				return;
+			}
+			pid_t pid;
+			smtp_printf(out, "250 OK id=%s\r\n", msg->uid);
+
+			if (remote_host != NULL) {
+				logwrite(LOG_NOTICE, "%s <= <%s@%s> host=%s with %s\n", msg->uid,
+				         msg->return_path->local_part, msg->return_path->domain,
+				         remote_host, prot_names[psc->prot]);
+			} else {
+				logwrite(LOG_NOTICE, "%s <= <%s@%s> with %s\n", msg->uid,
+				         msg->return_path->local_part, msg->return_path->domain,
+				         prot_names[psc->prot]);
+			}
+
+			if (conf.do_queue) {
+				DEBUG(1) debugf("queuing forced by configuration or option.\n");
+			} else {
+				pid = fork();
+				if (pid == 0) {
+					_exit(deliver(msg));
+				} else if (pid < 0) {
+					logwrite(LOG_ALERT, "could not fork for delivery, id = %s", msg->uid);
+				}
+			}
+			psc->rcpt_seen = psc->from_seen = FALSE;
+			destroy_message(msg);
+			msg = NULL;
+			break;
+
+		case SMTP_QUIT:
+			smtp_printf(out, "221 goodbye\r\n");
+			if (msg) {
+				destroy_message(msg);
+			}
+			return;
+
+		case SMTP_RSET:
+			psc->from_seen = psc->rcpt_seen = FALSE;
+			if (msg) {
+				destroy_message(msg);
+				msg = NULL;
+			}
+			smtp_printf(out, "250 OK\r\n");
+			break;
+
+		case SMTP_NOOP:
+			smtp_printf(out, "250 OK\r\n");
+			break;
+
+		case SMTP_HELP:
+			{
+				int i;
+
+				smtp_printf(out, "214-supported commands:\r\n");
+				for (i = 0; i < SMTP_NUM_IDS - 1; i++) {
+					smtp_printf(out, "214-%s\r\n", smtp_cmds[i].cmd);
+				}
+				smtp_printf(out, "214 %s\r\n", smtp_cmds[i].cmd);
+			}
+			break;
+
 		default:
+			smtp_printf(out, "501 command not recognized\r\n");
+			DEBUG(1) debugf("command not recognized, was '%s'\n", buffer);
 			break;
 		}
+	}
+	switch (len) {
+	case -3:
+		logwrite(LOG_NOTICE, "connection timed out\n");
+		break;
+	case -2:
+		logwrite(LOG_NOTICE, "line overflow\n");
+		break;
+	case -1:
+		logwrite(LOG_NOTICE, "received EOF\n");
+		break;
+	default:
+		break;
 	}
 }
 #endif
