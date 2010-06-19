@@ -93,6 +93,10 @@ destroy_message(message * msg)
 {
 	GList *node;
 
+	if (!msg) {
+		return;
+	}
+
 	if (msg->uid)
 		g_free(msg->uid);
 	if (msg->ident)
