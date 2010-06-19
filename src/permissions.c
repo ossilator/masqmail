@@ -26,17 +26,24 @@ gboolean
 is_ingroup(uid_t uid, gid_t gid)
 {
 	struct group *grent = getgrgid(gid);
+	struct passwd *pwent = getpwuid(uid);
+	char *entry;
+	int i = 0;
 
-	if (grent) {
-		struct passwd *pwent = getpwuid(uid);
-		if (pwent) {
-			char *entry;
-			int i = 0;
-			while ((entry = grent->gr_mem[i++])) {
-				if (strcmp(pwent->pw_name, entry) == 0)
-					return TRUE;
-			}
-		}
+	if (!grent) {
+		return FALSE;
+	}
+	if (!pwent) {
+		return FALSE;
+	}
+	/* check primary group */
+	if (pwent->pw_gid == gid) {
+		return TRUE;
+	}
+	/* check secondary groups */
+	while ((entry = grent->gr_mem[i++])) {
+		if (strcmp(pwent->pw_name, entry) == 0)
+			return TRUE;
 	}
 	return FALSE;
 }
