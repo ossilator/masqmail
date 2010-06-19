@@ -9,7 +9,9 @@ could be called with this name. It switched to read-message-from-stdin
 mode then. AFAIK this is not enough to support UUCP, at least not at
 the level that is presumed by UUCP software. It seems as if at least
 the first input line should be handled special as it includes the
-envelope recipient. (Correct me if I'm wrong.)
+envelope recipient. (Correct me if I'm wrong.) I discovered that exim
+has rmail support like this. That's probably the reason why it was
+the same in masqmail.
 
 A better, through still basic approach, was introduced with 0.2.24:
 misc/rmail is a small shell script (taken from postfix), which calls
