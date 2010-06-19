@@ -140,48 +140,50 @@ queue_list()
 
 	msg_list = read_queue(FALSE);
 
-	if (msg_list != NULL) {
-		foreach(msg_list, msg_node) {
-			message *msg = (message *) (msg_node->data);
-			GList *rcpt_node;
-			gchar *size_str = NULL;
-			gchar *time_str = NULL;
-			gchar *host_str = NULL;
-			gchar *ident_str = NULL;
-
-			if (msg->data_size >= 0)
-				size_str = g_strdup_printf(" size=%d", msg->data_size);
-			if (msg->received_time > 0) {
-				gchar *tmp_str;
-				time_str = g_strdup_printf(" age=%s", tmp_str = format_difftime(difftime(time(NULL), msg->received_time)));
-				g_free(tmp_str);
-			}
-			if (msg->received_host != NULL)
-				host_str = g_strdup_printf(" host=%s", msg->received_host);
-			if (msg->ident != NULL)
-				ident_str = g_strdup_printf(" ident=%s", msg->ident);
-
-			printf("%s <= %s%s%s%s%s\n", msg->uid, addr_string(msg->return_path), size_str ? size_str : "",
-			       time_str ? time_str : "", host_str ? host_str : "", ident_str ? ident_str : "");
-
-			if (size_str)
-				g_free(size_str);
-			if (time_str)
-				g_free(time_str);
-			if (host_str)
-				g_free(host_str);
-			if (ident_str)
-				g_free(ident_str);
-
-			foreach(msg->rcpt_list, rcpt_node) {
-				address *rcpt = (address *) (rcpt_node->data);
-
-				printf("              %s %s\n", addr_is_delivered(rcpt) ? "=>" : (addr_is_failed(rcpt) ? "!=" : "=="), addr_string(rcpt));
-			}
-			g_free(msg);
-		}
-	} else
+	if (msg_list == NULL) {
 		printf("mail queue is empty.\n");
+		return;
+	}
+
+	foreach(msg_list, msg_node) {
+		message *msg = (message *) (msg_node->data);
+		GList *rcpt_node;
+		gchar *size_str = NULL;
+		gchar *time_str = NULL;
+		gchar *host_str = NULL;
+		gchar *ident_str = NULL;
+
+		if (msg->data_size >= 0)
+			size_str = g_strdup_printf(" size=%d", msg->data_size);
+		if (msg->received_time > 0) {
+			gchar *tmp_str;
+			time_str = g_strdup_printf(" age=%s", tmp_str = format_difftime(difftime(time(NULL), msg->received_time)));
+			g_free(tmp_str);
+		}
+		if (msg->received_host != NULL)
+			host_str = g_strdup_printf(" host=%s", msg->received_host);
+		if (msg->ident != NULL)
+			ident_str = g_strdup_printf(" ident=%s", msg->ident);
+
+		printf("%s <= %s%s%s%s%s\n", msg->uid, addr_string(msg->return_path), size_str ? size_str : "",
+		       time_str ? time_str : "", host_str ? host_str : "", ident_str ? ident_str : "");
+
+		if (size_str)
+			g_free(size_str);
+		if (time_str)
+			g_free(time_str);
+		if (host_str)
+			g_free(host_str);
+		if (ident_str)
+			g_free(ident_str);
+
+		foreach(msg->rcpt_list, rcpt_node) {
+			address *rcpt = (address *) (rcpt_node->data);
+
+			printf("              %s %s\n", addr_is_delivered(rcpt) ? "=>" : (addr_is_failed(rcpt) ? "!=" : "=="), addr_string(rcpt));
+		}
+		g_free(msg);
+	}
 }
 
 gboolean
@@ -193,35 +195,32 @@ queue_delete(gchar * uid)
 	gchar *dat_name = g_strdup_printf("%s/input/%s-D", conf.spool_dir, uid);
 	struct stat stat_buf;
 
-	if (spool_lock(uid)) {
-
-		if (stat(hdr_name, &stat_buf) == 0) {
-			if (unlink(hdr_name) != 0) {
-				fprintf(stderr, "could not unlink %s: %s\n", hdr_name, strerror(errno));
-				hdr_ok = FALSE;
-			}
-		} else {
-			fprintf(stderr, "could not stat file %s: %s\n", hdr_name, strerror(errno));
-			hdr_ok = FALSE;
-		}
-		if (stat(dat_name, &stat_buf) == 0) {
-			if (unlink(dat_name) != 0) {
-				fprintf(stderr, "could not unlink %s: %s\n", dat_name, strerror(errno));
-				dat_ok = FALSE;
-			}
-		} else {
-			fprintf(stderr, "could not stat file %s: %s\n", dat_name, strerror(errno));
-			dat_ok = FALSE;
-		}
-		printf("message %s deleted\n", uid);
-
-		spool_unlock(uid);
-
-	} else {
-
+	if (!spool_lock(uid)) {
 		fprintf(stderr, "message %s is locked.\n", uid);
 		return FALSE;
 	}
+
+	if (stat(hdr_name, &stat_buf) == 0) {
+		if (unlink(hdr_name) != 0) {
+			fprintf(stderr, "could not unlink %s: %s\n", hdr_name, strerror(errno));
+			hdr_ok = FALSE;
+		}
+	} else {
+		fprintf(stderr, "could not stat file %s: %s\n", hdr_name, strerror(errno));
+		hdr_ok = FALSE;
+	}
+	if (stat(dat_name, &stat_buf) == 0) {
+		if (unlink(dat_name) != 0) {
+			fprintf(stderr, "could not unlink %s: %s\n", dat_name, strerror(errno));
+			dat_ok = FALSE;
+		}
+	} else {
+		fprintf(stderr, "could not stat file %s: %s\n", dat_name, strerror(errno));
+		dat_ok = FALSE;
+	}
+	printf("message %s deleted\n", uid);
+
+	spool_unlock(uid);
 
 	return (dat_ok && hdr_ok);
 }
