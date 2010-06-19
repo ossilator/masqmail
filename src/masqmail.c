@@ -258,13 +258,9 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 	message *msg = create_message();
 	gint i;
 
-	if (return_path != NULL) {
-		if ((conf.orig_uid != 0)
-		    && (conf.orig_uid != conf.mail_uid)
-		    && (!is_ingroup(conf.orig_uid, conf.mail_gid))) {
-			fprintf(stderr, "must be in root, %s or in group %s for setting return path.\n", DEF_MAIL_USER, DEF_MAIL_GROUP);
-			exit(EXIT_FAILURE);
-		}
+	if (return_path && !is_privileged_user(conf.orig_uid)) {
+		fprintf(stderr, "must be in root, %s or in group %s for setting return path.\n", DEF_MAIL_USER, DEF_MAIL_GROUP);
+		exit(EXIT_FAILURE);
 	}
 
 	if (!conf.run_as_user) {
