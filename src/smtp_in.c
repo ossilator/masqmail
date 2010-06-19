@@ -321,17 +321,14 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 
 		case SMTP_QUIT:
 			smtp_printf(out, "221 goodbye\r\n");
-			if (msg) {
-				destroy_message(msg);
-			}
+			destroy_message(msg);
+			msg = NULL;
 			return;
 
 		case SMTP_RSET:
 			psc->from_seen = psc->rcpt_seen = FALSE;
-			if (msg) {
-				destroy_message(msg);
-				msg = NULL;
-			}
+			destroy_message(msg);
+			msg = NULL;
 			smtp_printf(out, "250 OK\r\n");
 			break;
 
