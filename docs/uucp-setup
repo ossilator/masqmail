@@ -1,0 +1,54 @@
+This document includes UUCP related information
+
+Note: My knowledge of UUCP setups is very poor. I hope that the
+      provided information is correct. Improvements to this document
+      are very welcome.  --meillo
+
+UUCP setups call the MTA as `rmail'. Until version 0.2.23 masqmail
+could be called with this name. It switched to read-message-from-stdin
+mode then. AFAIK this is not enough to support UUCP, at least not at
+the level that is presumed by UUCP software. It seems as if at least
+the first input line should be handled special as it includes the
+envelope recipient. (Correct me if I'm wrong.)
+
+A better, through still basic approach, was introduced with 0.2.24:
+misc/rmail is a small shell script (taken from postfix), which calls
+masqmail with appropriate options. Copy the script into your path and
+ensure that the included sendmail variable points to the masqmail
+executable.
+
+A more sophisticated rmail implementation seems to be available from
+sendmail. I don't know details about it and whether it is needed. The
+difference of sendmail's rmail implementation could be related to
+address rewriting (user@example.org <-> org!example!user). But I
+don't know details -- if you do, please let me know.
+
+
+UUCP makes use of the -f (set return path address, i.e. from whom the
+mail is) option of masqmail which is only permitted for user root,
+the trusted user (usually `mail'), and the trusted group (often group
+`mail'). UUCP, however, usually runs as user and group `uucp'.
+
+Masqmail currently supports only one trusted group and it is planned
+to remain so for simplicity reasons. (If you have good arguments on
+the case, try to convince me of the opposite.) Therefore the solution
+for masqmail is to add the user `uucp' to the trusted group (often
+group `mail'):
+
+    usermod -G mail -a uucp
+
+This is not the perfect solution but an acceptable trade-off.
+
+
+If one really needs to enable user `uucp' to set -f but can not add
+it to the trusted group, see the comment in is_privileged_user() in
+permissions.c. It shows a hack which allows to trust another group,
+for instance the group `uucp'.
+
+
+See [1] for reasons why -f is important and needed.
+
+[1] http://bugs.hylafax.org/show_bug.cgi?id=842
+
+
+meillo
