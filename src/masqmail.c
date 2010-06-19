@@ -375,6 +375,9 @@ main(int argc, char *argv[])
 		mta_mode = MODE_RUNQUEUE;
 		do_runq = TRUE;
 	} else if (strcmp(progname, "rmail") == 0) {
+		/* the `rmail' alias should probably be removed now
+		   that we have the rmail script. But let's keep it
+		   for some while for compatibility. 2010-06-19 */
 		mta_mode = MODE_ACCEPT;
 		opt_i = TRUE;
 	} else if (strcmp(progname, "smtpd") == 0 || strcmp(progname, "in.smtpd") == 0) {
