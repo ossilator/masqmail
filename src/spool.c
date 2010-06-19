@@ -91,106 +91,110 @@ gboolean
 spool_read_data(message * msg)
 {
 	FILE *in;
-	gboolean ok = FALSE;
 	gchar *spool_file;
 
 	DEBUG(5) debugf("spool_read_data entered\n");
 	spool_file = g_strdup_printf("%s/input/%s-D", conf.spool_dir, msg->uid);
 	DEBUG(5) debugf("reading data spool file '%s'\n", spool_file);
-	if ((in = fopen(spool_file, "r"))) {
-		char buf[MAX_DATALINE];
-		int len;
-
-		/* msg uid */
-		read_line(in, buf, MAX_DATALINE);
-
-		/* data */
-		msg->data_list = NULL;
-		while ((len = read_line(in, buf, MAX_DATALINE)) > 0) {
-			msg->data_list = g_list_prepend(msg->data_list, g_strdup(buf));
-		}
-		msg->data_list = g_list_reverse(msg->data_list);
-		fclose(in);
-		ok = TRUE;
-	} else
+	in = fopen(spool_file, "r");
+	if (!in) {
 		logwrite(LOG_ALERT, "could not open spool data file %s: %s\n", spool_file, strerror(errno));
-	return ok;
+		return FALSE;
+	}
+
+	char buf[MAX_DATALINE];
+	int len;
+
+	/* msg uid */
+	read_line(in, buf, MAX_DATALINE);
+
+	/* data */
+	msg->data_list = NULL;
+	while ((len = read_line(in, buf, MAX_DATALINE)) > 0) {
+		msg->data_list = g_list_prepend(msg->data_list, g_strdup(buf));
+	}
+	msg->data_list = g_list_reverse(msg->data_list);
+	fclose(in);
+	return TRUE;
 }
 
 gboolean
 spool_read_header(message * msg)
 {
 	FILE *in;
-	gboolean ok = FALSE;
 	gchar *spool_file;
 
 	/* header spool: */
 	spool_file = g_strdup_printf("%s/input/%s-H", conf.spool_dir, msg->uid);
-	if ((in = fopen(spool_file, "r"))) {
-		header *hdr = NULL;
-		char buf[MAX_DATALINE];
-		int len;
+	in = fopen(spool_file, "r");
+	if (!in) {
+		logwrite(LOG_ALERT, "could not open spool header file %s: %s\n",
+		         spool_file, strerror(errno));
+		return FALSE;
+	}
 
-		/* msg uid */
-		read_line(in, buf, MAX_DATALINE);
+	header *hdr = NULL;
+	char buf[MAX_DATALINE];
+	int len;
 
-		/* envelope header */
-		while ((len = read_line(in, buf, MAX_DATALINE)) > 0) {
-			if (buf[0] == '\n')
-				break;
-			else if (strncasecmp(buf, "MF:", 3) == 0) {
-				msg->return_path = create_address(&(buf[3]), TRUE);
-				DEBUG(3) debugf("spool_read: MAIL FROM: %s", msg->return_path->address);
-			} else if (strncasecmp(buf, "RT:", 3) == 0) {
-				address *addr;
-				addr = spool_scan_rcpt(buf);
-				if (!addr_is_delivered(addr) && !addr_is_failed(addr)) {
-					msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
-				} else {
-					msg->non_rcpt_list = g_list_append(msg->non_rcpt_list, addr);
-				}
-			} else if (strncasecmp(buf, "PR:", 3) == 0) {
-				prot_id i;
-				for (i = 0; i < PROT_NUM; i++) {
-					if (strncasecmp(prot_names[i], &(buf[3]), strlen(prot_names[i])) == 0) {
-						break;
-					}
-				}
-				msg->received_prot = i;
-			} else if (strncasecmp(buf, "RH:", 3) == 0) {
-				g_strchomp(buf);
-				msg->received_host = g_strdup(&(buf[3]));
-			} else if (strncasecmp(buf, "ID:", 3) == 0) {
-				g_strchomp(buf);
-				msg->ident = g_strdup(&(buf[3]));
-			} else if (strncasecmp(buf, "DS:", 3) == 0) {
-				msg->data_size = atoi(&(buf[3]));
-			} else if (strncasecmp(buf, "TR:", 3) == 0) {
-				msg->received_time = (time_t) (atoi(&(buf[3])));
-			} else if (strncasecmp(buf, "TW:", 3) == 0) {
-				msg->warned_time = (time_t) (atoi(&(buf[3])));
+	/* msg uid */
+	read_line(in, buf, MAX_DATALINE);
+
+	/* envelope header */
+	while ((len = read_line(in, buf, MAX_DATALINE)) > 0) {
+		if (buf[0] == '\n') {
+			break;
+		} else if (strncasecmp(buf, "MF:", 3) == 0) {
+			msg->return_path = create_address(&(buf[3]), TRUE);
+			DEBUG(3) debugf("spool_read: MAIL FROM: %s", msg->return_path->address);
+		} else if (strncasecmp(buf, "RT:", 3) == 0) {
+			address *addr;
+			addr = spool_scan_rcpt(buf);
+			if (!addr_is_delivered(addr) && !addr_is_failed(addr)) {
+				msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
+			} else {
+				msg->non_rcpt_list = g_list_append(msg->non_rcpt_list, addr);
 			}
-			/* so far ignore other tags */
+		} else if (strncasecmp(buf, "PR:", 3) == 0) {
+			prot_id i;
+			for (i = 0; i < PROT_NUM; i++) {
+				if (strncasecmp(prot_names[i], &(buf[3]), strlen(prot_names[i])) == 0) {
+					break;
+				}
+			}
+			msg->received_prot = i;
+		} else if (strncasecmp(buf, "RH:", 3) == 0) {
+			g_strchomp(buf);
+			msg->received_host = g_strdup(&(buf[3]));
+		} else if (strncasecmp(buf, "ID:", 3) == 0) {
+			g_strchomp(buf);
+			msg->ident = g_strdup(&(buf[3]));
+		} else if (strncasecmp(buf, "DS:", 3) == 0) {
+			msg->data_size = atoi(&(buf[3]));
+		} else if (strncasecmp(buf, "TR:", 3) == 0) {
+			msg->received_time = (time_t) (atoi(&(buf[3])));
+		} else if (strncasecmp(buf, "TW:", 3) == 0) {
+			msg->warned_time = (time_t) (atoi(&(buf[3])));
 		}
+		/* so far ignore other tags */
+	}
 
-		/* mail headers */
-		while ((len = read_line(in, buf, MAX_DATALINE)) > 0) {
-			if (strncasecmp(buf, "HD:", 3) == 0) {
-				hdr = get_header(&(buf[3]));
-				msg->hdr_list = g_list_append(msg->hdr_list, hdr);
-			} else if ((buf[0] == ' ' || buf[0] == '\t') && hdr) {
-				char *tmp = hdr->header;
-				/* header continuation */
-				hdr->header = g_strconcat(hdr->header, buf, NULL);
-				hdr->value = hdr->header + (hdr->value - tmp);
-			} else
-				break;
+	/* mail headers */
+	while ((len = read_line(in, buf, MAX_DATALINE)) > 0) {
+		if (strncasecmp(buf, "HD:", 3) == 0) {
+			hdr = get_header(&(buf[3]));
+			msg->hdr_list = g_list_append(msg->hdr_list, hdr);
+		} else if ((buf[0] == ' ' || buf[0] == '\t') && hdr) {
+			char *tmp = hdr->header;
+			/* header continuation */
+			hdr->header = g_strconcat(hdr->header, buf, NULL);
+			hdr->value = hdr->header + (hdr->value - tmp);
+		} else {
+			break;
 		}
-		fclose(in);
-		ok = TRUE;
-	} else
-		logwrite(LOG_ALERT, "could not open spool header file %s: %s\n", spool_file, strerror(errno));
-	return ok;
+	}
+	fclose(in);
+	return TRUE;
 }
 
 message*
@@ -308,39 +312,38 @@ spool_write(message * msg, gboolean do_write_data)
 	/* header spool: */
 	ok = spool_write_header(msg);
 
-	if (ok) {
+	if (ok && do_write_data) {
+		/* data spool: */
+		tmp_file = g_strdup_printf("%s/input/%d-D.tmp", conf.spool_dir, getpid());
+		DEBUG(4) debugf("tmp_file = %s\n", tmp_file);
 
-		if (do_write_data) {
-			/* data spool: */
-			tmp_file = g_strdup_printf("%s/input/%d-D.tmp", conf.spool_dir, getpid());
-			DEBUG(4) debugf("tmp_file = %s\n", tmp_file);
-
-			if ((out = fopen(tmp_file, "w"))) {
-				fprintf(out, "%s\n", msg->uid);
-				for (list = g_list_first(msg->data_list); list != NULL; list = g_list_next(list)) {
-					fprintf(out, "%s", (gchar *) (list->data));
-				}
-
-				/* possibly paranoid ;-) */
-				if (fflush(out) == EOF)
-					ok = FALSE;
-				else if (fdatasync(fileno(out)) != 0) {
-					if (errno != EINVAL)  /* some fs do not support this..  I hope this also means that it is not necessary */
-						ok = FALSE;
-				}
-				fclose(out);
-				if (ok) {
-					spool_file = g_strdup_printf("%s/input/%s-D", conf.spool_dir, msg->uid);
-					DEBUG(4) debugf("spool_file = %s\n", spool_file);
-					ok = (rename(tmp_file, spool_file) != -1);
-					g_free(spool_file);
-				}
-			} else {
-				logwrite(LOG_ALERT, "could not open temporary data spool file: %s\n", strerror(errno));
-				ok = FALSE;
+		if ((out = fopen(tmp_file, "w"))) {
+			fprintf(out, "%s\n", msg->uid);
+			for (list = g_list_first(msg->data_list); list != NULL; list = g_list_next(list)) {
+				fprintf(out, "%s", (gchar *) (list->data));
 			}
-			g_free(tmp_file);
+
+			/* possibly paranoid ;-) */
+			if (fflush(out) == EOF) {
+				ok = FALSE;
+			} else if (fdatasync(fileno(out)) != 0) {
+				if (errno != EINVAL) {  /* some fs do not support this..  I hope this also means that it is not necessary */
+					ok = FALSE;
+				}
+			}
+			fclose(out);
+			if (ok) {
+				spool_file = g_strdup_printf("%s/input/%s-D", conf.spool_dir, msg->uid);
+				DEBUG(4) debugf("spool_file = %s\n", spool_file);
+				ok = (rename(tmp_file, spool_file) != -1);
+				g_free(spool_file);
+			}
+		} else {
+			logwrite(LOG_ALERT, "could not open temporary data spool file: %s\n",
+			         strerror(errno));
+			ok = FALSE;
 		}
+		g_free(tmp_file);
 	}
 
 	/* set uid and gid back */
@@ -421,14 +424,16 @@ spool_delete_all(message * msg)
 
 	/* header spool: */
 	spool_file = g_strdup_printf("%s/input/%s-H", conf.spool_dir, msg->uid);
-	if (unlink(spool_file) != 0)
+	if (unlink(spool_file) != 0) {
 		logwrite(LOG_ALERT, "could not delete spool file %s: %s\n", spool_file, strerror(errno));
+	}
 	g_free(spool_file);
 
 	/* data spool: */
 	spool_file = g_strdup_printf("%s/input/%s-D", conf.spool_dir, msg->uid);
-	if (unlink(spool_file) != 0)
+	if (unlink(spool_file) != 0) {
 		logwrite(LOG_ALERT, "could not delete spool file %s: %s\n", spool_file, strerror(errno));
+	}
 	g_free(spool_file);
 
 	/* set uid and gid back */
