@@ -1,4 +1,4 @@
-.TH mservdetect 8 2010-05-07 masqmail-0.2.22 "Maintenance Commands"
+.TH mservdetect 1 2010-06-19 masqmail-0.2.22 "User Commands"
 
 .SH NAME
 mservdetect \- Helper for masqmail and masqdialer
@@ -15,7 +15,8 @@ if the modem server masqdialer is used.
 It connects to the\fIhost\fR at \fIport\fR and prints the connection name to stdout.
 
 If you want to use it, set \fBonline_detect\fR=\fIpipe\fR and
-\fBonline_pipe\fR=\fI"/usr/bin/mservdetect host port"\fR.
+\fBonline_pipe\fR=\fI"/usr/bin/mservdetect host port"\fR in
+masqmail.conf.
 
 .SH OPTIONS
 
@@ -46,4 +47,4 @@ Please report bugs to the mailing list.
 
 .SH SEE ALSO
 
-\fBmasqmail.conf(5)\fR
+\fBmasqmail(8)\fR, \fBmasqmail.conf(5)\fR
