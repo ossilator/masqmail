@@ -51,6 +51,14 @@ is_ingroup(uid_t uid, gid_t gid)
 gboolean
 is_privileged_user(uid_t uid)
 {
+	/* uncomment these lines if you need the `uucp' group to be trusted too
+	struct group* grent = getgrnam("uucp");
+
+	if (is_ingroup(uid, grent->gr_gid)) {
+		return TRUE;
+	}
+	*/
+
 	return (uid == 0) || (uid == conf.mail_uid) || (is_ingroup(uid, conf.mail_gid));
 }
 
