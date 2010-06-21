@@ -259,7 +259,7 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 	gint i;
 
 	if (return_path && !is_privileged_user(conf.orig_uid)) {
-		fprintf(stderr, "must be in root, %s or in group %s for setting return path.\n", DEF_MAIL_USER, DEF_MAIL_GROUP);
+		fprintf(stderr, "must be root, %s or in group %s for setting return path.\n", DEF_MAIL_USER, DEF_MAIL_GROUP);
 		exit(EXIT_FAILURE);
 	}
 
