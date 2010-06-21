@@ -1,0 +1,51 @@
+.TH rmail 1 2010-06-21 masqmail-0.2.24 "User Commands"
+
+.SH NAME
+rmail \- handle remote mail received via uucp
+
+
+.SH SYNOPSIS
+\fB/usr/bin/rmail \fIrecipient ...\fR
+
+
+.SH DESCRIPTION
+
+Rmail is a wrapper around masqmail.
+It reads a mail message on standard input and passes it to masqmail's standard input.
+Rmail only removes the first line from the input and constructs the return path from it.
+
+Such a first line:
+
+From user Wed Jan  9 12:43:35 1985 remote from host Date: 9 Jan 1985   8:39 EST
+
+would generate this call to masqmail:
+
+masqmail -i -f user@host -- bob@example.org
+
+(If ``bob@example.org'' was the argument to the rmail call.))
+
+
+.SH AUTHOR
+
+Masqmail was written by Oliver Kurth.
+It is now maintained by Markus Schnalke <meillo@marmaro.de>.
+
+You will find the newest version of masqmail at \fBhttp://marmaro.de/prog/masqmail/\fR.
+There is also a mailing list, you will find information about it at masqmail's main site.
+
+This man page was written by markus schnalke <meillo@marmaro.de>
+
+
+.SH BUGS
+
+Address translations from domain!user to user@domain is not done.
+This rmail program is only very basic.
+See sendmail for a more sophisticated rmail implementation.
+
+
+Please report bugs to the mailing list.
+
+
+.SH SEE ALSO
+
+\fBmasqmail(8)\fR
