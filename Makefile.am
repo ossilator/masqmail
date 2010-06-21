@@ -2,9 +2,9 @@ EXTRA_DIST = examples docs man tpl tests misc
 
 SUBDIRS = src man
 
-bin_SCRIPTS = contrib/rmail
+install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir run_dir doc_dir rmail
 
-install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir run_dir doc_dir
+uninstall-local: rm-rmail rm-doc_dir rm-tpl_dir
 
 
 conf_dir: $(DESTDIR)@with_confdir@
@@ -56,3 +56,22 @@ $(DESTDIR)@with_spooldir@:
 	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@/input
 	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@/popuidl
 
+
+rmail:
+	[ -d "$(DESTDIR)@prefix@/bin" ] || mkdir -p "$(DESTDIR)@prefix@/bin"
+	sed '/^SENDMAIL/s,/usr/sbin/sendmail,$(DESTDIR)@prefix@/sbin/masqmail,'\
+	    contrib/rmail >$(DESTDIR)@prefix@/bin/rmail
+	chmod 755 $(DESTDIR)@prefix@/bin/rmail
+
+rm-rmail:
+	rm -f $(DESTDIR)@prefix@/bin/rmail
+
+rm-doc_dir:
+	cd $(DESTDIR)@docdir@ ;\
+	rm -rf docs examples ;\
+	rm -f ChangeLog NEWS AUTHORS COPYING README TODO
+	rmdir $(DESTDIR)@docdir@
+
+rm-tpl_dir:
+	cd $(DESTDIR)@datadir@ ;\
+	rm -rf masqmail
