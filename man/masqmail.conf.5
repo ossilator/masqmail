@@ -349,6 +349,8 @@ When it is set to \fBpipe\fR, masqmail calls the executable given by the
 When it is set to \fBmserver\fR, masqmail connects to the masqdialer server
 using the value of \fBmserver_iface\fR and asks it whether a connection exists and for the name,
 which should be the name of the current connection as defined with \fBconnect_route.\fIname\fR.
+\fBThe mserver detection method is OBSOLETE.\fR
+See mserver_iface for a note on how to replace it.
 
 No matter how masqmail detects the online status,
 only messages that are accepted at online time will be delivered using the connection.
@@ -361,7 +363,7 @@ This is the name of the file checked for when masqmail determines whether it is 
 The file should only exist when there is currently a connection.
 Create it in your ip-up script with e.g.
 
-echo \-n <name> > /var/run/masqmail/masqmail-route
+echo "connection-name" >/var/run/masqmail/masqmail-route
 
 chmod 0644 /var/run/masqmail/masqmail-route
 
@@ -389,6 +391,14 @@ the online detection method, but you can do something more sophisticated.
 
 .TP
 \fBmserver_iface = \fIinterface\fR
+
+\fBThis option is OBSOLETE\fP, use
+
+online_method=pipe
+
+online_pipe="/usr/bin/mservdetect localhost 222"
+
+instead.
 
 The interface the masqdialer server is listening to.
 Usually this will be "localhost:224" if mserver is running on the same host as masqmail.

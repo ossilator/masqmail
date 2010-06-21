@@ -178,15 +178,19 @@ delivered immediately using the route configuration, you have two
 possibilities:
 
 * if you are using the masqdialer system, you just have to set the
-  variables online_detect to mserver and mserver_iface to the interface
-  mserver is listening to.
+  variables online_detect to pipe and online_pipe to something like
+	/usr/bin/mservdetect localhost 222
+  if mserver is running on localhost and listens on port 222. See the
+  man page to mservdetect(1).
+
 * otherwise you have to add two commands in your ip-up script:
-	echo -n $6 > /tmp/connect_route
-	chmod 644 /tmp/connect_route
-  and you have to remove the file /tmp/connect_route in your ip-down script:
-	rm /tmp/connect_route.
+	echo "$6" >/var/run/masqmail/masqmail-route
+	chmod 644 /var/run/masqmail/masqmail-route
+  and you have to remove the file /var/run/masqmail/masqmail-route in
+  your ip-down script:
+	rm /var/run/masqmail/masqmail-route
   Then you have to set online_detect to file and online_file to
-  /tmp/connect_route.
+  /var/run/masqmail/masqmail-route
 
 See the route documentation for more.
 
