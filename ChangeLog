@@ -7,7 +7,7 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
-0.2.24  Wed, 16 Jun 2010 19:37:40 +0200
+0.2.24  Mon, 21 Jun 2010 10:07:32 +0200
 	* removed dead code in child.c
 	* fixed closing of log files on receival of SIGHUP. See commit
 	  message and http://bugs.debian.org/536060 .
@@ -15,6 +15,15 @@ technical speach and with focus on compatibility.
 	  its parent. This situation appears on SIGHUP receival.
 	* fixed correct processing of mails with data lines longer
 	  4096 chars. See commit message for details.
+	* various refactoring
+	* fixed is_ingroup() to check for the primary group of users
+	* moved man page of mservdetect to section 1
+	* added rmail script from postfix which is a bit better than
+	  calling masqmail as rmail. See docs/uucp-setup
+	* permissions.c describes how to make another group (e.g.
+	  `uucp') trusted
+	* uninstall target removes now docs and thelike
+	* minor updates in the documentation
 
 0.2.23  Sun, 30 May 2010 21:00:44 +0200
 	* fixed inverted condition for undefined online_file. Thanks to

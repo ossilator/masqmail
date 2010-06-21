@@ -19,6 +19,17 @@ reread the config.
 - Mail messages with lines longer than 4096 characters do not get
 truncated anymore.
 
+- Fixed checking of the trusted group. Primary groups are now
+detected too.
+
+- Mservdetect's man page is now in section 1.
+
+- An `rmail' command is now included and gets installed with
+masqmail. See docs/uucp-setup for more information.
+
+- Docs and thelike, that masqmail installs, is removed on uninstall
+now.
+
 
 0.2.23
 
