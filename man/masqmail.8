@@ -215,7 +215,14 @@ method (see \fBonline_detect\fR in \fBmasqmail.conf(5)\fR)
 Read recipients from headers.
 Delete `Bcc:' headers.
 If any arguments are given, these are interpreted as recipient addresses
-and the message will not be sent to these.
+and the message will not be sent to these,
+although they might appear in To:, Cc:, or Bcc: headers.
+I.e. the set of argument recipients is ``substracted'' from the set of header recipients.
+
+This behavior is similar to exim's and smail's.
+Postfix, in contrast, adds the arguments to the set of header recipients.
+Sendmail seems to behave differently, depending on the version.
+See exim(8) for further information.
 
 .TP
 \fB\-v\fR
