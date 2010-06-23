@@ -375,40 +375,40 @@ accept_message_prepare(message * msg, guint flags)
 
 	/* Received header: */
 	/* At this point because we have to know the rcpts for the 'for' part */
-	if (!(flags & ACC_NO_RECVD_HDR)) {
-		gchar *for_string = NULL;
-		header *hdr = NULL;
+	gchar *for_string = NULL;
+	header *hdr = NULL;
 
-		DEBUG(3) debugf("adding 'Received:' header\n");
+	DEBUG(3) debugf("adding 'Received:' header\n");
 
-		if (g_list_length(msg->rcpt_list) == 1) {
-			address *addr = (address *) (g_list_first(msg->rcpt_list)->data);
-			for_string = g_strdup_printf(" for %s", addr_string(addr));
-		}
-
-		if (msg->received_host == NULL) {
-			hdr = create_header(HEAD_RECEIVED, "Received: from %s by %s with %s (%s %s) id %s%s; %s\n",
-			                    passwd->pw_name, conf.host_name, prot_names[msg->received_prot],
-			                    PACKAGE, VERSION, msg->uid, for_string ? for_string : "", rec_timestamp());
-		} else {
-#ifdef ENABLE_IDENT
-			DEBUG(5) debugf("adding 'Received:' header (5)\n");
-			hdr = create_header(HEAD_RECEIVED, "Received: from %s (ident=%s) by %s with %s (%s %s) id %s%s; %s\n",
-			                    msg->received_host, msg->ident ? msg->ident : "unknown", conf.host_name,
-			                    prot_names[msg->received_prot], PACKAGE, VERSION, msg->uid, for_string ? for_string : "",
-			                    rec_timestamp());
-#else
-			hdr = create_header(HEAD_RECEIVED, "Received: from %s by %s with %s (%s %s) id %s%s; %s\n",
-			                    msg->received_host, conf.host_name, prot_names[msg->received_prot],
-			                    PACKAGE, VERSION, msg->uid, for_string ? for_string : "", rec_timestamp());
-#endif
-		}
-		header_fold(hdr);
-		msg->hdr_list = g_list_prepend(msg->hdr_list, hdr);
-
-		if (for_string)
-			g_free(for_string);
+	if (g_list_length(msg->rcpt_list) == 1) {
+		address *addr = (address *) (g_list_first(msg->rcpt_list)->data);
+		for_string = g_strdup_printf(" for %s", addr_string(addr));
 	}
+
+	if (msg->received_host == NULL) {
+		/* received locally */
+		hdr = create_header(HEAD_RECEIVED, "Received: from %s by %s with %s (%s %s) id %s%s; %s\n",
+		                    passwd->pw_name, conf.host_name, prot_names[msg->received_prot],
+		                    PACKAGE, VERSION, msg->uid, for_string ? for_string : "", rec_timestamp());
+	} else {
+		/* received from remote */
+#ifdef ENABLE_IDENT
+		DEBUG(5) debugf("adding 'Received:' header (5)\n");
+		hdr = create_header(HEAD_RECEIVED, "Received: from %s (ident=%s) by %s with %s (%s %s) id %s%s; %s\n",
+		                    msg->received_host, msg->ident ? msg->ident : "unknown", conf.host_name,
+		                    prot_names[msg->received_prot], PACKAGE, VERSION, msg->uid, for_string ? for_string : "",
+		                    rec_timestamp());
+#else
+		hdr = create_header(HEAD_RECEIVED, "Received: from %s by %s with %s (%s %s) id %s%s; %s\n",
+		                    msg->received_host, conf.host_name, prot_names[msg->received_prot],
+		                    PACKAGE, VERSION, msg->uid, for_string ? for_string : "", rec_timestamp());
+#endif
+	}
+	header_fold(hdr);
+	msg->hdr_list = g_list_prepend(msg->hdr_list, hdr);
+
+	if (for_string)
+		g_free(for_string);
 
 	/* write message to spool: */
 	/* accept is no longer responsible for this

@@ -314,7 +314,6 @@ typedef struct _msgout_perhost {
 #define ACC_DEL_BCC        0x04  /* -t option, delete Bcc header */
 #define ACC_RCPT_FROM_HEAD 0x08  /* -t option, get rcpts from headers */
 #define ACC_NODOT_TERM     0x10  /* a dot on a line itself does not end the message (-oi option) */
-#define ACC_NO_RECVD_HDR   0x20  /* do not create a Received: header */
 #define ACC_MAIL_FROM_HEAD 0x40  /* get return path from header */
 #define ACC_NODOT_RELAX    0x80  /* do not be picky if message ist not terminated by a dot on a line */
 #define ACC_SAVE_ENVELOPE_TO 0x0100  /* save an existent Envelope-to header as X-Orig-Envelope-to */
