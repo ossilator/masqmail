@@ -99,7 +99,7 @@ main(int argc, char *argv[])
 			msg->rcpt_list = g_list_append(msg->rcpt_list, create_address_qualified(argv[optind++], TRUE, conf.host_name));
 		}
 
-		if ((ret = accept_message(stdin, msg, ACC_NODOT_TERM)) == AERR_OK) {
+		if ((ret = accept_message(stdin, msg, ACC_DOT_IGNORE)) == AERR_OK) {
 			if ((ret = smtp_deliver(server_name, server_port, resolve_list, msg, NULL, NULL)) == smtp_ok) {
 				exit(EXIT_SUCCESS);
 			}
