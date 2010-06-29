@@ -214,6 +214,7 @@ method (see \fBonline_detect\fR in \fBmasqmail.conf(5)\fR)
 
 Read recipients from headers.
 Delete `Bcc:' headers.
+(Since 0.2.25, masqmail deletes Bcc: headers in all cases.)
 If any arguments are given, these are interpreted as recipient addresses
 and the message will not be sent to these,
 although they might appear in To:, Cc:, or Bcc: headers.
