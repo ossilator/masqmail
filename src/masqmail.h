@@ -309,7 +309,6 @@ typedef struct _msgout_perhost {
 
 /* flags for accept() */
 /*#define ACC_LOCAL      0x01 (we better use received_host == NULL) */
-#define ACC_HEAD_FROM_RCPT 0x01  /* create To: Header from rcpt_list (cmd line) */
 #define ACC_DEL_RCPTS      0x02  /* -t option, delete rcpts */
 #define ACC_RCPT_FROM_HEAD 0x08  /* -t option, get rcpts from headers */
 #define ACC_NODOT_TERM     0x10  /* a dot on a line itself does not end the message (-oi option) */

@@ -813,7 +813,7 @@ main(int argc, char *argv[])
 
 	case MODE_ACCEPT:
 		{
-			guint accept_flags = (opt_t ? ACC_DEL_RCPTS | ACC_RCPT_FROM_HEAD : ACC_HEAD_FROM_RCPT)
+			guint accept_flags = (opt_t ? ACC_DEL_RCPTS | ACC_RCPT_FROM_HEAD : 0)
 			                     | (opt_i ? ACC_NODOT_TERM : ACC_NODOT_RELAX);
 			mode_accept(return_path, full_sender_name, accept_flags, &(argv[arg]), argc - arg);
 			exit(exit_failure ? EXIT_FAILURE : EXIT_SUCCESS);
