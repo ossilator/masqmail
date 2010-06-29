@@ -150,10 +150,10 @@ spool_read_header(message * msg)
 		} else if (strncasecmp(buf, "RT:", 3) == 0) {
 			address *addr;
 			addr = spool_scan_rcpt(buf);
-			if (!addr_is_delivered(addr) && !addr_is_failed(addr)) {
-				msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
-			} else {
+			if (addr_is_delivered(addr) || addr_is_failed(addr)) {
 				msg->non_rcpt_list = g_list_append(msg->non_rcpt_list, addr);
+			} else {
+				msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
 			}
 		} else if (strncasecmp(buf, "PR:", 3) == 0) {
 			prot_id i;
