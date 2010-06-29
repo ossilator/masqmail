@@ -92,7 +92,7 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 		}
 
 		if (len <= 0) {
-			if ((len == -1) && ((flags & ACC_DOT_IGNORE) || (flags & ACC_NODOT_RELAX))) {
+			if ((len == -1) && (flags & (ACC_DOT_IGNORE | ACC_NODOT_RELAX))) {
 				/* we got an EOF, and the last line was not terminated by a CR */
 				gint len1 = strlen(line1);
 				if (len1 > 0) {  /* == 0 is 'normal' (EOF after a CR) */
