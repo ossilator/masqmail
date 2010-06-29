@@ -350,12 +350,8 @@ accept_message_prepare(message * msg, guint flags)
 			                );
 		}
 		if ((flags & ACC_HEAD_FROM_RCPT) && !has_rcpt) {
-			GList *node;
-			DEBUG(3) debugf("adding 'To' header(s)\n");
-			for (node = g_list_first(msg->rcpt_list); node; node = g_list_next(node)) {
-				msg->hdr_list = g_list_append(msg->hdr_list,
-				                              create_header(HEAD_TO, "To: %s\n", addr_string(msg-> return_path)));
-			}
+			DEBUG(3) debugf("no To: or Cc: header, hence adding `undisclosed recipients' header\n");
+			msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_TO, "To: undisclosed-recipients:;\n"));
 		}
 		if ((flags & ACC_DEL_BCC) && !has_to_or_cc) {
 			/* Bcc headers have been removed, and there are no remaining rcpt headers */
