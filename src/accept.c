@@ -83,7 +83,7 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 
 		line1 = line;
 
-		if ((line[0] == '.') && (!(flags & ACC_NODOT_TERM))) {
+		if ((line[0] == '.') && (!(flags & ACC_DOT_IGNORE))) {
 			if (line[1] == '\n') {
 				g_free(line);
 				break;
@@ -92,7 +92,7 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 		}
 
 		if (len <= 0) {
-			if ((len == -1) && ((flags & ACC_NODOT_TERM) || (flags & ACC_NODOT_RELAX))) {
+			if ((len == -1) && ((flags & ACC_DOT_IGNORE) || (flags & ACC_NODOT_RELAX))) {
 				/* we got an EOF, and the last line was not terminated by a CR */
 				gint len1 = strlen(line1);
 				if (len1 > 0) {  /* == 0 is 'normal' (EOF after a CR) */
