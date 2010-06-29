@@ -58,9 +58,12 @@ _g_list_addr_isequal(gconstpointer a, gconstpointer b)
 /* accept message from anywhere.
    A locally originating message is indicated by msg->recieved_host == NULL
 
-   If the flags ACC_DEL_RCPTS is set, recipients in the msg->rcpt_list is
-   copied and items occuring in it will be removed from the newly constructed
-   (from To/Cc/Bcc headers if ACC_RCPT_TO is set) rcpt_list.
+   The -t option:
+   The ACC_RCPT_FROM_HEAD flag adds the recipients found in To/Cc/Bcc
+   headers to the recipients list.
+   The ACC_DEL_RCPTS flag makes only sense if the ACC_RCPT_FROM_HEAD
+   flag is given too. With ACC_DEL_RCPTS the recipients given on the
+   command line are removed from the ones given in headers.
 */
 
 accept_error
@@ -202,7 +205,7 @@ accept_message_prepare(message * msg, guint flags)
 		g_free(path);
 	}
 
-	/* -t option */
+	/* -t option (see comment above) */
 	if (flags & ACC_DEL_RCPTS) {
 		non_rcpt_list = msg->rcpt_list;
 		msg->rcpt_list = NULL;
@@ -242,6 +245,7 @@ accept_message_prepare(message * msg, guint flags)
 				/* fall through */
 			case HEAD_BCC:
 				if (flags & ACC_RCPT_FROM_HEAD) {
+					/* -t option (see comment above) */
 					DEBUG(5) debugf("hdr->value = %s\n", hdr->value);
 					if (hdr->value) {
 						msg->rcpt_list = addr_list_append_rfc822(msg->rcpt_list, hdr->value, conf.host_name);
@@ -317,6 +321,8 @@ accept_message_prepare(message * msg, guint flags)
 		}
 
 		if (flags & ACC_DEL_RCPTS) {
+			/* remove the recipients given on the command line from the ones given in headers
+			   -t option (see comment above) */
 			GList *rcpt_node;
 			foreach(non_rcpt_list, rcpt_node) {
 				address *rcpt = (address *) (rcpt_node->data);
