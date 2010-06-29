@@ -214,7 +214,6 @@ accept_message_prepare(message * msg, guint flags)
 		gboolean has_date = FALSE;
 		gboolean has_sender = FALSE;
 		gboolean has_from = FALSE;
-		gboolean has_rcpt = FALSE;
 		gboolean has_to_or_cc = FALSE;
 		GList *hdr_node, *hdr_node_next;
 		header *hdr;
@@ -239,21 +238,21 @@ accept_message_prepare(message * msg, guint flags)
 				break;
 			case HEAD_TO:
 			case HEAD_CC:
+				has_to_or_cc = TRUE;
+				/* fall through */
 			case HEAD_BCC:
-				has_rcpt = TRUE;
 				if (flags & ACC_RCPT_FROM_HEAD) {
 					DEBUG(5) debugf("hdr->value = %s\n", hdr->value);
 					if (hdr->value) {
 						msg->rcpt_list = addr_list_append_rfc822(msg->rcpt_list, hdr->value, conf.host_name);
 					}
 				}
-				if ((flags & ACC_DEL_BCC) && (hdr->id == HEAD_BCC)) {
+				if (hdr->id == HEAD_BCC) {
 					DEBUG(3) debugf("removing 'Bcc' header\n");
 					msg->hdr_list = g_list_remove_link(msg->hdr_list, hdr_node);
 					g_list_free_1(hdr_node);
 					destroy_header(hdr);
-				} else
-					has_to_or_cc = TRUE;
+				}
 				break;
 			case HEAD_ENVELOPE_TO:
 				if (flags & ACC_SAVE_ENVELOPE_TO) {
@@ -349,14 +348,9 @@ accept_message_prepare(message * msg, guint flags)
 			                                msg->return_path->local_part, msg->return_path->domain)
 			                );
 		}
-		if ((flags & ACC_HEAD_FROM_RCPT) && !has_rcpt) {
-			DEBUG(3) debugf("no To: or Cc: header, hence adding `undisclosed recipients' header\n");
+		if (!has_to_or_cc) {
+			DEBUG(3) debugf("no To: or Cc: header, hence adding `To: undisclosed recipients:;'\n");
 			msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_TO, "To: undisclosed-recipients:;\n"));
-		}
-		if ((flags & ACC_DEL_BCC) && !has_to_or_cc) {
-			/* Bcc headers have been removed, and there are no remaining rcpt headers */
-			DEBUG(3) debugf("adding empty 'Bcc:' header\n");
-			msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_BCC, "Bcc:\n"));
 		}
 		if (!has_date) {
 			DEBUG(3) debugf("adding 'Date:' header\n");
