@@ -336,17 +336,17 @@ Default is false.
 \fBonline_detect = \fIstring\fR
 
 Defines the method masqmail uses to detect whether there is currently an online connection.
-It can have the values \fBfile\fR, \fBpipe\fR, or \fBmserver\fR.
+It can have the values \fIfile\fR, \fIpipe\fR, or \fImserver\fR.
 
-When it is set to \fBfile\fR, masqmail first checks for the existence of \fBonline_file\fR
+When it is set to \fIfile\fR, masqmail first checks for the existence of \fBonline_file\fR
 (see below) and if it exists, it reads it.
 The content of the file should be the name of the current connection as defined
 with \fBconnect_route.\fIname\fR (trailing whitespace is removed).
 
-When it is set to \fBpipe\fR, masqmail calls the executable given by the
+When it is set to \fIpipe\fR, masqmail calls the executable given by the
 \fBonline_pipe\fR option (see below) and reads the current online status from its standard output.
 
-When it is set to \fBmserver\fR, masqmail connects to the masqdialer server
+When it is set to \fImserver\fR, masqmail connects to the masqdialer server
 using the value of \fBmserver_iface\fR and asks it whether a connection exists and for the name,
 which should be the name of the current connection as defined with \fBconnect_route.\fIname\fR.
 \fBThe mserver detection method is OBSOLETE.\fR
