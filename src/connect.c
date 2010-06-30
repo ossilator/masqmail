@@ -53,9 +53,9 @@ connect_hostlist(int *psockfd, gchar * host, guint port, GList * addr_list)
 
 		/* clumsy, but makes compiler happy: */
 		saddr.sin_addr = *(struct in_addr *) (&(addr->ip));
-		DEBUG(5) debugf("trying ip %s port %d\n", inet_ntoa(saddr.sin_addr), port);
+		DEBUG(5) debugf("  trying ip %s port %d\n", inet_ntoa(saddr.sin_addr), port);
 		if (connect(*psockfd, (struct sockaddr *) (&saddr), sizeof(saddr)) == 0) {
-			DEBUG(5) debugf("connected to %s\n", inet_ntoa(saddr.sin_addr));
+			DEBUG(5) debugf("  connected to %s\n", inet_ntoa(saddr.sin_addr));
 			return addr;
 		} else {
 			int saved_errno = errno;
@@ -115,7 +115,7 @@ connect_resolvelist(int *psockfd, gchar * host, guint port, GList * res_func_lis
 
 	foreach(res_func_list, res_node) {
 		resolve_func res_func;
-		DEBUG(6) debugf("connect_resolvelist 1a\n");
+		DEBUG(6) debugf("  foreach() body\n");
 		res_func = (resolve_func) (res_node->data);
 
 		if (res_func == NULL) {

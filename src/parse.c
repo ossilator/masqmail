@@ -349,7 +349,7 @@ parse_address_rfc821(gchar* string, gchar** local_begin, gchar** local_end, gcha
 /*
   allocate address, reading from string.
   On failure, returns NULL.
-  after call, end contatins a pointer to the end of the parsed string
+  after call, end contains a pointer to the end of the parsed string
   end may be NULL, if we are not interested.
 
   parses both rfc 821 and rfc 822 addresses, depending on flag is_rfc821

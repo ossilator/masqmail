@@ -99,6 +99,7 @@ parse_list_file(gchar * fname)
 		fgets(buf, 255, fptr);
 		if (buf[0] && (buf[0] != '#') && (buf[0] != '\n')) {
 			g_strchomp(buf);
+			DEBUG(6) fprintf(stderr,"parse_list_file: item = %s\n", buf);
 			list = g_list_append(list, g_strdup(buf));
 		}
 	}
@@ -115,7 +116,7 @@ parse_list(gchar * line, gboolean read_file)
 	gchar buf[256];
 	gchar *p, *q;
 
-	DEBUG(6) fprintf(stderr, "parsing list %s\n", line);
+	DEBUG(6) fprintf(stderr, "parsing list %s, file?:%d\n", line, read_file);
 
 	p = line;
 	while (*p != '\0') {
@@ -132,7 +133,7 @@ parse_list(gchar * line, gboolean read_file)
 			/* just a normal item */
 			list = g_list_append(list, g_strdup(buf));
 
-		DEBUG(6) printf("item = %s\n", buf);
+		DEBUG(6) fprintf(stderr, "item = %s\n", buf);
 
 		if (*p)
 			p++;
@@ -214,6 +215,7 @@ parse_interface(gchar * line, gint def_port)
 		iface->port = atoi(p);
 	} else
 		iface->port = def_port;
+	DEBUG(6) fprintf(stderr,"rval=%s, address:port=%s:%i\n",line, iface->address, iface->port);
 
 	return iface;
 }
@@ -401,19 +403,18 @@ read_statement(FILE * in, gchar * lval, gint lsize, gchar * rval, gint rsize)
 	if (!eat_comments(in))
 		return FALSE;
 
-	DEBUG(6) fprintf(stderr, "read_statement() 1\n");
-
 	if (!read_lval(in, lval, lsize)) {
 		return FALSE;
 	}
 
-	DEBUG(6) fprintf(stderr, "lval = %s\n", lval);
+	DEBUG(6) fprintf(stderr, "  lval = %s\n", lval);
 	if ((c = fgetc(in) == '=')) {
 		if (read_rval(in, rval, rsize)) {
-			DEBUG(6) fprintf(stderr, "rval = %s\n", rval);
+			DEBUG(6) fprintf(stderr, "  rval = %s\n", rval);
 			return TRUE;
 		}
 	} else {
+		DEBUG(6) fprintf(stderr,"  '=' expected after %s, char was '%c'\n", lval, c);
 		fprintf(stderr, "'=' expected after %s, char was '%c'\n", lval, c);
 	}
 	return FALSE;
@@ -437,6 +438,7 @@ read_conf(gchar * filename)
 
 	gchar lval[256], rval[2048];
 	while (read_statement(in, lval, 256, rval, 2048)) {
+		DEBUG(6) fprintf(stderr,"read_conf(): lval=%s\n", lval);
 		if (strcmp(lval, "debug_level") == 0)
 			conf.debug_level = atoi(rval);
 		else if (strcmp(lval, "run_as_user") == 0) {
