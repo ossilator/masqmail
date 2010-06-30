@@ -269,6 +269,9 @@ check_response_int_int(pop3_base * popb, gint * arg0, gint * arg1)
 			if (strtoi(p, &pe, arg1))
 				DEBUG(5) debugf("arg1 = %d\n", *arg1);
 			return TRUE;
+			/* FIXME: Paolo's code has the return stmt
+			   inside the if block right above it. What
+			   is correct? */
 		}
 		popb->error = pop3_syntax;
 	}
