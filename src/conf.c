@@ -358,7 +358,8 @@ read_rval(FILE * in, gchar * buf, gint size)
 
 	c = fgetc(in);
 	if (c != '\"') {
-		while ((isalnum(c) || c == '_' || c == '-' || c == '.' || c == '/' || c == '@' || c == ';')
+		while ((isalnum(c) || c == '_' || c == '-' || c == '.'
+		        || c == '/' || c == '@' || c == ';' || c == ':')
 		       && (ptr < buf + size - 1)
 		       && (c != EOF)) {
 			*ptr = c;
