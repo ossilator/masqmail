@@ -32,6 +32,8 @@ addr_is_local(address * addr)
 		if (fnmatch(dom_node->data, addr->domain, FNM_CASEFOLD) == 0) {
 			foreach(conf.not_local_addresses, addr_node) {
 				a = create_address_qualified(addr_node->data, TRUE, conf.host_name);
+				DEBUG(6) debugf("not_local_addresses: addr_node->data=%s a->address=%s\n",
+				                addr_node->data, a->address);
 				if (addr_isequal(a, addr)) {
 					destroy_address(a);
 					return FALSE;
@@ -43,6 +45,8 @@ addr_is_local(address * addr)
 	}
 	foreach(conf.local_addresses, addr_node) {
 		a = create_address_qualified(addr_node->data, TRUE, conf.host_name);
+		DEBUG(6) debugf("local_addresses: addr_node->data=%s a->address=%s\n",
+		                addr_node->data, a->address);
 		if (addr_isequal(a, addr)) {
 			destroy_address(a);
 			return TRUE;

@@ -321,7 +321,8 @@ route_prepare_msgout(connect_route * route, msg_out * msgout)
 			debugf("rcpts for routed delivery, route = %s, id = %s\n", route->name, msg->uid);
 			foreach(rcpt_list, node) {
 				address *rcpt = (address *) (node->data);
-				debugf("rcpt for routed delivery: <%s@%s>\n", rcpt->local_part, rcpt->domain);
+				debugf("  rcpt for routed delivery: <%s@%s>\n",
+				       rcpt->local_part, rcpt->domain);
 			}
 		}
 

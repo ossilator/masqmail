@@ -693,8 +693,11 @@ deliver_msg_list(GList * msg_list, guint flags)
 		GList *localnet_rcpt_list = NULL;
 		GList *other_rcpt_list;
 
-		if (!spool_lock(msgout->msg->uid))
+		if (!spool_lock(msgout->msg->uid)) {
+			DEBUG(5) debugf("spool_lock(%s) failed.\n", msgout->msg->uid);
 			continue;
+		}
+		DEBUG(5) debugf("spool_lock(%s)\n", msgout->msg->uid);
 
 		rcpt_list = g_list_copy(msgout->msg->rcpt_list);
 		if (conf.log_user) {
@@ -751,6 +754,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 
 	/* actual delivery */
 	if (local_msgout_list != NULL) {
+		DEBUG(5) debugf("local_msgout_list\n");
 		foreach(local_msgout_list, msgout_node) {
 			msg_out *msgout = (msg_out *) (msgout_node->data);
 			if (!deliver_local(msgout))
@@ -763,6 +767,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 		GList *route_list = NULL;
 		GList *route_node;
 
+		DEBUG(5) debugf("localnet_msgout_list\n");
 		if (conf.local_net_routes)
 			route_list = read_route_list(conf.local_net_routes, TRUE);
 		else
@@ -778,6 +783,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 	}
 
 	if (other_msgout_list != NULL) {
+		DEBUG(5) debugf("other_msgout_list\n");
 		if (!deliver_msgout_list_online(other_msgout_list))
 			ok = FALSE;
 		destroy_msg_out_list(other_msgout_list);
@@ -785,7 +791,12 @@ deliver_msg_list(GList * msg_list, guint flags)
 
 	foreach(msgout_list, msgout_node) {
 		msg_out *msgout = (msg_out *) (msgout_node->data);
-		spool_unlock(msgout->msg->uid);
+		if (spool_unlock(msgout->msg->uid)) {
+			DEBUG(5) debugf("spool_unlock(%s)\n", msgout->msg->uid);
+		} else {
+			DEBUG(5) debugf("spool_unlock(%s) failed.\n", msgout->msg->uid);
+		}
+
 	}
 
 	destroy_msg_out_list(msgout_list);

@@ -262,8 +262,9 @@ check_helo_response(smtp_base * psb)
 
 					DEBUG(4) {
 						gint i = 0;
+						debugf("in check_helo_response()\n");
 						while (psb->auth_names[i]) {
-							debugf("offered AUTH %s\n", psb->auth_names[i]);
+							debugf("  offered AUTH %s\n", psb->auth_names[i]);
 							i++;
 						}
 					}
@@ -277,9 +278,9 @@ check_helo_response(smtp_base * psb)
 	}
 
 	DEBUG(4) {
-		debugf(psb->use_size ? "uses SIZE\n" : "no size\n");
-		debugf(psb->use_pipelining ? "uses PIPELINING\n" : "no pipelining\n");
-		debugf(psb->use_auth ? "uses AUTH\n" : "no auth\n");
+		debugf("  %s\n", psb->use_size ? "uses SIZE" : "no size");
+		debugf("  %s\n", psb->use_pipelining ? "uses PIPELINING" : "no pipelining");
+		debugf("  %s\n", psb->use_auth ? "uses AUTH" : "no auth");
 	}
 
 	return TRUE;
@@ -555,10 +556,10 @@ smtp_out_auth_cram_md5(smtp_base * psb)
 			unsigned int digest_len;
 #endif
 
-			DEBUG(5) debugf("encoded challenge = %s\n", chall64);
-			DEBUG(5) debugf("decoded challenge = %s, size = %d\n", chall, chall_size);
-
-			DEBUG(5) debugf("secret = %s\n", psb->auth_secret);
+			DEBUG(5) debugf("smtp_out_auth_cram_md5():\n");
+			DEBUG(5) debugf("  encoded challenge = %s\n", chall64);
+			DEBUG(5) debugf("  decoded challenge = %s, size = %d\n", chall, chall_size);
+			DEBUG(5) debugf("  secret = %s\n", psb->auth_secret);
 
 #ifdef USE_LIB_CRYPTO
 			HMAC(EVP_md5(), psb->auth_secret, strlen(psb->auth_secret), chall, chall_size, digest, &digest_len);
@@ -570,17 +571,17 @@ smtp_out_auth_cram_md5(smtp_base * psb)
 				sprintf(&(digest_string[i + i]), "%02x", (unsigned int) (digest[i]));
 			digest_string[32] = '\0';
 
-			DEBUG(5) debugf("digest = %s\n", digest_string);
+			DEBUG(5) debugf("  digest = %s\n", digest_string);
 
 			reply = g_strdup_printf("%s %s", psb->auth_login, digest_string);
-			DEBUG(5) debugf("unencoded reply = %s\n", reply);
+			DEBUG(5) debugf("  unencoded reply = %s\n", reply);
 
 			reply64 = base64_encode(reply, strlen(reply));
-			DEBUG(5) debugf("encoded reply = %s\n", reply64);
+			DEBUG(5) debugf("  encoded reply = %s\n", reply64);
 
 			fprintf(psb->out, "%s\r\n", reply64);
 			fflush(psb->out);
-			DEBUG(4) debugf("%s\n", reply64);
+			DEBUG(4) debugf("  reply64 = %s\n", reply64);
 
 			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
 				ok = check_response(psb, FALSE);
@@ -607,11 +608,12 @@ smtp_out_auth_login(smtp_base * psb)
 			gint resp_size;
 			gchar *reply64;
 
+			DEBUG(5) debugf("smtp_out_auth_login():\n");
 			resp64 = get_response_arg(&(psb->buffer[4]));
-			DEBUG(5) debugf("encoded response = %s\n", resp64);
+			DEBUG(5) debugf("  encoded response = %s\n", resp64);
 			resp = base64_decode(resp64, &resp_size);
 			g_free(resp64);
-			DEBUG(5) debugf("decoded response = %s, size = %d\n", resp, resp_size);
+			DEBUG(5) debugf("  decoded response = %s, size = %d\n", resp, resp_size);
 			g_free(resp);
 			reply64 = base64_encode(psb->auth_login, strlen(psb->auth_login));
 			fprintf(psb->out, "%s\r\n", reply64);
@@ -620,10 +622,10 @@ smtp_out_auth_login(smtp_base * psb)
 			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
 				if ((ok = check_response(psb, TRUE))) {
 					resp64 = get_response_arg(&(psb->buffer[4]));
-					DEBUG(5) debugf("encoded response = %s\n", resp64);
+					DEBUG(5) debugf("  encoded response = %s\n", resp64);
 					resp = base64_decode(resp64, &resp_size);
 					g_free(resp64);
-					DEBUG(5) debugf("decoded response = %s, size = %d\n", resp, resp_size);
+					DEBUG(5) debugf("  decoded response = %s, size = %d\n", resp, resp_size);
 					g_free(resp);
 					reply64 = base64_encode(psb->auth_secret, strlen(psb->auth_secret));
 					fprintf(psb->out, "%s\r\n", reply64);
@@ -712,7 +714,8 @@ smtp_out_msg(smtp_base * psb, message * msg, address * return_path, GList * rcpt
 
 	/* respect maximum size given by server: */
 	if ((psb->max_size > 0) && (size > psb->max_size)) {
-		logwrite(LOG_WARNING, "%s == host=%s message size (%d) > fixed maximum message size of server (%d)",
+		logwrite(LOG_WARNING, "%s == host=%s message size (%d) > "
+		                      "fixed maximum message size of server (%d)",
 		         msg->uid, psb->remote_host, size, psb->max_size);
 		psb->error = smtp_cancel;
 		ok = FALSE;
@@ -747,7 +750,7 @@ smtp_out_msg(smtp_base * psb, message * msg, address * return_path, GList * rcpt
 							ok = FALSE;
 							break;
 						} else {
-							logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s",
+							logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s\n",
 							         msg->uid, addr_string(rcpt), psb->remote_host, psb->buffer);
 							if (psb->error == smtp_trylater) {
 								addr_mark_defered(rcpt);
@@ -798,7 +801,7 @@ smtp_out_msg(smtp_base * psb, message * msg, address * return_path, GList * rcpt
 										ok = FALSE;
 										break;
 									} else {
-										logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s", msg->uid,
+										logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s\n", msg->uid,
 										         addr_string(rcpt), psb->remote_host, psb->buffer);
 										if (psb->error == smtp_trylater) {
 											addr_mark_defered(rcpt);
@@ -840,9 +843,10 @@ smtp_out_msg(smtp_base * psb, message * msg, address * return_path, GList * rcpt
 	}
 
 	DEBUG(5) {
-		debugf("psb->error = %d\n", psb->error);
-		debugf("ok = %d\n", ok);
-		debugf("rcpt_accept = %d\n", rcpt_accept);
+		debugf("smtp_out_msg():\n");
+		debugf("  psb->error = %d\n", psb->error);
+		debugf("  ok = %d\n", ok);
+		debugf("  rcpt_accept = %d\n", rcpt_accept);
 	}
 
 	if (psb->error == smtp_ok) {

@@ -70,8 +70,7 @@ append_file(message * msg, GList * hdr_list, gchar * user)
 			}
 		}
 
-		DEBUG(5) debugf("running as euid %d\n", geteuid());
-		DEBUG(5) debugf("running as egid %d\n", getegid());
+		DEBUG(5) debugf("running as euid %d, egid %d\n", geteuid(), getegid());
 
 		if (uid_ok && gid_ok) {
 			gchar *filename;
@@ -168,15 +167,14 @@ maildir_out(message * msg, GList * hdr_list, gchar * user, guint flags)
 			}
 		}
 
-		DEBUG(5) debugf("running as euid %d\n", geteuid());
-		DEBUG(5) debugf("running as egid %d\n", getegid());
+		DEBUG(5) debugf("running as euid %d, egid %d\n", geteuid(), getegid());
 
 		if (uid_ok && gid_ok) {
 			char *path = g_strdup_printf("%s/Maildir", pw->pw_dir);
 			struct stat statbuf;
 			int ret;
 
-			DEBUG(5) debugf("path = %s\n", path);
+			DEBUG(5) debugf("  path = %s\n", path);
 
 			ok = TRUE;
 			ret = stat(path, &statbuf);

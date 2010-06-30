@@ -206,11 +206,14 @@ msg_spool_read(gchar * uid, gboolean do_readdata)
 	msg = create_message();
 	msg->uid = g_strdup(uid);
 
+	DEBUG(4) debugf("msg_spool_read():\n");
 	/* header spool: */
 	ok = spool_read_header(msg);
+	DEBUG(4) debugf("  spool_read_header()=%d, do_readdata=%d\n", ok, do_readdata);
 	if (ok && do_readdata) {
 		/* data spool: */
 		ok = spool_read_data(msg);
+		DEBUG(4) debugf("  spool_read_data()=%d\n", ok);
 	}
 	return msg;
 }
