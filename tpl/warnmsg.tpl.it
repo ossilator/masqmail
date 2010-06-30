@@ -1,0 +1,54 @@
+Subject: Warning: could not yet send message
+From: MAILER-DAEMON@${host_name}
+To: ${return_path}
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+        boundary="${uid}/${host_name}"
+
+Messaggio in formato MIME multi-parti.
+This is a MIME-encapsulated message.
+
+--${uid}/${host_name}
+Content-Description: Notification
+Content-Type: text/plain
+
+Questo messaggio ti e' stato spedito dal servente: 
+${package} ${version}) a ${host_name}.
+(This message was sent to you by the mailer daemon:
+${package} ${version}) at ${host_name}.)
+
+Spiacente ma non e' stato possibile spedire il tuo msg a tutti
+i destinatari. L'invio ai seguenti destinatari e' stato ritardato:
+(Sorry, but your mail could not yet be delivered to all recipients.
+Delivery to the following recipients has been defered:)
+
+@failed_rcpts
+
+La spedizione verra' ritentata, finche' ha successo o scade il 
+tempo disponibile impostato. In quest'ultimo caso riceverai una
+notifica di spedizione fallita definitiva.
+(Delivery will be tried again, until it is either successful or a
+timeout has been reached. If the latter happens, you will get a
+delivery failure notice.)
+
+
+Il seguente msg d'errore potrebbe aiutarti a capire la causa 
+dell'errore:
+(This error message may give you a hint about what caused the
+delay:)
+
+${err_msg}
+
+In caso ti serva aiuto scrivi a:
+(If you need help, write to:)
+  <postmaster@${host_name}>.
+
+The headers of your message follow attached:
+
+--${uid}/${host_name}
+Content-Description: Undelivered Message Headers
+Content-Type: message/rfc822
+
+@msg_headers
+
+--${uid}/${host_name}--
