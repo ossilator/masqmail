@@ -1,4 +1,4 @@
-.TH masqmail.conf 5 2010-06-21 masqmail-0.2.24 "File Formats"
+.TH masqmail.conf 5 2010-06-30 masqmail-0.2.25 "File Formats"
 
 .SH NAME
 masqmail.conf \- masqmail configuration file
@@ -16,7 +16,7 @@ The configuration consists of lines of the form
 Where \fBval\fR is a variable name and \fIexpression\fR a string,
 which can be quoted with double quotes `"'.
 If the expression is on multiple lines or contains characters other than letters,
-digits or the characters `.', `-', `_', `/', it must be quoted.
+digits or the characters `.', `-', `_', `/', ';', '@', ':' it must be quoted.
 You can use quotes inside quotes by escaping them with a backslash.
 
 Each val has a type, which can be boolean, numeric, string or list.
