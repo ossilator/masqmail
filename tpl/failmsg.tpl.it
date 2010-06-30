@@ -44,7 +44,7 @@ Content-Type: message/rfc822
 
 @msg_headers
 
-[corpo del messaggio - tralasciato]
+[corpo del messaggio - rimosso]
  ([message body - stripped off])
 
 --${uid}/${host_name}--
