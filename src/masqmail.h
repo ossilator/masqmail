@@ -174,6 +174,10 @@ typedef struct _masqmail_conf {
 
 	guint remote_port;
 
+	/* ANSI C defines unsigned long to be at least 32bit
+	   i.e. ca. 4GB max; that should be enough. */
+	gulong max_msg_size;
+
 	gboolean do_save_envelope_to;
 
 	gboolean defer_all;
@@ -332,6 +336,7 @@ typedef enum _accept_error {
 	AERR_SYNTAX,
 	AERR_NOSPOOL,
 	AERR_NORCPT,
+	AERR_SIZE,  /* max msg size exeeded (SMTP SIZE) */
 	AERR_UNKNOWN
 } accept_error;
 

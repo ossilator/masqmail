@@ -1,4 +1,4 @@
-.TH masqmail.conf 5 2010-06-30 masqmail-0.2.25 "File Formats"
+.TH masqmail.conf 5 2010-07-01 masqmail-0.2.25 "File Formats"
 
 .SH NAME
 masqmail.conf \- masqmail configuration file
@@ -481,6 +481,18 @@ that passes through the masqmail system will also be sent to the given mail addr
 
 For example you can feed your mails into a program like hypermail
 for archiving purpose by placing an appropriate pipe command in masqmail.alias
+
+.TP
+\fBmax_msg_size\fR = \fIbytes\fR
+
+This option sets the maximum size in bytes masqmail will accept for delivery.
+This value is advertised to the SMTP client by the `SIZE' message during SMTP
+session setup.
+Clients pretending to send, or actually send,
+more than \fIbytes\fR will get a 552 error message.
+
+Default is 104857600 (= 100MB).
+(This should be sufficient for most cases.)
 
 
 .SH AUTHOR

@@ -317,6 +317,9 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 		case AERR_NORCPT:
 			fprintf(stderr, "no recipients.\n");
 			exit(EXIT_FAILURE);
+		case AERR_SIZE:
+			fprintf(stderr, "max message size exceeded.\n");
+			exit(EXIT_FAILURE);
 		default:
 			/* should never happen: */
 			fprintf(stderr, "Unknown error (%d)\r\n", err);
