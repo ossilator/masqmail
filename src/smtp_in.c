@@ -55,8 +55,29 @@ get_id(const gchar * line)
 	return SMTP_ERROR;
 }
 
+static gboolean
+get_size(gchar *line, unsigned long *msize) {
+	gchar *s = NULL;
+
+	/* hope we need not to handle cases like SiZe= ...*/
+	s = strstr(line, "SIZE=");
+	if (!s) {
+		/* try it in lowercase too */
+		if (!(s = strstr(line, "size="))) {
+			return FALSE;
+		}
+	}
+	s += 5;
+	*msize = atol(s);
+	DEBUG(5) debugf("get_size(): line=%s, msize=%ld\n", line, *msize);
+
+	return TRUE;
+}
+
+
 /* this is a quick hack: we expect the address to be syntactically correct
-   and containing the mailbox only:
+   and containing the mailbox only, though we first check for size in
+   smtp_in().
 */
 static gboolean
 get_address(gchar * line, gchar * addr)
@@ -135,6 +156,7 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 	message *msg = NULL;
 	smtp_connection *psc;
 	int len;
+	unsigned long size, msize;
 
 	DEBUG(5) debugf("smtp_in entered, remote_host = %s\n", remote_host);
 
@@ -168,7 +190,7 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 
 			if (psc->prot == PROT_ESMTP) {
 				smtp_printf(out, "250-%s Nice to meet you with ESMTP\r\n", conf.host_name);
-				/* not yet: fprintf(out, "250-SIZE\r\n"); */
+				smtp_printf(out, "250-SIZE %d\r\n", conf.max_msg_size);
 				smtp_printf(out, "250-PIPELINING\r\n" "250 HELP\r\n");
 			} else {
 				smtp_printf(out, "250 %s pretty old mailer, huh?\r\n", conf.host_name);
@@ -176,6 +198,15 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 			break;
 
 		case SMTP_MAIL_FROM:
+			if (get_size(buffer, &msize)) {
+				DEBUG(5) debugf("smtp_in(): get_size: msize=%ld, conf.mms=%d\n",
+				                msize, conf.max_msg_size);
+				if (msize > conf.max_msg_size) {
+					smtp_printf(out, "552 Message size exceeds fixed limit.\r\n");
+					break;
+				}
+			}
+
 			{
 				gchar buf[MAX_ADDRESS];
 				address *addr;
@@ -278,12 +309,18 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 
 			err = accept_message(in, msg, conf.do_save_envelope_to ? ACC_SAVE_ENVELOPE_TO : 0);
 			if (err != AERR_OK) {
-				if (err == AERR_TIMEOUT || err == AERR_EOF) {
+				switch (err) {
+				case AERR_TIMEOUT:
+				case AERR_EOF:
+					return;
+				case AERR_SIZE:
+					smtp_printf(out, "552 Error: message too large.\r\n");
+					return;
+				default:
+					/* should never happen: */
+					smtp_printf(out, "451 Unknown error\r\n");
 					return;
 				}
-				/* should never happen: */
-				smtp_printf(out, "451 Unknown error\r\n");
-				return;
 			}
 
 

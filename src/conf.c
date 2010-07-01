@@ -431,6 +431,7 @@ read_conf(gchar * filename)
 	conf.do_relay = TRUE;
 	conf.alias_local_cmp = strcmp;
 	conf.max_defer_time = 86400 * 4;  /* 4 days */
+	conf.max_msg_size = 100*1024*1024; /* in bytes (100MB are probably enough) */
 
 	if ((in = fopen(filename, "r")) == NULL) {
 		fprintf(stderr, "could not open config file %s: %s\n", filename, strerror(errno));
@@ -581,7 +582,11 @@ read_conf(gchar * filename)
 				conf.max_defer_time = ival;
 		} else if (strcmp(lval, "log_user") == 0)
 			conf.log_user = g_strdup(rval);
-
+		else if(strcmp(lval, "max_msg_size") == 0) {
+			conf.max_msg_size = atol(rval);
+			DEBUG(6) fprintf(stderr,"rval=%s, conf.max_msg_size=%ld\n",
+			                 rval, conf.max_msg_size);
+		}
 		else
 			fprintf(stderr, "var '%s' not (yet) known, ignored\n", lval);
 	}
