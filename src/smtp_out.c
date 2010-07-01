@@ -363,10 +363,12 @@ send_data_line(smtp_base * psb, gchar * data)
 	ptr = data;
 	while (*ptr) {
 		int c = (int) (*ptr);
-		if (c == '.')
-			if (new_line)
-				putc('.', psb->out);
+		if (c == '.' && new_line) {
+			/* dot-stuffing */
+			putc('.', psb->out);
+		}
 		if (c == '\n') {
+			/* CRLF line terminators */
 			putc('\r', psb->out);
 			putc('\n', psb->out);
 			new_line = TRUE;
@@ -722,7 +724,9 @@ smtp_out_msg(smtp_base * psb, message * msg, address * return_path, GList * rcpt
 	}
 
 	if (ok) {
-		smtp_cmd_mailfrom(psb, return_path, psb->use_size ? size + SMTP_SIZE_ADD : 0);
+		/* pretend the message is a bit larger,
+		   just in case the size calculation is buggy */
+		smtp_cmd_mailfrom(psb, return_path, psb->use_size ? size+SMTP_SIZE_ADD : 0);
 
 		if (!psb->use_pipelining) {
 			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))

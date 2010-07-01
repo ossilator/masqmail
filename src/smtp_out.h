@@ -23,7 +23,7 @@
 #include <netdb.h>
 
 #define SMTP_BUF_LEN 1024
-#define SMTP_SIZE_ADD 1024
+#define SMTP_SIZE_ADD 1024  /* add to the size of a message */
 
 #define SMTP_INITIAL_TIMEOUT 5*60
 #define SMTP_CMD_TIMEOUT 5*60
