@@ -4,6 +4,7 @@ general:
 - improve Mailer-Daemon error messages
 - ODMR support
 - temporary delivery delay notifications
+- check data types (int may only cover -32767 to +32767!)
 
 conf:
 - more configuration options
