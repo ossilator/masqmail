@@ -191,7 +191,8 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 			if (psc->prot == PROT_ESMTP) {
 				smtp_printf(out, "250-%s Nice to meet you with ESMTP\r\n", conf.host_name);
 				smtp_printf(out, "250-SIZE %d\r\n", conf.max_msg_size);
-				smtp_printf(out, "250-PIPELINING\r\n" "250 HELP\r\n");
+				smtp_printf(out, "250-PIPELINING\r\n");
+				smtp_printf(out, "250 HELP\r\n");
 			} else {
 				smtp_printf(out, "250 %s pretty old mailer, huh?\r\n", conf.host_name);
 			}
