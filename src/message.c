@@ -29,13 +29,29 @@ create_message()
 	return msg;
 }
 
+/*
+   This function is currently (0.2.24) only used for client side SMTP
+   SIZE support (RFC 1870). The flag is_smtp is always true therefore.
+
+   Their definition of the message size in RFC 1870 is:
+
+       The message size is defined as the number of octets, including
+       CR-LF pairs, but not the SMTP DATA command's terminating dot
+       or doubled quoting dots, to be transmitted by the SMTP client
+       after receiving reply code 354 to the DATA command.
+
+   l_cnt (line count) covers '\r' characters which are not present in
+   masqmail's internal format. Dots are also not stuffed in the
+   internal format. Dot-stuffing is ignored in the size.
+*/
 gint
 msg_calc_size(message * msg, gboolean is_smtp)
 {
 	GList *node;
-	gint l_cnt = 0, c_cnt = 0;
+	gint l_cnt = 0;  /* line count (we need to add so many '\r' for SMTP) */
+	gint c_cnt = 0;  /* character count */
 
-	/* header size */
+	/* message header size */
 	if (msg->hdr_list) {
 		for (node = g_list_first(msg->hdr_list); node; node = g_list_next(node)) {
 			if (node->data) {
@@ -56,7 +72,7 @@ msg_calc_size(message * msg, gboolean is_smtp)
 	c_cnt++;
 	l_cnt++;
 
-	/* data size */
+	/* message data size */
 	if (msg->data_list) {
 		for (node = g_list_first(msg->data_list); node; node = g_list_next(node)) {
 			if (node->data) {
