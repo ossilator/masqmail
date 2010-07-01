@@ -491,8 +491,9 @@ session setup.
 Clients pretending to send, or actually send,
 more than \fIbytes\fR will get a 552 error message.
 
-Default is 104857600 (= 100MB).
-(This should be sufficient for most cases.)
+`0' means no fixed maximum size limit is in force.
+
+Default is 0 (= unlimited).
 
 
 .SH AUTHOR
