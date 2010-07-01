@@ -155,7 +155,7 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 				line_cnt++;
 			}
 		}
-		if (data_size > conf.max_msg_size) {
+		if (conf.max_msg_size && (data_size > conf.max_msg_size)) {
 			DEBUG(4) debugf("accept_message_stream(): "
 					"received %d bytes (conf.max_msg_size=%d)\n",
 			                data_size, conf.max_msg_size);

@@ -201,7 +201,7 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 			if (get_size(buffer, &msize)) {
 				DEBUG(5) debugf("smtp_in(): get_size: msize=%ld, conf.mms=%d\n",
 				                msize, conf.max_msg_size);
-				if (msize > conf.max_msg_size) {
+				if (conf.max_msg_size && (msize > conf.max_msg_size)) {
 					smtp_printf(out, "552 Message size exceeds fixed limit.\r\n");
 					break;
 				}
