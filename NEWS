@@ -7,6 +7,27 @@ affect users directly.
 The manual pages describe newly added options. Take them for reference.
 
 
+0.2.25
+
+- Added server-side SMTP SIZE support. Thanks to Paolo.
+
+- Masqmail will from now on:
+  * always remove Bcc: headers
+  * never create headers from envelope recipients
+  * add ``To: undisclosed-recipients:;'' if no recipient header (To:
+    or Cc:) is present in the mail
+
+- Colons (`:') don't need to be quoted in the config file anymore.
+Thanks to Paolo.
+
+- Added warnmsg.tpl.it. Thanks to Paolo. Added a man page for
+rmail(1).
+
+- The tests do not get installed any longer.
+
+- Several typo fixes in man pages and code comments.
+
+
 0.2.24
 
 - This version keeps on logging after an restart of the deamon, for
