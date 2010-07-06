@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# checks if all recognized options are documented
+# run from masqmail's repository root dir
+#
+# Note: this script is far from perfect, but its development time to
+#       usage value ratio is quite good :-)
+
+docs="/tmp/masqmail-opts-docs.$$"
+code="/tmp/masqmail-opts-code.$$"
+
+cat man/masqmail.*.5 | grep -o '^\\fB[^(\\]*\\f.' |
+    egrep -v 'OBSOLETE|http://' | sed 's,^\\fB,,; s,[\\ =].*,,' |
+    sort -u | grep -v '^val$' >"$docs"
+
+cat src/conf.c | grep 'lval,.*"' |
+    sed 's,[^"]*",,; s,"\, [0-9]*,",; s,".*,,' | sort -u >"$code"
+
+diff -U 0 "$code" "$docs" | grep -v '^@@'
+
+rm -f "$docs" "$code"
