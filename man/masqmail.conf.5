@@ -26,7 +26,7 @@ For some values patterns (like `*',`?') can be used.
 The spaces before and after the equal sign `=' are optional.
 
 Most lists (exceptions: \fBlocal_hosts\fR, \fBlocal_nets\fR, \fBlisten_addresses\fR,
-\fBonline_routes\fR, and \fBonline_gets\fR) accept files.
+ \fBonline_routes\fR, and \fBonline_gets\fR) accept files.
 These will be recognized by a leading slash `/'.
 The contents of these files will be included at the position of the file name,
 there can be items or other files before and after the file entry.
@@ -214,7 +214,7 @@ connection to your ISP is set up.
 Example: Your ISP has the name FastNet.
 Then you write the following line in the main configuration:
 
-\fBonline_routes.FastNet\fR = \fI"/etc/masqmail/fastnet.route"\fR
+ \fBonline_routes.FastNet\fR = \fI"/etc/masqmail/fastnet.route"\fR
 
 \fI/etc/masqmail/fastnet.route\fR is the route configuration file, see \fBmasqmail.route(5)\fR.
 As soon as a link to FastNet has been set up, you call masqmail \fB\-qo \fIFastNet\fR.
