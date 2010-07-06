@@ -1,4 +1,4 @@
-.TH masqmail.get 5 2010-06-21 masqmail-0.2.24 "File Formats"
+.TH masqmail.get 5 2010-07-06 masqmail-0.2.25 "File Formats"
 
 .SH NAME
 masqmail.get \- masqmail get configuration file
@@ -22,6 +22,13 @@ There is no default.
 \fBserver\fR = \fIstring\fR
 
 The server you get your mail from.
+
+.TP
+\fBport\fR = \fInumber\fR
+
+The port number of \fBserver\fP to connect to.
+
+Default: 110.
 
 .TP
 \fBresolve_list\fR = \fIlist\fR
@@ -102,6 +109,16 @@ The default is 0.
 
 If set to a value > 0, only \fBmax_count\fR messages will be retrieved.
 The default is 0.
+
+.TP
+\fBmax_size_delete\fR = \fIboolean\fR
+
+If \fBmax_size\fP > 0 and \fBdo_uidl_dele\fP is set,
+delete messages that are larger than \fImax_size\fP on the server
+WITHOUT retrieving them.
+Be careful with this option.
+
+Default: false
 
 .TP
 \fBwrapper\fR = \fIcommand\fR
