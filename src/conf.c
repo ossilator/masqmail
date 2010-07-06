@@ -939,7 +939,7 @@ read_get_conf(gchar * filename)
 		else if (strcmp(lval, "max_size") == 0)
 			gc->max_size = atoi(rval);
 		else if (strcmp(lval, "max_size_delete") == 0)
-			gc->max_size = parse_boolean(rval);
+			gc->max_size_delete = parse_boolean(rval);
 		else if (strcmp(lval, "max_count") == 0)
 			gc->max_count = atoi(rval);
 		else if (strcmp(lval, "resolve_list") == 0)
