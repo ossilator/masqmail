@@ -718,8 +718,8 @@ pop3_get(pop3_base * popb, gchar * user, gchar * pass, address * rcpt, address *
 										} else {
 											logwrite(LOG_ALERT, "retrieving of message %d failed: %d\n", info->number, popb->error);
 										}
-									} /* if((info->size > max_size) ... */
-									else {
+									} else {
+										/* info->size > max_size */
 										logwrite(LOG_NOTICE | LOG_VERBOSE, "size of message #%d (%d) > max_size (%d)\n", info->number, info->size, max_size);
 										if (max_size_delete)
 											if (popb->flags & POP3_FLAG_DELETE)
