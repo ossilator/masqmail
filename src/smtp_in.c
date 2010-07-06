@@ -78,6 +78,7 @@ get_size(gchar *line, unsigned long *msize) {
 /* this is a quick hack: we expect the address to be syntactically correct
    and containing the mailbox only, though we first check for size in
    smtp_in().
+   Return false if address is too long.
 */
 static gboolean
 get_address(gchar * line, gchar * addr)
@@ -97,10 +98,14 @@ get_address(gchar * line, gchar * addr)
 	}
 
 	/* get address: */
-	while (*p && !isspace(*p) && (q < addr + MAX_ADDRESS - 1)) {
+	while (*p && !isspace(*p)) {
+		if (q >= addr + MAX_ADDRESS-1) {
+			*q = '\0';
+			return FALSE;
+		}
 		*(q++) = *(p++);
 	}
-	*q = 0;
+	*q = '\0';
 
 	return TRUE;
 }
@@ -213,7 +218,6 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 					smtp_printf(out, "503 MAIL FROM: already given.\r\n");
 					break;
 				}
-
 				if (get_size(buffer, &msize)) {
 					DEBUG(5) debugf("smtp_in(): get_size: msize=%ld, conf.mms=%d\n",
 							msize, conf.max_msg_size);
@@ -221,6 +225,10 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 						smtp_printf(out, "552 Message size exceeds fixed limit.\r\n");
 						break;
 					}
+				}
+				if (!get_address(buffer, buf)) {
+					smtp_printf(out, "553 Address too long.\r\n");
+					break;
 				}
 
 				msg = create_message();
@@ -230,7 +238,6 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 				/* get transfer id and increment for next one */
 				msg->transfer_id = (psc->next_id)++;
 	
-				get_address(buffer, buf);
 				if (remote_host) {
 					addr = create_address(buf, TRUE);
 				} else {
@@ -261,8 +268,11 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 					smtp_printf(out, "503 need MAIL FROM: before RCPT TO:\r\n");
 					break;
 				}
+				if (!get_address(buffer, buf)) {
+					smtp_printf(out, "553 Address too long.\r\n");
+					break;
+				}
 	
-				get_address(buffer, buf);
 				if (remote_host) {
 					addr = create_address(buf, TRUE);
 				} else {
