@@ -1,4 +1,4 @@
-.TH masqmail.conf 5 2010-07-01 masqmail-0.2.25 "File Formats"
+.TH masqmail.conf 5 2010-07-06 masqmail-0.2.25 "File Formats"
 
 .SH NAME
 masqmail.conf \- masqmail configuration file
@@ -502,6 +502,15 @@ more than \fIbytes\fR will get a 552 error message.
 `0' means no fixed maximum size limit is in force.
 
 Default is 0 (= unlimited).
+
+.TP
+\fBdefer_all\fR = \fIboolean\fR
+
+If set to true, masqmail replies with ``421 service temporarily unavailable''
+to any SMTP request and shuts the connection down.
+Note: This option is for debugging purposes only.
+
+Default: false
 
 
 .SH AUTHOR
