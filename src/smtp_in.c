@@ -176,9 +176,12 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 	while ((len = read_sockline(in, buffer, BUF_LEN, 5 * 60, READSOCKL_CHUG)) >= 0) {
 		cmd_id = get_id(buffer);
 
-		if (conf.defer_all) {  /* I need this to debug delivery failures */
+		if (conf.defer_all) {
+			/* I need this to debug delivery failures */
 			smtp_printf(out, "421 %s service temporarily unavailable.\r\n", conf.host_name);
-			break;
+			destroy_message(msg);
+			msg = NULL;
+			return;
 		}
 
 		switch (cmd_id) {
