@@ -1,0 +1,8 @@
+# mailq.wmbiffrc for masqmail by Paolo
+
+label.4=mailq
+path.4=shell:::mailq|grep ^[[:graph:]]|grep -v empty|wc -l
+interval.4=600
+notify.4=beep
+notify.4=true
+action.4=(echo "messages in the queue:";mailq|grep ^[[:graph:]]|grep -v empty)|xmessage -center -buttons vaBen -file -
