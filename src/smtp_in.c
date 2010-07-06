@@ -198,15 +198,6 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 			break;
 
 		case SMTP_MAIL_FROM:
-			if (get_size(buffer, &msize)) {
-				DEBUG(5) debugf("smtp_in(): get_size: msize=%ld, conf.mms=%d\n",
-				                msize, conf.max_msg_size);
-				if (conf.max_msg_size && (msize > conf.max_msg_size)) {
-					smtp_printf(out, "552 Message size exceeds fixed limit.\r\n");
-					break;
-				}
-			}
-
 			{
 				gchar buf[MAX_ADDRESS];
 				address *addr;
@@ -218,6 +209,15 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 				if (psc->from_seen) {
 					smtp_printf(out, "503 MAIL FROM: already given.\r\n");
 					break;
+				}
+
+				if (get_size(buffer, &msize)) {
+					DEBUG(5) debugf("smtp_in(): get_size: msize=%ld, conf.mms=%d\n",
+							msize, conf.max_msg_size);
+					if (conf.max_msg_size && (msize > conf.max_msg_size)) {
+						smtp_printf(out, "552 Message size exceeds fixed limit.\r\n");
+						break;
+					}
 				}
 
 				msg = create_message();
