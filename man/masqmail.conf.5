@@ -86,6 +86,14 @@ I suggest to use \fI/var/spool/masqmail\fR.
 \fIfile\fR must be an absolute path.
 
 .TP
+\fBlock_dir = \fIfile\fR
+
+The directory where masqmail stores its lock files.
+Masqmail needs read and write permissions for this directory.
+By default it is a directory ``lock'' inside of \fIspool_dir\fP.
+\fIfile\fR must be an absolute path.
+
+.TP
 \fBhost_name = \fIstring\fR
 
 This is used in different places: Masqmail identifies itself in the greeting banner
