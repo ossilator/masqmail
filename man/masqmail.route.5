@@ -103,7 +103,7 @@ are part of \fBallowed_mail_locals\fR (see above).
 \fBallowed_return_paths\fR = \fIlist\fR
 
 This is a semicolon `;' separated list of addresses.
-Messages which have one one of these addresses as the return path will be used using this route
+Messages which have one of these addresses as the return path will be used using this route
 (if not also in \fBnot_allowed_return_paths\fR or an item in \fBnot_allowed_mail_locals\fR matches).
 
 Patterns containing `?' and `*' can be used.
@@ -113,7 +113,7 @@ The special item "<>" matches the null sender address (eg. failure notices or de
 \fBnot_allowed_return_paths\fR = \fIlist\fR
 
 This is a semicolon `;' separated list of addresses.
-Messages which have one one of these addresses as the return path will not
+Messages which have one of these addresses as the return path will not
 be used using this route (even if also in \fBallowed_return_paths\fR
 or an item in \fBallowed_mail_locals\fR matches).
 
@@ -143,7 +143,7 @@ Patterns containing `?' and `*' can be used.
 
 Replace the domain part in `From:' headers with this value.
 This may be useful if you use a private, outside unknown address on your local LAN
-and want this to be replaced by the domain of the address of your email addrsss on the internet.
+and want this to be replaced by the domain of the address of your email address on the internet.
 Note that this is different to \fBset_return_path_domain\fR, see below.
 
 .TP
