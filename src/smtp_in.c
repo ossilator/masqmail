@@ -176,26 +176,25 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 	while ((len = read_sockline(in, buffer, BUF_LEN, 5 * 60, READSOCKL_CHUG)) >= 0) {
 		cmd_id = get_id(buffer);
 
+		if (conf.defer_all) {  /* I need this to debug delivery failures */
+			smtp_printf(out, "421 %s service temporarily unavailable.\r\n", conf.host_name);
+			break;
+		}
+
 		switch (cmd_id) {
+		case SMTP_HELO:
+			psc->prot = PROT_SMTP;
+			psc->helo_seen = TRUE;
+			smtp_printf(out, "250 %s pretty old mailer, huh?\r\n", conf.host_name);
+			break;
+
 		case SMTP_EHLO:
 			psc->prot = PROT_ESMTP;
-			/* fall through */
-		case SMTP_HELO:
 			psc->helo_seen = TRUE;
-
-			if (conf.defer_all) {  /* I need this to debug delivery failures */
-				smtp_printf(out, "421 %s service temporarily unavailable.\r\n", conf.host_name);
-				break;
-			}
-
-			if (psc->prot == PROT_ESMTP) {
-				smtp_printf(out, "250-%s Nice to meet you with ESMTP\r\n", conf.host_name);
-				smtp_printf(out, "250-SIZE %d\r\n", conf.max_msg_size);
-				smtp_printf(out, "250-PIPELINING\r\n");
-				smtp_printf(out, "250 HELP\r\n");
-			} else {
-				smtp_printf(out, "250 %s pretty old mailer, huh?\r\n", conf.host_name);
-			}
+			smtp_printf(out, "250-%s Nice to meet you with ESMTP\r\n", conf.host_name);
+			smtp_printf(out, "250-SIZE %d\r\n", conf.max_msg_size);
+			smtp_printf(out, "250-PIPELINING\r\n");
+			smtp_printf(out, "250 HELP\r\n");
 			break;
 
 		case SMTP_MAIL_FROM:
@@ -220,7 +219,7 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 					smtp_printf(out, "503 MAIL FROM: already given.\r\n");
 					break;
 				}
-	
+
 				msg = create_message();
 				msg->received_host = remote_host ? g_strdup(remote_host) : NULL;
 				msg->received_prot = psc->prot;
