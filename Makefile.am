@@ -81,11 +81,11 @@ rm-rmail:
 	rm -f $(DESTDIR)@prefix@/bin/rmail
 
 rm-doc_dir:
-	cd $(DESTDIR)@docdir@ ;\
-	rm -rf docs examples ;\
-	rm -f ChangeLog NEWS AUTHORS COPYING README TODO
+	cd $(DESTDIR)@docdir@ && ( \
+	    rm -rf docs examples ; \
+	    rm -f ChangeLog NEWS AUTHORS COPYING README TODO ; \
+	)
 	rmdir $(DESTDIR)@docdir@
 
 rm-tpl_dir:
-	cd $(DESTDIR)@datadir@ ;\
-	rm -rf masqmail
+	rm -rf $(DESTDIR)@datadir@/masqmail/
