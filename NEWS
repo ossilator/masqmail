@@ -22,10 +22,13 @@ Thanks to Paolo.
 
 - Added checks for too long addresses in SMTP dialog. Thanks to Paolo.
 
-- Added warnmsg.tpl.it. Thanks to Paolo. Added a man page for
-rmail(1).
+- Moved rmail to sbin and added a man page for it.
 
-- The tests do not get installed any longer.
+- Added warnmsg.tpl.it. Thanks to Paolo.
+
+- The tests do not get installed any longer. All on install created
+dirs are removed on uninstall, except they contain generated data like
+logs, spooled files, or configuration.
 
 - Documented some, yet undocumented, config options. Several typo
 fixes in man pages and code comments.

@@ -7,7 +7,7 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
-0.2.25  Tue, 06 Jul 2010 19:58:29 +0200
+0.2.25  Thu, 08 Jul 2010 00:49:36 +0200
 	* added server-side SMTP SIZE support. Thanks to Paolo.
 	* always remove Bcc: headers from now on
 	* never create headers from envelope recipients from now on
@@ -18,6 +18,8 @@ technical speach and with focus on compatibility.
 	* allow colons (`:') unquoted in config file. Thanks to Paolo.
 	* new warnmsg.tpl.it. Thanks to Paolo.
 	* don't install the tests any longer
+	* remove all installed dirs but no generated data (logs,
+	  spooled files, config)
 	* removed the ACC_NO_RECVD_HDR because it is never used
 	* changed name ACC_NODOT_TERM to ACC_DOT_IGNORE for better
 	  understanding
@@ -26,7 +28,7 @@ technical speach and with focus on compatibility.
 	* better debugging output. Thanks to Paolo.
 	* documented some, yet undocumented, config options
 	* improved documentation of -t option
-	* added man page for rmail(1)
+	* moved rmail to sbin and added man page for rmail(8)
 	* several typo fixes in man pages and code comments
 	* gen-dist: don't distribute mercurial files
 
