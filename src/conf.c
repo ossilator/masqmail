@@ -434,6 +434,7 @@ read_conf(gchar * filename)
 	conf.max_msg_size = 0; /* no limit on msg size */
 	conf.spool_dir = SPOOL_DIR;
 	conf.log_dir = LOG_DIR;
+	conf.local_hosts = parse_list("localhost", FALSE);
 	conf.mail_dir = "/var/mail";
 
 	if ((in = fopen(filename, "r")) == NULL) {
