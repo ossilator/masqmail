@@ -432,6 +432,8 @@ read_conf(gchar * filename)
 	conf.alias_local_cmp = strcmp;
 	conf.max_defer_time = 86400 * 4;  /* 4 days */
 	conf.max_msg_size = 0; /* no limit on msg size */
+	conf.spool_dir = SPOOL_DIR;
+	conf.log_dir = LOG_DIR;
 
 	if ((in = fopen(filename, "r")) == NULL) {
 		fprintf(stderr, "could not open config file %s: %s\n", filename, strerror(errno));
