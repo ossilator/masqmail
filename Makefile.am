@@ -66,13 +66,13 @@ rm-spool_dir:
 	rmdir $(DESTDIR)@with_spooldir@
 
 rmail:
-	[ -d "$(DESTDIR)@prefix@/bin" ] || mkdir -p "$(DESTDIR)@prefix@/bin"
+	[ -d "$(DESTDIR)@prefix@/sbin" ] || mkdir -p "$(DESTDIR)@prefix@/sbin"
 	sed '/^SENDMAIL/s,/usr/sbin/sendmail,$(DESTDIR)@prefix@/sbin/masqmail,'\
-	    contrib/rmail >$(DESTDIR)@prefix@/bin/rmail
-	chmod 755 $(DESTDIR)@prefix@/bin/rmail
+	    contrib/rmail >$(DESTDIR)@prefix@/sbin/rmail
+	chmod 755 $(DESTDIR)@prefix@/sbin/rmail
 
 rm-rmail:
-	rm -f $(DESTDIR)@prefix@/bin/rmail
+	rm -f $(DESTDIR)@prefix@/sbin/rmail
 
 
 uid_bit: $(DESTDIR)@prefix@/sbin/masqmail
