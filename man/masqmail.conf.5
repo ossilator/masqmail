@@ -67,8 +67,9 @@ Be careful if you set this as high as 5 or higher, the logs may very soon fill y
 
 The directory where log are stored, if syslog is not used.
 Debug files are stored in this directory anyways.
-\fI/var/log/masqmail\fR is a common value.
 \fIfile\fR must be an absolute path.
+
+Default: \fI/var/log/masqmail\fR
 
 .TP
 \fBmail_dir = \fIfile\fR
@@ -82,8 +83,9 @@ The directory where local mail is stored, usually \fI/var/spool/mail\fR or \fI/v
 The directory where masqmail stores its spool files (and later also other stuff).
 It must have a subdirectory \fIinput\fR.
 Masqmail needs read and write permissions for this directory.
-I suggest to use \fI/var/spool/masqmail\fR.
 \fIfile\fR must be an absolute path.
+
+Default: \fI/var/spool/masqmail\fR
 
 .TP
 \fBlock_dir = \fIfile\fR

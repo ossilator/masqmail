@@ -247,10 +247,11 @@ AC_SUBST(USE_LIBLOCKFILE)
 
 dnl log and spool directories
 AC_ARG_WITH(logdir,
-	[  --with-logdir=DIR        set log directory [/var/masqmail]],
+	[  --with-logdir=DIR        set log directory [/var/log/masqmail]],
 	,
         with_logdir='/var/log/masqmail/'
 	)
+AC_DEFINE_UNQUOTED(LOG_DIR, "${with_logdir}", [The log directory])
 AC_SUBST(with_logdir)
 
 AC_ARG_WITH(spooldir,
@@ -258,6 +259,7 @@ AC_ARG_WITH(spooldir,
 	,
 	with_spooldir='/var/spool/masqmail/'
 	)
+AC_DEFINE_UNQUOTED(SPOOL_DIR, "${with_spooldir}", [The spool directory])
 AC_SUBST(with_spooldir)
 
 dnl configuration file
