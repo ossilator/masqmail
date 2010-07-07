@@ -7,23 +7,28 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
-0.2.25  Thu, 01 Jul 2010 13:40:31 +0200
+0.2.25  Tue, 06 Jul 2010 19:58:29 +0200
 	* added server-side SMTP SIZE support. Thanks to Paolo.
 	* always remove Bcc: headers from now on
 	* never create headers from envelope recipients from now on
 	* add ``To: undisclosed-recipients:;'' if no recipient header
 	  is present
+	* added checks for too long addresses in SMTP dialog. Thanks
+	  to Paolo.
 	* allow colons (`:') unquoted in config file. Thanks to Paolo.
 	* new warnmsg.tpl.it. Thanks to Paolo.
 	* don't install the tests any longer
 	* removed the ACC_NO_RECVD_HDR because it is never used
 	* changed name ACC_NODOT_TERM to ACC_DOT_IGNORE for better
 	  understanding
+	* fixed max_size_delete
+	* added Paolo's mailq.wmbiffrc
 	* better debugging output. Thanks to Paolo.
+	* documented some, yet undocumented, config options
 	* improved documentation of -t option
 	* added man page for rmail(1)
 	* several typo fixes in man pages and code comments
-	* don't distribute mercurial files (in gen-dist)
+	* gen-dist: don't distribute mercurial files
 
 0.2.24  Mon, 21 Jun 2010 10:07:32 +0200
 	* removed dead code in child.c

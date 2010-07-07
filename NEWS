@@ -12,20 +12,23 @@ The manual pages describe newly added options. Take them for reference.
 - Added server-side SMTP SIZE support. Thanks to Paolo.
 
 - Masqmail will from now on:
-  * always remove Bcc: headers
-  * never create headers from envelope recipients
-  * add ``To: undisclosed-recipients:;'' if no recipient header (To:
+  o always remove Bcc: headers
+  o never create headers from envelope recipients
+  o add ``To: undisclosed-recipients:;'' if no recipient header (To:
     or Cc:) is present in the mail
 
 - Colons (`:') don't need to be quoted in the config file anymore.
 Thanks to Paolo.
+
+- Added checks for too long addresses in SMTP dialog. Thanks to Paolo.
 
 - Added warnmsg.tpl.it. Thanks to Paolo. Added a man page for
 rmail(1).
 
 - The tests do not get installed any longer.
 
-- Several typo fixes in man pages and code comments.
+- Documented some, yet undocumented, config options. Several typo
+fixes in man pages and code comments.
 
 
 0.2.24
