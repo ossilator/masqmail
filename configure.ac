@@ -146,7 +146,6 @@ AC_ARG_ENABLE(pop3,
 	if test "x$enable_pop3" != 'xno'; then
 		pop3_enabled='yes'
 	fi,
-	pop3_enabled='yes'
 	)
 if test "x$pop3_enabled" = xyes; then
 	AC_DEFINE(ENABLE_POP3, 1, [If the POP3 support is enabled])
