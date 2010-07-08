@@ -7,6 +7,13 @@ affect users directly.
 The manual pages describe newly added options. Take them for reference.
 
 
+0.3.0
+
+- Started a new development branch. Attention: It will not maintain
+compatibility with 0.2.x versions. Upgrading from 0.2.x to 0.3.x will
+surely require manual adjustment of the configuration.
+
+
 0.2.25
 
 - Added server-side SMTP SIZE support. Thanks to Paolo.
