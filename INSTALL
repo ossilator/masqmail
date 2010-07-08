@@ -5,18 +5,26 @@ For installing on GNU/Linux distributions read docs/linux-distris.
 Installation instructions
 -------------------------
 
-To compile masqmail you need glib 1.2 (http://www.gtk.org).
+To compile masqmail you need glib (>= 1.2) (http://www.gtk.org). Your
+distribution probably provides it.
 
-You need a user and a group for masqmail to run, I suggest user
-'mail' and group 'trusted'. Say:
+You need a user and a group for masqmail to run. If
+
+	grep '^mail:' /etc/passwd
+	grep '^trusted:' /etc/group
+
+shows that the user `mail' and the group `trusted' exist, it's
+probably best to use these. If they don't exist, create them:
 
 	groupadd -g 42 trusted
-	useradd -u 42 -g 42 -d / -s /bin/sh -c "Mail Transfer Agent" mail
+	useradd -u 23 -g 42 -d / -s /bin/sh -c "Mail Transfer Agent" mail
 
-If you use other names than 'mail' and 'trusted' use the options
-described below for configure. The 42 is just a suggestion, you can
-use any number you like, but preferably one < 100. It does not have
-to be the same for the user 'mail' and the group 'trusted'.
+If you use other names than `mail' and `trusted' use the options
+described below for configure. The 23 and 42 are just a suggestion,
+you can use any (not yet used) number you like, but preferably one
+lower than 100. It does not have to be the same for the user `mail'
+and the group `trusted'.
+
 
 Compliling is a matter of the usual procedure. In the source directory,
 after unpacking do:
@@ -34,77 +42,88 @@ See the output of
 
 	./configure -h
 
-Here is additional, but maybe obsolete, explanation:
+Here is a selection of the options with additional explanations:
 
---with-user=USER sets the user as which MasqMail will run. Default is
-'mail'. USER has to exist before you 'make install'.
+--with-user=USER
+sets the user as which masqmail will run. Default is 'mail'. USER has
+to exist before you 'make install'.
 
---with-group=GROUP sets the group as which MasqMail will run. Default
-is 'trusted'. GROUP has to exist before you 'make install'.
+--with-group=GROUP
+sets the group as which masqmail will run. Default is 'trusted'. GROUP
+has to exist before you 'make install'.
 
---with-logdir=LOGDIR sets the directory where MasqMail stores its log
-files. It will be created if it does not exist. Default is /var/masqmail/.
 
---with-spooldir=SPOOLDIR sets the directory where MasqMail stores its
-spool files. It will be created if it does not exist. Default is
-/var/spool/masqmail/.
+--with-logdir=LOGDIR
+sets the directory where masqmail stores its log files. It will be
+created if it does not exist. Default is /var/log/masqmail/.
 
---with-confdir=CONFDIR sets the default configuration directory to
-CONFDIR, in case you prefer another location than /etc/masqmail/.
+--with-spooldir=SPOOLDIR
+sets the directory where masqmail stores its spool files. It will be
+created if it does not exist. Default is /var/spool/masqmail/.
 
---enable-auth enables ESMTP AUTH support (disabled by default)
+--with-confdir=CONFDIR
+sets the default configuration directory to CONFDIR, in case you
+prefer another location than /etc/masqmail/.
 
---enable-pop3 enables pop3 support (disabled by default)
 
---enable-maildir enables qmail style Maildir support (disabled by default)
+--enable-auth
+enables ESMTP AUTH support (disabled by default)
 
---enable-ident enable RFC 1413 support. If you have the libident
-dynamic library installed, this will be linked, otherwise it will be
-statically linked using the sources included in the package.
+--enable-maildir
+enables qmail style Maildir support (disabled by default)
 
---disable-resolver disable resolver support. Without the resolver functions,
-masqmail uses only gethostbyname() to resolve DNS names, and you cannot send
-mail without a smart host. Not recommended. You save 3K at most.
+--enable-ident
+enable RFC 1413 support. If you have the libident dynamic library
+installed, this will be linked, otherwise it will be statically linked
+using the sources included in the package.
 
---disable-smtp-server disable SMTP server support. You may want this if you do
-not need masqmail to listen. In this case, you cannot use masqmail as a smart
-host for other hosts on your LAN, you cannot use mail clients that send SMTP,
-you cannot even use pine. In short, use of this option is discouraged unless
-your resources are extremely limited.
+--enable-pop3
+enables pop3 support (disabled by default)
 
---with-libcryto instead of using the md5 and hmac functions within the package,
-link dynamically with libcrypto. This applies only if you have pop3 or SMTP
-AUTH enabled. Makes only sense if your resources are limited and you have
-libcrypto installed. Untested.
+--disable-resolver
+disable resolver support. Without the resolver functions, masqmail
+uses only gethostbyname() to resolve DNS names, and you cannot send
+mail without a smart host. Not recommended.
 
---with-glib-static link with glib statically. This makes the binary larger
-by around 30K (i386 architecture), but if masqmail is the only binary using
-glib, you save some space in total, because you do not need the shared glib
+--disable-smtp-server
+disable SMTP server support. You may want this if you do not need
+masqmail to listen. In this case, you cannot use masqmail as a smart
+host for other hosts on your LAN, you cannot use mail clients that
+send SMTP, you cannot even use pine. In short, use of this option is
+discouraged unless your resources are extremely limited.
+
+
+--with-libcryto
+instead of using the md5 and hmac functions within the package, link
+dynamically with libcrypto. This applies only if you have pop3 or SMTP
+AUTH enabled. Makes only sense if your resources are limited and you
+have libcrypto installed. Untested.
+
+--with-glib-static
+link with glib statically. This makes the binary larger by around 30K
+(i386 architecture), but if masqmail is the only binary using glib,
+you save some space in total, because you do not need the shared glib
 library installed.
 
---disable-debug disable debugging, setting it on by command line or configuration
-has no effect. Strongly discouraged, since you miss valuable information if something
-goes wrong. You save 6K.
 
-BTW, to get 3K of space, call
-strip --remove-section=.comment --remove-section=.note --strip-unneeded src/masqmail
-
+--disable-debug
+disable debugging, setting it on by command line or configuration has
+no effect. Strongly discouraged, since you miss valuable information
+if something goes wrong.
 
 
-after make install:
--------------------
 
-You can also use these instructions to omit 'make install' if you do
-not want to use it.
+Checking the installation
+-------------------------
 
 Check that 'make install' worked correctly. The following command:
 
-	ls -ld /usr/sbin/masqmail /etc/masqmail /var/log/masqmail/ \
+	ls -ld /usr/local/sbin/masqmail /etc/masqmail /var/log/masqmail/ \
 	       /var/run/masqmail /var/spool/masqmail/ /var/spool/masqmail/* 
 
 should give output similar to
 
-	-rwsr-xr-x 1 root root    399356 May 10 12:34 /usr/sbin/masqmail
+	-rwsr-xr-x 1 root root    399356 May 10 12:34 /usr/local/sbin/masqmail
 	drwxr-xr-x 2 root root      4096 May 10 12:34 /etc/masqmail
 	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/log/masqmail
 	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/run/masqmail
@@ -113,85 +132,71 @@ should give output similar to
 	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/lock
 	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/popuidl
 
-(important is the set-user-id bit for /usr/sbin/masqmail and the
-ownership of all items).
-
-Use the example configuration files in examples/ to edit your own. The
-main configuration file `masqmail.conf' and the *.route and *.get files
-should go into /etc/masqmail.
-
-The default destination for the executable `masqmail' is /usr/sbin.
-Check that it has the set-uid bit set. You can set it with:
-
-	chmod u+s /usr/sbin/masqmail
-
-If you want to replace sendmail, move your old sendmail binary to
-another name and make a symbolic link:
-
-	ln -s /usr/sbin/masqmail /usr/sbin/sendmail
-
-Now every mailer that used to call sendmail will now call masqmail. You
-can now kill your old sendmail if it is running and start masqmail.
-
-	/sbin/init.d/sendmail restart
-
-should do that. You can also start masqmail with:
-
-	/usr/sbin/masqmail -bd -q30m
+Important are the set-user-id bit for /usr/local/sbin/masqmail and
+the permissions of all files.
 
 
 
-Configuring for online delivery
--------------------------------
+Making masqmail the default
+---------------------------
 
-(This section covers dial-up internet connections.)
+`sendmail' is the de-facto standard name of the system's MTA, no
+matter which MTA actually runs. If you want to make masqmail the
+system's MTA (i.e. replace sendmail, postfix, etc), make a symbolic
+link:
 
-Now you have to set up the online configuration. The trick is to tell
-your ip-up script the connection name. You could use the IP number of
-the far side of the ppp link, but this is a pain and may change each
-time. But you can give it an additional argument via pppd with ipparam.
-Somewhere in your dial up script you have a line similar to:
+	ln -s /usr/local/sbin/masqmail /usr/lib/sendmail
 
-	/usr/sbin/pppd /dev/ttyS1 connect "/usr/sbin/chat -t 90 -f $CHATFILE" \
-	-d -d -d user user@somewhere file "$OPTIONS"
+Now every mailer that used to call sendmail will now call masqmail.
+If you already had an MTA installed and running, you can kill it and
+start masqmail. Probably with:
 
-Just add 'ipparam FastNet' in the command line for pppd if your ISP has
-the name FastNet. The ip-up script will then get 'FastNet' as a sixth
-parameter. In your ip-up script you can then call masqmail with
+	/etc/init.d/sendmail restart
 
-	/usr/sbin/masqmail -qo "$6"
+If this doesn't work as expected, you might need to add a special init
+script for masqmail. Currently none is distributed with masqmail.
+(Hopefully this will change soon.) Please ask on the mailing list for
+help.
 
-instead of 'sendmail -q', if you had that in the script before.
-Masqmail will then read the route configuration specified for the
-connection name 'FastNet' and deliver the mail destined to the internet.
-See the configuration manual on how to write a route configuration or
-use one of the examples as a template.
+You can also directly start masqmail as daemon with:
 
-I do not know how do configure that for an ISDN adapter, but I am sure
-you will find something similar in the man pages.
+	/usr/local/sbin/masqmail -bd -q30m
 
-If you want mail that is received by masqmail from your local net to be
-delivered immediately using the route configuration, you have two
-possibilities:
 
-* if you are using the masqdialer system, you just have to set the
-  variables online_detect to pipe and online_pipe to something like
-	/usr/bin/mservdetect localhost 224
-  if mserver is running on localhost and listens on port 224. See the
-  man page to mservdetect(1).
 
-* otherwise you have to add two commands in your ip-up script:
-	echo "$6" >/var/run/masqmail/masqmail-route
-	chmod 644 /var/run/masqmail/masqmail-route
-  and you have to remove the file /var/run/masqmail/masqmail-route in
-  your ip-down script:
-	rm /var/run/masqmail/masqmail-route
-  Then you have to set online_detect to file and online_file to
-  /var/run/masqmail/masqmail-route
+Basic Configuration
+-------------------
 
-See the route documentation for more.
+The only thing you must configure in order to use masqmail is the
+hostname. It's the name under which masqmail operates. In most cases
+it is the same as the machine's name, but it can be different.
+
+The script `contrib/guess-hostname' tries to print the hostname of
+your machine. The first output line is probably the best choice.
+
+Create a minimal config with:
+
+	echo "host_name = HOSTNAME" >/etc/masqmail/masqmail.conf
+
+(Substitute `HOSTNAME' with the real value, of course.)
+
+Such a setup (i.e. the default one) does:
+- deliver mail locally
+- accept mail from local (via stdin)
+- accept mail on localhost:25 (via SMTP)
+It does not
+- transfer any mail to other machines
+- accept mail from outside your machine
+
+
+For more elaborate setups, have a look at docs/*setup and
+docs/INSTALL*. You can also take the example configuration files in
+examples/ as basis for your own. Take the man pages masqmail.conf(5)
+and masqmail.route(5) for reference.
+
+All configuration files should go into /etc/masqmail.
 
 
 
 Written by oku.
-Updated by meillo.
+Improved by meillo.
