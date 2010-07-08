@@ -1,0 +1,51 @@
+This document covers dial-up internet connections with PPP
+----------------------------------------------------------
+
+Now you have to set up the online configuration. The trick is to tell
+your ip-up script the connection name. You could use the IP number of
+the far side of the ppp link, but this is a pain and may change each
+time. But you can give it an additional argument via pppd with ipparam.
+Somewhere in your dial up script you have a line similar to:
+
+	/usr/sbin/pppd /dev/ttyS1 connect "/usr/sbin/chat -t 90 -f $CHATFILE" \
+	-d -d -d user user@somewhere file "$OPTIONS"
+
+Just add 'ipparam FastNet' in the command line for pppd if your ISP has
+the name FastNet. The ip-up script will then get 'FastNet' as a sixth
+parameter. In your ip-up script you can then call masqmail with
+
+	/usr/local/sbin/masqmail -qo "$6"
+
+instead of 'sendmail -q', if you had that in the script before.
+Masqmail will then read the route configuration specified for the
+connection name 'FastNet' and deliver the mail destined to the internet.
+See the configuration manual on how to write a route configuration or
+use one of the examples as a template.
+
+I do not know how do configure that for an ISDN adapter, but I am sure
+you will find something similar in the man pages.
+
+If you want mail that is received by masqmail from your local net to be
+delivered immediately using the route configuration, you have two
+possibilities:
+
+* if you are using the masqdialer system, you just have to set the
+  variables online_detect to pipe and online_pipe to something like
+	/usr/bin/mservdetect localhost 224
+  if mserver is running on localhost and listens on port 224. See the
+  man page to mservdetect(1).
+
+* otherwise you have to add two commands in your ip-up script:
+	echo "$6" >/var/run/masqmail/masqmail-route
+	chmod 644 /var/run/masqmail/masqmail-route
+  and you have to remove the file /var/run/masqmail/masqmail-route in
+  your ip-down script:
+	rm /var/run/masqmail/masqmail-route
+  Then you have to set online_detect to file and online_file to
+  /var/run/masqmail/masqmail-route
+
+See the route documentation for more.
+
+
+written by oku
+(it was once located inside of INSTALL)
