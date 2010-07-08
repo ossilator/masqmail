@@ -54,7 +54,7 @@ CONFDIR, in case you prefer another location than /etc/masqmail/.
 
 --enable-auth enables ESMTP AUTH support (disabled by default)
 
---disable-pop3 disables pop3 support (enabled by default)
+--enable-pop3 enables pop3 support (disabled by default)
 
 --enable-maildir enables qmail style Maildir support (disabled by default)
 
