@@ -595,6 +595,11 @@ read_conf(gchar * filename)
 	}
 	fclose(in);
 
+	if (!conf.host_name) {
+		logwrite(LOG_ALERT, "`host_name' MUST be set in masqmail.conf. See man page\n");
+		return FALSE;
+	}
+
 	if (conf.errmsg_file == NULL)
 		conf.errmsg_file = g_strdup(DATA_DIR "/tpl/failmsg.tpl");
 	if (conf.warnmsg_file == NULL)
