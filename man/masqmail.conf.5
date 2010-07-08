@@ -67,8 +67,9 @@ Be careful if you set this as high as 5 or higher, the logs may very soon fill y
 
 The directory where log are stored, if syslog is not used.
 Debug files are stored in this directory anyways.
-\fI/var/log/masqmail\fR is a common value.
 \fIfile\fR must be an absolute path.
+
+Default: \fI/var/log/masqmail\fR
 
 .TP
 \fBmail_dir = \fIfile\fR
@@ -76,14 +77,17 @@ Debug files are stored in this directory anyways.
 The directory where local mail is stored, usually \fI/var/spool/mail\fR or \fI/var/mail\fR.
 \fIfile\fR must be an absolute path.
 
+Default: \fI/var/mail\fR
+
 .TP
 \fBspool_dir = \fIfile\fR
 
 The directory where masqmail stores its spool files (and later also other stuff).
 It must have a subdirectory \fIinput\fR.
 Masqmail needs read and write permissions for this directory.
-I suggest to use \fI/var/spool/masqmail\fR.
 \fIfile\fR must be an absolute path.
+
+Default: \fI/var/spool/masqmail\fR
 
 .TP
 \fBlock_dir = \fIfile\fR
@@ -119,8 +123,10 @@ See \fBmasqmail.route(5)\fR.
 \fBlocal_hosts = \fIlist\fR
 
 A semicolon `;' separated list of hostnames which are considered local.
-Normally you set it to "localhost;foo;foo.bar.com" if your host has the
+Normally you should set it to "localhost;foo;foo.bar.com" if your host has the
 fully qualified domain name `foo.bar.com'.
+
+Default: \fIlocalhost\fR
 
 .TP
 \fBlocal_nets = \fIlist\fR
