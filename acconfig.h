@@ -20,8 +20,6 @@
 
 #undef ENABLE_IDENT
 
-#undef ENABLE_MSERVER
-
 #undef CONF_DIR
 
 #undef DATA_DIR

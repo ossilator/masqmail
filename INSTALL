@@ -72,9 +72,6 @@ host for other hosts on your LAN, you cannot use mail clients that send SMTP,
 you cannot even use pine. In short, use of this option is discouraged unless
 your resources are extremely limited.
 
---enable-mserver enable online detection by connecting to the mserver
-(masqdialer system).
-
 --with-libcryto instead of using the md5 and hmac functions within the package,
 link dynamically with libcrypto. This applies only if you have pop3 or SMTP
 AUTH enabled. Makes only sense if your resources are limited and you have
@@ -179,8 +176,8 @@ possibilities:
 
 * if you are using the masqdialer system, you just have to set the
   variables online_detect to pipe and online_pipe to something like
-	/usr/bin/mservdetect localhost 222
-  if mserver is running on localhost and listens on port 222. See the
+	/usr/bin/mservdetect localhost 224
+  if mserver is running on localhost and listens on port 224. See the
   man page to mservdetect(1).
 
 * otherwise you have to add two commands in your ip-up script:
