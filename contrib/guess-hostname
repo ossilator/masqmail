@@ -1,22 +1,23 @@
 #!/bin/sh
 #
 # try several ways to guess the hostname
+# earlier output lines are probably better
 
 (
 
 # this is what Debian uses
 cat /etc/mailname
 
-# this is often the short hostname
-cat /etc/hostname
-
-# this file was mentioned on the Internet
-cat /etc/HOSTNAME
-
 # probably a good value on GNU/Linux
 hostname -f
+
+# this is often the short hostname
+cat /etc/hostname
 
 # often the short hostname, but widely available
 hostname
 
-) 2>/dev/null | sort -u
+# this file was mentioned on the Internet
+cat /etc/HOSTNAME
+
+) 2>/dev/null
