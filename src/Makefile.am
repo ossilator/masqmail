@@ -12,7 +12,6 @@ masqmail_SOURCES=\
 	readsock.h\
 	smtp_out.h\
 	lookup.h\
-	mserver.h\
 	accept.c\
 	address.c\
 	alias.c\
@@ -32,7 +31,6 @@ masqmail_SOURCES=\
 	lookup.c\
 	masqmail.c\
 	message.c\
-	mserver.c\
 	online.c\
 	parse.c\
 	peopen.c\
@@ -72,10 +70,8 @@ smtpsend_SOURCES=\
 mservdetect_SOURCES=\
 	masqmail.h\
 	readsock.h\
-	mserver.h\
 	mservdetect.c\
 	interface.c\
-	mserver.c\
 	readsock.c\
 	peopen.c
 

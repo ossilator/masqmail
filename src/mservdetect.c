@@ -16,23 +16,65 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-/*
-#include "masqmail.h"
-#include "readsock.h"
-#include "mserver.h"
-*/
 
 #include "config.h"
-
-/* ugly hack */
-#ifndef ENABLE_MSERVER
-#define ENABLE_MSERVER 1
-#include "mserver.c"
-#else
 #include "masqmail.h"
 #include "readsock.h"
-#include "mserver.h"
-#endif  /* ENABLE_MSERVER */
+
+
+gchar*
+mserver_detect_online(interface * iface)
+{
+	struct sockaddr_in saddr;
+	gchar *ret = NULL;
+
+	if (init_sockaddr(&saddr, iface)) {
+		int sock = socket(PF_INET, SOCK_STREAM, 0);
+		int dup_sock;
+		if (connect(sock, (struct sockaddr *) (&saddr), sizeof(saddr)) == 0) {
+			FILE *in, *out;
+			char buf[256];
+
+			dup_sock = dup(sock);
+			out = fdopen(sock, "w");
+			in = fdopen(dup_sock, "r");
+
+			if (read_sockline(in, buf, 256, 15, READSOCKL_CHUG)) {
+				if (strncmp(buf, "READY", 5) == 0) {
+					fprintf(out, "STAT\n");
+					fflush(out);
+					if (read_sockline(in, buf, 256, 15, READSOCKL_CHUG)) {
+						if (strncmp(buf, "DOWN", 4) == 0) {
+							ret = NULL;
+						} else if (strncmp(buf, "UP", 2) == 0) {
+							gchar *p = buf + 3;
+							while ((*p != ':') && *p)
+								p++;
+							if (*p) {
+								*p = 0;
+								p++;
+								if ((atoi(p) >= 0) && *p)
+									ret = g_strdup(buf + 3);
+							} else
+								logwrite(LOG_ALERT, "unexpected response from mserver after STAT cmd: %s", buf);
+						} else {
+							logwrite(LOG_ALERT, "unexpected response from mserver after STAT cmd: %s", buf);
+						}
+					}
+				}
+				fprintf(out, "QUIT");
+				fflush(out);
+
+				close(sock);
+				close(dup_sock);
+				fclose(in);
+				fclose(out);
+			}
+		}
+	}
+	return ret;
+}
+
 
 void
 logwrite(int pri, const char *fmt, ...)

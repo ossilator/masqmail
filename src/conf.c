@@ -551,8 +551,6 @@ read_conf(gchar * filename)
 			conf.online_file = g_strdup(rval);
 		else if (strcmp(lval, "online_pipe") == 0)
 			conf.online_pipe = g_strdup(rval);
-		else if (strcmp(lval, "mserver_iface") == 0)
-			conf.mserver_iface = parse_interface(rval, 224);
 		else if (strcmp(lval, "do_queue") == 0)
 			conf.do_queue = parse_boolean(rval);
 		else if (strncmp(lval, "get.", 4) == 0) {

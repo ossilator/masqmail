@@ -210,7 +210,6 @@ typedef struct _masqmail_conf {
 	gchar *online_detect;
 	gchar *online_file;
 	gchar *online_pipe;
-	interface *mserver_iface;
 
 	GList *get_names;
 	GList *online_gets;  /* list of pairs which point to lists */

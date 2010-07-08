@@ -577,7 +577,6 @@ main(int argc, char *argv[])
 		gchar *with_auth = "";
 		gchar *with_maildir = "";
 		gchar *with_ident = "";
-		gchar *with_mserver = "";
 
 #ifdef ENABLE_RESOLVER
 		with_resolver = " +resolver";
@@ -597,12 +596,9 @@ main(int argc, char *argv[])
 #ifdef ENABLE_IDENT
 		with_ident = " +ident";
 #endif
-#ifdef ENABLE_MSERVER
-		with_mserver = " +mserver";
-#endif
 
-		printf("%s %s%s%s%s%s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_smtp_server,
-		       with_pop3, with_auth, with_maildir, with_ident, with_mserver);
+		printf("%s %s%s%s%s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_smtp_server,
+		       with_pop3, with_auth, with_maildir, with_ident);
 
 		exit(EXIT_SUCCESS);
 	}

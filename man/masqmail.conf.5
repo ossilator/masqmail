@@ -357,7 +357,7 @@ Default is false.
 \fBonline_detect = \fIstring\fR
 
 Defines the method masqmail uses to detect whether there is currently an online connection.
-It can have the values \fIfile\fR, \fIpipe\fR, or \fImserver\fR.
+It can have the values \fIfile\fR or \fIpipe\fR.
 
 When it is set to \fIfile\fR, masqmail first checks for the existence of \fBonline_file\fR
 (see below) and if it exists, it reads it.
@@ -366,12 +366,6 @@ with \fBconnect_route.\fIname\fR (trailing whitespace is removed).
 
 When it is set to \fIpipe\fR, masqmail calls the executable given by the
 \fBonline_pipe\fR option (see below) and reads the current online status from its standard output.
-
-When it is set to \fImserver\fR, masqmail connects to the masqdialer server
-using the value of \fBmserver_iface\fR and asks it whether a connection exists and for the name,
-which should be the name of the current connection as defined with \fBconnect_route.\fIname\fR.
-\fBThe mserver detection method is OBSOLETE.\fR
-See mserver_iface for a note on how to replace it.
 
 No matter how masqmail detects the online status,
 only messages that are accepted at online time will be delivered using the connection.
@@ -416,21 +410,14 @@ It can contain optional arguments.
 Example: \fI/bin/echo foo\fR
 (This tells masqmail to be always online with connection `foo'.)
 
-.TP
-\fBmserver_iface = \fIinterface\fR
-
-\fBThis option is OBSOLETE\fP, use
+For querying a masqdialer server
+(= asking it whether a connection exists and what its name is)
+use:
 
 online_method=pipe
 
-online_pipe="/usr/bin/mservdetect localhost 222"
+online_pipe="/usr/bin/mservdetect localhost 224"
 
-instead.
-
-The interface the masqdialer server is listening to.
-Usually this will be "localhost:224" if mserver is running on the same host as masqmail.
-But using this option, you can also let masqmail run on another host by setting
-\fBmserver_iface\fR to another hostname, e.g. "foo:224".
 
 .TP
 \fBget.\fIname\fR = \fIfile\fR

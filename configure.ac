@@ -216,17 +216,6 @@ if test "x$ident_enabled" = xyes; then
 fi
 AC_SUBST(IDENT_LIBS)
 
-dnl mserver support (default is to not use it)
-AC_ARG_ENABLE(mserver,
-	[  --enable-mserver         enable mserver support],
-	if test "x$enable_mserver" != 'xno'; then
-		mserver_enabled='yes'
-	fi,
-	)
-if test "x$mserver_enabled" = xyes; then
-	AC_DEFINE(ENABLE_MSERVER, 1, [If mserver support is enabled])
-fi
-
 dnl liblockfile
 AC_ARG_WITH(liblockfile,
 	[  --with-liblockfile       use liblock (for Debian)],

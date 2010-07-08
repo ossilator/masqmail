@@ -21,7 +21,6 @@
 #include <sys/wait.h>
 
 #include "masqmail.h"
-#include "mserver.h"
 #include "peopen.h"
 
 gchar *connection_name;
@@ -117,11 +116,6 @@ detect_online()
 			return NULL;
 		}
 
-#ifdef ENABLE_MSERVER
-	} else if (strcmp(conf.online_detect, "mserver") == 0) {
-		DEBUG(3) debugf("connection method 'mserver'\n");
-		return mserver_detect_online(conf.mserver_iface);
-#endif
 	} else if (strcmp(conf.online_detect, "pipe") == 0) {
 		DEBUG(3) debugf("connection method 'pipe'\n");
 		if (conf.online_pipe)
