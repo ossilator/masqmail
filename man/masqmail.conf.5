@@ -408,6 +408,12 @@ exit 0
 Of course, instead of the example above you could as well use \fIfile\fR as
 the online detection method, but you can do something more sophisticated.
 
+\fIfile\fR must contain an absolute path to an executable program.
+It can contain optional arguments.
+
+Example: \fI/bin/echo foo\fR
+(This tells masqmail to be always online with connection `foo'.)
+
 .TP
 \fBmserver_iface = \fIinterface\fR
 
