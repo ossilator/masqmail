@@ -433,7 +433,6 @@ read_conf(gchar * filename)
 	conf.max_defer_time = 86400 * 4;  /* 4 days */
 	conf.max_msg_size = 0; /* no limit on msg size */
 	conf.spool_dir = SPOOL_DIR;
-	conf.local_hosts = parse_list("localhost", FALSE);
 	conf.mail_dir = "/var/mail";
 
 	if ((in = fopen(filename, "r")) == NULL) {
@@ -613,6 +612,20 @@ read_conf(gchar * filename)
 
 	if (conf.warn_intervals == NULL)
 		conf.warn_intervals = parse_list("1h;4h;8h;1d;2d;3d", FALSE);
+
+	if (!conf.local_hosts) {
+		char* shortname = strdup(conf.host_name);
+		char* p = strchr(shortname, '.');
+		if (p) {
+			*p = '\0';
+		}
+		/* we don't care if shortname and conf.host_name are the same */
+		char* local_hosts_str = g_strdup_printf("localhost;%s;%s", shortname, conf.host_name);
+		conf.local_hosts = parse_list(local_hosts_str, FALSE);
+		free(shortname);
+		free(local_hosts_str);
+	}
+
 
 	return TRUE;
 }

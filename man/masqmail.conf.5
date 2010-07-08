@@ -128,7 +128,10 @@ A semicolon `;' separated list of hostnames which are considered local.
 Normally you should set it to "localhost;foo;foo.bar.com" if your host has the
 fully qualified domain name `foo.bar.com'.
 
-Default: \fIlocalhost\fR
+Default: localhost ; <value of \fBhost_name\fR cut at the first dot> ; <value of \fBhost_name\fR>
+
+Example: \fIlocalhost;foo;foo.example.org\fR
+(if you have set \fBhost_name\fR to \fIfoo.example.org\fR)
 
 .TP
 \fBlocal_nets = \fIlist\fR
