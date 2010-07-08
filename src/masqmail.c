@@ -641,7 +641,13 @@ main(int argc, char *argv[])
 		}
 	}
 
-	read_conf(conf_file);
+	conf.log_dir = LOG_DIR;
+	logopen();
+	if (!read_conf(conf_file)) {
+		logwrite(LOG_ALERT, "SHUTTING DOWN due to problems reading config\n");
+		exit(5);
+	}
+	logclose();
 
 	if (do_queue)
 		conf.do_queue = TRUE;

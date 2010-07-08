@@ -433,12 +433,11 @@ read_conf(gchar * filename)
 	conf.max_defer_time = 86400 * 4;  /* 4 days */
 	conf.max_msg_size = 0; /* no limit on msg size */
 	conf.spool_dir = SPOOL_DIR;
-	conf.log_dir = LOG_DIR;
 	conf.local_hosts = parse_list("localhost", FALSE);
 	conf.mail_dir = "/var/mail";
 
 	if ((in = fopen(filename, "r")) == NULL) {
-		fprintf(stderr, "could not open config file %s: %s\n", filename, strerror(errno));
+		logwrite(LOG_ALERT, "could not open config file %s: %s\n", filename, strerror(errno));
 		return FALSE;
 	}
 
@@ -467,7 +466,7 @@ read_conf(gchar * filename)
 				char buf[256];
 				FILE *fptr = fopen(rval, "rt");
 				if (fptr) {
-					fprintf(stderr, "could not open %s: %s\n", rval, strerror(errno));
+					logwrite(LOG_ALERT, "could not open %s: %s\n", rval, strerror(errno));
 					return FALSE;
 				}
 				fgets(buf, 255, fptr);
@@ -476,7 +475,7 @@ read_conf(gchar * filename)
 				fclose(fptr);
 			}
 		} else if (strcmp(lval, "remote_port") == 0) {
-			fprintf(stderr, "the remote_port option is now deprecated. Use 'mail_host' in the\n"
+			logwrite(LOG_WARNING, "the remote_port option is now deprecated. Use 'mail_host' in the\n"
 							"route configuration instead. See man masqmail.route\n");
 			conf.remote_port = atoi(rval);
 		} else if (strcmp(lval, "local_hosts") == 0)
@@ -537,7 +536,7 @@ read_conf(gchar * filename)
 			}
 			g_list_free(tmp_list);
 #else
-			fprintf(stderr, "%s ignored: not compiled with ident support\n", lval);
+			logwrite(LOG_WARNING, "%s ignored: not compiled with ident support\n", lval);
 #endif
 		} else if ((strncmp(lval, "connect_route.", 14) == 0)
 		           || (strncmp(lval, "online_routes.", 14) == 0)) {
@@ -561,7 +560,7 @@ read_conf(gchar * filename)
 			table_pair *pair = create_pair_string(&(lval[4]), rval);
 			conf.get_names = g_list_append(conf.get_names, pair);
 #else
-			fprintf(stderr, "get.<name> ignored: not compiled with pop support\n");
+			logwrite(LOG_WARNING, "get.<name> ignored: not compiled with pop support\n");
 #endif
 		} else if (strncmp(lval, "online_gets.", 12) == 0) {
 #ifdef ENABLE_POP3
@@ -569,7 +568,7 @@ read_conf(gchar * filename)
 			table_pair *pair = create_pair(&(lval[12]), file_list);
 			conf.online_gets = g_list_append(conf.online_gets, pair);
 #else
-			fprintf(stderr, "online_gets.<name> ignored: not compiled with pop support\n");
+			logwrite(LOG_WARNING, "online_gets.<name> ignored: not compiled with pop support\n");
 #endif
 		} else if (strcmp(lval, "errmsg_file") == 0)
 			conf.errmsg_file = g_strdup(rval);
@@ -581,7 +580,7 @@ read_conf(gchar * filename)
 			gint dummy;
 			gint ival = time_interval(rval, &dummy);
 			if (ival < 0)
-				fprintf(stderr, "invalid time interval for 'max_defer_time': %s\n", rval);
+				logwrite(LOG_WARNING, "invalid time interval for 'max_defer_time': %s\n", rval);
 			else
 				conf.max_defer_time = ival;
 		} else if (strcmp(lval, "log_user") == 0)
@@ -592,7 +591,7 @@ read_conf(gchar * filename)
 			                 rval, conf.max_msg_size);
 		}
 		else
-			fprintf(stderr, "var '%s' not (yet) known, ignored\n", lval);
+			logwrite(LOG_WARNING, "var '%s' not (yet) known, ignored\n", lval);
 	}
 	fclose(in);
 
