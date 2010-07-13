@@ -51,7 +51,7 @@ Default is false.
 The reason for this is that masqmail is designed for non permanent internet connections,
 where such errors may occur quite often, and a bounce would be annoying.
 
-For the default local_net route is is set to true.
+For the default local_net route it is set to true.
 
 .TP
 \fBhelo_name\fR = \fIstring\fR
@@ -267,7 +267,15 @@ Purpose is to tunnel ip traffic, eg. for ssl.
 
 Example for ssl tunneling:
 
-wrapper="/usr/bin/openssl s_client \-quiet \-connect pop.gmx.net:995 2>/dev/null"
+wrapper="/usr/bin/openssl s_client \-quiet \-crlf \-connect mail.gmx.net:465 2>/dev/null"
+
+Note: The above line works with masqmail,
+but listening on Port 465 for SSL-encrypted connections is deprecated.
+The modern way is STARTTLS (RFC-3207).
+This could be covered by the following command.
+Unfortunately, masqmail doesn't support that yet (as of 0.2.25).
+
+wrapper="/usr/bin/openssl s_client \-quiet \-crlf \-starttls smtp \-connect mail.gmx.net:25 2>/dev/null"
 
 .TP
 \fBpipe\fR = \fIcommand\fR
