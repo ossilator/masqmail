@@ -17,6 +17,7 @@
 */
 
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 #include "masqmail.h"
 #include "peopen.h"
