@@ -175,6 +175,7 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	fclose(stderr);
 	logopen();
 
+	logwrite(LOG_NOTICE, "%s %s daemon starting", PACKAGE, VERSION);
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval, argv);
 }
 
