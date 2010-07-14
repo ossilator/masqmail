@@ -330,6 +330,7 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 	}
 
 	if (host == NULL) {
+		/* XXX: what if mail_host isn't set? Is this possible? */
 		host = route->mail_host->address;
 		port = route->mail_host->port;
 	}
@@ -343,8 +344,11 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 
 	if ((psb = (route->wrapper ? smtp_out_open_child(route->wrapper) : smtp_out_open(host, port, res_list)))) {
 
-		if (route->wrapper)
+		if (route->wrapper) {
+			/* it seems as if the remote_host is only set for logging
+			/* XXX: this could probably be moved into smtp_out_open_child() */
 			psb->remote_host = host;
+		}
 
 		set_heloname(psb, route->helo_name ? route->helo_name : conf.host_name, route->do_correct_helo);
 
@@ -464,8 +468,8 @@ deliver_route_msgout_list(connect_route * route, GList * msgout_list)
 
 	DEBUG(5) debugf("deliver_route_msgout_list entered, route->name = %s\n", route->name);
 
-	if (route->mail_host != NULL) {
-		/* this is easy... */
+	if (route->mail_host) {
+		/* this is easy... deliver everything to a smart host for relay */
 		if (deliver_msglist_host(route, msgout_list, NULL, route->resolve_list))
 			ok = TRUE;
 
