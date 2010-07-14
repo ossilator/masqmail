@@ -29,7 +29,8 @@ Masqmail is a mail server designed for hosts that do not have a permanent intern
 e.g. a home network or a single host at home.
 It has special support for connections to different ISPs.
 It replaces sendmail or other MTAs such as qmail or exim.
-It can also act as a pop3 client.
+It can also act as a POP3 client (if this functionality has not been disabled at
+build configuration time).
 
 
 .SH OPTIONS
@@ -138,7 +139,7 @@ masqmail starts as a daemon and tries to get mail in these intervals.
 It checks for the online status first.
 Example: `masqmail \-go 5m' will retrieve mail every five minutes.
 
-If called without \fIname\fR the online status is determined with the configured method
+If called without \fIname\fR, the online status is determined with the configured method
 (see \fBonline_detect\fR in \fBmasqmail.conf(5)\fR).
 
 .TP
