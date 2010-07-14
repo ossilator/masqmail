@@ -321,7 +321,7 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 	gboolean ok = FALSE;
 	GList *msgout_node;
 	smtp_base *psb;
-	gint port;
+	gint port = 25;
 
 	/* paranoid check: */
 	if (msgout_list == NULL) {
@@ -332,8 +332,7 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 	if (host == NULL) {
 		host = route->mail_host->address;
 		port = route->mail_host->port;
-	} else
-		port = conf.remote_port;
+	}
 
 #ifdef ENABLE_POP3
 	if (route->pop3_login) {
