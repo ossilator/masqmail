@@ -1,0 +1,22 @@
+# openssl.route
+# by Philipp Berndt
+
+
+protocol = "smtp"
+
+# encryption is done by communicating through openssl
+
+wrapper="/usr/bin/openssl s_client -quiet -connect mail.gmx.net:465 2>/dev/null"
+# you may want to tell openssl where the certificates are stored
+#wrapper="/usr/bin/openssl s_client -quiet -CApath /etc/ssl -connect mail.gmx.net:465 2>/dev/null"
+
+# which addresses are allowed through this route?
+allowed_return_paths = "*@gmx.de;*@gmx.net"
+
+# the authentication method
+#auth_name = "cram-md5"
+auth_name = "login"
+
+# user name und password
+auth_login = "UID_OR_EMAIL_ADDRESS"
+auth_secret = "YOUR_PASSWORD"
