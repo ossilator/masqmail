@@ -16,22 +16,22 @@ The configuration consists of lines of the form
 Where \fBval\fR is a variable name and \fIexpression\fR a string,
 which can be quoted with double quotes `"'.
 If the expression is on multiple lines or contains characters other than letters,
-digits or the characters `.', `-', `_', `/', ';', '@', ':' it must be quoted.
+digits or the characters `.', `-', `_', `/', ';', '@', ':', it must be quoted.
 You can use quotes inside quotes by escaping them with a backslash.
 
-Each val has a type, which can be boolean, numeric, string or list.
+Each \fBval\fP has a type, which can be boolean, numeric, string or list.
 A boolean variable can be set with one of the values `on', `yes', and `true' or `off', `no' and `false'.
 List items are separated with semicolons `;'.
-For some values patterns (like `*',`?') can be used.
-The spaces before and after the equal sign `=' are optional.
+For some values, patterns (like `*',`?') can be used.
+The spaces in front of and after the equal sign `=' are optional.
 
 Most lists (exceptions: \fBlocal_hosts\fR, \fBlocal_nets\fR, \fBlisten_addresses\fR,
  \fBonline_routes\fR, and \fBonline_gets\fR) accept files.
 These will be recognized by a leading slash `/'.
 The contents of these files will be included at the position of the file name,
 there can be items or other files before and after the file entry.
-The format of the files is different though, within these files each entry is on another line.
-(And not separated by semicolons).
+The format of the files is different though, within these files each entry is on another line
+and the entries are not separated by semicolons.
 This makes it easy to include large lists which are common in different configuration files,
 so they do not have to appear in every configuration file.
 
@@ -65,8 +65,8 @@ Be careful if you set this as high as 5 or higher, the logs may very soon fill y
 .TP
 \fBlog_dir = \fIfile\fR
 
-The directory where log are stored, if syslog is not used.
-Debug files are stored in this directory anyways.
+The directory where logs are stored, if syslog is not used.
+Debug files are always stored in this directory if debugging is enabled.
 \fI/var/log/masqmail\fR is a common value.
 \fIfile\fR must be an absolute path.
 
