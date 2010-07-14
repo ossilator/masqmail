@@ -71,7 +71,6 @@ mservdetect_SOURCES=\
 	masqmail.h\
 	readsock.h\
 	mservdetect.c\
-	interface.c\
 	readsock.c\
 	peopen.c
 
