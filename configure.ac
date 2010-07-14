@@ -17,6 +17,9 @@ dnl AC_ARG_PROGRAM
 AC_PROG_RANLIB
 
 PKG_CHECK_MODULES(GLIB, glib-2.0)
+dnl # use the next line to use glib-1.2
+dnl PKG_CHECK_MODULES(GLIB, glib)
+
 AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
 
