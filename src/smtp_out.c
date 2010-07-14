@@ -174,6 +174,9 @@ read_response(smtp_base * psb, int timeout)
 		buf_pos += len;
 
 	} while (code[3] == '-');
+	if (psb->buffer) {
+		DEBUG(4) debugf("S: %s\n", psb->buffer);
+	}
 
 	return TRUE;
 }
@@ -294,13 +297,13 @@ smtp_helo(smtp_base * psb, gchar * helo)
 			fprintf(psb->out, "EHLO %s\r\n", helo);
 			fflush(psb->out);
 
-			DEBUG(4) debugf("EHLO %s\r\n", helo);
+			DEBUG(4) debugf("C: EHLO %s\r\n", helo);
 
 		} else {
 			fprintf(psb->out, "HELO %s\r\n", helo);
 			fflush(psb->out);
 
-			DEBUG(4) debugf("HELO %s\r\n", helo);
+			DEBUG(4) debugf("C: HELO %s\r\n", helo);
 
 		}
 
@@ -331,13 +334,13 @@ smtp_cmd_mailfrom(smtp_base * psb, address * return_path, guint size)
 		fprintf(psb->out, "MAIL FROM:%s SIZE=%d\r\n", addr_string(return_path), size);
 		fflush(psb->out);
 
-		DEBUG(4) debugf("MAIL FROM:%s SIZE=%d\r\n", addr_string(return_path), size);
+		DEBUG(4) debugf("C: MAIL FROM:%s SIZE=%d\r\n", addr_string(return_path), size);
 
 	} else {
 		fprintf(psb->out, "MAIL FROM:%s\r\n", addr_string(return_path));
 		fflush(psb->out);
 
-		DEBUG(4) debugf("MAIL FROM:%s\r\n", addr_string(return_path));
+		DEBUG(4) debugf("C: MAIL FROM:%s\r\n", addr_string(return_path));
 	}
 }
 
@@ -346,7 +349,7 @@ smtp_cmd_rcptto(smtp_base * psb, address * rcpt)
 {
 	fprintf(psb->out, "RCPT TO:%s\r\n", addr_string(rcpt));
 	fflush(psb->out);
-	DEBUG(4) debugf("RCPT TO:%s\n", addr_string(rcpt));
+	DEBUG(4) debugf("C: RCPT TO:%s\n", addr_string(rcpt));
 }
 
 static void
@@ -426,6 +429,7 @@ send_data(smtp_base * psb, message * msg)
 
 	fprintf(psb->out, ".\r\n");
 	fflush(psb->out);
+	DEBUG(4) debugf("C: .\n");
 }
 
 void
@@ -525,7 +529,7 @@ smtp_out_rset(smtp_base * psb)
 
 	fprintf(psb->out, "RSET\r\n");
 	fflush(psb->out);
-	DEBUG(4) debugf("RSET\n");
+	DEBUG(4) debugf("C: RSET\n");
 
 	if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
 		if (check_response(psb, FALSE))
@@ -543,7 +547,7 @@ smtp_out_auth_cram_md5(smtp_base * psb)
 {
 	gboolean ok = FALSE;
 
-	fprintf(psb->out, "AUTH CRAM-MD5\r\n");
+	fprintf(psb->out, "C: AUTH CRAM-MD5\r\n");
 	fflush(psb->out);
 	DEBUG(4) debugf("AUTH CRAM-MD5\n");
 	if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
@@ -583,7 +587,8 @@ smtp_out_auth_cram_md5(smtp_base * psb)
 
 			fprintf(psb->out, "%s\r\n", reply64);
 			fflush(psb->out);
-			DEBUG(4) debugf("  reply64 = %s\n", reply64);
+			DEBUG(6) debugf("  reply64 = %s\n", reply64);
+			DEBUG(6) debugf("C: %s\n", reply64);
 
 			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
 				ok = check_response(psb, FALSE);
@@ -603,6 +608,7 @@ smtp_out_auth_login(smtp_base * psb)
 	gboolean ok = FALSE;
 	fprintf(psb->out, "AUTH LOGIN\r\n");
 	fflush(psb->out);
+	DEBUG(4) debugf("C: AUTH LOGIN\r\n");
 	if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
 		if ((ok = check_response(psb, TRUE))) {
 			gchar *resp64;
@@ -620,6 +626,7 @@ smtp_out_auth_login(smtp_base * psb)
 			reply64 = base64_encode(psb->auth_login, strlen(psb->auth_login));
 			fprintf(psb->out, "%s\r\n", reply64);
 			fflush(psb->out);
+			DEBUG(6) debugf("C: %s\n", reply64);
 			g_free(reply64);
 			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
 				if ((ok = check_response(psb, TRUE))) {
@@ -632,6 +639,7 @@ smtp_out_auth_login(smtp_base * psb)
 					reply64 = base64_encode(psb->auth_secret, strlen(psb->auth_secret));
 					fprintf(psb->out, "%s\r\n", reply64);
 					fflush(psb->out);
+					DEBUG(6) debugf("C: %s\n", reply64);
 					g_free(reply64);
 					if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
 						ok = check_response(psb, FALSE);
@@ -775,7 +783,7 @@ smtp_out_msg(smtp_base * psb, message * msg, address * return_path, GList * rcpt
 			fprintf(psb->out, "DATA\r\n");
 			fflush(psb->out);
 
-			DEBUG(4) debugf("DATA\r\n");
+			DEBUG(4) debugf("C: DATA\r\n");
 
 			if (psb->use_pipelining) {
 				/* the first pl'ed command was MAIL FROM
@@ -879,7 +887,7 @@ smtp_out_quit(smtp_base * psb)
 	fprintf(psb->out, "QUIT\r\n");
 	fflush(psb->out);
 
-	DEBUG(4) debugf("QUIT\n");
+	DEBUG(4) debugf("C: QUIT\n");
 
 	signal(SIGALRM, SIG_DFL);
 
