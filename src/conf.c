@@ -427,7 +427,6 @@ read_conf(gchar * filename)
 	FILE *in;
 
 	conf.log_max_pri = 7;
-	conf.remote_port = 25;
 	conf.do_relay = TRUE;
 	conf.alias_local_cmp = strcmp;
 	conf.max_defer_time = 86400 * 4;  /* 4 days */
@@ -474,10 +473,6 @@ read_conf(gchar * filename)
 				conf.host_name = g_strdup(buf);
 				fclose(fptr);
 			}
-		} else if (strcmp(lval, "remote_port") == 0) {
-			logwrite(LOG_WARNING, "the remote_port option is now deprecated. Use 'mail_host' in the\n"
-							"route configuration instead. See man masqmail.route\n");
-			conf.remote_port = atoi(rval);
 		} else if (strcmp(lval, "local_hosts") == 0)
 			conf.local_hosts = parse_list(rval, FALSE);
 		else if (strcmp(lval, "local_addresses") == 0)
@@ -661,7 +656,7 @@ read_route(gchar * filename, gboolean is_local_net)
 		if (strcmp(lval, "protocol") == 0)
 			route->protocol = g_strdup(rval);
 		else if (strcmp(lval, "mail_host") == 0)
-			route->mail_host = parse_interface(rval, conf.remote_port);
+			route->mail_host = parse_interface(rval, 25);
 		else if (strcmp(lval, "helo_name") == 0)
 			route->helo_name = g_strdup(rval);
 		else if (strcmp(lval, "wrapper") == 0)

@@ -172,8 +172,6 @@ typedef struct _masqmail_conf {
 	GList *local_nets;
 	GList *listen_addresses;
 
-	guint remote_port;
-
 	/* ANSI C defines unsigned long to be at least 32bit
 	   i.e. ca. 4GB max; that should be enough. */
 	gulong max_msg_size;
