@@ -143,10 +143,11 @@ Making masqmail the default
 
 `sendmail' is the de-facto standard name of the system's MTA, no
 matter which MTA actually runs. If you want to make masqmail the
-system's MTA (i.e. replace sendmail, postfix, etc), make a symbolic
-link:
+system's MTA (i.e. replace sendmail, postfix, etc), make two symbolic
+links:
 
 	ln -s /usr/local/sbin/masqmail /usr/lib/sendmail
+	ln -s /usr/local/sbin/masqmail /usr/sbin/sendmail
 
 Now every mailer that used to call sendmail will now call masqmail.
 If you already had an MTA installed and running, you can kill it and
@@ -184,9 +185,10 @@ Create a minimal config with:
 Such a setup (i.e. the default one) does:
 - deliver mail locally
 - accept mail from local (via stdin)
-- accept mail on localhost:25 (via SMTP)
+- accept mail on localhost:25 (via SMTP) (if started as daemon)
+
 It does not
-- transfer any mail to other machines
+- transfer mail to other machines
 - accept mail from outside your machine
 
 
