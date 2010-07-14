@@ -1,0 +1,127 @@
+Simple Setup
+============
+
+You want
+--------
+
+- submit mail on stdin by calling masqmail on the commandline
+- submit mail with SMTP from the local machine
+- let masqmail deliver mail locally to the system mailboxes /var/mail/*
+- let masqmail forward non-local mail through a smart host
+
+This is like the simple-local-setup plus the forwarding.
+
+
+Set up
+------
+
+Follow the description in INSTALL.
+
+A common configure call would be:
+
+    ./configure --enable-auth --enable-ident
+
+
+Configuration
+-------------
+
+You need a config file like this one:
+
+    host_name = "foo.example.org"
+    online_routes.default = /etc/masqmail/default.route
+
+(Substitute a real hostname, of course.)
+
+Addionally you need to create the route config file like:
+
+    protocol = smtp
+
+    # where to relay to; the address and port of the smart host
+    mail_host = "mail.gmx.net:25"
+    # use the wrapper to enable encryption
+    #wrapper = "openssl s_client -quiet -connect mail.gmx.net:465 2>/dev/null"
+    
+    do_correct_helo = true
+    
+    # rewrite the From addresses to ones visible from the outside
+    map_return_path_addresses = "meillo: schnalke4@gmx.de"
+    map_h_from_addresses = "meillo: markus schnalke <schnalke4@gmx.de>"
+    
+    # it's good to use "login" only if the connection is encrypted
+    auth_name = "login"
+    #auth_name = "cram-md5"
+    auth_login = "UID_OR_EMAIL_ADDRESS"
+    auth_secret = "PASSWORD"
+
+
+
+Starting the daemon
+-------------------
+
+Listening for SMTP connections on a port requires masqmail to run as
+daemon. You probably want to start masqmail as daemon each time the
+system comes up. How you have to do that is system dependent.
+/etc/rc.local is a good try to add the daemon call, because this file
+seems to be frequently available.
+
+    /usr/local/sbin/masqmail -bd -q10m
+
+This starts masqmail in daemon mode and does a queue run every ten
+minutes.
+
+
+Check the setup
+---------------
+
+Like in simple-local-setup plus ...
+
+Send a mail to a remote location:
+
+    $ echo "some text" | mail foo@somewhereelse.example.org
+
+Check if it is queued:
+
+    $ masqmail -bp
+
+Deliver it with:
+
+    $ masqmail -qo default
+
+Check the queue contents again.
+
+You need to do such queue runs for online routes explicitely. For
+instance by cron.
+
+
+Automatic queue runs
+--------------------
+
+You can also tell masqmail to send queued mails through a route each
+time the daemon does a queue run. Therefor you need to tell masqmail
+that it is online and can use the default route to deliver mail.
+
+Add this to masqmail.conf:
+
+    online_detect = "pipe"
+    online_pipe = "/bin/echo default"
+
+Now masqmail will send online mail automatically through the default
+route, each time it does a queue run (every ten minutes).
+
+
+In case of problems
+-------------------
+
+Have a look at the log file: /var/log/masqmail/masqmail.log
+
+Set the debug level in masqmail.conf, restart the daemon, redo the
+test, and look at the debug file: /var/log/masqmail/debug.log
+
+If you use a wrapper, test it manually and interactively on the
+command line.
+
+Ask on the mailing list: <masqmail@marmaro.de>
+
+
+
+meillo
