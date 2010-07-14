@@ -232,6 +232,9 @@ dnl liblockfile
 AC_ARG_WITH(liblockfile,
 	[  --with-liblockfile       use liblock (for Debian)],
 	)
+if test "x$with_liblockfile" = 'xno'; then
+	with_liblockfile=''
+fi
 if test "x$with_liblockfile" != 'x'; then
 	with_liblockfile='yes'
 fi
