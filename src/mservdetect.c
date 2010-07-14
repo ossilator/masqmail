@@ -18,74 +18,40 @@
 */
 
 
-#include "config.h"
 #include "masqmail.h"
 #include "readsock.h"
 
 
-
 gboolean
-init_sockaddr(struct sockaddr_in * name, interface * iface)
+init_sockaddr2(struct sockaddr_in * name, gchar* addr, int port)
 {
 	struct hostent *he;
 	struct in_addr ia;
 
-	if (inet_aton(iface->address, &ia) != 0) {
+	if (inet_aton(addr, &ia) != 0) {
 		/* IP address */
 		memcpy(&(name->sin_addr), &ia, sizeof(name->sin_addr));
 	} else {
-		if ((he = gethostbyname(iface->address)) == NULL) {
-			logwrite(LOG_ALERT, "local address '%s' unknown. (deleting)\n", iface->address);
+		if ((he = gethostbyname(addr)) == NULL) {
+			fprintf(stderr, "local address '%s' unknown. (deleting)\n", addr);
 			return FALSE;
 		}
 		memcpy(&(name->sin_addr), he->h_addr, sizeof(name->sin_addr));
 	}
 	name->sin_family = AF_INET;
-	name->sin_port = htons(iface->port);
+	name->sin_port = htons(port);
 
 	return TRUE;
 }
 
 
-int
-make_server_socket(interface * iface)
-{
-	int sock = -1;
-	struct sockaddr_in server;
-
-	memset(&server, 0, sizeof(struct sockaddr_in));
-
-	/* Create the socket. */
-	sock = socket(PF_INET, SOCK_STREAM, 0);
-	if (sock < 0) {
-		logwrite(LOG_ALERT, "socket: %s\n", strerror(errno));
-		return -1;
-	}
-
-	if (init_sockaddr(&server, iface)) {
-		/* bind the socket */
-		if (bind(sock, (struct sockaddr *) &server, sizeof(server)) < 0) {
-			logwrite(LOG_ALERT, "bind: %s\n", strerror(errno));
-			return -1;
-		}
-	} else {
-		close(sock);
-		return -1;
-	}
-
-	return sock;
-}
-
-
-
-
 gchar*
-mserver_detect_online(interface * iface)
+mserver_detect_online(gchar* addr, int port)
 {
 	struct sockaddr_in saddr;
 	gchar *ret = NULL;
 
-	if (!init_sockaddr(&saddr, iface)) {
+	if (!init_sockaddr2(&saddr, addr, port)) {
 		return NULL;
 	}
 
@@ -107,23 +73,18 @@ mserver_detect_online(interface * iface)
 	}
 
 	/* this is the protocol (reverse engineered):
-	   S: READY
-	   C: STAT
-	   S: DOWN
-	   C: QUIT
-	   -> offline
-	   
-	   S: READY
-	   C: STAT
-	   S: UP foo:-1
-	   C: QUIT
-	   -> offline
-	   
-	   S: READY
-	   C: STAT
-	   S: UP foo:1
-	   C: QUIT
-	   -> online, `foo' gets printed
+
+	                    S: READY
+	                    C: STAT
+	                        |
+	       +----------------+-----------------+
+	       |                |                 |
+	   S: DOWN          S: UP foo:-1      S: UP foo:1
+	   C: QUIT          C: QUIT           C: QUIT
+
+	   -> offline       -> offline        -> online
+	                                      `foo' gets printed
+
 	*/
 
 	if (strncmp(buf, "READY", 5) == 0) {
@@ -164,22 +125,11 @@ mserver_detect_online(interface * iface)
 }
 
 
-void
-logwrite(int pri, const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-
-	vfprintf(stderr, fmt, args);
-
-	va_end(args);
-}
-
-
 int
 main(int argc, char *argv[])
 {
-	interface iface;
+	gchar* addr;
+	int port;
 	gchar *name;
 
 	if (argc != 3) {
@@ -187,10 +137,10 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
-	iface.address = g_strdup(argv[1]);
-	iface.port = atoi(argv[2]);
+	addr = argv[1];
+	port = atoi(argv[2]);
 
-	name = mserver_detect_online(&iface);
+	name = mserver_detect_online(addr, port);
 
 	if (name) {
 		printf("%s\n", name);
