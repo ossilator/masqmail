@@ -185,7 +185,7 @@ check_response(smtp_base * psb, gboolean after_data)
 
 	if (((c == '2') && !after_data) || ((c == '3') && after_data)) {
 		psb->error = smtp_ok;
-		DEBUG(6) debugf("response OK:'%s' after_date = %d\n", psb->buffer, (int) after_data);
+		DEBUG(6) debugf("response OK:'%s' after_data = %d\n", psb->buffer, (int) after_data);
 		return TRUE;
 	} else {
 		if (c == '4')
@@ -194,7 +194,7 @@ check_response(smtp_base * psb, gboolean after_data)
 			psb->error = smtp_fail;
 		else
 			psb->error = smtp_syntax;
-		DEBUG(6) debugf("response failure:'%s' after_date = %d\n", psb->buffer, (int) after_data);
+		DEBUG(6) debugf("response failure:'%s' after_data = %d\n", psb->buffer, (int) after_data);
 		return FALSE;
 	}
 }
