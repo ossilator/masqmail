@@ -14,8 +14,6 @@ user=okurth
 # and the password:
 pass="keepInMind"
 
-# if you just use this for SMTP after POP, you do not need the settings below:
-
 # the (local) address, where the retrieved mail should be sent to:
 address=okurth@localhost
 
