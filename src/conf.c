@@ -757,13 +757,7 @@ read_route(gchar * filename, gboolean is_local_net)
 			logwrite(LOG_WARNING, "%s ignored: not compiled with auth support.\n", lval);
 		}
 #endif
-		else if (strcmp(lval, "pop3_login") == 0) {
-#ifdef ENABLE_POP3
-			route->pop3_login = g_strdup(rval);
-#else
-			logwrite(LOG_WARNING, "pop3_login ignored: not compiled with pop support.\n");
-#endif
-		} else if (strcmp(lval, "pipe") == 0) {
+		else if (strcmp(lval, "pipe") == 0) {
 			route->pipe = g_strdup(rval);
 		} else if (strcmp(lval, "pipe_fromline") == 0) {
 			route->pipe_fromline = parse_boolean(rval);
@@ -856,10 +850,6 @@ destroy_route(connect_route * r)
 		g_free(r->auth_login);
 	if (r->auth_secret)
 		g_free(r->auth_secret);
-#endif
-#ifdef ENABLE_POP3
-	if (r->pop3_login)
-		g_free(r->pop3_login);
 #endif
 	if (r->pipe)
 		g_free(r->pipe);
