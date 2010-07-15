@@ -18,7 +18,7 @@ shows that the user `mail' and the group `trusted' exist, it's
 probably best to use these. If they don't exist, create them:
 
 	groupadd -g 42 trusted
-	useradd -u 23 -g 42 -d / -s /bin/sh -c "Mail Transfer Agent" mail
+	useradd -u 23 -g trusted -d /nonexistent -s /bin/false -c "masqmail MTA" mail
 
 If you use other names than `mail' and `trusted' use the options
 described below for configure. The 23 and 42 are just a suggestion,
@@ -97,11 +97,10 @@ dynamically with libcrypto. This applies only if you have SMTP AUTH
 enabled. Only makes sense if your resources are limited and you have
 libcrypto installed. Untested.
 
---with-glib-static
-links with glib statically. This makes the binary larger by around 30K
-(i386 architecture), but if masqmail is the only binary using glib,
-you save some space in total, because you do not need the shared glib
-library installed.
+--with-glib-static=PATH
+links with glib statically. This makes the binary larger but if
+masqmail is the only binary using glib, you save some space in total,
+because you do not need the shared glib library installed.
 
 
 --disable-debug
