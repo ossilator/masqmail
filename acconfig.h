@@ -10,8 +10,6 @@
 
 #undef ENABLE_SMTP_SERVER
 
-#undef ENABLE_POP3
-
 #undef ENABLE_AUTH
 
 #undef ENABLE_MAILDIR

@@ -55,14 +55,12 @@ spool_dir:
 	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@
 	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@/lock
 	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@/input
-	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@/popuidl
 
 rm-spool_dir:
 	: # removal fails if the dirs are non-empty
 	: # this prevents losing spooled files
 	rmdir $(DESTDIR)@with_spooldir@/lock
 	rmdir $(DESTDIR)@with_spooldir@/input
-	rmdir $(DESTDIR)@with_spooldir@/popuidl
 	rmdir $(DESTDIR)@with_spooldir@
 
 rmail:

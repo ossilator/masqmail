@@ -22,7 +22,6 @@ masqmail_SOURCES=\
 	dotlock.c\
 	expand.c\
 	fail_msg.c\
-	get.c\
 	header.c\
 	interface.c\
 	local.c\
@@ -36,8 +35,6 @@ masqmail_SOURCES=\
 	peopen.c\
 	peopen.h\
 	permissions.c\
-	pop3_in.c\
-	pop3_in.h\
 	readsock.c\
 	rewrite.c\
 	route.c\

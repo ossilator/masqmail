@@ -78,9 +78,6 @@ enables RFC 1413 support. If you have the libident dynamic library
 installed, this will be linked, otherwise it will be statically linked
 using the sources included in the package.
 
---enable-pop3
-enables POP3 support (disabled by default)
-
 --disable-resolver
 disables resolver support. Without the resolver functions, masqmail
 uses only gethostbyname() to resolve DNS names, and you cannot send
@@ -96,9 +93,9 @@ discouraged unless your resources are extremely limited.
 
 --with-libcryto
 instead of using the md5 and hmac functions within the package, link
-dynamically with libcrypto. This applies only if you have POP3 or SMTP
-AUTH enabled. Only makes sense if your resources are limited and you
-have libcrypto installed. Untested.
+dynamically with libcrypto. This applies only if you have SMTP AUTH
+enabled. Only makes sense if your resources are limited and you have
+libcrypto installed. Untested.
 
 --with-glib-static
 links with glib statically. This makes the binary larger by around 30K
@@ -131,7 +128,6 @@ should give output similar to
 	drwxr-xr-x 5 mail trusted   4096 May 10 12:34 /var/spool/masqmail
 	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/input
 	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/lock
-	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/popuidl
 
 Important are the set-user-id bit for /usr/local/sbin/masqmail and
 the permissions of all files.

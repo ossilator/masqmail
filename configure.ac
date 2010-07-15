@@ -143,19 +143,6 @@ if test "x$smtp_server_enabled" = xyes; then
 	AC_DEFINE(ENABLE_SMTP_SERVER, 1, [If the SMTP server is enabled])
 fi
 
-dnl pop support (default is use it)
-AC_ARG_ENABLE(pop3,
-	[  --disable-pop3           disable pop3 support],
-	if test "x$enable_pop3" != 'xno'; then
-		pop3_enabled='yes'
-	fi,
-	)
-if test "x$pop3_enabled" = xyes; then
-	AC_DEFINE(ENABLE_POP3, 1, [If the POP3 support is enabled])
-#	MD5_LIBS='md5/libmd5c.a'
-	need_md5='yes'
-fi
-
 dnl auth support (default is to not use it)
 AC_ARG_ENABLE(auth,
 	[  --enable-auth            enable AUTH (RFC 2554) client support],

@@ -24,8 +24,6 @@ gchar *prot_names[] = {
 	"bsmtp",
 	"smtp",
 	"esmtp",
-	"pop3",
-	"apop",
 	"(unknown)"  /* should not happen, but better than crashing. */
 };
 

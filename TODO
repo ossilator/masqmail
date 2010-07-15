@@ -10,9 +10,6 @@ conf:
 - more configuration options
 - make conf more fool proof
 
-pop:
-- multidrop support
-
 lookup:
 - optimize MX lookup
 

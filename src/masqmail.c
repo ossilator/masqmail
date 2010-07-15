@@ -34,15 +34,13 @@
 
 #include "masqmail.h"
 
-/* mutually exclusive modes. Note that there is neither a 'get' mode
-   nor a 'queue daemon' mode. These, as well as the distinction beween
-   the two (non exclusive) daemon (queue and listen) modes are handled
-   by flags.*/
+/* mutually exclusive modes. Note that there is no 'queue daemon' mode.
+   It, as well as the distinction beween the two (non exclusive) daemon
+   (queue and listen) modes, is handled by flags.*/
 typedef enum _mta_mode {
 	MODE_ACCEPT = 0,  /* accept message on stdin */
 	MODE_DAEMON,  /* run as daemon */
 	MODE_RUNQUEUE,  /* single queue run, online or offline */
-	MODE_GET_DAEMON,  /* run as get (retrieve) daemon */
 	MODE_SMTP,  /* accept SMTP on stdin */
 	MODE_LIST,  /* list queue */
 	MODE_MCMD,  /* do queue manipulation */
@@ -179,49 +177,6 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval, argv);
 }
 
-#ifdef ENABLE_POP3
-static void
-mode_get_daemon(gint get_interval, char *argv[])
-{
-	guint pid;
-
-	/* daemon */
-	if (!conf.run_as_user) {
-		if ((conf.orig_uid != 0) && (conf.orig_uid != conf.mail_uid)) {
-			fprintf(stderr, "must be root or %s for daemon.\n", DEF_MAIL_USER);
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	/* reparent to init only if init is not already the parent */
-	if (getppid() != 1) {
-		if ((pid = fork()) > 0) {
-			exit(EXIT_SUCCESS);
-		} else if (pid < 0) {
-			logwrite(LOG_ALERT, "could not fork!");
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	signal(SIGTERM, sigterm_handler);
-	write_pidfile(PIDFILEDIR "/masqmail-get.pid");
-
-	conf.do_verbose = FALSE;
-
-	/* closing and reopening the log ensures that it is open afterwards
-	   because it is possible that the log is assigned to fd 1 and gets
-	   thus closes by fclose(stdout). Similar for the debugfile.
-	*/
-	logclose();
-	fclose(stdin);
-	fclose(stdout);
-	fclose(stderr);
-	logopen();
-
-	get_daemon(get_interval, argv);
-}
-#endif
-
 #ifdef ENABLE_SMTP_SERVER
 static void
 mode_smtp()
@@ -336,8 +291,6 @@ main(int argc, char *argv[])
 	/* cmd line flags */
 	gchar *conf_file = CONF_FILE;
 	gint arg = 1;
-	gboolean do_get = FALSE;
-	gboolean do_get_online = FALSE;
 
 	gboolean do_listen = FALSE;
 	gboolean do_runq = FALSE;
@@ -351,7 +304,6 @@ main(int argc, char *argv[])
 	mta_mode mta_mode = MODE_ACCEPT;
 
 	gint queue_interval = 0;
-	gint get_interval = 0;
 	gboolean opt_t = FALSE;
 	gboolean opt_i = FALSE;
 	gboolean opt_odb = FALSE;
@@ -362,7 +314,6 @@ main(int argc, char *argv[])
 
 	gint exit_code = EXIT_SUCCESS;
 	gchar *route_name = NULL;
-	gchar *get_name = NULL;
 	gchar *progname;
 	gchar *f_address = NULL;
 	gchar *full_sender_name = NULL;
@@ -464,30 +415,6 @@ main(int argc, char *argv[])
 					}
 				}
 				break;
-			case 'g':
-				do_get = TRUE;
-				if (!mta_mode)
-					mta_mode = MODE_NONE;  /* to prevent default MODE_ACCEPT */
-				if (argv[arg][pos] == 'o') {
-					pos++;
-					do_get_online = TRUE;
-					/* can be NULL, then we use online detection method */
-					route_name = get_optarg(argv, argc, &arg, &pos);
-
-					if (route_name != NULL) {
-						if (isdigit(route_name[0])) {
-							get_interval = time_interval(route_name, &pos);
-							route_name = get_optarg(argv, argc, &arg, &pos);
-							mta_mode = MODE_GET_DAEMON;
-							do_get = FALSE;
-						}
-					}
-				} else {
-					if ((optarg = get_optarg(argv, argc, &arg, &pos))) {
-						get_name = get_optarg(argv, argc, &arg, &pos);
-					}
-				}
-				break;
 			case 'i':
 				if (argv[arg][pos] == 0) {
 					opt_i = TRUE;
@@ -574,7 +501,6 @@ main(int argc, char *argv[])
 	if (mta_mode == MODE_VERSION) {
 		gchar *with_resolver = "";
 		gchar *with_smtp_server = "";
-		gchar *with_pop3 = "";
 		gchar *with_auth = "";
 		gchar *with_maildir = "";
 		gchar *with_ident = "";
@@ -584,9 +510,6 @@ main(int argc, char *argv[])
 #endif
 #ifdef ENABLE_SMTP_SERVER
 		with_smtp_server = " +smtp-server";
-#endif
-#ifdef ENABLE_POP3
-		with_pop3 = " +pop3";
 #endif
 #ifdef ENABLE_AUTH
 		with_auth = " +auth";
@@ -598,8 +521,8 @@ main(int argc, char *argv[])
 		with_ident = " +ident";
 #endif
 
-		printf("%s %s%s%s%s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_smtp_server,
-		       with_pop3, with_auth, with_maildir, with_ident);
+		printf("%s %s%s%s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_smtp_server,
+		       with_auth, with_maildir, with_ident);
 
 		exit(EXIT_SUCCESS);
 	}
@@ -699,30 +622,6 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (do_get) {
-#ifdef ENABLE_POP3
-		if ((mta_mode == MODE_NONE) || (mta_mode == MODE_RUNQUEUE)) {
-			set_identity(conf.orig_uid, "getting mail");
-			if (do_get_online) {
-				if (route_name != NULL) {
-					conf.online_detect = g_strdup("argument");
-					set_online_name(route_name);
-				}
-				get_online();
-			} else {
-				if (get_name)
-					get_from_name(get_name);
-				else
-					get_all();
-			}
-		} else {
-			logwrite(LOG_ALERT, "get (-g) only allowed alone or together with queue run (-q)\n");
-		}
-#else
-		fprintf(stderr, "get (pop) support not compiled in\n");
-#endif
-	}
-
 	switch (mta_mode) {
 	case MODE_DAEMON:
 		mode_daemon(do_listen, queue_interval, argv);
@@ -744,15 +643,6 @@ main(int argc, char *argv[])
 					queue_run_online() ? EXIT_SUCCESS : EXIT_FAILURE;
 			}
 		}
-		break;
-	case MODE_GET_DAEMON:
-#ifdef ENABLE_POP3
-		if (route_name != NULL) {
-			conf.online_detect = g_strdup("argument");
-			set_online_name(route_name);
-		}
-		mode_get_daemon(get_interval, argv);
-#endif
 		break;
 
 	case MODE_SMTP:
