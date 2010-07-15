@@ -119,8 +119,6 @@ typedef struct _connect_route {
 	gchar *auth_login;
 	gchar *auth_secret;
 
-	gchar *pop3_login;
-
 	gchar *pipe;
 
 	gboolean pipe_fromline;
