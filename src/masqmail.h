@@ -125,26 +125,6 @@ typedef struct _connect_route {
 	gboolean pipe_fromhack;
 } connect_route;
 
-typedef struct _get_conf {
-	gchar *protocol;
-	gchar *server_name;
-	guint server_port;
-	gchar *wrapper;
-	gchar *login_user;
-	gchar *login_pass;
-	address *address;
-	address *return_path;
-	gboolean do_keep;
-	gboolean do_uidl;
-	gboolean do_uidl_dele;
-	gint max_size;
-	gboolean max_size_delete;
-	gint max_count;
-
-	GList *resolve_list;
-
-} get_conf;
-
 typedef struct _masqmail_conf {
 	gint mail_uid;
 	gint mail_gid;
@@ -207,9 +187,6 @@ typedef struct _masqmail_conf {
 	gchar *online_file;
 	gchar *online_pipe;
 
-	GList *get_names;
-	GList *online_gets;  /* list of pairs which point to lists */
-
 	gchar *errmsg_file;
 	gchar *warnmsg_file;
 	GList *warn_intervals;
@@ -231,8 +208,6 @@ typedef enum _prot_id {
 	PROT_BSMTP,
 	PROT_SMTP,
 	PROT_ESMTP,
-	PROT_POP3,
-	PROT_APOP,
 	PROT_NUM
 } prot_id;
 
@@ -386,8 +361,6 @@ connect_route *read_route(gchar * filename, gboolean is_local_net);
 GList *read_route_list(GList * rf_list, gboolean is_local_net);
 void destroy_route(connect_route * r);
 void destroy_route_list(GList * list);
-get_conf *read_get_conf(gchar * filename);
-void destroy_get_conf(get_conf * gc);
 connect_route *create_local_route();
 
 /* expand.c */
@@ -472,13 +445,6 @@ gboolean deliver(message * msg);
 /* fail_msg.c */
 gboolean fail_msg(message * msg, gchar * template, GList * failed_rcpts, gchar * err_fmt, va_list args);
 gboolean warn_msg(message * msg, gchar * template, GList * failed_rcpts, gchar * err_fmt, va_list args);
-
-/* get.c */
-gboolean get_from_file(gchar * fname);
-gboolean get_from_name(gchar * name);
-gboolean get_all(void);
-void get_online(void);
-void get_daemon(gint gival, char *argv[]);
 
 /* interface.c */
 gboolean init_sockaddr(struct sockaddr_in *name, interface * iface);

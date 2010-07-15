@@ -548,22 +548,7 @@ read_conf(gchar * filename)
 			conf.online_pipe = g_strdup(rval);
 		else if (strcmp(lval, "do_queue") == 0)
 			conf.do_queue = parse_boolean(rval);
-		else if (strncmp(lval, "get.", 4) == 0) {
-#ifdef ENABLE_POP3
-			table_pair *pair = create_pair_string(&(lval[4]), rval);
-			conf.get_names = g_list_append(conf.get_names, pair);
-#else
-			logwrite(LOG_WARNING, "get.<name> ignored: not compiled with pop support\n");
-#endif
-		} else if (strncmp(lval, "online_gets.", 12) == 0) {
-#ifdef ENABLE_POP3
-			GList *file_list = parse_list(rval, FALSE);
-			table_pair *pair = create_pair(&(lval[12]), file_list);
-			conf.online_gets = g_list_append(conf.online_gets, pair);
-#else
-			logwrite(LOG_WARNING, "online_gets.<name> ignored: not compiled with pop support\n");
-#endif
-		} else if (strcmp(lval, "errmsg_file") == 0)
+		else if (strcmp(lval, "errmsg_file") == 0)
 			conf.errmsg_file = g_strdup(rval);
 		else if (strcmp(lval, "warnmsg_file") == 0)
 			conf.warnmsg_file = g_strdup(rval);
@@ -895,100 +880,6 @@ destroy_route_list(GList * list)
 	}
 	g_list_free(list);
 }
-
-#ifdef ENABLE_POP3
-
-get_conf*
-read_get_conf(gchar * filename)
-{
-	FILE *in;
-
-	get_conf *gc = g_malloc(sizeof(get_conf));
-	memset(gc, 0, sizeof(get_conf));
-
-	gc->server_port = 110;
-
-	if ((in = fopen(filename, "r")) == NULL) {
-		logwrite(LOG_ALERT, "could not open get file %s: %s\n", filename, strerror(errno));
-		g_free(gc);
-		return NULL;
-	}
-
-	gchar lval[256], rval[2048];
-	while (read_statement(in, lval, 256, rval, 2048)) {
-		if (strcmp(lval, "protocol") == 0)
-			gc->protocol = g_strdup(rval);
-		else if (strcmp(lval, "server") == 0)
-			gc->server_name = g_strdup(rval);
-		else if (strcmp(lval, "port") == 0)
-			gc->server_port = atoi(rval);
-		else if (strcmp(lval, "wrapper") == 0)
-			gc->wrapper = g_strdup(rval);
-		else if (strcmp(lval, "user") == 0)
-			gc->login_user = g_strdup(rval);
-		else if (strcmp(lval, "pass") == 0)
-			gc->login_pass = g_strdup(rval);
-		else if (strcmp(lval, "address") == 0)
-			gc->address = create_address_qualified(rval, TRUE, conf.host_name);
-		else if (strcmp(lval, "return_path") == 0)
-			gc->return_path = create_address_qualified(rval, TRUE, conf.host_name);
-		else if (strcmp(lval, "do_ssl") == 0)
-			/* we ignore this. This option is used by sqilconf */
-			;
-		else if (strcmp(lval, "do_keep") == 0)
-			gc->do_keep = parse_boolean(rval);
-		else if (strcmp(lval, "do_uidl") == 0)
-			gc->do_uidl = parse_boolean(rval);
-		else if (strcmp(lval, "do_uidl_dele") == 0)
-			gc->do_uidl_dele = parse_boolean(rval);
-		else if (strcmp(lval, "max_size") == 0)
-			gc->max_size = atoi(rval);
-		else if (strcmp(lval, "max_size_delete") == 0)
-			gc->max_size_delete = parse_boolean(rval);
-		else if (strcmp(lval, "max_count") == 0)
-			gc->max_count = atoi(rval);
-		else if (strcmp(lval, "resolve_list") == 0)
-			gc->resolve_list = parse_resolve_list(rval);
-		else
-			logwrite(LOG_WARNING, "var '%s' not (yet) known, ignored\n", lval);
-	}
-	fclose(in);
-
-	if (gc->resolve_list == NULL) {
-#ifdef ENABLE_RESOLVER
-		gc->resolve_list = g_list_append(NULL, resolve_dns_a);
-#endif
-		gc->resolve_list = g_list_append(NULL, resolve_byname);
-	}
-
-	if (gc->protocol == NULL)
-		gc->protocol = g_strdup("pop3");
-	return gc;
-}
-
-void
-destroy_get_conf(get_conf * gc)
-{
-	if (gc->protocol)
-		g_free(gc->protocol);
-	if (gc->server_name)
-		g_free(gc->server_name);
-	if (gc->login_user)
-		g_free(gc->login_user);
-	if (gc->login_pass)
-		g_free(gc->login_pass);
-	if (gc->wrapper)
-		g_free(gc->wrapper);
-	if (gc->address)
-		destroy_address(gc->address);
-	if (gc->return_path)
-		destroy_address(gc->return_path);
-	if (gc->resolve_list)
-		g_list_free(gc->resolve_list);
-	g_free(gc);
-}
-
-#endif
 
 connect_route*
 create_local_route()

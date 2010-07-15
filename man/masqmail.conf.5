@@ -26,7 +26,7 @@ For some values, patterns (like `*',`?') can be used.
 The spaces in front of and after the equal sign `=' are optional.
 
 Most lists (exceptions: \fBlocal_hosts\fR, \fBlocal_nets\fR, \fBlisten_addresses\fR,
- \fBonline_routes\fR, and \fBonline_gets\fR) accept files.
+and \fBonline_routes\fR) accept files.
 These will be recognized by a leading slash `/'.
 The contents of these files will be included at the position of the file name,
 there can be items or other files before and after the file entry.
@@ -184,7 +184,7 @@ Default: \fIlocalhost:25\fR (i.e. only local processes can connect)
 If this is set to true, a possibly existing Envelope-to: header in an incoming mail
 which is received via either pop3 or smtp will be saved as an X-Orig-Envelope-to: header.
 
-This is useful if you retrieve mail from a pop3 server with either masqmail or fetchmail,
+This is useful if you retrieve mail from a pop3 server with fetchmail,
 and the server supports Envelope-to: headers,
 and you want to make use of those with a mail filtering tool, e.g. procmail.
 It cannot be preserved because masqmail sets such a header by itself.
@@ -411,20 +411,6 @@ online_pipe="/usr/bin/mservdetect localhost 224"
 
 
 .TP
-\fBget.\fIname\fR = \fIfile\fR
-
-Replace \fIname\fR with a name to identify a get configuration.
-Set this to a filename for the get configuration.
-These files will be used to retrieve mail when called with the \-g option.
-
-.TP
-\fBonline_gets.\fIname\fR = \fIlist\fR
-
-Replace \fIname\fR with a name to identify an online configuration.
-Set this to a filename (or a list of filenames) for the get configuration.
-These files will be used to retrieve mail when called with the \-go option.
-
-.TP
 \fBident_trusted_nets = \fIlist\fR
 
 \fIlist\fR is a list of networks of the form a.b.c.d/e (e.g. 192.168.1.0/24),
@@ -526,4 +512,4 @@ Please report bugs to the mailing list.
 
 .SH SEE ALSO
 
-\fBmasqmail(8)\fR, \fBmasqmail.route(5)\fR, \fBmasqmail.get(5)\fR
+\fBmasqmail(8)\fR, \fBmasqmail.route(5)\fR
