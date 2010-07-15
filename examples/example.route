@@ -82,11 +82,3 @@ map_h_from_addresses = "okurth: Oliver Kurth <kurth@innominate.de>"
 #auth_name="cram-md5"
 #auth_login="yourname"
 #auth_secret="dontTellAnyBody"
-
-# if your mail server requires smtp after POP (eg. gmx), set this.
-# It is not necessary if you fetch from the pop server just before you
-# send mail (either masqmail, fetchmail or any other pop client).
-# Set it to a get file.
-# You need to compile masqmail with pop3 support (default)
-# pop3_login = "/etc/masqmail/example.get"
-# see also: man 5 masqmail.route, man 5 masqmail.get

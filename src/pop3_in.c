@@ -780,28 +780,4 @@ pop3_get(pop3_base * popb, gchar * user, gchar * pass, address * rcpt, address *
 	return ok;
 }
 
-/* function just to log into a pop server,
-   for pop_before_smtp (or is it smtp_after_pop?)
-*/
-
-gboolean
-pop3_login(gchar * host, gint port, GList * resolve_list, gchar * user, gchar * pass, guint flags)
-{
-	gboolean ok = FALSE;
-	pop3_base *popb;
-
-	signal(SIGCHLD, SIG_IGN);
-
-	if ((popb = pop3_in_open(host, port, resolve_list, flags))) {
-		if (pop3_in_init(popb)) {
-			if (pop3_in_login(popb, user, pass))
-				ok = TRUE;
-			else
-				logwrite(LOG_ALERT | LOG_VERBOSE, "pop3 login failed for user %s, host = %s\n", user, host);
-		}
-		pop3_in_close(popb);
-	}
-	return ok;
-}
-
 #endif

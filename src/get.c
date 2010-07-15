@@ -369,30 +369,4 @@ get_daemon(gint gival, char *argv[])
 	}
 }
 
-gboolean
-pop_before_smtp(gchar * fname)
-{
-	gboolean ok = FALSE;
-	GList *resolve_list = NULL;
-	get_conf *gc = read_get_conf(fname);
-	guint flags = 0;
-
-#ifdef ENABLE_RESOLVER
-	resolve_list = g_list_append(resolve_list, resolve_dns_a);
-#endif
-	resolve_list = g_list_append(resolve_list, resolve_byname);
-
-	if (strcmp(gc->protocol, "pop3") == 0) {
-		DEBUG(3) debugf("attempting to login for user %s, host = %s with pop3\n", gc->login_user, gc->server_name);
-		ok = pop3_login(gc->server_name, gc->server_port, resolve_list, gc->login_user, gc->login_pass, flags);
-	} else if (strcmp(gc->protocol, "apop") == 0) {
-		DEBUG(3) debugf ("attempting to login for user %s, host = %s with apop\n", gc->login_user, gc->server_name);
-		ok = pop3_login(gc->server_name, gc->server_port, resolve_list, gc->login_user,
-		                gc->login_pass, flags | POP3_FLAG_APOP);
-	} else {
-		logwrite(LOG_ALERT, "get protocol %s unknown\n", gc->protocol);
-	}
-	return ok;
-}
-
 #endif

@@ -481,7 +481,6 @@ gboolean get_from_name(gchar * name);
 gboolean get_all(void);
 void get_online(void);
 void get_daemon(gint gival, char *argv[]);
-gboolean pop_before_smtp(gchar * fname);
 
 /* interface.c */
 gboolean init_sockaddr(struct sockaddr_in *name, interface * iface);
