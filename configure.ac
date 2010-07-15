@@ -25,7 +25,7 @@ AC_SUBST(GLIB_CFLAGS)
 
 dnl resolver support (default is use it)
 AC_ARG_ENABLE(resolver,
-	[  --disable-resolver       disable resolver support],
+	[  --disable-resolver      disable resolver support],
 	if test "$enable_resolver" != 'no'; then
 		resolver_enabled='yes'
 	fi,
@@ -88,14 +88,14 @@ AC_CHECK_FUNCS(select socket strerror strstr)
 
 dnl user and group configuration
 AC_ARG_WITH(user,
-	[  --with-user=USER         set user [mail]],
+	[  --with-user=USER        set user [mail]],
 	)
 if test "x$with_user" = 'x'; then
 	with_user='mail'
 fi
 
 AC_ARG_WITH(group,
-	[  --with-group=GROUP       set group [trusted]],
+	[  --with-group=GROUP      set group [trusted]],
 	)
 if test "x$with_group" = 'x'; then
 	with_group='trusted'
@@ -103,7 +103,7 @@ fi
 
 dnl debugging support (default is use it)
 AC_ARG_ENABLE(debug,
-	[  --disable-debug          disable debugging],
+	[  --disable-debug         disable debugging],
 	if test "x$enable_debug" != 'xno'; then
 		debug_enabled='yes'
 	fi,
@@ -120,7 +120,7 @@ AC_SUBST(with_group)
 
 dnl link glib statically?
 AC_ARG_WITH(glib_static,
-	[  --with-glib-static=path  link glib statically (path mandatory!)],
+	[  --with-glib-static=path            link glib statically (path mandatory!)],
 	)
 if test "x$with_glib_static" != 'x'; then
 	GLIB_LIBS=$with_glib_static
@@ -133,7 +133,7 @@ BASE64_LIBS=''
 
 dnl smtp server support (default is use it)
 AC_ARG_ENABLE(smtp_server,
-	[  --disable-smtp-server    disable smtp server support],
+	[  --disable-smtp-server   disable smtp server support],
 	if test "x$enable_smtp_server" != 'xno'; then
 		smtp_server_enabled='yes'
 	fi,
@@ -145,7 +145,7 @@ fi
 
 dnl auth support (default is to not use it)
 AC_ARG_ENABLE(auth,
-	[  --enable-auth            enable AUTH (RFC 2554) client support],
+	[  --enable-auth           enable AUTH (RFC 2554) client support],
 	if test "x$enable_auth" != 'xno'; then
 		auth_enabled='yes'
 	fi,
@@ -160,7 +160,7 @@ AC_SUBST(BASE64_LIBS)
 
 dnl maildir support (default is to not use it)
 AC_ARG_ENABLE(maildir,
-	[  --enable-maildir            enable qmail style maildir support],
+	[  --enable-maildir        enable qmail style maildir support],
 	if test "x$enable_maildir" != 'xno'; then
 		maildir_enabled='yes'
 	fi,
@@ -171,7 +171,7 @@ fi
 
 dnl libcrypto
 AC_ARG_WITH(libcrypto,
-	[  --with-libcrypto         use libcrypto],
+	[  --with-libcrypto        use libcrypto],
 	)
 if test "x$with_libcrypto" != 'xyes'; then
 	with_libcrypto='no'
@@ -194,7 +194,7 @@ AC_SUBST(MD5_LIBS)
 dnl ident support (default is to not use it)
 IDENT_LIBS=''
 AC_ARG_ENABLE(ident,
-	[  --enable-ident           enable ident (RFC 1413) support],
+	[  --enable-ident          enable ident (RFC 1413) support],
 	if test "x$enable_ident" != 'xno'; then
 		ident_enabled='yes'
 	fi,
@@ -208,7 +208,7 @@ AC_SUBST(IDENT_LIBS)
 
 dnl liblockfile
 AC_ARG_WITH(liblockfile,
-	[  --with-liblockfile       use liblock (for Debian)],
+	[  --with-liblockfile      use liblock (for Debian)],
 	)
 if test "x$with_liblockfile" = 'xno'; then
 	with_liblockfile=''
@@ -228,7 +228,7 @@ AC_SUBST(USE_LIBLOCKFILE)
 
 dnl log and spool directories
 AC_ARG_WITH(logdir,
-	[  --with-logdir=DIR        set log directory [/var/log/masqmail]],
+	[  --with-logdir=DIR       set log directory [/var/log/masqmail]],
 	,
         with_logdir='/var/log/masqmail/'
 	)
@@ -236,7 +236,7 @@ AC_DEFINE_UNQUOTED(LOG_DIR, "${with_logdir}", [The log directory])
 AC_SUBST(with_logdir)
 
 AC_ARG_WITH(spooldir,
-	[  --with-spooldir=DIR      set spool directory [/var/spool/masqmail]],
+	[  --with-spooldir=DIR     set spool directory [/var/spool/masqmail]],
 	,
 	with_spooldir='/var/spool/masqmail/'
 	)
@@ -245,7 +245,7 @@ AC_SUBST(with_spooldir)
 
 dnl configuration file
 AC_ARG_WITH(confdir,
-	[  --with-confdir           directory for configuration [/etc/masqmail]],
+	[  --with-confdir          directory for configuration [/etc/masqmail]],
 	,
 	with_confdir='/etc/masqmail'
 	)
