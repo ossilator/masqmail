@@ -115,7 +115,7 @@ Checking the installation
 
 Check that 'make install' worked correctly. The following command:
 
-	ls -ld /usr/sbin/masqmail /etc/masqmail /var/log/masqmail/ \
+	ls -ld /usr/local/sbin/masqmail /etc/masqmail /var/log/masqmail/ \
 	       /var/run/masqmail /var/spool/masqmail/ /var/spool/masqmail/*
 
 should give output similar to
