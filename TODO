@@ -11,7 +11,7 @@ general:
 - check data types (int may only cover -32767 to +32767!)
 
 conf:
-- more configuration options
+- less configuration options
 - make conf more fool proof
 
 lookup:
