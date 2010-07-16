@@ -4,7 +4,7 @@ AM_CFLAGS=@CFLAGS@ @GLIB_CFLAGS@ -D_GNU_SOURCE -DG_DISABLE_DEPRECATED
 
 sbin_PROGRAMS=masqmail
 bin_PROGRAMS=mservdetect
-noinst_PROGRAMS=smtpsend readtest
+noinst_PROGRAMS=smtpsend readtest resolvtest
 
 masqmail_SOURCES=\
 	dotlock.h\
@@ -76,7 +76,12 @@ readtest_SOURCES=\
 	readsock.h\
 	readtest.c
 
+resolvtest_SOURCES=\
+	resolvtest.c\
+	lookup.c
+
 masqmail_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@ @LOCKFILE_LIBS@ @MD5_LIBS@ @BASE64_LIBS@ @IDENT_LIBS@
 smtpsend_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@ @MD5_LIBS@ @BASE64_LIBS@
 mservdetect_LDADD=@GLIB_LIBS@
 readtest_LDADD=@GLIB_LIBS@
+resolvtest_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@ @IDENT_LIBS@

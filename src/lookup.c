@@ -22,11 +22,6 @@
 
 #include "masqmail.h"
 
-#ifdef RESOLV_TEST
-#undef DEBUG
-#define DEBUG(x) if(x > 0)
-#define debugf g_print
-#endif
 
 #ifdef ENABLE_RESOLVER
 
@@ -198,35 +193,39 @@ dns_getname(int type)
 }
 */
 
-static int
+int
 dns_look_ip(gchar * domain, guint32 * ip)
 {
 	gchar *n = domain;
 
 	while (TRUE) {
-		if (dns_resolve(n, T_A, FALSE) == 0) {
-			dns_next();
-			if (rr_type == T_A) {
-				if (rr_dlen < 4)
-					return -1;  /* soft */
-				*ip = *(guint32 *) (resp_pos);
-
-				DEBUG(5) debugf("DNS: dns_look_ip(): ip = %s\n", inet_ntoa(*(struct in_addr *) ip));
-
-				resp_pos += rr_dlen;
-				return 0;
-			} else if (rr_type == T_CNAME) {
-				if (dn_expand(response.buf, resp_end, resp_pos, name, MAX_DNSNAME) < 0)
-					return -1;
-
-				DEBUG(5) debugf("DNS: (CNAME) dns_look_ip(): name = %s\n", name);
-
-				resp_pos += rr_dlen;
-				n = name;
-			} else
-				return -1;
-		} else
+		if (dns_resolve(n, T_A, FALSE) != 0) {
 			return -1;
+		}
+
+		dns_next();
+		if (rr_type == T_A) {
+			if (rr_dlen < 4) {
+				return -1;  /* soft */
+			}
+			*ip = *(guint32 *) (resp_pos);
+
+			DEBUG(5) debugf("DNS: dns_look_ip(): ip = %s\n", inet_ntoa(*(struct in_addr *) ip));
+
+			resp_pos += rr_dlen;
+			return 0;
+		} else if (rr_type == T_CNAME) {
+			if (dn_expand(response.buf, resp_end, resp_pos, name, MAX_DNSNAME) < 0) {
+				return -1;
+			}
+
+			DEBUG(5) debugf("DNS: (CNAME) dns_look_ip(): name = %s\n", name);
+
+			resp_pos += rr_dlen;
+			n = name;
+		} else {
+			return -1;
+		}
 	}
 }
 
@@ -333,35 +332,3 @@ resolve_byname(GList * list, gchar * domain)
 	}
 	return list;
 }
-
-#ifdef RESOLV_TEST
-int
-main(int argc, char *argv[])
-{
-	GList *addr_list = NULL, *node;
-
-	g_print("starting res_init()\n");
-	g_print("retrans = %d, retry = %d\n", _res.retrans, _res.retry);
-	if (res_init() == 0) {
-		addr_list = resolve_dns_a(NULL, argv[1]);
-		g_print("A:\n");
-		foreach(addr_list, node) {
-			mxip_addr *p_mxip = (mxip_addr *) (node->data);
-			printf("name = %s\n IP = %s\n", p_mxip->name, inet_ntoa(*(struct in_addr *) &(p_mxip->ip)));
-		}
-		addr_list = resolve_dns_mx(NULL, argv[1]);
-		g_print("MX:\n");
-		foreach(addr_list, node) {
-			mxip_addr *p_mxip = (mxip_addr *) (node->data);
-			printf("name = %s\n IP = %s pref = %d\n", p_mxip->name,
-			       inet_ntoa(*(struct in_addr *) &(p_mxip->ip)), p_mxip->pref);
-		}
-		{
-			guint32 ip;
-			dns_look_ip(argv[1], &ip);
-			printf("dns_look_ip: %s\n", inet_ntoa(*((struct in_addr *) (&ip))));
-		}
-	} else
-		printf("res_init() failed.\n");
-}
-#endif
