@@ -1,0 +1,24 @@
+Howto link masqmail statically?
+-------------------------------
+
+With gcc (don't know anything about other compilers), you simply
+build masqmail with:
+
+	LDFLAGS=-static make -e
+
+
+On Debian GNU/Linux, I received a bunch warnings of that kind:
+
+	interface.o: In function `init_sockaddr':
+	interface.c:55: warning: Using 'gethostbyname' in statically
+	linked applications requires at runtime the shared libraries
+	from the glibc version used for linking
+
+On NetBSD I no warnings were printed.
+
+I don't have enough knowledge to tell the reasons and implications.
+Maybe you can.
+
+
+
+meillo
