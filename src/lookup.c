@@ -172,27 +172,6 @@ dns_getmx(int *pref)
 	return 0;
 }
 
-/*
-static int
-dns_getname(int type)
-{
-  int ret;
-
-  if((ret = dns_next())) return ret;
-
-  if (rr_type == type){
-    if (dn_expand(response.buf, resp_end, resp_pos, name, MAX_DNSNAME) < 0)
-      return -1;
-
-    resp_pos += rr_dlen;
-
-    return 1;
-  }
-  resp_pos += rr_dlen;
-  return 0;
-}
-*/
-
 int
 dns_look_ip(gchar * domain, guint32 * ip)
 {
