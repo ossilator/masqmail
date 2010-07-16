@@ -8,8 +8,6 @@
 
 #undef ENABLE_RESOLVER
 
-#undef ENABLE_SMTP_SERVER
-
 #undef ENABLE_AUTH
 
 #undef ENABLE_MAILDIR

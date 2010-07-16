@@ -29,7 +29,6 @@
   RFC 2554 (ESMTP AUTH)
 */
 
-#ifdef ENABLE_SMTP_SERVER
 
 smtp_cmd smtp_cmds[] = {
 	{SMTP_HELO, "HELO",},
@@ -418,4 +417,3 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 		break;
 	}
 }
-#endif

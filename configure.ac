@@ -122,18 +122,6 @@ dnl optional features
 MD5_LIBS=''
 BASE64_LIBS=''
 
-dnl smtp server support (default is use it)
-AC_ARG_ENABLE(smtp_server,
-	[  --disable-smtp-server   disable smtp server support],
-	if test "x$enable_smtp_server" != 'xno'; then
-		smtp_server_enabled='yes'
-	fi,
-	smtp_server_enabled='yes'
-	)
-if test "x$smtp_server_enabled" = xyes; then
-	AC_DEFINE(ENABLE_SMTP_SERVER, 1, [If the SMTP server is enabled])
-fi
-
 dnl auth support (default is to not use it)
 AC_ARG_ENABLE(auth,
 	[  --enable-auth           enable AUTH (RFC 2554) client support],

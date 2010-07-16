@@ -83,13 +83,6 @@ disables resolver support. Without the resolver functions, masqmail
 uses only gethostbyname() to resolve DNS names, and you cannot send
 mail without a smart host. Not recommended.
 
---disable-smtp-server
-disables SMTP server support. You may want this if you do not need
-masqmail to listen. In this case, you cannot use masqmail as a smart
-host for other hosts on your LAN, you cannot use mail clients that
-send SMTP, you cannot even use pine. In short, use of this option is
-discouraged unless your resources are extremely limited.
-
 
 --with-libcryto
 instead of using the md5 and hmac functions within the package, link

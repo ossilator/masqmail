@@ -46,7 +46,6 @@ sigchld_handler(int sig)
 	signal(SIGCHLD, sigchld_handler);
 }
 
-#ifdef ENABLE_SMTP_SERVER
 void
 accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 {
@@ -92,7 +91,6 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 	close(sock);
 	close(dup_sock);
 }
-#endif  /*ifdef ENABLE_SMTP_SERVER */
 
 void
 listen_port(GList * iface_list, gint qival, char *argv[])
@@ -108,7 +106,6 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 
 	/* Create the sockets and set them up to accept connections. */
 	FD_ZERO(&active_fd_set);
-#ifdef ENABLE_SMTP_SERVER
 	for (node = g_list_first(iface_list); node; node = node_next) {
 		interface *iface = (interface *) (node->data);
 		int sock;
@@ -127,7 +124,6 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 		DEBUG(5) debugf("sock = %d\n", sock);
 		FD_SET(sock, &active_fd_set);
 	}
-#endif
 
 	/* setup handler for HUP signal: */
 	signal(SIGHUP, sighup_handler);
@@ -192,7 +188,6 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 				}
 			}
 		} else if (sel_ret > 0) {
-#ifdef ENABLE_SMTP_SERVER
 			for (i = 0; i < FD_SETSIZE; i++) {
 				if (FD_ISSET(i, &read_fd_set)) {
 					int sock = i;
@@ -205,9 +200,6 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 						accept_connect(sock, new, &clientname);
 				}
 			}
-#else
-			;
-#endif
 		} else {
 			/* If select returns 0, the interval time has elapsed.
 			   We start a new queue runner process */

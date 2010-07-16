@@ -177,7 +177,6 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval, argv);
 }
 
-#ifdef ENABLE_SMTP_SERVER
 static void
 mode_smtp()
 {
@@ -204,7 +203,6 @@ mode_smtp()
 
 	smtp_in(stdin, stderr, peername, NULL);
 }
-#endif
 
 static void
 mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags, char **addresses, int addr_cnt)
@@ -500,16 +498,12 @@ main(int argc, char *argv[])
 
 	if (mta_mode == MODE_VERSION) {
 		gchar *with_resolver = "";
-		gchar *with_smtp_server = "";
 		gchar *with_auth = "";
 		gchar *with_maildir = "";
 		gchar *with_ident = "";
 
 #ifdef ENABLE_RESOLVER
 		with_resolver = " +resolver";
-#endif
-#ifdef ENABLE_SMTP_SERVER
-		with_smtp_server = " +smtp-server";
 #endif
 #ifdef ENABLE_AUTH
 		with_auth = " +auth";
@@ -521,7 +515,7 @@ main(int argc, char *argv[])
 		with_ident = " +ident";
 #endif
 
-		printf("%s %s%s%s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_smtp_server,
+		printf("%s %s%s%s%s%s\n", PACKAGE, VERSION, with_resolver,
 		       with_auth, with_maildir, with_ident);
 
 		exit(EXIT_SUCCESS);
@@ -646,11 +640,7 @@ main(int argc, char *argv[])
 		break;
 
 	case MODE_SMTP:
-#ifdef ENABLE_SMTP_SERVER
 		mode_smtp();
-#else
-		fprintf(stderr, "smtp server support not compiled in\n");
-#endif
 		break;
 
 	case MODE_LIST:
