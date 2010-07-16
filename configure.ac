@@ -118,15 +118,6 @@ AC_SUBST(with_user)
 AC_DEFINE_UNQUOTED(DEF_MAIL_GROUP, "${with_group}", [The mail group])
 AC_SUBST(with_group)
 
-dnl link glib statically?
-AC_ARG_WITH(glib_static,
-	[  --with-glib-static=path            link glib statically (path mandatory!)],
-	)
-if test "x$with_glib_static" != 'x'; then
-	GLIB_LIBS=$with_glib_static
-	AC_SUBST(GLIB_LIBS)
-fi
-
 dnl optional features
 MD5_LIBS=''
 BASE64_LIBS=''
