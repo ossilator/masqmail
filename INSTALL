@@ -164,8 +164,9 @@ Create a minimal config with:
 
 Such a setup (i.e. the default one) does:
 - deliver mail locally
-- accept mail from local (via stdin)
-- accept mail on localhost:25 (via SMTP) (if started as daemon)
+- accept mail on stdin (plain text)
+- accept mail on stdin (SMTP) (if started with -bs)
+- accept mail on the local port 25 (SMTP) (if started with -bd)
 
 It does not
 - transfer mail to other machines

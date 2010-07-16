@@ -433,7 +433,10 @@ read_conf(gchar * filename)
 	conf.max_msg_size = 0; /* no limit on msg size */
 	conf.spool_dir = SPOOL_DIR;
 	conf.mail_dir = "/var/mail";
-	conf.listen_addresses = g_list_append(NULL, parse_interface("localhost", 25));
+	/* we use 127.0.0.1 because `localhost' could be bound to some
+	   other IP address. This is unlikely but could be. Using
+	   127.0.0.1 is more safe. See mailing list for details */
+	conf.listen_addresses = g_list_append(NULL, parse_interface("127.0.0.1", 25));
 
 	if ((in = fopen(filename, "r")) == NULL) {
 		logwrite(LOG_ALERT, "could not open config file %s: %s\n", filename, strerror(errno));
