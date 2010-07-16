@@ -103,12 +103,12 @@ not want to use it.
 
 Check that 'make install' worked correctly. The following command:
 
-	ls -ld /usr/sbin/masqmail /etc/masqmail /var/log/masqmail/ \
+	ls -ld /usr/local/sbin/masqmail /etc/masqmail /var/log/masqmail/ \
 	       /var/run/masqmail /var/spool/masqmail/ /var/spool/masqmail/*
 
 should give output similar to
 
-	-rwsr-xr-x 1 root root    399356 May 10 12:34 /usr/sbin/masqmail
+	-rwsr-xr-x 1 root root    399356 May 10 12:34 /usr/local/sbin/masqmail
 	drwxr-xr-x 2 root root      4096 May 10 12:34 /etc/masqmail
 	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/log/masqmail
 	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/run/masqmail
@@ -117,22 +117,26 @@ should give output similar to
 	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/lock
 	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/popuidl
 
-(important is the set-user-id bit for /usr/sbin/masqmail and the
+(important is the set-user-id bit for /usr/local/sbin/masqmail and the
 ownership of all items).
 
 Use the example configuration files in examples/ to edit your own. The
 main configuration file `masqmail.conf' and the *.route and *.get files
 should go into /etc/masqmail.
 
-The default destination for the executable `masqmail' is /usr/sbin.
+The default destination for the executable `masqmail' is /usr/local/sbin.
 Check that it has the set-uid bit set. You can set it with:
 
-	chmod u+s /usr/sbin/masqmail
+	chmod u+s /usr/local/sbin/masqmail
 
 If you want to replace sendmail, move your old sendmail binary to
 another name and make a symbolic link:
 
-	ln -s /usr/sbin/masqmail /usr/sbin/sendmail
+	ln -s /usr/local/sbin/masqmail /usr/sbin/sendmail
+
+You might also need this link:
+
+	ln -s /usr/local/sbin/masqmail /usr/lib/sendmail
 
 Now every mailer that used to call sendmail will now call masqmail. You
 can now kill your old sendmail if it is running and start masqmail.
@@ -141,7 +145,7 @@ can now kill your old sendmail if it is running and start masqmail.
 
 should do that. You can also start masqmail with:
 
-	/usr/sbin/masqmail -bd -q30m
+	/usr/local/sbin/masqmail -bd -q30m
 
 
 
@@ -163,7 +167,7 @@ Just add 'ipparam FastNet' in the command line for pppd if your ISP has
 the name FastNet. The ip-up script will then get 'FastNet' as a sixth
 parameter. In your ip-up script you can then call masqmail with
 
-	/usr/sbin/masqmail -qo "$6"
+	/usr/local/sbin/masqmail -qo "$6"
 
 instead of 'sendmail -q', if you had that in the script before.
 Masqmail will then read the route configuration specified for the
