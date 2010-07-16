@@ -497,8 +497,6 @@ read_conf(gchar * filename)
 			conf.mbox_users = parse_list(rval, TRUE);
 		} else if (strcmp(lval, "mda_users") == 0) {
 			conf.mda_users = parse_list(rval, TRUE);
-		} else if (strcmp(lval, "maildir_users") == 0) {
-			conf.maildir_users = parse_list(rval, TRUE);
 		} else if (strcmp(lval, "mda") == 0) {
 			conf.mda = g_strdup(rval);
 		} else if (strcmp(lval, "mda_fromline") == 0) {

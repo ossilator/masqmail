@@ -268,10 +268,9 @@ Default is false.
 \fBmbox_default = \fIstring\fR
 
 The default local delivery method.
-Can be one of mbox, mda or maildir (the latter only if maildir support is enabled at compile time).
+Can be mbox or mda.
 Default is mbox.
-You can override this for each user by using the \fBmbox_users\fR, \fBmda_users\fR,
-or \fBmaildir_users\fR options (see below).
+You can override this for each user by using the \fBmbox_users\fR or \fBmda_users\fR (see below).
 
 .TP
 \fBmbox_users = \fIlist\fR
@@ -283,13 +282,6 @@ A list of users which wish delivery to an mbox style mail folder.
 
 A list of users which wish local delivery to an mda.
 You have to set \fBmda\fR (see below) as well.
-
-.TP
-\fBmaildir_users = \fIlist\fR
-
-A list of users which wish delivery to a qmail style maildir.
-The path to maildir is ~/Maildir/.
-The maildir will be created if it does not exist.
 
 .TP
 \fBmda = \fIexpand string\fR

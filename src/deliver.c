@@ -127,8 +127,6 @@ deliver_local(msg_out * msgout)
 				mbox_type = "mbox";
 			else if (g_list_find_custom (conf.mda_users, user, _g_list_strcasecmp) != NULL)
 				mbox_type = "mda";
-			else if (g_list_find_custom (conf.maildir_users, user, _g_list_strcasecmp) != NULL)
-				mbox_type = "maildir";
 
 			if (strcmp(mbox_type, "mbox") == 0) {
 				DEBUG(1) debugf("attempting to deliver %s with mbox\n", msg->uid);
@@ -179,23 +177,6 @@ deliver_local(msg_out * msgout)
 					destroy_table(var_table);
 				} else
 					logwrite(LOG_ALERT, "mbox type is mda, but no mda command given in configuration\n");
-
-#ifdef ENABLE_MAILDIR
-			} else if (strcmp(mbox_type, "maildir") == 0) {
-				DEBUG(1) debugf("attempting to deliver %s with maildir\n", msg->uid);
-				if (maildir_out(msg, hdr_list, rcpt->local_part, 0)) {
-					if (env_addr != rcpt) {
-						logwrite(LOG_NOTICE, "%s => %s@%s <%s@%s> with local\n", msg->uid,
-						         rcpt->local_part, rcpt->domain, env_addr->local_part, env_addr->domain);
-					} else {
-						logwrite(LOG_NOTICE, "%s => <%s@%s> with maildir\n", msg->uid,
-						         rcpt->local_part, rcpt->domain);
-					}
-					addr_mark_delivered(rcpt);
-					ok = TRUE;
-				} else
-					addr_mark_failed(rcpt);
-#endif
 			} else
 				logwrite(LOG_ALERT, "unknown mbox type '%s'\n", mbox_type);
 		}

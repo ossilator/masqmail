@@ -168,7 +168,6 @@ typedef struct _masqmail_conf {
 	gchar *mbox_default;
 	GList *mbox_users;
 	GList *mda_users;
-	GList *maildir_users;
 
 	gchar *mda;
 	gboolean mda_fromline;
@@ -452,7 +451,6 @@ int make_server_socket(interface * iface);
 
 /* local.c */
 gboolean append_file(message * msg, GList * hdr_list, gchar * user);
-gboolean maildir_out(message * msg, GList * hdr_list, gchar * user, guint flags);
 gboolean pipe_out(message * msg, GList * hdr_list, address * rcpt, gchar * cmd, guint flags);
 
 /* log.c */

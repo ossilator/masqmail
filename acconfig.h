@@ -10,8 +10,6 @@
 
 #undef ENABLE_AUTH
 
-#undef ENABLE_MAILDIR
-
 #undef USE_LIB_CRYPTO
 
 #undef ENABLE_IDENT

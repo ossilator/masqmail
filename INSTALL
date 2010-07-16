@@ -70,9 +70,6 @@ prefer another location than /etc/masqmail/.
 --enable-auth
 enables ESMTP AUTH support (disabled by default)
 
---enable-maildir
-enables qmail style Maildir support (disabled by default)
-
 --enable-ident
 enables RFC 1413 support. If you have the libident dynamic library
 installed, this will be linked, otherwise it will be statically linked

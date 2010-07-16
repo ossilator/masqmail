@@ -137,17 +137,6 @@ if test "x$auth_enabled" = xyes; then
 fi
 AC_SUBST(BASE64_LIBS)
 
-dnl maildir support (default is to not use it)
-AC_ARG_ENABLE(maildir,
-	[  --enable-maildir        enable qmail style maildir support],
-	if test "x$enable_maildir" != 'xno'; then
-		maildir_enabled='yes'
-	fi,
-	)
-if test "x$maildir_enabled" = xyes; then
-	AC_DEFINE(ENABLE_MAILDIR, 1, [If Maildirs are enabled])
-fi
-
 dnl libcrypto
 AC_ARG_WITH(libcrypto,
 	[  --with-libcrypto        use libcrypto],
