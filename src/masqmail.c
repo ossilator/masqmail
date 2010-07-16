@@ -499,7 +499,6 @@ main(int argc, char *argv[])
 	if (mta_mode == MODE_VERSION) {
 		gchar *with_resolver = "";
 		gchar *with_auth = "";
-		gchar *with_maildir = "";
 		gchar *with_ident = "";
 
 #ifdef ENABLE_RESOLVER
@@ -508,15 +507,11 @@ main(int argc, char *argv[])
 #ifdef ENABLE_AUTH
 		with_auth = " +auth";
 #endif
-#ifdef ENABLE_MAILDIR
-		with_maildir = " +maildir";
-#endif
 #ifdef ENABLE_IDENT
 		with_ident = " +ident";
 #endif
 
-		printf("%s %s%s%s%s%s\n", PACKAGE, VERSION, with_resolver,
-		       with_auth, with_maildir, with_ident);
+		printf("%s %s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_auth, with_ident);
 
 		exit(EXIT_SUCCESS);
 	}
