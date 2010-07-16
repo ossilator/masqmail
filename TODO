@@ -1,3 +1,7 @@
+Todo list for masqmail
+----------------------
+(Note: This file may not be up-to-date.)
+
 general:
 - look carefully were memory is not freed
 - add forwarding support
