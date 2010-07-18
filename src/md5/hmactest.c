@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <string.h>
-#include "global.h"
 #include "md5.h"
 #include "hmac_md5.h"
 
