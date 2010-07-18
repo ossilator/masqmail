@@ -69,7 +69,7 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 	logwrite(LOG_NOTICE, "connect from host %s, port %hd\n", rem_host, ntohs(sock_addr->sin_port));
 #endif
 
-	// start child for connection:
+	/* start child for connection: */
 	signal(SIGCHLD, sigchld_handler);
 	pid = fork();
 	if (pid == 0) {

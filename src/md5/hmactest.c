@@ -24,7 +24,7 @@ int
 main()
 {
 	int i;
-	//  unsigned char digest[16];
+	/*  unsigned char digest[16]; */
 	char digest[16];
 	char *msgid = "<1896.697170952@postoffice.reston.mci.net>";
 	char secret[65];

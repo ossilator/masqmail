@@ -51,16 +51,8 @@ dns_resolve(char *domain, int type, gboolean do_search)
 {
 	int n;
 	int i;
-
 	int resp_len;
-	/*errno = 0; */
 
-	/*
-	   if (!stralloc_copy(&glue,domain)) return DNS_MEM;
-	   if (!stralloc_0(&glue)) return DNS_MEM;
-	 */
-
-	//  resp_len = res_query(domain, C_IN, type, response.buf, sizeof(response));
 	DEBUG(5) debugf("DNS: before res_search()\n");
 	if (do_search)
 		resp_len = res_search(domain, C_IN, type, response.buf, sizeof(response));

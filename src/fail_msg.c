@@ -58,8 +58,6 @@ fail_msg(message * msg, gchar * template, GList * failed_rcpts, gchar * err_fmt,
 			gchar *cmd;
 			pid_t pid;
 
-			//      cmd = g_strdup_printf(SBINDIR"/masqmail -oi -f \"<>\" %s@%s",
-			//                ret_path->local_part, ret_path->domain);
 			cmd = g_strdup_printf(SBINDIR "/masqmail -oi -f <> %s@%s", ret_path->local_part, ret_path->domain);
 			if ((out = peidopen(cmd, "w", environ, &pid, conf.mail_uid, conf.mail_gid))) {
 				gchar fmt[256], line[256];
