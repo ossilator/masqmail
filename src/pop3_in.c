@@ -27,7 +27,6 @@
 #ifdef USE_LIB_CRYPTO
 #include <openssl/md5.h>
 #else
-#include "md5/global.h"
 #include "md5/md5.h"
 #endif
 
@@ -47,9 +46,9 @@ MD5String(char *string)
 #ifdef USE_LIB_CRYPTO
 	MD5(string, strlen(string), digest);
 #else
-	MD5Init(&context);
-	MD5Update(&context, string, strlen(string));
-	MD5Final(digest, &context);
+	MD5_Init(&context);
+	MD5_Update(&context, string, strlen(string));
+	MD5_Final(digest, &context);
 #endif
 	for (i = 0; i < 16; i++)
 		sprintf(str_digest + 2 * i, "%02x", digest[i]);
