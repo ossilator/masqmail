@@ -146,7 +146,7 @@ spool_read_header(message * msg)
 			break;
 		} else if (strncasecmp(buf, "MF:", 3) == 0) {
 			msg->return_path = create_address(&(buf[3]), TRUE);
-			DEBUG(3) debugf("spool_read: MAIL FROM: %s", msg->return_path->address);
+			DEBUG(3) debugf("spool_read: MAIL FROM: %s\n", msg->return_path->address);
 		} else if (strncasecmp(buf, "RT:", 3) == 0) {
 			address *addr;
 			addr = spool_scan_rcpt(buf);
