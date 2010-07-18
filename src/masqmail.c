@@ -153,7 +153,7 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 		if ((pid = fork()) > 0) {
 			exit(EXIT_SUCCESS);
 		} else if (pid < 0) {
-			logwrite(LOG_ALERT, "could not fork!");
+			logwrite(LOG_ALERT, "could not fork!\n");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -173,7 +173,7 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	fclose(stderr);
 	logopen();
 
-	logwrite(LOG_NOTICE, "%s %s daemon starting", PACKAGE, VERSION);
+	logwrite(LOG_NOTICE, "%s %s daemon starting\n", PACKAGE, VERSION);
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval, argv);
 }
 
@@ -256,7 +256,7 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 					} else
 						exit(EXIT_FAILURE);
 				} else if (pid < 0) {
-					logwrite(LOG_ALERT, "could not fork for delivery, id = %s", msg->uid);
+					logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n", msg->uid);
 				}
 			}
 		} else {

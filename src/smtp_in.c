@@ -143,7 +143,7 @@ smtp_printf(FILE * out, gchar * fmt, ...)
 		vsnprintf(buf, 255, fmt, args_copy);
 		va_end(args_copy);
 
-		debugf(">>>%s", buf);
+		debugf(">>>%s\n", buf);
 	}
 
 	vfprintf(out, fmt, args);
@@ -360,7 +360,7 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 				if (pid == 0) {
 					_exit(deliver(msg));
 				} else if (pid < 0) {
-					logwrite(LOG_ALERT, "could not fork for delivery, id = %s", msg->uid);
+					logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n", msg->uid);
 				}
 			}
 			psc->rcpt_seen = psc->from_seen = FALSE;

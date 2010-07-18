@@ -112,7 +112,7 @@ detect_online()
 			logwrite(LOG_NOTICE, "not online.\n");
 			return NULL;
 		} else {
-			logwrite(LOG_ALERT, "stat of %s failed: %s", conf.online_file, strerror(errno));
+			logwrite(LOG_ALERT, "stat of %s failed: %s\n", conf.online_file, strerror(errno));
 			return NULL;
 		}
 
