@@ -7,6 +7,17 @@ affect users directly.
 The manual pages describe newly added options. Take them for reference.
 
 
+0.2.27
+
+- Replaced contributed code with possible licensing problems with
+alternatives. The MD5 implementation changed from the reference
+implementation of RFC 1321 to the Public Domain implementation of
+Solar Designer. The HMAC-MD5 implementation changed from the reference
+implementation of RFC 2104 to an own implementation (ISC License).
+
+- Added the authors of contributed parts to the AUTHORS file.
+
+
 0.2.26
 
 - Write a log message when the daemon starts up. Thanks to Juergen
