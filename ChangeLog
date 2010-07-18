@@ -7,6 +7,12 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
+0.2.27  Sun, 18 Jul 2010 22:40:04 +0200
+	* replaced the MD5 implementation with the one of Solar
+	  Designer
+	* replaced hmac_md5.c with an own implementation of RFC 2104
+	* added authors of contributed parts to AUTHORS
+
 0.2.26  Sun, 18 Jul 2010 10:28:43 +0200
 	* write a log message when the daemon starts up. Thanks to
 	  Juergen Daubert.
