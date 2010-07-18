@@ -7,6 +7,18 @@ affect users directly.
 The manual pages describe newly added options. Take them for reference.
 
 
+0.2.26
+
+- Write a log message when the daemon starts up. Thanks to Juergen
+Daubert.
+
+- Fix handling of --with-liblockfile=no or --without-liblockfile for
+configure script. Thanks to Nico Roeser.
+
+- Improved the INSTALL file and some man pages. Thanks to Nico Roeser
+Improved the documentation of the wrapper option of route files.
+
+
 0.2.25
 
 - Added server-side SMTP SIZE support. Thanks to Paolo.

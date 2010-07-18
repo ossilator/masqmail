@@ -7,6 +7,19 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
+0.2.26  Sun, 18 Jul 2010 10:28:43 +0200
+	* write a log message when the daemon starts up. Thanks to
+	  Juergen Daubert.
+	* added a missing #include <sys/stat.h> to local.c. Thanks to
+	  Dominik Lang (phil).
+	* improved documentation of `wrapper' in route files
+	* fix handling of --with-liblockfile=no or
+	  --without-liblockfile. Thanks to Nico Roeser.
+	* documentation improvements in the INSTALL file and some man
+	  pages. Thanks to Nico Roeser.
+	* added misc/update-manpage-date, a development helper script
+	  to update the date and version in man pages
+
 0.2.25  Thu, 08 Jul 2010 00:49:36 +0200
 	* added server-side SMTP SIZE support. Thanks to Paolo.
 	* always remove Bcc: headers from now on
