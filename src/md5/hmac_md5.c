@@ -1,71 +1,83 @@
 /*
-** Function: hmac_md5
+hmac_md5 -- implements RFC 2104
+
+Copyright 2010, markus schnalke <meillo@marmaro.de>
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+My motivation to write this code was the lack of a nicely licensed
+hmac_md5 function in C. I programmed it following the RFC's text.
+Obviously this code is highly similar to the sample code of the RFC.
+The code is tested against the test vectors of the RFC. Wikipedia's
+HMAC page helped me to understand the algorithm better.
+
+This hmac_md5 function requires an OpenSSL-compatible MD5
+implementation. There are Public Domain MD5 implementations by Colin
+Plumb and by Solar Designer. You probably want to use one of these.
 */
 
 #include <string.h>
 #include "md5.h"
-#include "hmac_md5.h"
 
+
+const int blocksize = 64;
+const int hashsize = 16;
+
+
+/*
+The computed HMAC will be written to `digest'.
+Ensure digest points to hashsize bytes of allocated memory.
+*/
 void
-hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len, unsigned char *digest)
-	 /* text;     pointer to data stream */
-	 /* text_len; length of data stream */
-	 /* key;      pointer to authentication key */
-	 /* key_len;  length of authentication key */
-	 /* digest;   caller digest to be filled in */
+hmac_md5(unsigned char* text, int textlen, unsigned char* key, int keylen, unsigned char* digest)
 {
-	MD5_CTX context;
-	unsigned char k_ipad[65];  /* inner padding - key XORd with ipad */
-	unsigned char k_opad[65];  /* outer padding - key XORd with opad */
-	unsigned char tk[16];
 	int i;
-	/* if key is longer than 64 bytes reset it to key=MD5(key) */
-	if (key_len > 64) {
+	MD5_CTX context;
+	unsigned char ipad[blocksize];
+	unsigned char opad[blocksize];
 
-		MD5_CTX tctx;
-
-		MD5_Init(&tctx);
-		MD5_Update(&tctx, key, key_len);
-		MD5_Final(tk, &tctx);
-
-		key = tk;
-		key_len = 16;
+	/* too long keys are replaced by their hash value */
+	if (keylen > blocksize) {
+		MD5_Init(&context);
+		MD5_Update(&context, key, keylen);
+		MD5_Final(digest, &context);
+		key = digest;
+		keylen = hashsize;
 	}
 
-	/*
-	 * the HMAC_MD5 transform looks like:
-	 *
-	 * MD5(K XOR opad, MD5(K XOR ipad, text))
-	 *
-	 * where K is an n byte key
-	 * ipad is the byte 0x36 repeated 64 times
-	 * opad is the byte 0x5c repeated 64 times
-	 * and text is the data being protected
-	 */
+        /* copy the key into the pads */
+	memset(ipad, 0, sizeof(ipad));
+	memcpy(ipad, key, keylen);
 
-	/* start out by storing key in pads */
-	bzero(k_ipad, sizeof k_ipad);
-	bzero(k_opad, sizeof k_opad);
-	bcopy(key, k_ipad, key_len);
-	bcopy(key, k_opad, key_len);
+	memset(opad, 0, sizeof(opad));
+	memcpy(opad, key, keylen);
 
-	/* XOR key with ipad and opad values */
-	for (i = 0; i < 64; i++) {
-		k_ipad[i] ^= 0x36;
-		k_opad[i] ^= 0x5c;
+        /* xor the pads with their ``basic'' value */
+	for (i=0; i<blocksize; i++) {
+		ipad[i] ^= 0x36;
+		opad[i] ^= 0x5c;
 	}
-	/*
-	 * perform inner MD5
-	 */
-	MD5_Init(&context);  /* init context for 1st pass */
-	MD5_Update(&context, k_ipad, 64);  /* start with inner pad */
-	MD5_Update(&context, text, text_len);  /* then text of datagram */
-	MD5_Final(digest, &context);  /* finish up 1st pass */
-	/*
-	 * perform outer MD5
-	 */
-	MD5_Init(&context);  /* init context for 2nd pass */
-	MD5_Update(&context, k_opad, 64);  /* start with outer pad */
-	MD5_Update(&context, digest, 16);  /* then results of 1st hash */
-	MD5_Final(digest, &context); /* finish up 2nd pass */
+
+	/* inner pass (ipad ++ message) */
+	MD5_Init(&context);
+	MD5_Update(&context, ipad, sizeof(ipad));
+	MD5_Update(&context, text, textlen);
+	MD5_Final(digest, &context);
+
+	/* outer pass (opad ++ result of inner pass) */
+	MD5_Init(&context);
+	MD5_Update(&context, opad, sizeof(opad));
+	MD5_Update(&context, digest, hashsize);
+	MD5_Final(digest, &context);
 }
