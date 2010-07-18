@@ -132,7 +132,6 @@ AC_ARG_ENABLE(auth,
 if test "x$auth_enabled" = xyes; then
 	AC_DEFINE(ENABLE_AUTH, 1, [If AUTH is enabled])
 	BASE64_LIBS='base64/libbase64.a'
-#	MD5_LIBS='md5/libmd5c.a'
 	need_md5='yes'
 fi
 AC_SUBST(BASE64_LIBS)
@@ -154,7 +153,7 @@ dnl check whether we have md5 in libcrypto if md5 needed and we shall link with 
 			MD5_LIBS='-lcrypto'
 		fi
 	else
-		MD5_LIBS='md5/libmd5c.a'
+		MD5_LIBS='md5/libmd5.a'
 	fi
 fi
 AC_SUBST(MD5_LIBS)
