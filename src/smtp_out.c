@@ -39,7 +39,6 @@
 #include <openssl/md5.h>
 #include <openssl/evp.h>
 #else
-#include "md5/global.h"
 #include "md5/md5.h"
 #include "md5/hmac_md5.h"
 #endif
