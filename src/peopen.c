@@ -93,7 +93,7 @@ peidopen(const char *command, const char *type, char *const envp[], int *ret_pid
 		if (close(pipe_fd[mode == Read ? 0 : 1]) != -1 &&
 			dup2(pipe_fd[mode == Read ? 1 : 0],
 				 mode == Read ? STDOUT_FILENO : STDIN_FILENO) != -1) {
-			//      char *argv [] = { "/bin/sh", "-c", (char*) command, NULL };
+			/*      char *argv [] = { "/bin/sh", "-c", (char*) command, NULL }; */
 			char **argv = create_argv(command, 10);
 			int ret;
 
