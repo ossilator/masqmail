@@ -3,3 +3,24 @@ Oliver Kurth <oku@masqmail.cx>
 
 current project maintainer (since v0.2.22):
 markus schnalke <meillo@marmaro.de>
+
+
+Contributed code:
+
+src/base64/*
+by Oliver Kurth (GPL-2)
+
+src/md5/hmac_md5.*
+by markus schnalke (ISC License)
+
+src/md5/md5.*
+by Solar Designer (in the Public Domain)
+
+src/libident/*
+by Peter Eriksson (in the Public Domain)
+
+contrib/rmail
+by luciano l. mannucci and Wietse Venema (no license applies)
+
+contrib/mailq.wmbiffrc
+by Paolo (no license applies)
