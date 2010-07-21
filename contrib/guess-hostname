@@ -20,4 +20,6 @@ hostname
 # this file was mentioned on the Internet
 cat /etc/HOSTNAME
 
-) 2>/dev/null
+) 2>/dev/null | uniq
+
+exit 0
