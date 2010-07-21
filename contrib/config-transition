@@ -1,0 +1,135 @@
+#!/bin/sh
+#
+# check masqmail config files for options that are obsolete
+# -v enables verbose output
+#
+# 2010  markus schnalke <meillo@marmaro.de>
+
+if [ $# -eq 0 ] ; then
+	echo "usage: config-transition [-v] CONFIGFILE..." >&2
+	exit 1
+fi
+
+awkscript="/tmp/masqmail-config-transition-$$"
+
+trap 'rm -f "$awkscript"; exit' INT QUIT TERM EXIT
+
+cat >"$awkscript" <<!
+# Because of the Here-document, escape (with backslash) these characters:
+# backslash, dollar, backtick
+BEGIN {
+
+########  START OF CHECKS  ########
+
+# Rules look like this:
+#
+# check["regexp"] = "conf-kind" SUBSEP "version-info" SUBSEP "verbose-description"
+#
+# Meaning of the strings:
+# - regexp: is also used as the name in the normal listing
+# - conf-kind: in which kind of config the option appears (conf, route, get)
+# - version-info: when it was removed
+# - verbose-description: how to do it now
+
+
+# conf file
+
+check["remote_port"] = "conf" SUBSEP "Removed in 0.3.0" SUBSEP "\
+Use 'mail_host' in the route configuration instead. \
+"
+
+check["mbox_default.*maildir"] = "conf" SUBSEP "Removed in 0.3.0" SUBSEP "\
+Native maildir support was removed completely. \
+Use an MDA, e.g. procmail, to deliver to Maildir mail folder. \
+"
+
+check["maildir_users"] = "conf" SUBSEP "Removed in 0.3.0" SUBSEP "\
+Native maildir support was removed completely. \
+Use an MDA, e.g. procmail, to deliver to Maildir mail folder. \
+"
+
+check["mserver_iface"] = "conf" SUBSEP "Removed in 0.3.0" SUBSEP "\
+Native mserver support was removed from masqmail. \
+Use the mservdetect tool with online_detect=pipe instead. \
+"
+
+check["get\\\\."] = "conf" SUBSEP "Removed in 0.3.0" SUBSEP "\
+The POP3 client was removed from masqmail. \
+Use a dedicated POP3 client, e.g. fetchmail, instead. \
+"
+
+check["online_gets\\\\."] = "conf" SUBSEP "Removed in 0.3.0" SUBSEP "\
+The POP3 client was removed from masqmail. \
+Use a dedicated POP3 client, e.g. fetchmail, instead. \
+"
+
+# route files
+
+check["pop3_login"] = "route" SUBSEP "Removed in 0.3.0" SUBSEP "\
+POP-before-SMTP login function was removed completely. \
+SMTP AUTH supersedes it today. \
+If you though rely on it, stay with masqmail-0.2.x or run an arbitrary POP client before. \
+"
+
+check["do_ssl"] = "route" SUBSEP "Ignored by masqmail" SUBSEP "\
+Please report to the mailing list at <masqmail@marmaro.de> that you used this option. \
+We still don't know the rationale behind this option. \
+All we have is a comment in the code saying: This option is used by sqilconf. \
+"
+
+# get files
+
+# already covered by the get.* and online_gets.* options in the conf
+# file. This check is just to make sure, because one might only check
+# the get file.
+# We don't check for the other get file options, which are:
+# protocol server port wrapper user pass address return_path do_keep
+# do_uidl do_uidl_dele max_size max_size_delete max_count resolve_list
+
+check["protocol.*pop"] = "get" SUBSEP "Removed in 0.3.0" SUBSEP "\
+The POP3 client was removed from masqmail. \
+Use a dedicated POP3 client, e.g. fetchmail, instead. \
+"
+
+
+########  END OF CHECK DEFINITIONS  ########
+}
+
+function checkcomment() {
+	if (/^[ \t]*\#/) {
+		return " (in a comment)"
+	}
+}
+
+{
+	for (key in check) {
+		if (\$0 !~ key) {
+			continue;
+		}
+		# we have a match
+		split(check[key], a, SUBSEP);  # array index starts with 1
+		printf("%s:%d: [%s] %s%s\n", FILENAME, NR, a[1], key, checkcomment());
+		cmd = "fold -sw 70 | sed 's,^,\t,'"
+		if (verbose) {
+			print "\t>>>> " \$0 " <<<<"
+			print a[3] | cmd
+			close(cmd)
+			print "\t" a[2]
+			print ""
+		}
+	}
+}
+			
+!
+
+
+verbose=0
+if [ X"$1" = X"-v" ] ; then
+	verbose=1
+	shift
+fi
+
+for i do
+	awk -f "$awkscript" "verbose=$verbose" "$i"
+done
+
