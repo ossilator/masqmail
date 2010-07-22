@@ -650,6 +650,8 @@ read_route(gchar * filename, gboolean is_local_net)
 			route->connect_error_fail = parse_boolean(rval);
 		else if (strcmp(lval, "do_correct_helo") == 0)
 			route->do_correct_helo = parse_boolean(rval);
+		else if (strcmp(lval, "instant_helo") == 0)
+			route->instant_helo = parse_boolean(rval);
 		else if (strcmp(lval, "do_pipelining") == 0)
 			route->do_pipelining = parse_boolean(rval);
 		else if (strcmp(lval, "allowed_return_paths") == 0)
