@@ -18,10 +18,6 @@
  */
 
 /*
- send bugs to: kurth@innominate.de
-*/
-
-/*
   I always forget these rfc numbers:
   RFC 821  (SMTP)
   RFC 1869 (ESMTP)

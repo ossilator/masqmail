@@ -15,10 +15,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-/*
- send bugs to: kurth@innominate.de
-*/
-
 /* see also RFC 1341 */
 
 #include <glib.h>
