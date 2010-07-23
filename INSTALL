@@ -153,7 +153,7 @@ The only thing you must configure in order to use masqmail is the
 hostname. It's the name under which masqmail operates. In most cases
 it is the same as the machine's name, but it can be different.
 
-The script `contrib/guess-hostname' tries to print the hostname of
+The script `admin/guess-hostname' tries to print the hostname of
 your machine. The first output line is probably the best choice.
 
 Create a minimal config with:

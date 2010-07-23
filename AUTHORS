@@ -19,8 +19,8 @@ by Solar Designer (in the Public Domain)
 src/libident/*
 by Peter Eriksson (in the Public Domain)
 
-contrib/rmail
+admin/rmail
 by luciano l. mannucci and Wietse Venema (no license applies)
 
-contrib/mailq.wmbiffrc
+admin/mailq.wmbiffrc
 by Paolo (no license applies)
