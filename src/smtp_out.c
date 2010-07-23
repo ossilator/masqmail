@@ -234,10 +234,21 @@ get_response_arg(gchar * response)
 static gboolean
 check_helo_response(smtp_base * psb)
 {
-	gchar *ptr = psb->buffer;
+	gchar *ptr;
 
 	if (!check_response(psb, FALSE))
 		return FALSE;
+
+	if (psb->last_code == 220) {
+		logwrite(LOG_NOTICE, "received a 220 greeting after sending EHLO,\n");
+		logwrite(LOG_NOTICE, "please remove `instant_helo' from your route config\n");
+		/* read the next response, cause that's the actual helo response */
+		if (!read_response(psb, SMTP_CMD_TIMEOUT) || !check_response(psb, FALSE)) {
+			return FALSE;
+		}
+	}
+
+	ptr = psb->buffer;
 
 	while (*ptr) {
 		if (strncasecmp(&(ptr[4]), "SIZE", 4) == 0) {
@@ -676,24 +687,35 @@ smtp_out_auth(smtp_base * psb)
 #endif
 
 gboolean
-smtp_out_init(smtp_base * psb)
+smtp_out_init(smtp_base * psb, gboolean instant_helo)
 {
 	gboolean ok;
 
-	if ((ok = read_response(psb, SMTP_INITIAL_TIMEOUT))) {
-		if ((ok = check_init_response(psb))) {
+	logwrite(LOG_INFO, "smtp_out_init(): instant_helo:%d\n", instant_helo);
 
-			if ((ok = smtp_helo(psb, psb->helo_name))) {
-#ifdef ENABLE_AUTH
-				if (psb->auth_name && psb->use_auth) {
-					/* we completely disregard the response of server here. If
-					   authentication fails, the server will complain later
-					   anyway. I know, this is not polite... */
-					smtp_out_auth(psb);
-				}
-#endif
-			}
+	if (instant_helo) {
+		/* we say hello right away, hence we don't know if
+		   ESMTP is supported; we just assume it */
+		psb->use_esmtp = 1;
+	} else {
+		if ((ok = read_response(psb, SMTP_INITIAL_TIMEOUT))) {
+			ok = check_init_response(psb);
 		}
+		if (!ok) {
+			smtp_out_log_failure(psb, NULL);
+			return ok;
+		}
+	}
+
+	if ((ok = smtp_helo(psb, psb->helo_name))) {
+#ifdef ENABLE_AUTH
+		if (psb->auth_name && psb->use_auth) {
+			/* we completely disregard the response of server here. If
+			   authentication fails, the server will complain later
+			   anyway. I know, this is not polite... */
+			smtp_out_auth(psb);
+		}
+#endif
 	}
 	if (!ok)
 		smtp_out_log_failure(psb, NULL);
@@ -907,7 +929,7 @@ smtp_deliver(gchar * host, gint port, GList * resolve_list, message * msg, addre
 	if ((psb = smtp_out_open(host, port, resolve_list))) {
 		set_heloname(psb, return_path->domain, TRUE);
 		/* initiate connection, send message and quit: */
-		if (smtp_out_init(psb)) {
+		if (smtp_out_init(psb, FALSE)) {
 			smtp_out_msg(psb, msg, return_path, rcpt_list, NULL);
 			if (psb->error == smtp_ok || (psb->error == smtp_fail) || (psb->error == smtp_trylater)
 			    || (psb->error == smtp_syntax) || (psb->error == smtp_cancel))

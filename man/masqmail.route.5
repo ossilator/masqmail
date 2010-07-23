@@ -74,6 +74,23 @@ If this is not set, \fBhost_name\fR from \fImasqmail.conf\fR or as given with
 the \fBhelo_name\fR (see above) will be used.
 
 .TP
+\fBinstant_helo\fR = \fIboolean\fR
+
+If this is set, masqmail does not wait for the greeting of the SMTP server
+after opening the connection.
+Instead it says EHLO right away (ESMTP is assumed).
+Use this option with wrappers that eat the 220 greeting of the SMTP server.
+Common examples are STARTTLS wrappers, like `openssl -starttls smtp ...'.
+
+If this option is set and a 220 greeting is received though,
+everything should still work.
+Please don't rely on that and keep in mind that RFC 2821 says that the client
+SHOULD wait for the 220 greeting of the server.
+
+Default: false
+
+
+.TP
 \fBdo_pipelining\fR = \fIboolean\fR
 
 If this is set to false, masqmail will not use ESMTP PIPELINING,

@@ -99,6 +99,7 @@ typedef struct _connect_route {
 
 	gchar *helo_name;
 	gboolean do_correct_helo;
+	gboolean instant_helo;
 	gboolean do_pipelining;
 
 	gchar *set_h_from_domain;

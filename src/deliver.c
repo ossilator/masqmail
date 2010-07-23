@@ -330,7 +330,7 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 		if ((route->auth_name) && (route->auth_login) && (route->auth_secret))
 			set_auth(psb, route->auth_name, route->auth_login, route->auth_secret);
 #endif
-		if (smtp_out_init(psb)) {
+		if (smtp_out_init(psb, route->instant_helo)) {
 
 			if (!route->do_pipelining)
 				psb->use_pipelining = FALSE;
