@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(masqmail, 0.2.28, meillo@marmaro.de)
+AC_INIT(masqmail, 0.2.29, meillo@marmaro.de)
 AC_CONFIG_SRCDIR([src/masqmail.c])
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE()
