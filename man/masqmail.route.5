@@ -188,8 +188,9 @@ Set this to a list which maps local parts to a full RFC 822 compliant email addr
 the local parts (the keys) are separated from the addresses (the values) by colons (`:').
 
 Example:
-
+.nf
 map_h_from_addresses = "john: John Smith <jsmith@mail.academic.edu>; charlie: Charlie Miller <cmiller@mx.commercial.com>"
+.fi
 
 You can use patterns, eg. * as keys.
 
@@ -214,8 +215,9 @@ Note that this option takes RFC 821 addresses while \fBmap_h_from_addresses\fR t
 The most important difference is that RFC 821 addresses have no full name.
 
 Example:
-
+.nf
 map_return_path_addresses = "john: <jsmith@mail.academic.edu>; charlie: <cmiller@mx.commercial.com>"
+.fi
 
 You can use patterns, eg. * as keys.
 
@@ -282,17 +284,24 @@ If set, instead of opening a connection to a remote server,
 \fIcommand\fR will be called and all traffic will be piped to its stdin and from its stdout.
 Purpose is to tunnel ip traffic, eg. for ssl.
 
-Example for ssl tunneling:
-
+Example for SMTP over SSL tunneling:
+.nf
 wrapper="/usr/bin/openssl s_client \-quiet \-connect mail.gmx.net:465 2>/dev/null"
+.fi
 
-Note: The above line works with masqmail,
-but listening on Port 465 for SSL-encrypted connections is deprecated.
-The modern way is STARTTLS (RFC-3207).
-This could be covered by the following command.
-Unfortunately, masqmail doesn't support that yet (as of 0.2.25).
+SMTP over SSL is supported since masqmail-0.1.8.
+It is now deprecated by the IETF but still in use.
 
+
+Example for encryption with STARTTLS (RFC-3207):
+.nf
+# don't forget the instant_helo, otherwise it won't work
+instant_helo=true
 wrapper="/usr/bin/openssl s_client \-quiet \-starttls smtp \-connect mail.gmx.net:25 2>/dev/null"
+.fi
+
+This is supported since masqmail-0.2.28.
+STARTTLS supersedes SMTP over SSL.
 
 Note for openssl:
 Ensure that stderr is redirected.
