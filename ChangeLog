@@ -7,9 +7,56 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
-0.3.0   Thu, 08 Jul 2010 11:04:14 +0200
-	* started new development branch (Attention: it will not
-	  maintain backward compatibility!)
+0.3.0   Fri, 23 Jul 2010 21:58:25 +0200
+	* new development branch
+	  (Attention: No backward compatibility guaranteed.)
+	* removed POP3 support (also pop-before-smtp/smtp-after-pop)
+	* removed maildir support
+	* removed built-in mserver functionality
+	* removed, already deprecated, `remote_port' config option
+	* removed --disable-smtp-server and --with-glib-static
+	  configure options
+	* exit if host_name is not set in conf file
+	* local_hosts defaults to `localhost;foo;foo.example.org' now
+	  (generated from the value of host_name, here it would have
+	  been `foo.example.org')
+	* listen on `localhost:25' now if listen_addresses is not set
+	  in the conf file. To not listen at all, set listen_addresses
+	  to the empty string.
+	* set default values for log_dir, spool_dir, mail_dir
+	* improved mservdetect
+	* build resolvtest tool now, the code was already there
+	* added setup guides
+	* improved and simplified the example config
+	* removed the old manual because it is really outdated now
+	* better debug logging of outgoing SMTP dialogs
+	* renamed misc/ to devel/ and contrib/ to admin/
+	* added admin/config-transition, to check for and inform about
+	  obsolete config options
+
+0.2.28  Fri, 23 Jul 2010 09:58:56 +0200
+	* added STARTTLS support with external wrappers like openssl.
+	  Added a new route config option `instant_helo' therefore.
+	* added misc/list-versions
+
+0.2.27  Sun, 18 Jul 2010 22:40:04 +0200
+	* replaced the MD5 implementation with the one of Solar
+	  Designer
+	* replaced hmac_md5.c with an own implementation of RFC 2104
+	* added authors of contributed parts to AUTHORS
+
+0.2.26  Sun, 18 Jul 2010 10:28:43 +0200
+	* write a log message when the daemon starts up. Thanks to
+	  Juergen Daubert.
+	* added a missing #include <sys/stat.h> to local.c. Thanks to
+	  Dominik Lang (phil).
+	* improved documentation of `wrapper' in route files
+	* fix handling of --with-liblockfile=no or
+	  --without-liblockfile. Thanks to Nico Roeser.
+	* documentation improvements in the INSTALL file and some man
+	  pages. Thanks to Nico Roeser.
+	* added misc/update-manpage-date, a development helper script
+	  to update the date and version in man pages
 
 0.2.25  Thu, 08 Jul 2010 00:49:36 +0200
 	* added server-side SMTP SIZE support. Thanks to Paolo.
