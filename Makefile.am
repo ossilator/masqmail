@@ -27,12 +27,12 @@ doc_dir:
 	install -d $(DESTDIR)@docdir@
 	cp -r docs $(DESTDIR)@docdir@
 	cp -r examples $(DESTDIR)@docdir@
-	cp ChangeLog NEWS AUTHORS COPYING README TODO $(DESTDIR)@docdir@
+	cp ChangeLog NEWS AUTHORS COPYING README TODO INSTALL THANKS $(DESTDIR)@docdir@
 
 rm-doc_dir:
 	cd $(DESTDIR)@docdir@ && ( \
 	    rm -rf docs examples ; \
-	    rm -f ChangeLog NEWS AUTHORS COPYING README TODO ; \
+	    rm -f ChangeLog NEWS AUTHORS COPYING README TODO INSTALL THANKS ; \
 	)
 	rmdir $(DESTDIR)@docdir@
 
