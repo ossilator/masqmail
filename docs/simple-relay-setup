@@ -38,8 +38,12 @@ Addionally you need to create the route config file like:
 
     # where to relay to; the address and port of the smart host
     mail_host = "mail.gmx.net:25"
-    # use the wrapper to enable encryption
-    #wrapper = "openssl s_client -quiet -connect mail.gmx.net:465 2>/dev/null"
+    # use a wrapper to enable encryption
+    # for STARTTLS on port 25:
+    #instant_helo=true
+    #wrapper="/usr/bin/openssl s_client -quiet -starttls smtp -connect mail.gmx.net:25 2>/dev/null"
+    # for SMTP over SSL on port 465:
+    #wrapper = "/usr/bin/openssl s_client -quiet -connect mail.gmx.net:465 2>/dev/null"
     
     do_correct_helo = true
     

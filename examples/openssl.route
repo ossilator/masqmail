@@ -6,9 +6,15 @@ protocol = "smtp"
 
 # encryption is done by communicating through openssl
 
-wrapper="/usr/bin/openssl s_client -quiet -connect mail.gmx.net:465 2>/dev/null"
-# you may want to tell openssl where the certificates are stored
-#wrapper="/usr/bin/openssl s_client -quiet -CApath /etc/ssl -connect mail.gmx.net:465 2>/dev/null"
+# Today usually STARTTLS (RFC-3207) is used:
+# don't forget the instant_helo, otherwise it won't work, because the wrapper eats the 220 greeting
+instant_helo=true
+wrapper="/usr/bin/openssl s_client -quiet -starttls smtp -connect mail.gmx.net:25 2>/dev/null"
+
+# The old way is SMTP over SSL; the IETF had marked it obsolete:
+# don't use instant_helo here
+#wrapper="/usr/bin/openssl s_client -quiet -connect mail.gmx.net:465 2>/dev/null"
+
 
 # which addresses are allowed through this route?
 allowed_return_paths = "*@gmx.de;*@gmx.net"
