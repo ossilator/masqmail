@@ -115,13 +115,14 @@ alias_expand(GList * alias_table, GList * rcpt_list, GList * non_rcpt_list)
 		if (addr_is_local(addr) && !(addr->flags & ADDR_FLAG_NOEXPAND)) {
 			gchar *val;
 
-			/* special handling for postmaster */
+			DEBUG(5) debugf("alias: '%s' is local\n", addr->local_part);
 			if (strcasecmp(addr->local_part, "postmaster") == 0)
+				/* postmaster needs always to be matched caseless
+				   see RFC 822 and RFC 5321 */
 				val = (gchar *) table_find_func(alias_table, addr->local_part, strcasecmp);
 			else
 				val = (gchar *) table_find_func(alias_table, addr->local_part, conf.alias_local_cmp);
 
-			DEBUG(5) debugf("alias: '%s' is local\n", addr->local_part);
 			if (val != NULL) {
 				GList *val_list = parse_list(val);
 				GList *val_node;
