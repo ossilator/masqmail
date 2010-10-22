@@ -232,11 +232,11 @@ Old name for \fBonline_routes\fR.
 .TP
 \fBlocal_net_route = \fIfile\fR
 
-This is similar to \fBonline_routes.\fIname\fR but for the local net.
+This is similar to \fBonline_routes.\fIname\fR but used for delilvery to the local net.
 Recipient addresses that are in local_nets will be routed using this route configuration.
 Main purpose is to define a mail server with mail_host in your local network.
 In simple environments this can be left unset.
-If unset, a default route configuration will be used.
+If unset, a default route configuration (named ``default local_net_route'') will be used.
 
 .TP
 \fBalias_file = \fIfile\fR
