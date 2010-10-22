@@ -209,11 +209,12 @@ msg_spool_read(gchar * uid, gboolean do_readdata)
 	DEBUG(4) debugf("msg_spool_read():\n");
 	/* header spool: */
 	ok = spool_read_header(msg);
-	DEBUG(4) debugf("  spool_read_header()=%d, do_readdata=%d\n", ok, do_readdata);
+	DEBUG(4) debugf("  spool_read_header() returned: %d (do_readdata had been: %d)\n",
+	                ok, do_readdata);
 	if (ok && do_readdata) {
 		/* data spool: */
 		ok = spool_read_data(msg);
-		DEBUG(4) debugf("  spool_read_data()=%d\n", ok);
+		DEBUG(4) debugf("  spool_read_data() returned: %d\n", ok);
 	}
 	return msg;
 }

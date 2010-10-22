@@ -98,7 +98,7 @@ queue_run()
 	if (msg_list != NULL) {
 		ok = deliver_msg_list(msg_list, DLVR_ALL);
 		destroy_msg_list(msg_list);
-		logwrite(LOG_NOTICE, "  deliver_msg_list()=%d.\n", ok);
+		DEBUG(5) debugf("  deliver_msg_list() returned: %d\n", ok);
 	}
 	logwrite(LOG_NOTICE, "Finished queue run.\n");
 
