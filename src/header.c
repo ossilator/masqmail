@@ -267,7 +267,7 @@ get_header(gchar * line)
 	hdr->header = g_strdup(line);
 	hdr->value = hdr->header + (hdr->value - line);
 
-	DEBUG(4) debugf("header: %d = %s\n", hdr->id, hdr->header);
+	DEBUG(4) debugf("header: %d = %s", hdr->id, hdr->header);
 
 	return hdr;
 }
