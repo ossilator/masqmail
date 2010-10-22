@@ -189,52 +189,50 @@ rewrite_headers(msg_out * msgout, connect_route * route)
 	DEBUG(5) debugf("rewrite_headers() returning\n");
 }
 
+/*
+Split a recipient list into the three groups:
+- local recipients
+- local net recipients
+- other/remote/online recipients
+It should be possible to call the function like:
+	split_rcpts(rcpts, hostlist, local, others, others);
+This would split online between local and localnet+online recipients.
+(untested yet; remove this line if you saw it worked -- meillo 2010-10-21)
+If host_list is NULL, only splitting between local and other is done.
+*/
 void
-rcptlist_with_one_of_hostlist(GList * rcpt_list, GList * host_list, GList ** p_rcpt_list, GList ** p_non_rcpt_list)
+split_rcpts(GList* rcpt_list, GList* localnets, GList** rl_local, GList** rl_localnet, GList** rl_others)
 {
 	GList *rcpt_node;
+	GList *host_node = NULL;
+	address *rcpt = NULL;
 
 	if (rcpt_list == NULL)
 		return;
 
 	foreach(rcpt_list, rcpt_node) {
-		address *rcpt = (address *) (rcpt_node->data);
-		GList *host_node = NULL;
+		rcpt = (address *) (rcpt_node->data);
+		host_node = NULL;
 
-		foreach(host_list, host_node) {
-			gchar *host = (gchar *) (host_node->data);
-			if (fnmatch(host, rcpt->domain, FNM_CASEFOLD) == 0)
-				break;
-		}
-		if (host_node) {
-			if (p_rcpt_list)
-				*p_rcpt_list = g_list_append(*p_rcpt_list, rcpt);
-		} else {
-			if (p_non_rcpt_list)
-				*p_non_rcpt_list = g_list_append(*p_non_rcpt_list, rcpt);
-		}
-
-	}
-}
-
-void
-rcptlist_with_addr_is_local(GList * rcpt_list, GList ** p_rcpt_list, GList ** p_non_rcpt_list)
-{
-	GList *rcpt_node;
-
-	if (rcpt_list == NULL)
-		return;
-
-	foreach(rcpt_list, rcpt_node) {
-		address *rcpt = (address *) (rcpt_node->data);
 		if (addr_is_local(rcpt)) {
-			if (p_rcpt_list)
-				*p_rcpt_list = g_list_append(*p_rcpt_list, rcpt);
+			if (rl_local)
+				*rl_local = g_list_append(*rl_local, rcpt);
 		} else {
-			if (p_non_rcpt_list)
-				*p_non_rcpt_list = g_list_append(*p_non_rcpt_list, rcpt);
+			/* if localnets is NULL, host_node will be NULL,
+			   hence all non-locals are put to others */
+			foreach(localnets, host_node) {
+				gchar *host = (gchar *) (host_node->data);
+				if (fnmatch(host, rcpt->domain, FNM_CASEFOLD) == 0)
+					break;
+			}
+			if (host_node) {
+				if (rl_localnet)
+					*rl_localnet = g_list_append(*rl_localnet, rcpt);
+			} else {
+				if (rl_others)
+					*rl_others = g_list_append(*rl_others, rcpt);
+			}
 		}
-
 	}
 }
 
@@ -297,14 +295,14 @@ msg_rcptlist_route(connect_route * route, GList * rcpt_list, GList ** p_rcpt_lis
 	/* sort out those domains that can be sent over this connection: */
 	if (route->allowed_rcpt_domains) {
 		DEBUG(5) debugf("testing for route->allowed_rcpt_domains\n");
-		rcptlist_with_one_of_hostlist(rcpt_list, route->allowed_rcpt_domains, &tmp_list, p_non_rcpt_list);
+		split_rcpts(rcpt_list, route->allowed_rcpt_domains, NULL, &tmp_list, p_non_rcpt_list);
 	} else {
 		DEBUG(5) debugf("route->allowed_rcpt_domains == NULL\n");
 		tmp_list = g_list_copy(rcpt_list);
 	}
 
 	/* sort out those domains that cannot be sent over this connection: */
-	rcptlist_with_one_of_hostlist(tmp_list, route->not_allowed_rcpt_domains, p_non_rcpt_list, p_rcpt_list);
+	split_rcpts(tmp_list, route->not_allowed_rcpt_domains, NULL, p_non_rcpt_list, p_rcpt_list);
 	g_list_free(tmp_list);
 }
 

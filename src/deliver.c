@@ -668,7 +668,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 		GList *rcpt_list;
 		GList *local_rcpt_list = NULL;
 		GList *localnet_rcpt_list = NULL;
-		GList *other_rcpt_list;
+		GList *other_rcpt_list = NULL;
 
 		if (!spool_lock(msgout->msg->uid)) {
 			DEBUG(5) debugf("spool_lock(%s) failed.\n", msgout->msg->uid);
@@ -689,40 +689,28 @@ deliver_msg_list(GList * msg_list, guint flags)
 			rcpt_list = aliased_rcpt_list;
 		}
 
-		/* local recipients */
-		other_rcpt_list = NULL;
-		rcptlist_with_addr_is_local(rcpt_list, &local_rcpt_list, &other_rcpt_list);
-
-		if (flags & DLVR_LOCAL) {
-			if (local_rcpt_list != NULL) {
-				msg_out *local_msgout = clone_msg_out(msgout);
-				local_msgout->rcpt_list = local_rcpt_list;
-				local_msgout_list = g_list_append(local_msgout_list, local_msgout);
-			}
-		}
-
+		split_rcpts(rcpt_list, conf.local_nets, &local_rcpt_list, &localnet_rcpt_list, &other_rcpt_list);
 		g_list_free(rcpt_list);
 
-		/* local net recipients */
-		rcpt_list = other_rcpt_list;
-		other_rcpt_list = NULL;
-		rcptlist_with_one_of_hostlist(rcpt_list, conf.local_nets, &localnet_rcpt_list, &other_rcpt_list);
-
-		if (flags & DLVR_LAN) {
-			if (localnet_rcpt_list != NULL) {
-				msg_out *localnet_msgout = clone_msg_out(msgout);
-				localnet_msgout->rcpt_list = localnet_rcpt_list;
-				localnet_msgout_list = g_list_append(localnet_msgout_list, localnet_msgout);
-			}
+		/* local recipients */
+		if ((flags & DLVR_LOCAL) && local_rcpt_list) {
+			msg_out *local_msgout = clone_msg_out(msgout);
+			local_msgout->rcpt_list = local_rcpt_list;
+			local_msgout_list = g_list_append(local_msgout_list, local_msgout);
 		}
 
-		if (flags & DLVR_ONLINE) {
-			/* the rest, this is online delivery */
-			if (other_rcpt_list != NULL) {
-				msg_out *other_msgout = clone_msg_out(msgout);
-				other_msgout->rcpt_list = other_rcpt_list;
-				other_msgout_list = g_list_append(other_msgout_list, other_msgout);
-			}
+		/* local net recipients */
+		if ((flags & DLVR_LAN) && localnet_rcpt_list) {
+			msg_out *localnet_msgout = clone_msg_out(msgout);
+			localnet_msgout->rcpt_list = localnet_rcpt_list;
+			localnet_msgout_list = g_list_append(localnet_msgout_list, localnet_msgout);
+		}
+
+		/* remote recipients (the rest), requires online delivery  */
+		if ((flags & DLVR_ONLINE) && other_rcpt_list) {
+			msg_out *other_msgout = clone_msg_out(msgout);
+			other_msgout->rcpt_list = other_rcpt_list;
+			other_msgout_list = g_list_append(other_msgout_list, other_msgout);
 		}
 	}
 
@@ -730,7 +718,8 @@ deliver_msg_list(GList * msg_list, guint flags)
 		destroy_table(alias_table);
 
 	/* actual delivery */
-	if (local_msgout_list != NULL) {
+
+	if (local_msgout_list) {
 		DEBUG(5) debugf("local_msgout_list\n");
 		foreach(local_msgout_list, msgout_node) {
 			msg_out *msgout = (msg_out *) (msgout_node->data);
@@ -740,7 +729,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 		destroy_msg_out_list(local_msgout_list);
 	}
 
-	if (localnet_msgout_list != NULL) {
+	if (localnet_msgout_list) {
 		GList *route_list = NULL;
 		GList *route_node;
 
@@ -759,7 +748,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 		destroy_route_list(route_list);
 	}
 
-	if (other_msgout_list != NULL) {
+	if (other_msgout_list) {
 		DEBUG(5) debugf("other_msgout_list\n");
 		if (!deliver_msgout_list_online(other_msgout_list))
 			ok = FALSE;
