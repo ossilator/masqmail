@@ -897,7 +897,7 @@ create_local_route()
 	memset(route, 0, sizeof(connect_route));
 	route->protocol = g_strdup("smtp");
 	route->is_local_net = TRUE;
-	route->name = g_strdup("local_net (default)");
+	route->name = g_strdup("default local_net_route");
 	route->expand_h_sender_address = TRUE;
 	route->resolve_list = g_list_append(NULL, resolve_byname);
 	route->connect_error_fail = TRUE;
