@@ -40,7 +40,7 @@ addr_is_local(address * addr)
 			a = create_address_qualified(addr_node->data, TRUE, conf.host_name);
 			DEBUG(6) debugf("not_local_addresses: addr_node->data=%s a->address=%s\n",
 			                addr_node->data, a->address);
-			if (addr_isequal(a, addr, conf.alias_local_cmp)) {
+			if (addr_isequal(a, addr, conf.localpartcmp)) {
 				destroy_address(a);
 				/* in local_hosts but also in not_local_addresses */
 				return FALSE;
@@ -54,7 +54,7 @@ addr_is_local(address * addr)
 		a = create_address_qualified(addr_node->data, TRUE, conf.host_name);
 		DEBUG(6) debugf("local_addresses: addr_node->data=%s a->address=%s\n",
 		                addr_node->data, a->address);
-		if (addr_isequal(a, addr, conf.alias_local_cmp)) {
+		if (addr_isequal(a, addr, conf.localpartcmp)) {
 			destroy_address(a);
 			/* in local_addresses */
 			return TRUE;
@@ -124,7 +124,7 @@ expand_one(GList* alias_table, address* addr)
 		   see RFC 822 and RFC 5321 */
 		val = (gchar *) table_find_func(alias_table, addr->local_part, strcasecmp);
 	} else {
-		val = (gchar *) table_find_func(alias_table, addr->local_part, conf.alias_local_cmp);
+		val = (gchar *) table_find_func(alias_table, addr->local_part, conf.localpartcmp);
 	}
 	if (!val) {
 		DEBUG(5) debugf("alias: '%s' is fully expanded, hence completed\n",
@@ -175,7 +175,7 @@ expand_one(GList* alias_table, address* addr)
 
 		/* addr is local and to expand at this point */
 		/* but first ... search in parents for loops: */
-		if (addr_isequal_parent(addr, alias_addr, conf.alias_local_cmp)) {
+		if (addr_isequal_parent(addr, alias_addr, conf.localpartcmp)) {
 			/* loop detected, ignore this path */
 			logwrite(LOG_ALERT, "alias: detected loop, hence ignoring '%s'\n",
 			         alias_addr->local_part);
@@ -238,7 +238,7 @@ alias_expand(GList* alias_table, GList* rcpt_list, GList* non_rcpt_list)
 		rcpt_node_next = g_list_next(rcpt_node);
 		foreach(non_rcpt_list, non_node) {
 			address *non_addr = (address *) (non_node->data);
-			if (addr_isequal(addr, non_addr, conf.alias_local_cmp)) {
+			if (addr_isequal(addr, non_addr, conf.localpartcmp)) {
 				done_list = g_list_remove_link(done_list, rcpt_node);
 				g_list_free_1(rcpt_node);
 				/* this address is still in the children lists
