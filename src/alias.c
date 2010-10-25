@@ -40,7 +40,7 @@ addr_is_local(address * addr)
 			a = create_address_qualified(addr_node->data, TRUE, conf.host_name);
 			DEBUG(6) debugf("not_local_addresses: addr_node->data=%s a->address=%s\n",
 			                addr_node->data, a->address);
-			if (addr_isequal(a, addr)) {
+			if (addr_isequal(a, addr, conf.alias_local_cmp)) {
 				destroy_address(a);
 				/* in local_hosts but also in not_local_addresses */
 				return FALSE;
@@ -54,7 +54,7 @@ addr_is_local(address * addr)
 		a = create_address_qualified(addr_node->data, TRUE, conf.host_name);
 		DEBUG(6) debugf("local_addresses: addr_node->data=%s a->address=%s\n",
 		                addr_node->data, a->address);
-		if (addr_isequal(a, addr)) {
+		if (addr_isequal(a, addr, conf.alias_local_cmp)) {
 			destroy_address(a);
 			/* in local_addresses */
 			return TRUE;
@@ -62,13 +62,6 @@ addr_is_local(address * addr)
 		destroy_address(a);
 	}
 	return FALSE;
-}
-
-static gboolean
-addr_isequal_alias(address * addr1, address * addr2)
-{
-	return (conf.alias_local_cmp(addr1->local_part, addr2->local_part) == 0)
-	       && (strcasecmp(addr1->domain, addr2->domain) == 0);
 }
 
 static GList*
@@ -180,18 +173,12 @@ expand_one(GList* alias_table, address* addr)
 			continue;
 		}
 
-		/* addr is local, so let's go into recursion and expand again,
-		   but first ...  search in parents for loops: */
-		for (addr_parent=addr; addr_parent; addr_parent=addr_parent->parent) {
-			if (addr_isequal_alias(alias_addr, addr_parent)) {
-				break;
-			}
-		}
-		if (addr_parent) {
+		/* addr is local and to expand at this point */
+		/* but first ... search in parents for loops: */
+		if (addr_isequal_parent(addr, alias_addr, conf.alias_local_cmp)) {
 			/* loop detected, ignore this path */
-			logwrite(LOG_ALERT,
-			         "alias: detected loop (%s -> %s), hence ignoring\n",
-			         addr_parent->local_part, addr->local_part);
+			logwrite(LOG_ALERT, "alias: detected loop, hence ignoring '%s'\n",
+			         alias_addr->local_part);
 			continue;
 		}
 		alias_addr->parent = addr;
@@ -251,7 +238,7 @@ alias_expand(GList* alias_table, GList* rcpt_list, GList* non_rcpt_list)
 		rcpt_node_next = g_list_next(rcpt_node);
 		foreach(non_rcpt_list, non_node) {
 			address *non_addr = (address *) (non_node->data);
-			if (addr_isequal(addr, non_addr)) {
+			if (addr_isequal(addr, non_addr, conf.alias_local_cmp)) {
 				done_list = g_list_remove_link(done_list, rcpt_node);
 				g_list_free_1(rcpt_node);
 				/* this address is still in the children lists

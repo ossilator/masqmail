@@ -35,7 +35,8 @@ fail_msg(message * msg, gchar * template, GList * failed_rcpts, gchar * err_fmt,
 		ret_path = create_address_qualified("postmaster", TRUE, conf.host_name);
 		foreach(failed_rcpts, node) {
 			address *addr = (address *) (node->data);
-			if (addr_isequal_parent(addr, ret_path)) {
+
+			if (addr_isequal_parent(addr, ret_path, strcasecmp)) {
 				logwrite(LOG_ALERT, "%s == %s: postmaster address failed\n", msg->uid, addr_string(ret_path));
 				return FALSE;
 			}

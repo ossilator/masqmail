@@ -390,8 +390,8 @@ address *create_address_pipe(gchar * path);
 void destroy_address(address * addr);
 address *copy_modify_address(const address * orig, gchar * l_part, gchar * dom);
 #define copy_address(addr) copy_modify_address(addr, NULL, NULL)
-gboolean addr_isequal(address * addr1, address * addr2);
-gboolean addr_isequal_parent(address * addr1, address * addr2);
+gboolean addr_isequal(address * addr1, address * addr2, int (*cmpfunc) (const char*, const char*));
+gboolean addr_isequal_parent(address * addr1, address * addr2, int (*cmpfunc) (const char*, const char*));
 address *addr_find_ancestor(address * addr);
 gboolean addr_is_delivered_children(address * addr);
 gboolean addr_is_finished_children(address * addr);
