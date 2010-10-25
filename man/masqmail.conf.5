@@ -251,7 +251,11 @@ Default: <not set> (i.e. no aliasing is done)
 .TP
 \fBalias_local_caseless = \fIboolean\fR
 
-If this is set, local parts in the alias file will be matched disregarding upper/lower case.
+If this is set, aliasing and the matching for \fBlocal_addresses\fP and
+\fBnot_local_addresses\fP will be done caseless.
+
+Note: Be sure to change this option only if the queue is empty as
+correct processing of queued messages is not guaranteed otherwise.
 
 Default: false
 

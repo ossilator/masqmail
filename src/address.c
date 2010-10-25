@@ -102,20 +102,20 @@ copy_modify_address(const address * orig, gchar * l_part, gchar * dom)
 }
 
 gboolean
-addr_isequal(address * addr1, address * addr2)
+addr_isequal(address * addr1, address * addr2, int (*cmpfunc) (const char*, const char*))
 {
-	return (strcmp(addr1->local_part, addr2->local_part) == 0)
+	return (cmpfunc(addr1->local_part, addr2->local_part) == 0)
 	       && (strcasecmp(addr1->domain, addr2->domain) == 0);
 }
 
 /* searches in ancestors of addr1 */
 gboolean
-addr_isequal_parent(address * addr1, address * addr2)
+addr_isequal_parent(address* addr1, address* addr2, int (*cmpfunc) (const char*, const char*))
 {
 	address *addr;
 
 	for (addr = addr1; addr; addr = addr->parent)
-		if (addr_isequal(addr, addr2))
+		if (addr_isequal(addr, addr2, cmpfunc))
 			return TRUE;
 
 	return FALSE;
