@@ -125,17 +125,11 @@ Example: \fIlocalhost;foo;foo.example.org\fR
 (if you have set \fBhost_name\fR to \fIfoo.example.org\fR)
 
 .TP
-\fBlocal_nets = \fIlist\fR
-
-A semicolon `;' separated list of hostnames which are on the `local' net.
-Delivery to these hosts is attempted immediately.
-You can use patterns with `*', e.g. "*.bar.com".
-
-.TP
 \fBlocal_addresses = \fIlist\fR
 
 A semicolon `;' separated list of fully qualified email-addresses which are
 considered local although their domain name part is not in the list of \fBlocal_hosts\fR. 
+This list can be seen as an addition to \fBlocal_hosts\fP.
 
 For example: There are two people working at your LAN: person1@yourdomain and person2@yourdomain.
 But there are other persons @yourdomain which are NOT local.
@@ -151,6 +145,7 @@ to your masqmail.conf.
 
 A semicolon `;' separated list of fully qualified email-addresses which are
 considered not local although their domain name part is in the list of \fBlocal_hosts\fR. 
+This list can be seen as a substraction to \fBlocal_hosts\fP.
 
 This is the opposite of the previous case.
 The majority of addresses of a specific domain are local.
@@ -162,6 +157,13 @@ Example:
 local_hosts = "localhost;myhost;mydomain.net"
 
 not_local_addresses = "eric@mydomain.net"
+
+.TP
+\fBlocal_nets = \fIlist\fR
+
+A semicolon `;' separated list of hostnames which are on the `local' net.
+Delivery to these hosts is attempted immediately.
+You can use patterns with `*', e.g. "*.bar.com".
 
 .TP
 \fBlisten_addresses = \fIlist\fR
@@ -242,12 +244,16 @@ If unset, a default route configuration (named ``default local_net_route'') will
 \fBalias_file = \fIfile\fR
 
 Set this to the location of your alias file.
-If unset, no aliasing will be done.
+If not set, no aliasing will be done.
+
+Default: <not set> (i.e. no aliasing is done)
 
 .TP
 \fBalias_local_caseless = \fIboolean\fR
 
 If this is set, local parts in the alias file will be matched disregarding upper/lower case.
+
+Default: false
 
 .TP
 \fBpipe_fromline = \fIboolean\fR
@@ -269,8 +275,9 @@ Default is false.
 
 The default local delivery method.
 Can be mbox or mda.
-Default is mbox.
 You can override this for each user by using the \fBmbox_users\fR or \fBmda_users\fR (see below).
+
+Default: mbox.
 
 .TP
 \fBmbox_users = \fIlist\fR
