@@ -429,7 +429,7 @@ read_conf(gchar * filename)
 
 	conf.log_max_pri = 7;
 	conf.do_relay = TRUE;
-	conf.alias_local_cmp = strcmp;
+	conf.localpartcmp = strcmp;
 	conf.max_defer_time = 86400 * 4;  /* 4 days */
 	conf.max_msg_size = 0; /* no limit on msg size */
 	conf.spool_dir = SPOOL_DIR;
@@ -494,7 +494,7 @@ read_conf(gchar * filename)
 		else if (strcmp(lval, "alias_file") == 0) {
 			conf.alias_file = g_strdup(rval);
 		} else if (strcmp(lval, "caseless_matching") == 0) {
-			conf.alias_local_cmp = parse_boolean(rval) ? strcasecmp : strcmp;
+			conf.localpartcmp = parse_boolean(rval) ? strcasecmp : strcmp;
 		} else if (strcmp(lval, "mbox_default") == 0) {
 			conf.mbox_default = g_strdup(rval);
 		} else if (strcmp(lval, "mbox_users") == 0) {

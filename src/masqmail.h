@@ -179,7 +179,7 @@ typedef struct _masqmail_conf {
 	gboolean pipe_fromhack;
 
 	gchar *alias_file;
-	int (*alias_local_cmp) (const char *, const char *);
+	int (*localpartcmp) (const char *, const char *);
 
 	GList *local_net_routes;
 	GList *connect_routes;  /* list of pairs which point to lists */
