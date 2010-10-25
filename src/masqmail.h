@@ -426,7 +426,6 @@ address *_create_address(gchar * string, gchar ** end, gboolean is_rfc821);
 address *create_address_rfc821(gchar * string, gchar ** end);
 address *create_address_rfc822(gchar * string, gchar ** end);
 GList *addr_list_append_rfc822(GList * addr_list, gchar * string, gchar * domain);
-gboolean addr_isequal(address * addr1, address * addr2);
 
 /* connect.c */
 mxip_addr *connect_hostlist(int *psockfd, gchar * host, guint port, GList * addr_list);
@@ -466,7 +465,6 @@ void vdebugf(const char *fmt, va_list args);
 void maillog(const char *fmt, ...);
 
 /* spool.c */
-gboolean spool_read_data(message * msg);
 gboolean spool_read_data(message * msg);
 message *msg_spool_read(gchar * uid, gboolean do_readdata);
 gboolean spool_write(message * msg, gboolean do_writedata);
