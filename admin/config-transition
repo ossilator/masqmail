@@ -63,6 +63,10 @@ The POP3 client was removed from masqmail. \
 Use a dedicated POP3 client, e.g. fetchmail, instead. \
 "
 
+check["alias_local_caseless"] = "conf" SUBSEP "Renamed in 0.3.1" SUBSEP "\
+It is now called 'caseless_matching' instead. \
+"
+
 # route files
 
 check["pop3_login"] = "route" SUBSEP "Removed in 0.3.0" SUBSEP "\
