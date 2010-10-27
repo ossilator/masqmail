@@ -55,7 +55,6 @@ typedef struct _interface {
 #define ADDR_FLAG_DEFERED 0x02
 #define ADDR_FLAG_FAILED 0x04
 #define ADDR_FLAG_LAST_ROUTE 0x40
-#define ADDR_FLAG_NOEXPAND 0x80
 
 typedef struct _address {
 	gchar *address;
