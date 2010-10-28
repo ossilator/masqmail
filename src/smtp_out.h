@@ -54,7 +54,6 @@ typedef struct _smtp_base {
 	gchar *buffer;
 	gint last_code;
 
-	gboolean use_esmtp;
 	gboolean use_size;
 	gboolean use_pipelining;
 	gboolean use_auth;
