@@ -121,7 +121,6 @@ create_smtpbase(gint sock)
 
 	psb->sock = sock;
 
-	psb->use_esmtp = FALSE;
 	psb->use_size = FALSE;
 	psb->use_pipelining = FALSE;
 	psb->use_auth = FALSE;
@@ -197,19 +196,6 @@ check_response(smtp_base * psb, gboolean after_data)
 		DEBUG(6) debugf("response failure:'%s' after_data = %d\n", psb->buffer, (int) after_data);
 		return FALSE;
 	}
-}
-
-static gboolean
-check_init_response(smtp_base * psb)
-{
-	if (check_response(psb, FALSE)) {
-		psb->use_esmtp = (strstr(psb->buffer, "ESMTP") != NULL);
-
-		DEBUG(4) debugf(psb->use_esmtp ? "uses esmtp\n" : "no esmtp\n");
-
-		return TRUE;
-	}
-	return FALSE;
 }
 
 static gchar*
@@ -297,42 +283,58 @@ check_helo_response(smtp_base * psb)
 	return TRUE;
 }
 
+/*
+We first try EHLO, but if it fails HELO in a second fall back try.
+This is what is requested by RFC 2821 (sec 3.2):
+
+	Once the server has sent the welcoming message and
+	the client has received it, the client normally sends
+	the EHLO command to the server, [...]
+	For a particular connection attempt, if the server
+	returns a "command not recognized" response to EHLO,
+	the client SHOULD be able to fall back and send HELO.
+
+Up to and including version 0.3.0 masqmail used ESMTP only if the
+string ``ESMTP'' appeared within the server's greeting message. This
+made it impossible to use AUTH with servers that would send odd
+greeting messages.
+*/
 static gboolean
 smtp_helo(smtp_base * psb, gchar * helo)
 {
-	while (TRUE) {
-		if (psb->use_esmtp) {
-			fprintf(psb->out, "EHLO %s\r\n", helo);
-			fflush(psb->out);
+	fprintf(psb->out, "EHLO %s\r\n", helo);
+	fflush(psb->out);
+	DEBUG(4) debugf("C: EHLO %s\r\n", helo);
 
-			DEBUG(4) debugf("C: EHLO %s\r\n", helo);
-
-		} else {
-			fprintf(psb->out, "HELO %s\r\n", helo);
-			fflush(psb->out);
-
-			DEBUG(4) debugf("C: HELO %s\r\n", helo);
-
-		}
-
-		if (!read_response(psb, SMTP_CMD_TIMEOUT))
-			return FALSE;
-
-		if (check_helo_response(psb))
-			return TRUE;
-		else {
-			if (psb->error == smtp_fail) {
-				if (psb->use_esmtp) {
-					/* our guess that server understands EHLO was wrong, try again with HELO */
-					psb->use_esmtp = FALSE;
-				} else {
-					/* what sort of server ist THAT ?!  give up...  */
-					return FALSE;
-				}
-			} else
-				return FALSE;
-		}
+	if (!read_response(psb, SMTP_CMD_TIMEOUT)) {
+		return FALSE;
 	}
+	if (check_helo_response(psb)) {
+		DEBUG(4) debugf("uses esmtp\n");
+		return TRUE;
+	}
+
+	if (psb->error != smtp_fail) {
+		return FALSE;
+	}
+
+	/* our guess that server understands EHLO could have been wrong,
+	   try again with HELO */
+
+	fprintf(psb->out, "HELO %s\r\n", helo);
+	fflush(psb->out);
+	DEBUG(4) debugf("C: HELO %s\r\n", helo);
+
+	if (!read_response(psb, SMTP_CMD_TIMEOUT)) {
+		return FALSE;
+	}
+	if (check_helo_response(psb)) {
+		DEBUG(4) debugf("uses smtp\n");
+		return TRUE;
+	}
+
+	/* what sort of server ist THAT ?!  give up... */
+	return FALSE;
 }
 
 static void
@@ -691,13 +693,9 @@ smtp_out_init(smtp_base * psb, gboolean instant_helo)
 
 	logwrite(LOG_INFO, "smtp_out_init(): instant_helo:%d\n", instant_helo);
 
-	if (instant_helo) {
-		/* we say hello right away, hence we don't know if
-		   ESMTP is supported; we just assume it */
-		psb->use_esmtp = 1;
-	} else {
+	if (!instant_helo) {
 		if ((ok = read_response(psb, SMTP_INITIAL_TIMEOUT))) {
-			ok = check_init_response(psb);
+			ok = check_response(psb, FALSE);
 		}
 		if (!ok) {
 			smtp_out_log_failure(psb, NULL);
@@ -885,8 +883,8 @@ smtp_out_msg(smtp_base * psb, message * msg, address * return_path, GList * rcpt
 		for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
 			address *rcpt = (address *) (rcpt_node->data);
 			if (addr_is_delivered(rcpt))
-				logwrite(LOG_NOTICE, "%s => %s host=%s with %s\n", msg->uid, addr_string(rcpt),
-				         psb->remote_host, psb->use_esmtp ? "esmtp" : "smtp");
+				logwrite(LOG_NOTICE, "%s => %s host=%s\n",
+				         msg->uid, addr_string(rcpt), psb->remote_host);
 		}
 	} else {
 		/* if something went wrong,
