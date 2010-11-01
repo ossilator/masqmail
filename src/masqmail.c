@@ -304,8 +304,6 @@ main(int argc, char *argv[])
 	gint queue_interval = 0;
 	gboolean opt_t = FALSE;
 	gboolean opt_i = FALSE;
-	gboolean opt_odb = FALSE;
-	gboolean opt_oem = FALSE;
 	gboolean exit_failure = FALSE;
 
 	gchar *M_cmd = NULL;
@@ -432,26 +430,24 @@ main(int argc, char *argv[])
 				/* ignore -m (me too) switch (see man page) */
 				break;
 			case 'o':
-				switch (argv[arg][pos++]) {
-				case 'e':
-					if (argv[arg][pos++] == 'm')  /* -oem */
-						if (!opt_i)
-							exit_failure = TRUE;
-					opt_oem = TRUE;
-					break;
-				case 'd':
-					if (argv[arg][pos] == 'b')  /* -odb */
-						opt_odb = TRUE;
-					else if (argv[arg][pos] == 'q')  /* -odq */
-						do_queue = TRUE;
-					break;
-				case 'i':
-					opt_i = TRUE;
+				char* oarg = argv[arg][pos+1];
+				if (strcmp(oarg, "oem") == 0) {
+					if (!opt_i) {
+						/* FIXME: this check needs to be done after
+						   option processing as -oi may come later */
+						exit_failure = TRUE;
+					}
+				} else if (strcmp(oarg, "odb") == 0) {
+					/* ignore ``deliver in background'' switch */
+				} else if (strcmp(oarg, "odq") == 0) {
+					do_queue = TRUE;
+				} else if (strcmp(oarg, "oi") == 0) {
 					exit_failure = FALSE;  /* may override -oem */
-					break;
-				case 'm':
-					/* ignore -m (me too) switch (see man page) */
-					break;
+				} else if (strcmp(oarg, "om") == 0) {
+					/* ignore ``me too'' switch */
+				} else {
+					fprintf(stderr, "ignoring unrecognized option %s\n",
+					        argv[arg]);
 				}
 				break;
 
@@ -475,7 +471,7 @@ main(int argc, char *argv[])
 				}
 				break;
 			case 't':
-				if (argv[arg][pos] == 0) {
+				if (argv[arg][pos] == '\0') {
 					opt_t = TRUE;
 				} else {
 					fprintf(stderr, "unrecognized option '%s'\n", argv[arg]);
@@ -670,10 +666,11 @@ main(int argc, char *argv[])
 						message *msg = msg_spool_read(argv[arg], FALSE);
 #ifdef ENABLE_IDENT
 						if (((msg->received_host == NULL) && (msg->received_prot == PROT_LOCAL))
-						    || is_in_netlist(msg->received_host, conf.ident_trusted_nets)) {
+						    || is_in_netlist(msg->received_host, conf.ident_trusted_nets))
 #else
-						if ((msg->received_host == NULL) && (msg->received_prot == PROT_LOCAL)) {
+						if ((msg->received_host == NULL) && (msg->received_prot == PROT_LOCAL))
 #endif
+						{
 							if (msg->ident) {
 								if (strcmp(pw->pw_name, msg->ident) == 0) {
 									if (queue_delete(argv[arg]))
