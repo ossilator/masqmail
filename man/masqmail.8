@@ -124,6 +124,11 @@ The identifiers of messages are listed in the output of
 \fImasqmail \-bp\fP (\fImailq\fR).
 
 .TP
+\fB\-m\fR
+
+Same as \fB\-om\fR, see below.
+
+.TP
 \fB\-oem\fR
 
 If the \fB\-oi\fR ist not also given, always return with a non zero return code.
@@ -146,6 +151,15 @@ You get the same effect by setting the do_queue option in /etc/masqmail/masqmail
 \fB\-oi\fR
 
 A dot as a single character in a line does not terminate the message.
+
+.TP
+\fB\-om\fR
+
+From exim(8)'s man page: In Sendmail, this option means ``me too'',
+indicating that the sender of a message should receive a copy of the
+message if the sender appears in an alias expansion.
+
+Masqmail always does this, hence the option does nothing. 
 
 .TP
 \fB\-q [\fIinterval\fB]\fR

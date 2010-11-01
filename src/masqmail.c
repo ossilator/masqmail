@@ -428,6 +428,9 @@ main(int argc, char *argv[])
 					M_cmd = g_strdup(&(argv[arg][pos]));
 				}
 				break;
+			case 'm':
+				/* ignore -m (me too) switch (see man page) */
+				break;
 			case 'o':
 				switch (argv[arg][pos++]) {
 				case 'e':
@@ -445,6 +448,9 @@ main(int argc, char *argv[])
 				case 'i':
 					opt_i = TRUE;
 					exit_failure = FALSE;  /* may override -oem */
+					break;
+				case 'm':
+					/* ignore -m (me too) switch (see man page) */
 					break;
 				}
 				break;
