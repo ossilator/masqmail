@@ -7,6 +7,35 @@ affect users directly.
 The manual pages describe newly added options. Take them for reference.
 
 
+0.3.1
+
+- Changed the SMTP greeting behavior to match RFC 2821 (always try
+EHLO first). Now always an EHLO greeting is sent first, no matter what
+kind of greeting text the server had sent. If the EHLO failes, an HELO
+greeting is tried as fall back. This change will fix setups in which
+it hadn't been possible to send mail because the server required AUTH
+but hadn't said ``ESMTP'' in its greeting message. Thanks to inne for
+pointing me on that. This fixes also Debian bug #349211.
+
+- The postmaster address is now matched caseless, as required by RFC.
+
+- The command line option -m is recognized now (although ignored).
+Unknown -oXXX options are ignored. Some software (like spost of nmh)
+calls the MTA with -m. This is mainly a relict of old sendmail times
+but needed for compatibility.
+
+- Renamed the config file option `alias_local_caseless' to
+`caseless_matching' because the option affects any address matching.
+
+- Renamed the default route for the local network to
+`default local_net_route'. This is only of interest for log/debug file
+studies.
+
+- Improved and updated the man page for masqmail(8), especially in
+respect to -oem which appears to be wrongly implemented. Minor
+improvements of debug messages.
+
+
 0.3.0
 
 - Start of the new development branch. Attention: Backward

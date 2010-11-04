@@ -7,6 +7,35 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
+0.3.1   Thu, 04 Nov 2010 13:46:58 -0300
+	* smtp_out.c: changed the SMTP greeting behavior to match RFC
+	  2821 (always try EHLO first). Thanks to inne for pointing me
+	  on that. See also Debian bug #349211
+	* fail_msg.c: postmaster is now matched caseless, as
+	  required by RFC
+	* refactored the cmdline argument processing (-m is recognized,
+	  unknown -oXXX options are ignored now and some corner-cases
+	  covered)
+	* created new functions manipulate_queue() and run_queue()
+	  and moved code from main()
+	* replaced the loop-based alias_expand() with a new one that
+	  wraps the recursive alias_one()
+	* removed ADDR_FLAG_NOEXPAND as it is not needed anymore
+	* made addr_isequal() and addr_isequal_parent() more flexible,
+	  thus making addr_isequal_alias() needless and removed
+	* merged rcptlist_with_one_of_hostlist() and
+	  rcptlist_with_addr_is_local() into split_rcpts()
+	* renamed the default route for the local net to
+	  `default local_net_route'
+	* renamed `alias_local_caseless' to `caseless_matching' because
+	  it does not only affect the matching of local parts of aliases
+	  anymore but is used anywhere where address matching is
+	  performed
+	* renamed conf.alias_local_cmp to conf.localpartcmp
+	* minor improvements of debug messages
+	* improved and updated man/masqmail.8
+	* several, mostly cosmetic, cleanups
+
 0.3.0   Fri, 23 Jul 2010 21:58:25 +0200
 	* new development branch
 	  (Attention: No backward compatibility guaranteed.)
