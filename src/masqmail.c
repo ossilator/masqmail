@@ -289,6 +289,70 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 	}
 }
 
+/*
+currently only the `rm' command is supported
+until this changes, we don't need any facility for further commands
+return success if at least one message had been deleted
+*/
+static int
+manipulate_queue(char* cmd, char* id[])
+{
+	gboolean ok = FALSE;
+
+	if (strcmp(cmd, "rm") != 0) {
+		fprintf(stderr, "unknown command %s\n", cmd);
+		return FALSE;
+	}
+
+	set_euidgid(conf.mail_uid, conf.mail_gid, NULL, NULL);
+
+	/* privileged users may delete any mail */
+	if (is_privileged_user(conf.orig_uid)) {
+		for (; *id; id++) {
+			fprintf(stderr, "id: %s\n", *id);
+			if (queue_delete(*id)) {
+				ok = TRUE;
+			}
+		}
+		return ok;
+	}
+
+	struct passwd *pw = getpwuid(conf.orig_uid);
+	if (!pw) {
+		fprintf(stderr, "could not find a passwd entry for uid %d: %s\n",
+		        conf.orig_uid, strerror(errno));
+		return FALSE;
+	}
+
+	/* non-privileged users may only delete their own messages */
+	for (; *id; id++) {
+		message *msg = msg_spool_read(*id, FALSE);
+
+		fprintf(stderr, "id: %s\n", *id);
+
+		if (!msg->ident) {
+			fprintf(stderr, "message %s does not have an ident\n", *id);
+			continue;
+		}
+		if (strcmp(pw->pw_name, msg->ident) != 0) {
+			fprintf(stderr, "you do not own message id %s\n", *id);
+			continue;
+		}
+
+		if ( (msg->received_host || (msg->received_prot != PROT_LOCAL))
+#ifdef ENABLE_IDENT
+		    && !is_in_netlist(msg->received_host, conf.ident_trusted_nets)
+#endif
+		) {
+			fprintf(stderr, "message %s was not received locally or from a trusted network\n", *id);
+			continue;
+		}
+
+		ok = queue_delete(*id);
+	}
+	return ok;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -614,50 +678,7 @@ main(int argc, char *argv[])
 		break;  /* well... */
 
 	case MODE_MCMD:
-		if (strcmp(M_cmd, "rm") == 0) {
-			gboolean ok = FALSE;
-
-			set_euidgid(conf.mail_uid, conf.mail_gid, NULL, NULL);
-
-			if (is_privileged_user(conf.orig_uid)) {
-				for (; arg < argc; arg++) {
-					if (queue_delete(argv[arg]))
-						ok = TRUE;
-				}
-			} else {
-				struct passwd *pw = getpwuid(conf.orig_uid);
-				if (pw) {
-					for (; arg < argc; arg++) {
-						message *msg = msg_spool_read(argv[arg], FALSE);
-#ifdef ENABLE_IDENT
-						if (((msg->received_host == NULL) && (msg->received_prot == PROT_LOCAL))
-						    || is_in_netlist(msg->received_host, conf.ident_trusted_nets))
-#else
-						if ((msg->received_host == NULL) && (msg->received_prot == PROT_LOCAL))
-#endif
-						{
-							if (msg->ident) {
-								if (strcmp(pw->pw_name, msg->ident) == 0) {
-									if (queue_delete(argv[arg]))
-										ok = TRUE;
-								} else {
-									fprintf(stderr, "you do not own message id %s\n", argv[arg]);
-								}
-							} else
-								fprintf(stderr, "message %s does not have an ident.\n", argv[arg]);
-						} else {
-							fprintf(stderr, "message %s was not received locally or from a trusted network.\n", argv[arg]);
-						}
-					}
-				} else {
-					fprintf(stderr, "could not find a passwd entry for uid %d: %s\n", conf.orig_uid, strerror(errno));
-				}
-			}
-			exit(ok ? EXIT_SUCCESS : EXIT_FAILURE);
-		} else {
-			fprintf(stderr, "unknown command %s\n", M_cmd);
-			exit(EXIT_FAILURE);
-		}
+		exit(manipulate_queue(M_cmd, &argv[arg]) ? 0 : 1);
 		break;
 
 	case MODE_ACCEPT:
