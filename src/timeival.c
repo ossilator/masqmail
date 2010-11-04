@@ -28,7 +28,7 @@ time_interval(gchar * str)
 	gchar *p = str, *q = buf;
 	gint factor = 1, val;
 
-	while (*p && isdigit(*p) && (q < buf + 15)) {
+	while (*p && isdigit(*p) && (q < buf+sizeof(buf)-1)) {
 		*(q++) = *(p++);
 	}
 	*q = '\0';
