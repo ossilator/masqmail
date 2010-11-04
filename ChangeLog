@@ -25,6 +25,7 @@ technical speach and with focus on compatibility.
 	  thus making addr_isequal_alias() needless and removed
 	* merged rcptlist_with_one_of_hostlist() and
 	  rcptlist_with_addr_is_local() into split_rcpts()
+	* removed the obsolete pos argument from time_interval()
 	* renamed the default route for the local net to
 	  `default local_net_route'
 	* renamed `alias_local_caseless' to `caseless_matching' because
