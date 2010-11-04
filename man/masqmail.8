@@ -31,8 +31,7 @@ It replaces sendmail or other MTAs such as qmail or exim.
 
 Since masqmail is intended to replace sendmail, it uses the same command line options,
 but not all are implemented.
-There are also two additional options, which are unique to masqmail
-(\fB\-qo \fIconnection\fR and \fB\-g\fR)
+The \fB\-qo\fP option is additional, and unique to masqmail.
 
 .TP
 \fB\-\-\fR
@@ -98,6 +97,7 @@ If not invoked by a privileged user, masqmail will drop all privileges.
 Set the debug level.
 This takes precedence before the value of `debug_level' in the configuration file.
 Read the warning in the description of the latter.
+Only root may set the debug level.
 
 .TP
 \fB\-f [\fIaddress\fB]\fR
@@ -114,35 +114,78 @@ Set the full sender name (in the From: header) to \fIstring\fR.
 \fB\-i\fR
 
 Same as \fB\-oi\fR, see below.
+Kept for compatibility.
 
 .TP
-\fB\-Mrm \fIlist\fR
+\fB\-Mrm \fImsgid...\fR
 
 Remove given messages from the queue.
-Only allowed for privileged users.
-The identifiers of messages are listed in the output of
-\fImasqmail \-bp\fP (\fImailq\fR).
+Privileged users may remove any message,
+other users only their own.
+The message identifiers are listed in the output of
+\fImasqmail \-bp\fP (aka. \fImailq\fR).
 
 .TP
 \fB\-m\fR
 
 Same as \fB\-om\fR, see below.
+Kept for compatibility.
 
 .TP
 \fB\-oem\fR
 
+Currently this option makes masqmail behave such:
+
 If the \fB\-oi\fR ist not also given, always return with a non zero return code.
-Maybe someone tells me what this is good for...
+
+It seems as if this current behavior is not like it should be.
+
+In exim this option makes it behave such:
+
+.in +4
+.ll -4
+If an error is detected while a non-SMTP message is being received
+(for example, a malformed address),
+the error is reported to the sender in a mail message.
+Exim exits with a non-zero return code then,
+no matter if the error message was successful or not.
+(In exim, -oee is similar but exim returns successful
+if the error message had been sent successful.)
+.ll
+.in
+
+The mutt wiki writes about ``sendmail -oi -oem'':
+
+.in +4
+.ll -4
+The mail server (in this case sendmail) will receive the message in input,
+and will parse it. In case of a malformed message, it will send an error
+message to the user to whom belongs the MUA trasmitting the message
+(e.g. user@localhost.localdomain), and it will exit with a non zero exit code:
+the -oem flag forces the returning of a non zero exit code even in
+the case the error message has been successfully sent to the local server.
+.ll
+.in
+
+Masqmail's behavior is different in that:
+First, it does not send such error messages.
+Second, return non-zero whenever -oem is set (but -oi not).
+Third, -oi overrules -oem, though as it seems the two options 
+should not affect each other.
+(Their relationship is just that -oem does only affect non-SMTP
+messages on stdin, which is the typical use of -oi.)
 
 .TP
 \fB\-odb\fR
 
-Deliver in background.
-Masqmail always does this, which makes this option pretty much useless.
+``Deliver in Background''
+Masqmail always does this.
+Hence masqmail ignores this switch.
 
 .TP
 \fB\-odq\fR
 
+``Do Queueing''
 Do not attempt to deliver immediately.
 Any messages will be queued until the next queue running process picks them up and delivers them.
 You get the same effect by setting the do_queue option in /etc/masqmail/masqmail.conf.
@@ -155,11 +198,15 @@ A dot as a single character in a line does not terminate the message.
 .TP
 \fB\-om\fR
 
-From exim(8)'s man page: In Sendmail, this option means ``me too'',
-indicating that the sender of a message should receive a copy of the
-message if the sender appears in an alias expansion.
+``Me too''
+Masqmail never excludes the sender from any alias expansions,
+like if this switch is always set.
+Specifying this switch changes nothing.
 
-Masqmail always does this, hence the option does nothing. 
+.TP
+\fB\-oXXX\fR
+
+Any other switch starting with `-o' is ignored.
 
 .TP
 \fB\-q [\fIinterval\fB]\fR
@@ -196,8 +243,6 @@ method (see \fBonline_detect\fR in \fBmasqmail.conf(5)\fR)
 \fB\-t\fR
 
 Read recipients from headers.
-Delete `Bcc:' headers.
-(Since 0.2.25, masqmail deletes Bcc: headers in all cases.)
 If any arguments are given, these are interpreted as recipient addresses
 and the message will not be sent to these,
 although they might appear in To:, Cc:, or Bcc: headers.
@@ -211,6 +256,7 @@ See exim(8) for further information.
 .TP
 \fB\-v\fR
 
+``Verbose''
 Log also to stdout.
 Currently, some log messages are marked as `write to stdout' and additionally,
 all messages with priority `LOG_ALERT' and `LOG_WARNING' will be written to stdout
