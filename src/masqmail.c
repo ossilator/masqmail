@@ -91,19 +91,25 @@ is_in_netlist(gchar * host, GList * netlist)
 }
 #endif
 
+/*
+argv: the original argv
+argp: number of arg (may get modified!)
+cp: pointing to the char after the option
+    e.g.  `-d 6'     `-d6'
+             ^          ^
+*/
 gchar*
-get_optarg(char *argv[], gint argc, gint * argp, gint * pos)
+get_optarg(char* argv[], gint* argp, char* cp)
 {
-	if (argv[*argp][*pos])
-		return &(argv[*argp][*pos]);
-	else {
-		if (*argp + 1 < argc) {
-			if (argv[(*argp) + 1][0] != '-') {
-				(*argp)++;
-				*pos = 0;
-				return &(argv[*argp][*pos]);
-			}
-		}
+	if (*cp) {
+		/* this kind: -xval */
+		return cp;
+	}
+	cp = argv[*argp+1];
+	if (cp && (*cp != '-')) {
+		/* this kind: -x val */
+		(*argp)++;
+		return cp;
 	}
 	return NULL;
 }
@@ -288,7 +294,8 @@ main(int argc, char *argv[])
 {
 	/* cmd line flags */
 	gchar *conf_file = CONF_FILE;
-	gint arg = 1;
+	char* opt;
+	gint arg;
 
 	gboolean do_listen = FALSE;
 	gboolean do_runq = FALSE;
@@ -336,166 +343,124 @@ main(int argc, char *argv[])
 	}
 
 	/* parse cmd line */
-	while (arg < argc) {
-		gint pos = 0;
-		if ((argv[arg][pos] == '-') && (argv[arg][pos + 1] != '-')) {
-			pos++;
-			switch (argv[arg][pos++]) {
-			case 'b':
-				switch (argv[arg][pos++]) {
-				case 'd':
-					do_listen = TRUE;
-					mta_mode = MODE_DAEMON;
-					break;
-				case 'i':
-					/* ignored */
-					mta_mode = MODE_BI;
-					break;
-				case 's':
-					mta_mode = MODE_SMTP;
-					break;
-				case 'p':
-					mta_mode = MODE_LIST;
-					break;
-				case 'V':
-					mta_mode = MODE_VERSION;
-					break;
-				default:
-					fprintf(stderr, "unrecognized option '%s'\n", argv[arg]);
-					exit(EXIT_FAILURE);
-				}
-				break;
-			case 'B':
-				/* we ignore this and throw the argument away */
-				get_optarg(argv, argc, &arg, &pos);
-				break;
-			case 'C':
-				if (!(conf_file = get_optarg(argv, argc, &arg, &pos))) {
-					fprintf(stderr, "-C requires a filename as argument.\n");
-					exit(EXIT_FAILURE);
-				}
-				break;
-			case 'F':
-				{
-					full_sender_name = get_optarg(argv, argc, &arg, &pos);
-					if (!full_sender_name) {
-						fprintf(stderr, "-F requires a name as an argument\n");
-						exit(EXIT_FAILURE);
-					}
-				}
-				break;
-			case 'd':
-				if (getuid() == 0) {
-					char *lvl = get_optarg(argv, argc, &arg, &pos);
-					if (lvl)
-						debug_level = atoi(lvl);
-					else {
-						fprintf(stderr, "-d requires a number as an argument.\n");
-						exit(EXIT_FAILURE);
-					}
-				} else {
-					fprintf(stderr, "only root may set the debug level.\n");
-					exit(EXIT_FAILURE);
-				}
-				break;
-			case 'f':
-				/* set return path */
-				{
-					gchar *address;
-					address = get_optarg(argv, argc, &arg, &pos);
-					if (address) {
-						f_address = g_strdup(address);
-					} else {
-						fprintf(stderr, "-f requires an address as an argument\n");
-						exit(EXIT_FAILURE);
-					}
-				}
-				break;
-			case 'i':
-				if (argv[arg][pos] == 0) {
-					opt_i = TRUE;
-					exit_failure = FALSE;  /* may override -oem */
-				} else {
-					fprintf(stderr, "unrecognized option '%s'\n", argv[arg]);
-					exit(EXIT_FAILURE);
-				}
-				break;
-			case 'M':
-				{
-					mta_mode = MODE_MCMD;
-					M_cmd = g_strdup(&(argv[arg][pos]));
-				}
-				break;
-			case 'm':
-				/* ignore -m (me too) switch (see man page) */
-				break;
-			case 'o':
-				char* oarg = argv[arg][pos+1];
-				if (strcmp(oarg, "oem") == 0) {
-					if (!opt_i) {
-						/* FIXME: this check needs to be done after
-						   option processing as -oi may come later */
-						exit_failure = TRUE;
-					}
-				} else if (strcmp(oarg, "odb") == 0) {
-					/* ignore ``deliver in background'' switch */
-				} else if (strcmp(oarg, "odq") == 0) {
-					do_queue = TRUE;
-				} else if (strcmp(oarg, "oi") == 0) {
-					exit_failure = FALSE;  /* may override -oem */
-				} else if (strcmp(oarg, "om") == 0) {
-					/* ignore ``me too'' switch */
-				} else {
-					fprintf(stderr, "ignoring unrecognized option %s\n",
-					        argv[arg]);
-				}
-				break;
+	for (arg=1; arg<argc && argv[arg][0]=='-'; arg++) {
+		opt = argv[arg] + 1;
 
-			case 'q':
-				{
-					gchar *optarg;
+		if (strcmp(opt, "-") == 0) {
+			/* everything after `--' are address arguments */
+			arg++;
+			break;
 
-					do_runq = TRUE;
-					mta_mode = MODE_RUNQUEUE;
-					if (argv[arg][pos] == 'o') {
-						pos++;
-						do_runq = FALSE;
-						do_runq_online = TRUE;
-						/* can be NULL, then we use online detection method */
-						route_name = get_optarg(argv, argc, &arg, &pos);
-					} else
-						if ((optarg = get_optarg(argv, argc, &arg, &pos))) {
-						mta_mode = MODE_DAEMON;
-						queue_interval = time_interval(optarg, &pos);
-					}
-				}
-				break;
-			case 't':
-				if (argv[arg][pos] == '\0') {
-					opt_t = TRUE;
-				} else {
-					fprintf(stderr, "unrecognized option '%s'\n", argv[arg]);
-					exit(EXIT_FAILURE);
-				}
-				break;
-			case 'v':
-				do_verbose = TRUE;
-				break;
-			default:
-				fprintf(stderr, "unrecognized option '%s'\n", argv[arg]);
+		} else if (strcmp(opt, "bd") == 0) {
+			do_listen = TRUE;
+			mta_mode = MODE_DAEMON;
+
+		} else if (strcmp(opt, "bi") == 0) {
+			/* ignored */
+			mta_mode = MODE_BI;
+
+		} else if (strcmp(opt, "bs") == 0) {
+			mta_mode = MODE_SMTP;
+
+		} else if (strcmp(opt, "bp") == 0) {
+			mta_mode = MODE_LIST;
+
+		} else if (strcmp(opt, "bV") == 0) {
+			mta_mode = MODE_VERSION;
+
+		} else if (strncmp(opt, "B", 1) == 0) {
+			/* we ignore this and throw the argument away */
+			get_optarg(argv, &arg, opt+1);
+
+		} else if (strncmp(opt, "C", 1) == 0) {
+			if (!(conf_file = get_optarg(argv, &arg, opt+1))) {
+				fprintf(stderr, "-C requires a filename as argument.\n");
 				exit(EXIT_FAILURE);
 			}
-		} else {
-			if (argv[arg][pos + 1] == '-') {
-				if (argv[arg][pos + 2] != '\0') {
-					fprintf(stderr, "unrecognized option '%s'\n", argv[arg]);
-					exit(EXIT_FAILURE);
-				}
-				arg++;
+
+		} else if (strncmp(opt, "d", 1) == 0) {
+			if (getuid() != 0) {
+				fprintf(stderr, "only root may set the debug level.\n");
+				exit(EXIT_FAILURE);
 			}
-			break;
+			char *lvl = get_optarg(argv, &arg, opt+1);
+			if (!lvl) {
+				fprintf(stderr, "-d requires a number argument.\n");
+				exit(EXIT_FAILURE);
+			}
+			debug_level = atoi(lvl);
+
+		} else if (strncmp(opt, "f", 1) == 0) {
+			/* set return path */
+			gchar *address = get_optarg(argv, &arg, opt+1);
+			if (!address) {
+				fprintf(stderr, "-f requires an address argument\n");
+				exit(EXIT_FAILURE);
+			}
+			f_address = g_strdup(address);
+
+		} else if (strncmp(opt, "F", 1) == 0) {
+			full_sender_name = get_optarg(argv, &arg, opt+1);
+			if (!full_sender_name) {
+				fprintf(stderr, "-F requires a name argument\n");
+				exit(EXIT_FAILURE);
+			}
+
+		} else if (strcmp(opt, "i") == 0) {
+			opt_i = TRUE;
+			exit_failure = FALSE;  /* may override -oem */
+
+		} else if (strcmp(opt, "m") == 0) {
+			/* ignore -m (me too) switch (see man page) */
+
+		} else if (strcmp(opt, "Mrm") == 0) {
+			mta_mode = MODE_MCMD;
+			M_cmd = "rm";
+
+		} else if (strcmp(opt, "odq") == 0) {
+			do_queue = TRUE;
+
+		} else if (strcmp(opt, "oem") == 0) {
+			if (!opt_i) {
+				/* TODO: Why is this related to -i in any way? */
+				exit_failure = TRUE;
+			}
+
+		} else if (strcmp(opt, "oi") == 0) {
+			exit_failure = FALSE;  /* may override -oem */
+
+		} else if (strncmp(opt, "o", 1) == 0) {
+			/* ignore all other -oXXX options */
+
+		} else if (strncmp(opt, "qo", 2) == 0) {
+			mta_mode = MODE_RUNQUEUE;
+			do_runq = FALSE;
+			do_runq_online = TRUE;
+			/* can be NULL, then we use online detection method */
+			route_name = get_optarg(argv, &arg, opt+2);
+
+		} else if (strncmp(opt, "q", 1) == 0) {
+			/* must be after the `qo' check */
+			gchar *optarg;
+			int dummy;
+
+			do_runq = TRUE;
+			mta_mode = MODE_RUNQUEUE;
+			if ((optarg = get_optarg(argv, &arg, opt+1))) {
+				mta_mode = MODE_DAEMON;
+				queue_interval = time_interval(optarg, &dummy);
+			}
+
+		} else if (strcmp(opt, "t") == 0) {
+			opt_t = TRUE;
+
+		} else if (strcmp(opt, "v") == 0) {
+			do_verbose = TRUE;
+
+		} else {
+			fprintf(stderr, "unrecognized option `-%s'\n", opt);
+			exit(EXIT_FAILURE);
 		}
-		arg++;
 	}
 
 	if (mta_mode == MODE_VERSION) {
