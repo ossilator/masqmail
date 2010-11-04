@@ -353,38 +353,53 @@ manipulate_queue(char* cmd, char* id[])
 	return ok;
 }
 
+static int
+run_queue(gboolean do_runq, gboolean do_runq_online, char* route_name)
+{
+	int ret;
+
+	/* queue runs */
+	set_identity(conf.orig_uid, "queue run");
+
+	if (do_runq) {
+		ret = queue_run();
+	}
+
+	if (do_runq_online) {
+		if (route_name) {
+			conf.online_detect = g_strdup("argument");
+			set_online_name(route_name);
+		}
+		ret = queue_run_online();
+	}
+	return ret;
+}
+
 int
 main(int argc, char *argv[])
 {
-	/* cmd line flags */
-	gchar *conf_file = CONF_FILE;
+	gchar *progname;
 	char* opt;
 	gint arg;
 
+	mta_mode mta_mode = MODE_ACCEPT;
 	gboolean do_listen = FALSE;
 	gboolean do_runq = FALSE;
 	gboolean do_runq_online = FALSE;
-
 	gboolean do_queue = FALSE;
-
-	gboolean do_verbose = FALSE;
-	gint debug_level = -1;
-
-	mta_mode mta_mode = MODE_ACCEPT;
-
 	gint queue_interval = 0;
+	gchar *M_cmd = NULL;
 	gboolean opt_t = FALSE;
 	gboolean opt_i = FALSE;
 	gboolean exit_failure = FALSE;
-
-	gchar *M_cmd = NULL;
-
 	gint exit_code = EXIT_SUCCESS;
+	gchar *conf_file = CONF_FILE;
 	gchar *route_name = NULL;
-	gchar *progname;
 	gchar *f_address = NULL;
-	gchar *full_sender_name = NULL;
 	address *return_path = NULL;  /* may be changed by -f option */
+	gchar *full_sender_name = NULL;
+	gboolean do_verbose = FALSE;
+	gint debug_level = -1;
 
 	progname = get_progname(argv[0]);
 
@@ -408,7 +423,7 @@ main(int argc, char *argv[])
 
 	/* parse cmd line */
 	for (arg=1; arg<argc && argv[arg][0]=='-'; arg++) {
-		opt = argv[arg] + 1;
+		opt = argv[arg] + 1;  /* points to the char after the dash */
 
 		if (strcmp(opt, "-") == 0) {
 			/* everything after `--' are address arguments */
@@ -437,7 +452,8 @@ main(int argc, char *argv[])
 			get_optarg(argv, &arg, opt+1);
 
 		} else if (strncmp(opt, "C", 1) == 0) {
-			if (!(conf_file = get_optarg(argv, &arg, opt+1))) {
+			conf_file = get_optarg(argv, &arg, opt+1);
+			if (!conf_file) {
 				fprintf(stderr, "-C requires a filename as argument.\n");
 				exit(EXIT_FAILURE);
 			}
@@ -510,7 +526,9 @@ main(int argc, char *argv[])
 
 			do_runq = TRUE;
 			mta_mode = MODE_RUNQUEUE;
-			if ((optarg = get_optarg(argv, &arg, opt+1))) {
+			optarg = get_optarg(argv, &arg, opt+1);
+			if (optarg) {
+				/* not just one single queue run but regular runs */
 				mta_mode = MODE_DAEMON;
 				queue_interval = time_interval(optarg, &dummy);
 			}
@@ -556,10 +574,12 @@ main(int argc, char *argv[])
 	{
 		int i, max_fd = sysconf(_SC_OPEN_MAX);
 
-		if (max_fd <= 0)
+		if (max_fd <= 0) {
 			max_fd = 64;
-		for (i = 3; i < max_fd; i++)
+		}
+		for (i=3; i<max_fd; i++) {
 			close(i);
+		}
 	}
 
 	init_conf();
@@ -571,14 +591,12 @@ main(int argc, char *argv[])
 	   So it is possible for a user to run his own daemon without
 	   breaking security.
 	 */
-	if (strcmp(conf_file, CONF_FILE) != 0) {
-		if (conf.orig_uid != 0) {
-			conf.run_as_user = TRUE;
-			seteuid(conf.orig_uid);
-			setegid(conf.orig_gid);
-			setuid(conf.orig_uid);
-			setgid(conf.orig_gid);
-		}
+	if ((strcmp(conf_file, CONF_FILE) != 0) && (conf.orig_uid != 0)) {
+		conf.run_as_user = TRUE;
+		seteuid(conf.orig_uid);
+		setegid(conf.orig_gid);
+		setuid(conf.orig_uid);
+		setgid(conf.orig_gid);
 	}
 
 	conf.log_dir = LOG_DIR;
@@ -589,12 +607,15 @@ main(int argc, char *argv[])
 	}
 	logclose();
 
-	if (do_queue)
+	if (do_queue) {
 		conf.do_queue = TRUE;
-	if (do_verbose)
+	}
+	if (do_verbose) {
 		conf.do_verbose = TRUE;
-	if (debug_level >= 0)  /* if >= 0, it was given by argument */
+	}
+	if (debug_level >= 0) {  /* if >= 0, it was given by argument */
 		conf.debug_level = debug_level;
+	}
 
 	/* It appears that changing to / ensures that we are never in
 	   a directory which we cannot access. This situation could be
@@ -646,23 +667,9 @@ main(int argc, char *argv[])
 	case MODE_DAEMON:
 		mode_daemon(do_listen, queue_interval, argv);
 		break;
+
 	case MODE_RUNQUEUE:
-		{
-			/* queue runs */
-			set_identity(conf.orig_uid, "queue run");
-
-			if (do_runq)
-				exit_code = queue_run() ? EXIT_SUCCESS : EXIT_FAILURE;
-
-			if (do_runq_online) {
-				if (route_name != NULL) {
-					conf.online_detect = g_strdup("argument");
-					set_online_name(route_name);
-				}
-				exit_code =
-					queue_run_online() ? EXIT_SUCCESS : EXIT_FAILURE;
-			}
-		}
+		exit(run_queue(do_runq, do_runq_online, route_name) ? 0 : 1);
 		break;
 
 	case MODE_SMTP:
@@ -691,6 +698,7 @@ main(int argc, char *argv[])
 		break;
 	case MODE_NONE:
 		break;
+
 	default:
 		fprintf(stderr, "unknown mode: %d\n", mta_mode);
 		break;
