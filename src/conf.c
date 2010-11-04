@@ -557,8 +557,7 @@ read_conf(gchar * filename)
 		else if (strcmp(lval, "warn_intervals") == 0)
 			conf.warn_intervals = parse_list(rval, FALSE);
 		else if (strcmp(lval, "max_defer_time") == 0) {
-			gint dummy;
-			gint ival = time_interval(rval, &dummy);
+			gint ival = time_interval(rval);
 			if (ival < 0)
 				logwrite(LOG_WARNING, "invalid time interval for 'max_defer_time': %s\n", rval);
 			else

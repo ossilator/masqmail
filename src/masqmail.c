@@ -522,7 +522,6 @@ main(int argc, char *argv[])
 		} else if (strncmp(opt, "q", 1) == 0) {
 			/* must be after the `qo' check */
 			gchar *optarg;
-			int dummy;
 
 			do_runq = TRUE;
 			mta_mode = MODE_RUNQUEUE;
@@ -530,7 +529,7 @@ main(int argc, char *argv[])
 			if (optarg) {
 				/* not just one single queue run but regular runs */
 				mta_mode = MODE_DAEMON;
-				queue_interval = time_interval(optarg, &dummy);
+				queue_interval = time_interval(optarg);
 			}
 
 		} else if (strcmp(opt, "t") == 0) {

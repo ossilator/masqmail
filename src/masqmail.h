@@ -515,7 +515,7 @@ GList *table_read(gchar * fname, gchar delim);
 void destroy_table(GList * table);
 
 /* timeival.c */
-gint time_interval(gchar * str, gint * pos);
+gint time_interval(gchar * str);
 
 /* permissions.c */
 gboolean is_privileged_user(uid_t uid);
