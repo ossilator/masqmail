@@ -507,6 +507,7 @@ main(int argc, char *argv[])
 			}
 
 		} else if (strcmp(opt, "oi") == 0) {
+			opt_i = TRUE;
 			exit_failure = FALSE;  /* may override -oem */
 
 		} else if (strncmp(opt, "o", 1) == 0) {
