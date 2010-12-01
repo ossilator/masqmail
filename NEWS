@@ -24,6 +24,12 @@ Unknown -oXXX options are ignored. Some software (like spost of nmh)
 calls the MTA with -m. This is mainly a relict of old sendmail times
 but needed for compatibility.
 
+- The implementation of the command line option -oem had been
+weird. Now specifying -oem or -oee results in a (some kind of dumb but)
+logical behavior.  Common users will probably not notice any difference.
+The changes affect only the exit code of the corner-case: Calling masqmail
+with -oem but without -oi/-i while submitting messages on stdin.
+
 - Renamed the config file option `alias_local_caseless' to
 `caseless_matching' because the option affects any address matching.
 

@@ -7,7 +7,7 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
-0.3.1   Thu, 04 Nov 2010 13:46:58 -0300
+0.3.1   Wed, 01 Dec 2010 18:11:29 -0300
 	* smtp_out.c: changed the SMTP greeting behavior to match RFC
 	  2821 (always try EHLO first). Thanks to inne for pointing me
 	  on that. See also Debian bug #349211
@@ -16,6 +16,7 @@ technical speach and with focus on compatibility.
 	* refactored the cmdline argument processing (-m is recognized,
 	  unknown -oXXX options are ignored now and some corner-cases
 	  covered)
+	* fixed -oem by removing it ;-) (see NEWS and docs/oem-option)
 	* created new functions manipulate_queue() and run_queue()
 	  and moved code from main()
 	* replaced the loop-based alias_expand() with a new one that

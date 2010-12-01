@@ -391,7 +391,6 @@ main(int argc, char *argv[])
 	gchar *M_cmd = NULL;
 	gboolean opt_t = FALSE;
 	gboolean opt_i = FALSE;
-	gboolean exit_failure = FALSE;
 	gint exit_code = EXIT_SUCCESS;
 	gchar *conf_file = CONF_FILE;
 	gchar *route_name = NULL;
@@ -488,7 +487,6 @@ main(int argc, char *argv[])
 
 		} else if (strcmp(opt, "i") == 0) {
 			opt_i = TRUE;
-			exit_failure = FALSE;  /* may override -oem */
 
 		} else if (strcmp(opt, "m") == 0) {
 			/* ignore -m (me too) switch (see man page) */
@@ -500,15 +498,8 @@ main(int argc, char *argv[])
 		} else if (strcmp(opt, "odq") == 0) {
 			do_queue = TRUE;
 
-		} else if (strcmp(opt, "oem") == 0) {
-			if (!opt_i) {
-				/* TODO: Why is this related to -i in any way? */
-				exit_failure = TRUE;
-			}
-
 		} else if (strcmp(opt, "oi") == 0) {
 			opt_i = TRUE;
-			exit_failure = FALSE;  /* may override -oem */
 
 		} else if (strncmp(opt, "o", 1) == 0) {
 			/* ignore all other -oXXX options */
@@ -693,7 +684,7 @@ main(int argc, char *argv[])
 			guint accept_flags = (opt_t ? ACC_DEL_RCPTS | ACC_RCPT_FROM_HEAD : 0)
 			                     | (opt_i ? ACC_DOT_IGNORE : ACC_NODOT_RELAX);
 			mode_accept(return_path, full_sender_name, accept_flags, &(argv[arg]), argc - arg);
-			exit(exit_failure ? EXIT_FAILURE : EXIT_SUCCESS);
+			exit(0);
 		}
 		break;
 	case MODE_NONE:

@@ -1,0 +1,76 @@
+-oem
+====
+
+This document explains what I found out about the -oem/-oee options. It
+is intended as a knowledge base for further development on this topic.
+In version 0.3.0 (2010-11), masqmail's implementation of -oem is
+considered broken and -oee is not implemented.
+
+Following is the behavior masqmail actually had:
+
+    If -oi/-i is given, -oem is ignored.
+    If no -oi/-i is given, always return with a non-zero return code.
+
+This current behavior is not like it should be.
+
+
+The desired behavior
+--------------------
+
+It had been difficult to identify good explanations.  The problem, as
+often, is that sendmail's source would be the definitive definition.
+But in which version and what if common behavior differs from sendmail's
+(maybe as a result of misunderstanding)?  Exim's documentation has proven
+to be a valuable resource.
+
+In exim the behavior is such:
+
+    If an error is detected while a non-SMTP message is being received
+    (for example, a malformed address), the error is reported to
+    the sender in a mail message.  Exim exits with a non-zero return
+    code then, no matter if the error message was successful or not.
+    (In exim, -oee is similar but exim returns successful if the error
+    message had been sent successful.)
+
+The mutt wiki writes about ``sendmail -oi -oem'':
+
+    The mail server (in this case sendmail) will receive the message
+    in input, and will parse it. In case of a malformed message,
+    it will send an error message to the user to whom belongs the
+    MUA trasmitting the message (e.g. user@localhost.localdomain),
+    and it will exit with a non zero exit code: the -oem flag forces
+    the returning of a non zero exit code even in the case the error
+    message has been successfully sent to the local server.
+
+
+What does it mean for masqmail?
+-------------------------------
+
+Masqmail does not send error messages on malformed addresses.  It does
+not much check for syntax.  It detects general errors (unexpected EOF,
+no recipients, max message size exceeded) (see masqmail.c:mode_accept())
+but simply prints a message to stderr and exits non-zero.  I think that
+currently it is not of need to add some elaborate error handling in
+this area.  Hence, for the implementing of -oem and -oee would do assume
+that sending the error message does always fail (because we never send
+any such message) and hence we exit non-zero on error.  This is the
+similar behavior of both options.
+
+From 0.3.1 on masqmail will not recognize -oem anymore and thus ignore
+it like any unknown -oXXX option. It's behavior is then as if error
+message sending fails.
+
+Remind that all this affects only the case of accepting non-SMTP messages
+on stdin.
+
+
+On the relationship of -oi and -oem
+-----------------------------------
+
+It seems as if the two options should not affect each other; in contrast
+to the behavior in masqmail before 0.3.1.  Their relationship is just
+that -oem does only affect non-SMTP messages on stdin, which is the
+typical use case of -oi.
+
+
+meillo
