@@ -128,52 +128,12 @@ The message identifiers are listed in the output of
 .TP
 \fB\-m\fR
 
-Same as \fB\-om\fR, see below.
+``Me too''
+This switch is ignored as,
+masqmail never excludes the sender from any alias expansions.
+
+\fB\-m\fP is an ancient alias for \fB\-om\fP.
 Kept for compatibility.
-
-.TP
-\fB\-oem\fR
-
-Currently this option makes masqmail behave such:
-
-If the \fB\-oi\fR ist not also given, always return with a non zero return code.
-
-It seems as if this current behavior is not like it should be.
-
-In exim this option makes it behave such:
-
-.in +4
-.ll -4
-If an error is detected while a non-SMTP message is being received
-(for example, a malformed address),
-the error is reported to the sender in a mail message.
-Exim exits with a non-zero return code then,
-no matter if the error message was successful or not.
-(In exim, -oee is similar but exim returns successful
-if the error message had been sent successful.)
-.ll
-.in
-
-The mutt wiki writes about ``sendmail -oi -oem'':
-
-.in +4
-.ll -4
-The mail server (in this case sendmail) will receive the message in input,
-and will parse it. In case of a malformed message, it will send an error
-message to the user to whom belongs the MUA trasmitting the message
-(e.g. user@localhost.localdomain), and it will exit with a non zero exit code:
-the -oem flag forces the returning of a non zero exit code even in
-the case the error message has been successfully sent to the local server.
-.ll
-.in
-
-Masqmail's behavior is different in that:
-First, it does not send such error messages.
-Second, return non-zero whenever -oem is set (but -oi not).
-Third, -oi overrules -oem, though as it seems the two options 
-should not affect each other.
-(Their relationship is just that -oem does only affect non-SMTP
-messages on stdin, which is the typical use of -oi.)
 
 .TP
 \fB\-odb\fR
@@ -195,18 +155,13 @@ You get the same effect by setting the do_queue option in /etc/masqmail/masqmail
 
 A dot as a single character in a line does not terminate the message.
 
-.TP
-\fB\-om\fR
-
-``Me too''
-Masqmail never excludes the sender from any alias expansions,
-like if this switch is always set.
-Specifying this switch changes nothing.
+The same as \fB\-i\fP.
 
 .TP
 \fB\-oXXX\fR
 
-Any other switch starting with `-o' is ignored.
+Any other switch starting with `\-o' is ignored.
+This especially affects \-om, \-oem, \-oee.
 
 .TP
 \fB\-q [\fIinterval\fB]\fR
