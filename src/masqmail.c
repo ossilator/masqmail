@@ -399,7 +399,6 @@ main(int argc, char *argv[])
 	gchar *M_cmd = NULL;
 	gboolean opt_t = FALSE;
 	gboolean opt_i = FALSE;
-	gint exit_code = 0;
 	gchar *conf_file = CONF_FILE;
 	gchar *route_name = NULL;
 	gchar *f_address = NULL;
@@ -694,5 +693,5 @@ main(int argc, char *argv[])
 
 	logclose();
 
-	exit(exit_code);
+	exit(0);
 }
