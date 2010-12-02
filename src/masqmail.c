@@ -38,7 +38,8 @@
    It, as well as the distinction beween the two (non exclusive) daemon
    (queue and listen) modes, is handled by flags.*/
 typedef enum _mta_mode {
-	MODE_ACCEPT = 0,  /* accept message on stdin */
+	MODE_NONE = 0,  /* for being able to check if a mode was defined */
+	MODE_ACCEPT,  /* accept message on stdin */
 	MODE_DAEMON,  /* run as daemon */
 	MODE_RUNQUEUE,  /* single queue run, online or offline */
 	MODE_SMTP,  /* accept SMTP on stdin */
@@ -46,7 +47,6 @@ typedef enum _mta_mode {
 	MODE_MCMD,  /* do queue manipulation */
 	MODE_VERSION,  /* show version */
 	MODE_BI,  /* fake ;-) */
-	MODE_NONE  /* to prevent default MODE_ACCEPT */
 } mta_mode;
 
 char *pidfile = NULL;
@@ -382,7 +382,7 @@ main(int argc, char *argv[])
 	char* opt;
 	gint arg;
 
-	mta_mode mta_mode = MODE_ACCEPT;
+	mta_mode mta_mode = MODE_NONE;
 	gboolean do_listen = FALSE;
 	gboolean do_runq = FALSE;
 	gboolean do_runq_online = FALSE;
@@ -536,6 +536,11 @@ main(int argc, char *argv[])
 		}
 	}
 
+	if (!mta_mode) {
+		fprintf(stderr, "arg:%d argc:%d\n", arg, argc);
+		mta_mode = (arg<argc || opt_t) ? MODE_ACCEPT : MODE_VERSION;
+	}
+
 	if (mta_mode == MODE_VERSION) {
 		gchar *with_resolver = "";
 		gchar *with_auth = "";
@@ -686,8 +691,6 @@ main(int argc, char *argv[])
 			mode_accept(return_path, full_sender_name, accept_flags, &(argv[arg]), argc - arg);
 			exit(0);
 		}
-		break;
-	case MODE_NONE:
 		break;
 
 	default:
