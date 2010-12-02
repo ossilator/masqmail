@@ -132,7 +132,7 @@ append_file(message * msg, GList * hdr_list, gchar * user)
 				logwrite(LOG_ALERT, "could not set back uid or gid after local delivery: %s\n", strerror(errno));
 				logwrite(LOG_ALERT, "uid=%d, gid=%d, euid=%d, egid=%d, want = %d, %d\n",
 				         getuid(), getgid(), geteuid(), getegid(), saved_uid, saved_gid);
-				exit(EXIT_FAILURE);
+				exit(1);
 			}
 		} else {
 			logwrite(LOG_ALERT, "could not set uid or gid for local delivery, uid = %d: %s\n", pw->pw_uid, strerror(errno));

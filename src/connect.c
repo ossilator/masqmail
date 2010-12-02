@@ -110,7 +110,7 @@ connect_resolvelist(int *psockfd, gchar * host, guint port, GList * res_func_lis
 
 	if (res_func_list == NULL) {
 		logwrite(LOG_ALERT, "res_funcs == NULL !!!\n");
-		exit(EXIT_FAILURE);
+		exit(1);
 	}
 
 	foreach(res_func_list, res_node) {
@@ -120,7 +120,7 @@ connect_resolvelist(int *psockfd, gchar * host, guint port, GList * res_func_lis
 
 		if (res_func == NULL) {
 			logwrite(LOG_ALERT, "res_func == NULL !!!\n");
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 
 		errno = 0;

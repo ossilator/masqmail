@@ -54,7 +54,7 @@ child(const char *command)
 				execve(*argv, argv, NULL);
 			}
 			logwrite(LOG_ALERT, "execve failed: %s\n", strerror(errno));
-			_exit(EXIT_FAILURE);
+			_exit(1);
 		} else if (pid == -1) {
 			return -1;
 		} else {

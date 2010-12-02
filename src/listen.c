@@ -38,7 +38,7 @@ sigchld_handler(int sig)
 
 	pid = waitpid(0, &status, 0);
 	if (pid > 0) {
-		if (WEXITSTATUS(status) != EXIT_SUCCESS)
+		if (WEXITSTATUS(status) != 0)
 			logwrite(LOG_WARNING, "process %d exited with %d\n", pid, WEXITSTATUS(status));
 		if (WIFSIGNALED(status))
 			logwrite(LOG_WARNING, "process with pid %d got signal: %d\n", pid, WTERMSIG(status));
@@ -79,7 +79,7 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 
 		smtp_in(in, out, rem_host, ident);
 
-		_exit(EXIT_SUCCESS);
+		_exit(0);
 	} else if (pid < 0) {
 		logwrite(LOG_WARNING, "could not fork for incoming smtp connection: %s\n", strerror(errno));
 	}
@@ -118,7 +118,7 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 		}
 		if (listen(sock, 1) < 0) {
 			logwrite(LOG_ALERT, "listen: (terminating): %s\n", strerror(errno));
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 		logwrite(LOG_NOTICE, "listening on interface %s:%d\n", iface->address, iface->port);
 		DEBUG(5) debugf("sock = %d\n", sock);
@@ -133,11 +133,11 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 	if (!conf.run_as_user) {
 		if (setegid(conf.mail_gid) != 0) {
 			logwrite(LOG_ALERT, "could not change gid to %d: %s\n", conf.mail_gid, strerror(errno));
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 		if (seteuid(conf.mail_uid) != 0) {
 			logwrite(LOG_ALERT, "could not change uid to %d: %s\n", conf.mail_uid, strerror(errno));
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 	}
 
@@ -173,7 +173,7 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 		if ((sel_ret = select(FD_SETSIZE, &read_fd_set, NULL, NULL, qival > 0 ? &tm : NULL)) < 0) {
 			if (errno != EINTR) {
 				logwrite(LOG_ALERT, "select: (terminating): %s\n", strerror(errno));
-				exit(EXIT_FAILURE);
+				exit(1);
 			} else {
 				if (sighup_seen) {
 					logwrite(LOG_NOTICE, "HUP signal received. Restarting daemon\n");
@@ -184,7 +184,7 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 
 					execv(argv[0], &(argv[0]));
 					logwrite(LOG_ALERT, "restarting failed: %s\n", strerror(errno));
-					exit(EXIT_FAILURE);
+					exit(1);
 				}
 			}
 		} else if (sel_ret > 0) {
@@ -208,7 +208,7 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 			if ((pid = fork()) == 0) {
 				queue_run();
 
-				_exit(EXIT_SUCCESS);
+				_exit(0);
 			} else if (pid < 0) {
 				logwrite(LOG_ALERT, "could not fork for queue run");
 			}

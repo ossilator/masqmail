@@ -64,7 +64,7 @@ detect_online_pipe(const gchar * pipe)
 	}
 	fclose(in);
 	waitpid(pid, &status, 0);
-	if (WEXITSTATUS(status) != EXIT_SUCCESS) {
+	if (WEXITSTATUS(status) != 0) {
 		g_free(name);
 		name = NULL;
 	}
