@@ -75,11 +75,11 @@ set_euidgid(gint uid, gint gid, uid_t * old_uid, gid_t * old_gid)
 
 	if (setegid(gid) != 0) {
 		logwrite(LOG_ALERT, "could not change gid to %d: %s\n", gid, strerror(errno));
-		exit(EXIT_FAILURE);
+		exit(1);
 	}
 	if (seteuid(uid) != 0) {
 		logwrite(LOG_ALERT, "could not change uid to %d: %s\n", uid, strerror(errno));
-		exit(EXIT_FAILURE);
+		exit(1);
 	}
 }
 
@@ -89,7 +89,7 @@ set_identity(uid_t old_uid, gchar * task_name)
 	if (!conf.run_as_user) {
 		if (!is_privileged_user(old_uid)) {
 			fprintf(stderr, "must be root, %s or in group %s for %s.\n", DEF_MAIL_USER, DEF_MAIL_GROUP, task_name);
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 
 		set_euidgid(conf.mail_uid, conf.mail_gid, NULL, NULL);

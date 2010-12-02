@@ -101,7 +101,7 @@ main(int argc, char *argv[])
 
 		if ((ret = accept_message(stdin, msg, ACC_DOT_IGNORE)) == AERR_OK) {
 			if ((ret = smtp_deliver(server_name, server_port, resolve_list, msg, NULL, NULL)) == smtp_ok) {
-				exit(EXIT_SUCCESS);
+				exit(0);
 			}
 			fprintf(stderr, "deliver failed: %d\n", ret);
 		}

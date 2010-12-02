@@ -100,8 +100,8 @@ fail_msg(message * msg, gchar * template, GList * failed_rcpts, gchar * err_fmt,
 
 				fclose(out);
 				waitpid(pid, &status, 0);
-				if ((WEXITSTATUS(status) != EXIT_SUCCESS) || WIFSIGNALED(status)) {
-					if (WEXITSTATUS(status) != EXIT_SUCCESS)
+				if ((WEXITSTATUS(status) != 0) || WIFSIGNALED(status)) {
+					if (WEXITSTATUS(status) != 0)
 						logwrite(LOG_WARNING, "child returned %d\n", WEXITSTATUS(status));
 					if (WIFSIGNALED(status))
 						logwrite(LOG_WARNING, "child got signal: %d\n", WTERMSIG(status));

@@ -138,17 +138,17 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	if (!conf.run_as_user) {
 		if ((conf.orig_uid != 0) && (conf.orig_uid != conf.mail_uid)) {
 			fprintf(stderr, "must be root or %s for daemon.\n", DEF_MAIL_USER);
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 	}
 
 	/* reparent to init only if init is not already the parent */
 	if (getppid() != 1) {
 		if ((pid = fork()) > 0) {
-			exit(EXIT_SUCCESS);
+			exit(0);
 		} else if (pid < 0) {
 			logwrite(LOG_ALERT, "could not fork!\n");
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 	}
 
@@ -193,7 +193,7 @@ mode_smtp()
 	if (getpeername(0, (struct sockaddr *) (&saddr), &dummy) == 0) {
 		peername = g_strdup(inet_ntoa(saddr.sin_addr));
 	} else if (errno != ENOTSOCK)
-		exit(EXIT_FAILURE);
+		exit(1);
 
 	smtp_in(stdin, stderr, peername, NULL);
 }
@@ -208,7 +208,7 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 
 	if (return_path && !is_privileged_user(conf.orig_uid)) {
 		fprintf(stderr, "must be root, %s or in group %s for setting return path.\n", DEF_MAIL_USER, DEF_MAIL_GROUP);
-		exit(EXIT_FAILURE);
+		exit(1);
 	}
 
 	if (!conf.run_as_user) {
@@ -224,7 +224,7 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 			msg->rcpt_list = g_list_append(msg->rcpt_list, create_address_qualified(addresses[i], TRUE, conf.host_name));
 		else {
 			logwrite(LOG_ALERT, "no pipe allowed as recipient address: %s\n", addresses[i]);
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 	}
 
@@ -246,34 +246,34 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 					fclose(stdout);
 					fclose(stderr);
 					if (deliver(msg)) {
-						exit(EXIT_SUCCESS);
+						exit(0);
 					} else
-						exit(EXIT_FAILURE);
+						exit(1);
 				} else if (pid < 0) {
 					logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n", msg->uid);
 				}
 			}
 		} else {
 			fprintf(stderr, "Could not write spool file\n");
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 	} else {
 		switch (err) {
 		case AERR_EOF:
 			fprintf(stderr, "unexpected EOF.\n");
-			exit(EXIT_FAILURE);
+			exit(1);
 		case AERR_NORCPT:
 			fprintf(stderr, "no recipients.\n");
-			exit(EXIT_FAILURE);
+			exit(1);
 		case AERR_SIZE:
 			fprintf(stderr, "max message size exceeded.\n");
-			exit(EXIT_FAILURE);
+			exit(1);
 		default:
 			/* should never happen: */
 			fprintf(stderr, "Unknown error (%d)\r\n", err);
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
-		exit(EXIT_FAILURE);
+		exit(1);
 	}
 }
 
@@ -399,7 +399,7 @@ main(int argc, char *argv[])
 	gchar *M_cmd = NULL;
 	gboolean opt_t = FALSE;
 	gboolean opt_i = FALSE;
-	gint exit_code = EXIT_SUCCESS;
+	gint exit_code = 0;
 	gchar *conf_file = CONF_FILE;
 	gchar *route_name = NULL;
 	gchar *f_address = NULL;
@@ -464,18 +464,18 @@ main(int argc, char *argv[])
 			conf_file = get_optarg(argv, &arg, opt+1);
 			if (!conf_file) {
 				fprintf(stderr, "-C requires a filename as argument.\n");
-				exit(EXIT_FAILURE);
+				exit(1);
 			}
 
 		} else if (strncmp(opt, "d", 1) == 0) {
 			if (getuid() != 0) {
 				fprintf(stderr, "only root may set the debug level.\n");
-				exit(EXIT_FAILURE);
+				exit(1);
 			}
 			char *lvl = get_optarg(argv, &arg, opt+1);
 			if (!lvl) {
 				fprintf(stderr, "-d requires a number argument.\n");
-				exit(EXIT_FAILURE);
+				exit(1);
 			}
 			debug_level = atoi(lvl);
 
@@ -484,7 +484,7 @@ main(int argc, char *argv[])
 			gchar *address = get_optarg(argv, &arg, opt+1);
 			if (!address) {
 				fprintf(stderr, "-f requires an address argument\n");
-				exit(EXIT_FAILURE);
+				exit(1);
 			}
 			f_address = g_strdup(address);
 
@@ -492,7 +492,7 @@ main(int argc, char *argv[])
 			full_sender_name = get_optarg(argv, &arg, opt+1);
 			if (!full_sender_name) {
 				fprintf(stderr, "-F requires a name argument\n");
-				exit(EXIT_FAILURE);
+				exit(1);
 			}
 
 		} else if (strcmp(opt, "i") == 0) {
@@ -542,7 +542,7 @@ main(int argc, char *argv[])
 
 		} else {
 			fprintf(stderr, "unrecognized option `-%s'\n", opt);
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 	}
 
@@ -552,7 +552,7 @@ main(int argc, char *argv[])
 
 	if (mta_mode == MODE_VERSION) {
 		mode_version();
-		exit(EXIT_SUCCESS);
+		exit(0);
 	}
 
 	/* initialize random generator */
@@ -619,17 +619,17 @@ main(int argc, char *argv[])
 	if (!conf.run_as_user) {
 		if (setgid(0) != 0) {
 			fprintf(stderr, "could not set gid to 0. Is the setuid bit set? : %s\n", strerror(errno));
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 		if (setuid(0) != 0) {
 			fprintf(stderr, "could not gain root privileges. Is the setuid bit set? : %s\n", strerror(errno));
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 	}
 
 	if (!logopen()) {
 		fprintf(stderr, "could not open log file\n");
-		exit(EXIT_FAILURE);
+		exit(1);
 	}
 
 	DEBUG(1) debugf("masqmail %s starting\n", VERSION);
@@ -649,7 +649,7 @@ main(int argc, char *argv[])
 		g_free(f_address);
 		if (!return_path) {
 			fprintf(stderr, "invalid RFC821 address: %s\n", f_address);
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 	}
 
@@ -671,7 +671,7 @@ main(int argc, char *argv[])
 		break;
 
 	case MODE_BI:
-		exit(EXIT_SUCCESS);
+		exit(0);
 		break;  /* well... */
 
 	case MODE_MCMD:

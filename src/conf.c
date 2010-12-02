@@ -39,13 +39,13 @@ init_conf()
 		conf.mail_uid = passwd->pw_uid;
 	else {
 		fprintf(stderr, "user %s not found! (terminating)\n", DEF_MAIL_USER);
-		exit(EXIT_FAILURE);
+		exit(1);
 	}
 	if ((group = getgrnam(DEF_MAIL_GROUP)))
 		conf.mail_gid = group->gr_gid;
 	else {
 		fprintf(stderr, "group %s not found! (terminating)\n", DEF_MAIL_GROUP);
-		exit(EXIT_FAILURE);
+		exit(1);
 	}
 }
 
@@ -79,7 +79,7 @@ parse_boolean(gchar * rval)
 	}
 
 	fprintf(stderr, "cannot parse value '%s'\n", rval);
-	exit(EXIT_FAILURE);
+	exit(1);
 }
 
 /* make a list from each line in a file */
@@ -91,7 +91,7 @@ parse_list_file(gchar * fname)
 
 	if ((fptr = fopen(fname, "rt")) == NULL) {
 		logwrite(LOG_ALERT, "could not open %s for reading: %s\n", fname, strerror(errno));
-		exit(EXIT_FAILURE);
+		exit(1);
 	}
 
 	gchar buf[256];
@@ -185,7 +185,7 @@ parse_resolve_list(gchar * line)
 #endif
 		} else {
 			logwrite(LOG_ALERT, "unknown resolver %s\n", item);
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 		g_free(item);
 	}
@@ -240,7 +240,7 @@ parse_network(gchar * line, gint def_port)
 
 	if ((addr.s_addr = inet_addr(buf)) == INADDR_NONE) {
 		fprintf(stderr, "'%s' is not a valid address (must be ip)\n", buf);
-		exit(EXIT_FAILURE);
+		exit(1);
 	}
 
 	if (*p) {
@@ -251,7 +251,7 @@ parse_network(gchar * line, gint def_port)
 			n = i ? ~((1 << (32 - i)) - 1) : 0;
 		else {
 			fprintf(stderr, "'%d' is not a valid net mask (must be >= 0 and <= 32)\n", i);
-			exit(EXIT_FAILURE);
+			exit(1);
 		}
 	} else
 		n = 0;
