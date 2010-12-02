@@ -363,6 +363,26 @@ run_queue(gboolean do_runq, gboolean do_runq_online, char* route_name)
 	return ret;
 }
 
+static void
+mode_version(void)
+{
+	gchar *with_resolver = "";
+	gchar *with_auth = "";
+	gchar *with_ident = "";
+
+#ifdef ENABLE_RESOLVER
+	with_resolver = " +resolver";
+#endif
+#ifdef ENABLE_AUTH
+	with_auth = " +auth";
+#endif
+#ifdef ENABLE_IDENT
+	with_ident = " +ident";
+#endif
+
+	printf("%s %s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_auth, with_ident);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -389,8 +409,8 @@ main(int argc, char *argv[])
 	gint debug_level = -1;
 
 	/* strip the path part */
-	progname = strrchr(argc[0], '/');
-	progname = (progname) ? progname+1 : argc[0];
+	progname = strrchr(argv[0], '/');
+	progname = (progname) ? progname+1 : argv[0];
 
 	if (strcmp(progname, "mailq") == 0) {
 		mta_mode = MODE_LIST;
@@ -531,22 +551,7 @@ main(int argc, char *argv[])
 	}
 
 	if (mta_mode == MODE_VERSION) {
-		gchar *with_resolver = "";
-		gchar *with_auth = "";
-		gchar *with_ident = "";
-
-#ifdef ENABLE_RESOLVER
-		with_resolver = " +resolver";
-#endif
-#ifdef ENABLE_AUTH
-		with_auth = " +auth";
-#endif
-#ifdef ENABLE_IDENT
-		with_ident = " +ident";
-#endif
-
-		printf("%s %s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_auth, with_ident);
-
+		mode_version();
 		exit(EXIT_SUCCESS);
 	}
 
