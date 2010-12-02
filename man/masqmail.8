@@ -33,6 +33,12 @@ Since masqmail is intended to replace sendmail, it uses the same command line op
 but not all are implemented.
 The \fB\-qo\fP option is additional, and unique to masqmail.
 
+When no mode had been specified by either a command line option
+(e.g. \fB\-bd\fP, \fB\-bs\fP) or by calling masqmail under a special name
+(e.g. ``mailq''), then the default mode is used.
+This is accepting messages on stdin if any address arguments are given,
+and only printing its version (\fB\-bV\fP) otherwise.
+
 .TP
 \fB\-\-\fR
 
