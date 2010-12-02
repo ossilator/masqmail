@@ -114,18 +114,6 @@ get_optarg(char* argv[], gint* argp, char* cp)
 	return NULL;
 }
 
-gchar*
-get_progname(gchar * arg0)
-{
-	gchar *p = arg0 + strlen(arg0) - 1;
-	while (p > arg0) {
-		if (*p == '/')
-			return p + 1;
-		p--;
-	}
-	return p;
-}
-
 gboolean
 write_pidfile(gchar * name)
 {
@@ -400,7 +388,9 @@ main(int argc, char *argv[])
 	gboolean do_verbose = FALSE;
 	gint debug_level = -1;
 
-	progname = get_progname(argv[0]);
+	/* strip the path part */
+	progname = strrchr(argc[0], '/');
+	progname = (progname) ? progname+1 : argc[0];
 
 	if (strcmp(progname, "mailq") == 0) {
 		mta_mode = MODE_LIST;
@@ -537,7 +527,6 @@ main(int argc, char *argv[])
 	}
 
 	if (!mta_mode) {
-		fprintf(stderr, "arg:%d argc:%d\n", arg, argc);
 		mta_mode = (arg<argc || opt_t) ? MODE_ACCEPT : MODE_VERSION;
 	}
 
