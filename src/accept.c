@@ -59,9 +59,7 @@ _g_list_addr_isequal(gconstpointer a, gconstpointer b)
 
    The -t option:
    The ACC_RCPT_FROM_HEAD flag adds the recipients found in To/Cc/Bcc
-   headers to the recipients list.
-   The ACC_DEL_RCPTS flag makes only sense if the ACC_RCPT_FROM_HEAD
-   flag is given too. With ACC_DEL_RCPTS the recipients given on the
+   headers to the recipients list. The recipients given on the
    command line are removed from the ones given in headers.
 */
 
@@ -212,7 +210,7 @@ accept_message_prepare(message * msg, guint flags)
 	}
 
 	/* -t option (see comment above) */
-	if (flags & ACC_DEL_RCPTS) {
+	if (flags & ACC_RCPT_FROM_HEAD) {
 		non_rcpt_list = msg->rcpt_list;
 		msg->rcpt_list = NULL;
 	}
@@ -326,8 +324,9 @@ accept_message_prepare(message * msg, guint flags)
 			}
 		}
 
-		if (flags & ACC_DEL_RCPTS) {
-			/* remove the recipients given on the command line from the ones given in headers
+		if (flags & ACC_RCPT_FROM_HEAD) {
+			/* remove the recipients given on the command line
+			   from the ones given in headers
 			   -t option (see comment above) */
 			GList *rcpt_node;
 			foreach(non_rcpt_list, rcpt_node) {
