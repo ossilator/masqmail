@@ -282,7 +282,6 @@ typedef struct _msgout_perhost {
 } msgout_perhost;
 
 /* flags for accept() */
-#define ACC_DEL_RCPTS      0x02  /* -t option, delete rcpts that were given as cmd args */
 #define ACC_RCPT_FROM_HEAD 0x08  /* -t option, get rcpts from headers */
 #define ACC_DOT_IGNORE     0x10  /* a dot on a line itself does not end the message (-oi option) */
 #define ACC_MAIL_FROM_HEAD 0x40  /* get return path from header */
