@@ -412,11 +412,6 @@ accept_message_prepare(message * msg, guint flags)
 	if (for_string)
 		g_free(for_string);
 
-	/* write message to spool: */
-	/* accept is no longer responsible for this
-	   if (!spool_write(msg, TRUE))
-	     return AERR_NOSPOOL;
-	 */
 	return AERR_OK;
 }
 
