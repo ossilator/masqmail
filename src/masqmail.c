@@ -208,6 +208,7 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 	accept_error err;
 	message *msg = create_message();
 	gint i;
+	pid_t pid;
 
 	if (return_path && !is_privileged_user(conf.orig_uid)) {
 		fprintf(stderr, "must be root, %s or in group %s for setting return path.\n", DEF_MAIL_USER, DEF_MAIL_GROUP);
@@ -223,7 +224,7 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 
 	msg->received_prot = PROT_LOCAL;
 	for (i = 0; i < addr_cnt; i++) {
-		if (addresses[i][0] == '|')
+		if (addresses[i][0] == '|') {
 			logwrite(LOG_ALERT, "no pipe allowed as recipient address: %s\n", addresses[i]);
 			exit(1);
 		}
@@ -236,46 +237,52 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 	/* -F option */
 	msg->full_sender_name = full_sender_name;
 
-	if ((err = accept_message(stdin, msg, accept_flags)) == AERR_OK) {
-		if (spool_write(msg, TRUE)) {
-			pid_t pid;
-			logwrite(LOG_NOTICE, "%s <= %s with %s\n", msg->uid, addr_string(msg->return_path), prot_names[PROT_LOCAL]);
+	err = accept_message(stdin, msg, accept_flags);
 
-			if (!conf.do_queue) {
-				if ((pid = fork()) == 0) {
-					conf.do_verbose = FALSE;
-					fclose(stdin);
-					fclose(stdout);
-					fclose(stderr);
-					if (deliver(msg)) {
-						exit(0);
-					} else
-						exit(1);
-				} else if (pid < 0) {
-					logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n", msg->uid);
-				}
-			}
-		} else {
-			fprintf(stderr, "Could not write spool file\n");
-			exit(1);
-		}
-	} else {
-		switch (err) {
-		case AERR_EOF:
-			fprintf(stderr, "unexpected EOF.\n");
-			exit(1);
-		case AERR_NORCPT:
-			fprintf(stderr, "no recipients.\n");
-			exit(1);
-		case AERR_SIZE:
-			fprintf(stderr, "max message size exceeded.\n");
-			exit(1);
-		default:
-			/* should never happen: */
-			fprintf(stderr, "Unknown error (%d)\r\n", err);
-			exit(1);
-		}
+	switch (err) {
+	case AERR_OK:
+		/* to continue; all other cases exit */
+		break;
+	case AERR_EOF:
+		fprintf(stderr, "unexpected EOF.\n");
 		exit(1);
+	case AERR_NORCPT:
+		fprintf(stderr, "no recipients.\n");
+		exit(1);
+	case AERR_SIZE:
+		fprintf(stderr, "max message size exceeded.\n");
+		exit(1);
+	default:
+		/* should never happen: */
+		fprintf(stderr, "Unknown error (%d)\r\n", err);
+		exit(1);
+	}
+
+	if (!spool_write(msg, TRUE)) {
+		fprintf(stderr, "Could not write spool file\n");
+		exit(1);
+	}
+
+	logwrite(LOG_NOTICE, "%s <= %s with %s\n", msg->uid, addr_string(msg->return_path), prot_names[PROT_LOCAL]);
+
+	if (conf.do_queue) {
+		/* we're finished as we only need to queue it */
+		return;
+	}
+
+	/* deliver at once */
+	if ((pid = fork()) < 0) {
+		logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n", msg->uid);
+	} else if (pid == 0) {
+		conf.do_verbose = FALSE;
+		fclose(stdin);
+		fclose(stdout);
+		fclose(stderr);
+		if (deliver(msg)) {
+			exit(0);
+		} else {
+			exit(1);
+		}
 	}
 }
 
