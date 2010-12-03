@@ -263,6 +263,7 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 		exit(1);
 	}
 
+	/* here the mail is queued and thus in our responsibility */
 	logwrite(LOG_NOTICE, "%s <= %s with %s\n", msg->uid, addr_string(msg->return_path), prot_names[PROT_LOCAL]);
 
 	if (conf.do_queue) {
@@ -281,6 +282,13 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 		if (deliver(msg)) {
 			exit(0);
 		} else {
+			/*
+			TODO:
+			Should we really fail here? Because the mail is queued
+			already. If we fail the client might submit it again.
+			If at-once-delivery is seen as an additional best-effort
+			service, then we should still exit successful here.
+			*/
 			exit(1);
 		}
 	}
