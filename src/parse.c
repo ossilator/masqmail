@@ -186,7 +186,7 @@ parse_address_rfc822(gchar* string, gchar** local_begin, gchar** local_end, gcha
 		/* we now have a non-space char that is not
 		   the beginning of a comment */
 
-		if (*p == '@') {
+		if (*p == '@' || *p == ',') {
 			/* the last word was the local_part of an addr-spec */
 			*local_begin = b;
 			*local_end = e;
@@ -204,6 +204,7 @@ parse_address_rfc822(gchar* string, gchar** local_begin, gchar** local_end, gcha
 				*domain_end = e;
 			} else {
 				/* unqualified? */
+				/* something like `To: alice, bob' with -t */
 				*domain_begin = *domain_end = NULL;
 			}
 			break;
