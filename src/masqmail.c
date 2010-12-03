@@ -129,6 +129,7 @@ write_pidfile(gchar * name)
 	return FALSE;
 }
 
+/* on -bd or if -q has an argument */
 static void
 mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 {
@@ -171,6 +172,7 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval, argv);
 }
 
+/* -bs or called as smtpd or in.smtpd */
 static void
 mode_smtp()
 {
@@ -198,6 +200,7 @@ mode_smtp()
 	smtp_in(stdin, stderr, peername, NULL);
 }
 
+/* default mode if address args or -t is specified, or called as rmail */
 static void
 mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags, char **addresses, int addr_cnt)
 {
@@ -220,12 +223,11 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 
 	msg->received_prot = PROT_LOCAL;
 	for (i = 0; i < addr_cnt; i++) {
-		if (addresses[i][0] != '|')
-			msg->rcpt_list = g_list_append(msg->rcpt_list, create_address_qualified(addresses[i], TRUE, conf.host_name));
-		else {
+		if (addresses[i][0] == '|')
 			logwrite(LOG_ALERT, "no pipe allowed as recipient address: %s\n", addresses[i]);
 			exit(1);
 		}
+		msg->rcpt_list = g_list_append(msg->rcpt_list, create_address_qualified(addresses[i], TRUE, conf.host_name));
 	}
 
 	/* -f option */
@@ -278,6 +280,8 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 }
 
 /*
+if -Mrm is given
+
 currently only the `rm' command is supported
 until this changes, we don't need any facility for further commands
 return success if at least one message had been deleted
@@ -341,6 +345,9 @@ manipulate_queue(char* cmd, char* id[])
 	return ok;
 }
 
+/* -qo, -q (without argument), or called as runq */
+/* TODO: are -qo and -q exclusively or not?
+         And how is this related to being a daemon? */
 static int
 run_queue(gboolean do_runq, gboolean do_runq_online, char* route_name)
 {
@@ -363,6 +370,7 @@ run_queue(gboolean do_runq, gboolean do_runq_online, char* route_name)
 	return ret;
 }
 
+/* -bV or default mode if neither addr arg nor -t */
 static void
 mode_version(void)
 {
