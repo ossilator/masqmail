@@ -48,10 +48,10 @@ _g_list_addr_isequal(gconstpointer a, gconstpointer b)
 	address *addr2 = (address *) b;
 	int ret;
 
-	if ((ret = strcasecmp(addr1->domain, addr2->domain)) == 0)
+	if ((ret = strcasecmp(addr1->domain, addr2->domain)) == 0) {
 		return strcmp(addr1->local_part, addr2->local_part);
-	else
-		return ret;
+	}
+	return ret;
 }
 
 /* accept message from anywhere.
@@ -88,70 +88,76 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 			line1++;
 		}
 
-		if (len <= 0) {
-			if ((len == -1) && (flags & (ACC_DOT_IGNORE | ACC_NODOT_RELAX))) {
-				/* we got an EOF, and the last line was not terminated by a CR */
-				gint len1 = strlen(line1);
-				if (len1 > 0) {  /* == 0 is 'normal' (EOF after a CR) */
-					if (line1[len1 - 1] != '\n') {  /* some mail clients allow unterminated lines */
-						line1[len1] = '\n';
-						line1[len1 + 1] = '\0';
-						msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
-						data_size += strlen(line1);
-						line_cnt++;
-					}
+		if ((len == -1) && (flags & (ACC_DOT_IGNORE | ACC_NODOT_RELAX))) {
+			/* we got an EOF, and the last line was not terminated by a CR */
+			gint len1 = strlen(line1);
+			if (len1 > 0) {  /* == 0 is 'normal' (EOF after a CR) */
+				if (line1[len1 - 1] != '\n') {  /* some mail clients allow unterminated lines */
+					line1[len1] = '\n';
+					line1[len1 + 1] = '\0';
+					msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
+					data_size += strlen(line1);
+					line_cnt++;
 				}
-				break;
+			}
+			break;
+
+		} else if (len == -1) {
+			g_free(line);
+			return AERR_EOF;
+
+		} else if (len == -2) {
+			/* should not happen any more */
+			g_free(line);
+			return AERR_OVERFLOW;
+
+		} else if (len == -3) {
+			g_free(line);
+			return AERR_TIMEOUT;
+
+		} else if (len <= 0) {
+			/* does not happen */
+			g_free(line);
+			DEBUG(5) debugf("read_sockline returned %d\n", len);
+			return AERR_UNKNOWN;
+
+		}
+
+		if (in_headers) {
+
+			/* some pop servers send the 'From ' line, skip it: */
+			if (!msg->hdr_list && strncmp(line1, "From ", 5) == 0) {
+				continue;
+			}
+
+			if (line1[0] == ' ' || line1[0] == '\t') {
+				/* continuation of 'folded' header: */
+				if (hdr) {
+					hdr->header = g_strconcat(hdr->header, line1, NULL);
+				}
+
+			} else if (line1[0] == '\n') {
+				/* an empty line marks end of headers */
+				in_headers = FALSE;
 			} else {
-				g_free(line);
-				if (len == -1) {
-					return AERR_EOF;
-				} else if (len == -2) {
-					/* should not happen any more */
-					return AERR_OVERFLOW;
-				} else if (len == -3) {
-					return AERR_TIMEOUT;
+				/* in all other cases we expect another header */
+				if ((hdr = get_header(line1))) {
+					msg->hdr_list = g_list_append(msg->hdr_list, hdr);
 				} else {
-					/* does not happen */
-					DEBUG(5) debugf("read_sockline returned %d\n", len);
-					return AERR_UNKNOWN;
+					/* if get_header() returns NULL, no header was recognized,
+					   so this seems to be the first data line of a broken mailer
+					   which does not send an empty line after the headers */
+					in_headers = FALSE;
+					msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
 				}
 			}
 		} else {
-			if (in_headers) {
-
-				/* some pop servers send the 'From ' line, skip it: */
-				if (msg->hdr_list == NULL)
-					if (strncmp(line1, "From ", 5) == 0)
-						continue;
-
-				if (line1[0] == ' ' || line1[0] == '\t') {
-					/* continuation of 'folded' header: */
-					if (hdr) {
-						hdr->header = g_strconcat(hdr->header, line1, NULL);
-					}
-
-				} else if (line1[0] == '\n') {
-					/* an empty line marks end of headers */
-					in_headers = FALSE;
-				} else {
-					/* in all other cases we expect another header */
-					if ((hdr = get_header(line1)))
-						msg->hdr_list = g_list_append(msg->hdr_list, hdr);
-					else {
-						/* if get_header() returns NULL, no header was recognized,
-						   so this seems to be the first data line of a broken mailer
-						   which does not send an empty line after the headers */
-						in_headers = FALSE;
-						msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
-					}
-				}
-			} else {
-				msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
-				data_size += strlen(line1);
-				line_cnt++;
-			}
+			/* message body */
+			msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
+			data_size += strlen(line1);
+			line_cnt++;
 		}
+
 		if (conf.max_msg_size && (data_size > conf.max_msg_size)) {
 			DEBUG(4) debugf("accept_message_stream(): "
 					"received %d bytes (conf.max_msg_size=%d)\n",
@@ -161,13 +167,14 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 
 	}
 
-	if (msg->data_list != NULL)
-		msg->data_list = g_list_reverse(msg->data_list);
-	else
+	DEBUG(4) debugf("received %d lines of data (%d bytes)\n", line_cnt, data_size);
+
+	if (!msg->data_list) {
 		/* make sure data list is not NULL: */
 		msg->data_list = g_list_append(NULL, g_strdup(""));
+	}
+	msg->data_list = g_list_reverse(msg->data_list);
 
-	DEBUG(4) debugf("received %d lines of data (%d bytes)\n", line_cnt, data_size);
 	/* we get here after we succesfully received the mail data */
 
 	msg->data_size = data_size;
@@ -421,8 +428,9 @@ accept_message(FILE * in, message * msg, guint flags)
 	accept_error err;
 
 	err = accept_message_stream(in, msg, flags);
-	if (err == AERR_OK)
+	if (err == AERR_OK) {
 		err = accept_message_prepare(msg, flags);
+	}
 
 	return err;
 }
