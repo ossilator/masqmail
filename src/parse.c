@@ -146,7 +146,7 @@ parse_address_rfc822(gchar* string, gchar** local_begin, gchar** local_end, gcha
 	*domain_begin = *domain_end = NULL;
 
 	/* might be some memory left from previous call: */
-	if (parse_error != NULL) {
+	if (parse_error) {
 		g_free(parse_error);
 		parse_error = NULL;
 	}
@@ -250,6 +250,9 @@ parse_address_rfc822(gchar* string, gchar** local_begin, gchar** local_end, gcha
 
 		} else if (strchr(specials, *p) || iscntrl(*p) || isspace(*p)) {
 			parse_error = g_strdup_printf("unexpected character: %c", *p);
+#ifdef PARSE_TEST
+			g_print("unexpected character: %c", *p);
+#endif
 			return FALSE;
 		}
 	}
@@ -382,6 +385,7 @@ _create_address(gchar * string, gchar ** end, gboolean is_rfc821)
 	gchar *addr_end;
 	gboolean ret;
 
+	/* TODO: what about (string == NULL)? */
 	if (string && (string[0] == '\0')) {
 		address *addr = g_malloc(sizeof(address));
 		addr->address = g_strdup("");
@@ -423,7 +427,7 @@ _create_address(gchar * string, gchar ** end, gboolean is_rfc821)
 
 	if (dom_beg != NULL) {
 		addr->domain = g_strndup(dom_beg, dom_end - dom_beg);
-	} else if (addr->local_part[0] == 0) {
+	} else if (addr->local_part[0] == '\0') {
 		/* 'NULL' address (failure notice),
 		   "" makes sure it will not be qualified with a hostname */
 		addr->domain = g_strdup("");
@@ -431,7 +435,7 @@ _create_address(gchar * string, gchar ** end, gboolean is_rfc821)
 		addr->domain = NULL;
 	}
 
-	if (end != NULL) {
+	if (end) {
 		*end = p;
 	}
 
@@ -461,18 +465,24 @@ addr_list_append_rfc822(GList * addr_list, gchar * string, gchar * domain)
 	gchar *end;
 
 	while (*p) {
-		address *addr = _create_address(p, &end, FALSE);
-		fprintf(stderr, "string: %s\n", p);
+#ifdef PARSE_TEST
+		g_print("string: %s\n", p);
+#endif
 
+		address *addr = _create_address(p, &end, FALSE);
 		if (!addr) {
 			break;
 		}
 
-		fprintf(stderr, "  addr: %s (%s<@>%s)\n", addr->address, addr->local_part, addr->domain);
+#ifdef PARSE_TEST
+		g_print("addr: %s (%s<@>%s)", addr->address, addr->local_part, addr->domain);
+#endif
 		if (domain && !addr->domain) {
 			addr->domain = g_strdup(domain);
 		}
-		fprintf(stderr, "        %s (%s<@>%s)\n", addr->address, addr->local_part, addr->domain);
+#ifdef PARSE_TEST
+		g_print(" (%s<@>%s)\n", addr->local_part, addr->domain);
+#endif
 
 		addr_list = g_list_append(addr_list, addr);
 		p = end;
