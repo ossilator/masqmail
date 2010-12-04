@@ -55,12 +55,10 @@ _g_list_addr_isequal(gconstpointer a, gconstpointer b)
 }
 
 /* accept message from anywhere.
-   A locally originating message is indicated by msg->recieved_host == NULL
+   A message from local is indicated by msg->recieved_host == NULL
 
-   The -t option:
-   The ACC_RCPT_FROM_HEAD flag adds the recipients found in To/Cc/Bcc
-   headers to the recipients list. The recipients given on the
-   command line are removed from the ones given in headers.
+   The -t option: With the ACC_RCPT_FROM_HEAD flag the addrs found found
+   in To/Cc/Bcc headers are added to the recipient list.
 */
 
 accept_error
@@ -187,7 +185,6 @@ accept_error
 accept_message_prepare(message * msg, guint flags)
 {
 	struct passwd *passwd = NULL;
-	GList *non_rcpt_list = NULL;
 	time_t rec_time = time(NULL);
 
 	DEBUG(5) debugf("accept_message_prepare()\n");
@@ -214,12 +211,6 @@ accept_message_prepare(message * msg, guint flags)
 		DEBUG(3) debugf("setting return_path for local accept: %s\n", path);
 		msg->return_path = create_address(path, TRUE);
 		g_free(path);
-	}
-
-	/* -t option (see comment above) */
-	if (flags & ACC_RCPT_FROM_HEAD) {
-		non_rcpt_list = msg->rcpt_list;
-		msg->rcpt_list = NULL;
 	}
 
 	/* scan headers */
@@ -273,7 +264,7 @@ accept_message_prepare(message * msg, guint flags)
 				if (flags & ACC_SAVE_ENVELOPE_TO) {
 					DEBUG(3) debugf("creating 'X-Orig-Envelope-To' header\n");
 					msg->hdr_list = g_list_prepend(msg->hdr_list, create_header(HEAD_UNKNOWN,
-					                               "X-Orig-Envelope-to: %s", hdr->value));
+					                               "X-Orig-Envelope-To: %s", hdr->value));
 				}
 				DEBUG(3) debugf("removing 'Envelope-To' header\n");
 				msg->hdr_list = g_list_remove_link(msg->hdr_list, hdr_node);
@@ -331,25 +322,8 @@ accept_message_prepare(message * msg, guint flags)
 			}
 		}
 
-		if (flags & ACC_RCPT_FROM_HEAD) {
-			/* remove the recipients given on the command line
-			   from the ones given in headers
-			   -t option (see comment above) */
-			GList *rcpt_node;
-			foreach(non_rcpt_list, rcpt_node) {
-				address *rcpt = (address *) (rcpt_node->data);
-				GList *node;
-				if ((node = g_list_find_custom(msg->rcpt_list, rcpt, _g_list_addr_isequal))) {
-					DEBUG(3) debugf("removing rcpt address %s\n", addr_string(node->data));
-					msg->rcpt_list = g_list_remove_link(msg->rcpt_list, node);
-					destroy_address((address *) (node->data));
-					g_list_free_1(node);
-				}
-			}
-		}
-
 		/* here we should have our recipients, fail if not: */
-		if (msg->rcpt_list == NULL) {
+		if (!msg->rcpt_list) {
 			logwrite(LOG_WARNING, "no recipients found in message\n");
 			return AERR_NORCPT;
 		}

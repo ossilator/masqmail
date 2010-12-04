@@ -223,9 +223,18 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 	DEBUG(5) debugf("accepting message on stdin\n");
 
 	msg->received_prot = PROT_LOCAL;
+
+	/* warn if -t option and cmdline addr args */
+	if (addr_cnt && (accept_flags & ACC_RCPT_FROM_HEAD)) {
+		logwrite(LOG_ALERT, "command line address arguments are now *added*  to the mail header\\\n");
+		logwrite(LOG_ALERT, "  recipient addresses (instead of substracted)  when -t is given.\\\n");
+		logwrite(LOG_ALERT, "  this changed with version 0.3.1\n");
+	}
+
 	for (i = 0; i < addr_cnt; i++) {
 		if (addresses[i][0] == '|') {
 			logwrite(LOG_ALERT, "no pipe allowed as recipient address: %s\n", addresses[i]);
+			/* should we better ignore this one addr? */
 			exit(1);
 		}
 		msg->rcpt_list = g_list_append(msg->rcpt_list, create_address_qualified(addresses[i], TRUE, conf.host_name));
