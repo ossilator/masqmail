@@ -1,6 +1,6 @@
 /*  MasqMail
     Copyright (C) 1999-2001 Oliver Kurth
-    Copyright (C) 2008 markus schnalke <meillo@marmaro.de>
+    Copyright (C) 2008, 2010 markus schnalke <meillo@marmaro.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,44 @@ void
 set_online_name(gchar * name)
 {
 	connection_name = g_strdup(name);
+}
+
+static gchar*
+detect_online_file(const gchar* file)
+{
+	struct stat st;
+	int err;
+	FILE *fptr;
+	char buf[256];
+
+	err = stat(conf.online_file, &st);
+
+	if (err) {
+		if (errno==ENOENT) {
+			logwrite(LOG_NOTICE, "not online.\n");
+			return NULL;
+		}
+		logwrite(LOG_ALERT, "stat of %s failed: %s\n", conf.online_file, strerror(errno));
+		return NULL;
+	}
+
+	fptr = fopen(conf.online_file, "r");
+	if (!fptr) {
+		logwrite(LOG_ALERT, "opening of %s failed: %s\n", conf.online_file, strerror(errno));
+		return NULL;
+	}
+	if (fgets(buf, 256, fptr) == NULL) {
+		logwrite(LOG_ALERT, "empty online file %s\n", conf.online_file);
+		fclose(fptr);
+		return NULL;
+	}
+	g_strstrip(buf);  /* strip whitespace */
+	fclose(fptr);
+	if (strlen(buf) == 0) {
+		logwrite(LOG_ALERT, "only whitespace connection name in %s\n", conf.online_file);
+		return NULL;
+	}
+	return g_strdup(buf);
 }
 
 static gchar*
@@ -77,58 +115,33 @@ detect_online_pipe(const gchar * pipe)
 gchar*
 detect_online()
 {
-	if (conf.online_detect == NULL) {
+	if (!conf.online_detect) {
 		return NULL;
 	}
 
 	if (strcmp(conf.online_detect, "file") == 0) {
 		DEBUG(3) debugf("online detection method 'file'\n");
-		if (conf.online_file == NULL) {
+		if (!conf.online_file) {
 			logwrite(LOG_ALERT, "online detection mode is 'file', but online_file is undefined\n");
 			return NULL;
 		}
-
-		struct stat st;
-		if (stat(conf.online_file, &st) == 0) {
-			FILE *fptr = fopen(conf.online_file, "r");
-			if (!fptr) {
-				logwrite(LOG_ALERT, "opening of %s failed: %s\n", conf.online_file, strerror(errno));
-				return NULL;
-			}
-			char buf[256];
-			if (fgets(buf, 256, fptr) == NULL) {
-				logwrite(LOG_ALERT, "empty online file %s\n", conf.online_file);
-				fclose(fptr);
-				return NULL;
-			}
-			g_strchomp(g_strchug(buf));
-			fclose(fptr);
-			if (strlen(buf) == 0) {
-				logwrite(LOG_ALERT, "only whitespace connection name in %s\n", conf.online_file);
-				return NULL;
-			}
-			return g_strdup(buf);
-		} else if (errno == ENOENT) {
-			logwrite(LOG_NOTICE, "not online.\n");
-			return NULL;
-		} else {
-			logwrite(LOG_ALERT, "stat of %s failed: %s\n", conf.online_file, strerror(errno));
-			return NULL;
-		}
+		return detect_online_file(conf.online_file);
 
 	} else if (strcmp(conf.online_detect, "pipe") == 0) {
 		DEBUG(3) debugf("connection method 'pipe'\n");
-		if (conf.online_pipe)
-			return detect_online_pipe(conf.online_pipe);
-		else {
+		if (!conf.online_pipe) {
 			logwrite(LOG_ALERT, "online detection mode is 'pipe', but online_pipe is undefined\n");
 			return NULL;
 		}
+		return detect_online_pipe(conf.online_pipe);
+
 	} else if (strcmp(conf.online_detect, "argument") == 0) {
+		DEBUG(3) debugf("online route literally defined\n");
+		/* use the name set with set_online_name() */
 		return connection_name;
-	} else {
-		DEBUG(3) debugf("no connection method selected\n");
+
 	}
 
+	DEBUG(3) debugf("unknown online detection method `%s'\n", conf.online_detect);
 	return NULL;
 }
