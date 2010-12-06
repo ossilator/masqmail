@@ -38,8 +38,7 @@
    It, as well as the distinction beween the two (non exclusive) daemon
    (queue and listen) modes, is handled by flags.*/
 typedef enum _mta_mode {
-	MODE_NONE = 0,  /* for being able to check if a mode was defined */
-	MODE_ACCEPT,  /* accept message on stdin */
+	MODE_ACCEPT = 0,  /* accept message on stdin (fallback mode) */
 	MODE_DAEMON,  /* run as daemon */
 	MODE_RUNQUEUE,  /* single queue run, online or offline */
 	MODE_SMTP,  /* accept SMTP on stdin */
@@ -422,7 +421,7 @@ main(int argc, char *argv[])
 	char* opt;
 	gint arg;
 
-	mta_mode mta_mode = MODE_NONE;
+	mta_mode mta_mode = MODE_ACCEPT;
 	gboolean do_listen = FALSE;
 	gboolean do_runq = FALSE;
 	gboolean do_runq_online = FALSE;
@@ -469,6 +468,9 @@ main(int argc, char *argv[])
 			/* everything after `--' are address arguments */
 			arg++;
 			break;
+
+		} else if (strcmp(opt, "bm") == 0) {
+			mta_mode = MODE_ACCEPT;
 
 		} else if (strcmp(opt, "bd") == 0) {
 			do_listen = TRUE;
@@ -546,6 +548,7 @@ main(int argc, char *argv[])
 			/* ignore all other -oXXX options */
 
 		} else if (strncmp(opt, "qo", 2) == 0) {
+			/* must be before the `q' check */
 			mta_mode = MODE_RUNQUEUE;
 			do_runq = FALSE;
 			do_runq_online = TRUE;
@@ -577,8 +580,14 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (!mta_mode) {
-		mta_mode = (arg<argc || opt_t) ? MODE_ACCEPT : MODE_VERSION;
+	if (mta_mode==MODE_ACCEPT && arg==argc && !opt_t) {
+		/*
+		In this case no rcpts can be found, thus no mail
+		can be sent, thus masqmail will always fail. We
+		rather do something better instead. This covers
+		also the case of calling masqmail without args.
+		*/
+		mta_mode =  MODE_VERSION;
 	}
 
 	if (mta_mode == MODE_VERSION) {
