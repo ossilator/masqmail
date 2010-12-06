@@ -92,13 +92,11 @@ queue_run()
 	gboolean ok = TRUE;
 
 	logwrite(LOG_NOTICE, "Starting queue run.\n");
-
 	msg_list = read_queue(FALSE);
-
-	if (msg_list != NULL) {
+	if (msg_list) {
 		ok = deliver_msg_list(msg_list, DLVR_ALL);
-		destroy_msg_list(msg_list);
 		DEBUG(5) debugf("  deliver_msg_list() returned: %d\n", ok);
+		destroy_msg_list(msg_list);
 	}
 	logwrite(LOG_NOTICE, "Finished queue run.\n");
 
@@ -108,12 +106,14 @@ queue_run()
 gboolean
 queue_run_online()
 {
-	GList *msg_list = read_queue(FALSE);
+	GList *msg_list;
 	gboolean ok = TRUE;
 
 	logwrite(LOG_NOTICE, "Starting online queue run.\n");
-	if (msg_list != NULL) {
+	msg_list = read_queue(FALSE);
+	if (msg_list) {
 		ok = deliver_msg_list(msg_list, DLVR_ONLINE);
+		DEBUG(5) debugf("  deliver_msg_list() returned: %d\n", ok);
 		destroy_msg_list(msg_list);
 	}
 	logwrite(LOG_NOTICE, "Finished online queue run.\n");
