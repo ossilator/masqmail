@@ -397,18 +397,29 @@ QUALIFY_DOMAIN \(en the domain which will be appended to unqualified addresses.
 
 .SH FILES
 
-\fI/etc/masqmail/masqmail.conf\fR is the main configuration for masqmail.
+.TP
+.I /etc/masqmail/masqmail.conf
+The main configuration for masqmail.
 Depending on the settings in this file, you will also have other configuration
 files in \fI/etc/masqmail/\fR.
 
-\fI/var/spool/masqmail/\fR is the spool directory where masqmail stores
-its spooled messages.
+.TP
+.I /var/spool/masqmail/
+The spool directory where masqmail stores its queued mails.
 
-\fI/var/spool/mail/\fR is the directory where locally delivered mail will be put,
+.TP
+.I /var/spool/mail/
+The directory where locally delivered mail will be put,
 if not configured differently in \fImasqmail.conf\fR.
 
-\fI/var/log/masqmail/\fR is the directory where masqmail stores its log mesages.
-This can also be somewhere else if configured differently by your sysadmin or the package mantainer.
+.TP
+.I /var/log/masqmail/
+The directory where masqmail stores its log messages.
+
+.P
+Any of the paths can be configured at compile time,
+and (except the main config file) also in the main config file.
+The typical paths are different, depending on the Unix system you use. 
 
 
 .SH CONFORMING TO
@@ -425,13 +436,17 @@ RFC 2195 (CRAM-MD5)
 Masqmail was written by Oliver Kurth.
 It is now maintained by Markus Schnalke <meillo@marmaro.de>.
 
-You will find the newest version of masqmail at \fBhttp://marmaro.de/prog/masqmail/\fR.
-There is also a mailing list, you will find information about it at masqmail's main site.
+You will find the newest version of masqmail on its website:
+.BR http://marmaro.de/prog/masqmail/ .
+There is also a mailing list;
+you will find information about it on the website.
 
 
 .SH BUGS
 
-Please report them to the mailing list.
+Bug reports of any kind are very welcome.
+They help masqmail to become better.
+Please report bugs to the mailing list (anyone can post).
 
 
 .SH SEE ALSO
