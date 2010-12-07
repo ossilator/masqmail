@@ -37,8 +37,9 @@
 /* mutually exclusive modes. Note that there is no 'queue daemon' mode.
    It, as well as the distinction beween the two (non exclusive) daemon
    (queue and listen) modes, is handled by flags.*/
-typedef enum _mta_mode {
-	MODE_ACCEPT = 0,  /* accept message on stdin (fallback mode) */
+enum mta_mode {
+	MODE_NONE = 0,  /* to check if a mode was set */
+	MODE_ACCEPT,  /* accept message on stdin (fallback mode) */
 	MODE_DAEMON,  /* run as daemon */
 	MODE_RUNQUEUE,  /* single queue run, online or offline */
 	MODE_SMTP,  /* accept SMTP on stdin */
@@ -46,7 +47,8 @@ typedef enum _mta_mode {
 	MODE_MCMD,  /* do queue manipulation */
 	MODE_VERSION,  /* show version */
 	MODE_BI,  /* fake ;-) */
-} mta_mode;
+};
+enum mta_mode mta_mode = MODE_NONE;
 
 char *pidfile = NULL;
 volatile int sigterm_in_progress = 0;
@@ -414,6 +416,18 @@ mode_version(void)
 	printf("%s %s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_auth, with_ident);
 }
 
+void
+set_mode(enum mta_mode mode)
+{
+	if (mta_mode && mta_mode!=mode) {
+		fprintf(stderr, "operation mode was already specified (%d vs. %d)\n", mta_mode, mode);
+		exit(1);
+	}
+
+	mta_mode = mode;
+	return;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -421,7 +435,6 @@ main(int argc, char *argv[])
 	char* opt;
 	gint arg;
 
-	mta_mode mta_mode = MODE_ACCEPT;
 	gboolean do_listen = FALSE;
 	gboolean do_runq = FALSE;
 	gboolean do_runq_online = FALSE;
@@ -470,24 +483,23 @@ main(int argc, char *argv[])
 			break;
 
 		} else if (strcmp(opt, "bm") == 0) {
-			mta_mode = MODE_ACCEPT;
+			set_mode(MODE_ACCEPT);
 
 		} else if (strcmp(opt, "bd") == 0) {
+			set_mode(MODE_DAEMON);
 			do_listen = TRUE;
-			mta_mode = MODE_DAEMON;
 
 		} else if (strcmp(opt, "bi") == 0) {
-			/* ignored */
-			mta_mode = MODE_BI;
+			set_mode(MODE_BI);
 
 		} else if (strcmp(opt, "bs") == 0) {
-			mta_mode = MODE_SMTP;
+			set_mode(MODE_SMTP);
 
 		} else if (strcmp(opt, "bp") == 0) {
-			mta_mode = MODE_LIST;
+			set_mode(MODE_LIST);
 
 		} else if (strcmp(opt, "bV") == 0) {
-			mta_mode = MODE_VERSION;
+			set_mode(MODE_VERSION);
 
 		} else if (strncmp(opt, "B", 1) == 0) {
 			/* we ignore this and throw the argument away */
@@ -535,7 +547,7 @@ main(int argc, char *argv[])
 			/* ignore -m (me too) switch (see man page) */
 
 		} else if (strcmp(opt, "Mrm") == 0) {
-			mta_mode = MODE_MCMD;
+			set_mode(MODE_MCMD);
 			M_cmd = "rm";
 
 		} else if (strcmp(opt, "odq") == 0) {
@@ -549,7 +561,7 @@ main(int argc, char *argv[])
 
 		} else if (strncmp(opt, "qo", 2) == 0) {
 			/* must be before the `q' check */
-			mta_mode = MODE_RUNQUEUE;
+			set_mode(MODE_RUNQUEUE);
 			do_runq = FALSE;
 			do_runq_online = TRUE;
 			/* can be NULL, then we use online detection method */
@@ -559,13 +571,14 @@ main(int argc, char *argv[])
 			/* must be after the `qo' check */
 			gchar *optarg;
 
-			do_runq = TRUE;
-			mta_mode = MODE_RUNQUEUE;
 			optarg = get_optarg(argv, &arg, opt+1);
 			if (optarg) {
 				/* not just one single queue run but regular runs */
-				mta_mode = MODE_DAEMON;
+				set_mode(MODE_DAEMON);
 				queue_interval = time_interval(optarg);
+			} else {
+				set_mode(MODE_RUNQUEUE);
+				do_runq = TRUE;
 			}
 
 		} else if (strcmp(opt, "t") == 0) {
@@ -580,19 +593,24 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (mta_mode==MODE_ACCEPT && arg==argc && !opt_t) {
+	if (!mta_mode && arg==argc && !opt_t) {
 		/*
 		In this case no rcpts can be found, thus no mail
 		can be sent, thus masqmail will always fail. We
 		rather do something better instead. This covers
 		also the case of calling masqmail without args.
 		*/
-		mta_mode =  MODE_VERSION;
+		mode_version();
+		exit(0);
 	}
 
 	if (mta_mode == MODE_VERSION) {
 		mode_version();
 		exit(0);
+	}
+
+	if (!mta_mode) {
+		mta_mode = MODE_ACCEPT;
 	}
 
 	/* initialize random generator */
