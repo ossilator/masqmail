@@ -9,15 +9,26 @@ The manual pages describe newly added options. Take them for reference.
 
 0.3.1
 
-- Changed the SMTP greeting behavior to match RFC 2821 (always try
-EHLO first). Now always an EHLO greeting is sent first, no matter what
-kind of greeting text the server had sent. If the EHLO failes, an HELO
-greeting is tried as fall back. This change will fix setups in which
-it hadn't been possible to send mail because the server required AUTH
-but hadn't said ``ESMTP'' in its greeting message. Thanks to inne for
-pointing me on that. This fixes also Debian bug #349211.
+- Changed the SMTP greeting behavior to match RFC 2821 (always try EHLO
+first). Now always an EHLO greeting is sent first, no matter what kind of
+greeting text the server had sent. If the EHLO failes, an HELO greeting
+is tried as fall back. This change will fix setups in which it hadn't
+been possible to send mail because the server required AUTH but hadn't
+said ``ESMTP'' in its greeting message. Thanks to inne for pointing me
+on that. This fixes also Debian bug #349211.
 
 - The postmaster address is now matched caseless, as required by RFC.
+
+- Command line address arguments are now added to the recipient
+list instead of substracted, when -t is used. This coveres a rare
+corner-case. It is a change from exim's behavior to postfix's.
+
+- Several changes were made related to the operation modes: The situation
+within the modes was made clear (see man page of masqmail(8)). If more
+than one mode is specified then masqmail aborts. For the default operation
+mode ``accept messages on stdin'' the command line switch -bm was added
+(similar to othe MTAs). If masqmail is called without arguments, the
+version information is printed now.
 
 - The command line option -m is recognized now (although ignored).
 Unknown -oXXX options are ignored. Some software (like spost of nmh)
@@ -29,6 +40,9 @@ weird. Now specifying -oem or -oee results in a (some kind of dumb but)
 logical behavior.  Common users will probably not notice any difference.
 The changes affect only the exit code of the corner-case: Calling masqmail
 with -oem but without -oi/-i while submitting messages on stdin.
+
+- Fixed the recognition of lists of unqualified addresses in headers
+when using -t. E.g. `To: alice, bob'.
 
 - Renamed the config file option `alias_local_caseless' to
 `caseless_matching' because the option affects any address matching.
