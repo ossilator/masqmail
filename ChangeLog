@@ -7,21 +7,38 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
-0.3.1   Wed, 01 Dec 2010 18:11:29 -0300
+0.3.1   Tue, 07 Dec 2010 17:51:27 -0300
 	* smtp_out.c: changed the SMTP greeting behavior to match RFC
 	  2821 (always try EHLO first). Thanks to inne for pointing me
 	  on that. See also Debian bug #349211
 	* fail_msg.c: postmaster is now matched caseless, as
 	  required by RFC
+	* cmdline arguments are now added to the recipient list instead
+	  of substracted, when -t is used
+	* print version if called without arguments (see commit message
+	  or code)
+	* added -bm for mode accept (it's the default but the other MTAs
+	  have it too)
+	* calling masqmail as `newaliases' is now recognized
 	* refactored the cmdline argument processing (-m is recognized,
 	  unknown -oXXX options are ignored now and some corner-cases
 	  covered)
+	* operation modes are now enforced exclusive, fail otherwise
+	* -q and -qo are non-exclusive
 	* fixed -oem by removing it ;-) (see NEWS and docs/oem-option)
+	* heavy refactoring in parse.c and deliver.c, plus various
+	  other refactoring
+	* fixed `To: alice, bob' with -t. If rcpt headers contained
+	  an unqualified address followed by more addresses, they were
+	  not recognized.
 	* created new functions manipulate_queue() and run_queue()
 	  and moved code from main()
 	* replaced the loop-based alias_expand() with a new one that
 	  wraps the recursive alias_one()
 	* removed ADDR_FLAG_NOEXPAND as it is not needed anymore
+	* removed ACC_DEL_RCPTS because it's always used together with
+	  ACC_RCPT_FROM_HEAD
+	* s/EXIT_SUCCESS/0/ && s/EXIT_FAILURE/1/
 	* made addr_isequal() and addr_isequal_parent() more flexible,
 	  thus making addr_isequal_alias() needless and removed
 	* merged rcptlist_with_one_of_hostlist() and
@@ -35,7 +52,7 @@ technical speach and with focus on compatibility.
 	  performed
 	* renamed conf.alias_local_cmp to conf.localpartcmp
 	* minor improvements of debug messages
-	* improved and updated man/masqmail.8
+	* heavily improved and updated man/masqmail.8
 	* several, mostly cosmetic, cleanups
 
 0.3.0   Fri, 23 Jul 2010 21:58:25 +0200
