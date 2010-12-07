@@ -27,17 +27,68 @@ It has special support for connections to different ISPs.
 It replaces sendmail or other MTAs such as qmail or exim.
 
 
+.SH OPERATION MODES
+
+Masqmail operates in one of several exclusive modes.
+
+The daemon mode has two flavors that may be,
+and usually are, combined:
+.TP
+.B \-bd
+listen daemon; listens for incoming SMTP connections.
+.TP
+.B \-q\fRINTERVAL
+queue daemon; processes the queue in a regular interval.
+
+.P
+The queue processing mode has two flavors that may be combined:
+.TP
+.BR \-q
+(without argument)
+do a single queue run.
+.TP
+.B \-qo
+do a single queue run and deliver only using a specific online route.
+
+.P
+The other modes are simple ones:
+.TP
+.B \-bi
+a no-op for masqmail, just exit.
+.TP
+.B \-bm
+accept messages on stdin. (The default)
+.TP
+.B \-bp
+print the contents of the queue.
+.TP
+.B \-bs
+accept messages by speaking SMTP on stdin.
+.TP
+.B \-bV
+print version information.
+.TP
+.B \-Mrm
+remove messages from the queue.
+.P
+Some of the modes are also available by calling masqmail
+under a special name.
+
+When no mode had been specified by either one of the above command line
+options or by calling masqmail under a special name,
+then the default mode \fB\-bm\fR
+(i.e. accept messages on stdin) is entered.
+However, if neither address arguments are specified nor
+\fB\-t\fR is given, then no recipients are available and thus mail can not
+be sent, hence something more useful is done: \fB\-bV\fP is assumed.
+
+
 .SH OPTIONS
 
-Since masqmail is intended to replace sendmail, it uses the same command line options,
+Since masqmail is intended to replace sendmail,
+it uses the same command line options,
 but not all are implemented.
 The \fB\-qo\fP option is additional, and unique to masqmail.
-
-When no mode had been specified by either a command line option
-(e.g. \fB\-bd\fP, \fB\-bs\fP) or by calling masqmail under a special name
-(e.g. ``mailq''), then the default mode is used.
-This is accepting messages on stdin if any address arguments are given,
-and only printing its version (\fB\-bV\fP) otherwise.
 
 .TP
 \fB\-\-\fR
@@ -49,7 +100,8 @@ Mutt is known to call sendmail with this option.
 .TP
 \fB\-bd\fR
 
-Run as daemon, accepting connections, usually on port 25 if not configured differently.
+Run as daemon, accepting connections,
+usually on port 25 if not configured differently.
 This is usually used in the startup script at system boot and together with
 the \fB\-q\fR option (see below).
 
@@ -57,13 +109,21 @@ the \fB\-q\fR option (see below).
 \fB\-bi\fR
 
 Old sendmail rebuilds its alias database when invoked with this option.
-Masqmail ignores it.
 Masqmail reads directly from the file given with `alias_file' in the config file.
+Hence masqmail simply exits in this mode.
+
+.TP
+.B \-bm
+
+Accept a text message on stdin.
+This is the default mode of operation.
+One will hardly use this switch as it is the default.
 
 .TP
 \fB\-bp\fR
 
-Show the messages in the queue. Same as calling masqmail as `mailq'.
+Show the messages in the queue.
+Same as calling masqmail as `mailq'.
 
 .TP
 \fB\-bs\fR
@@ -71,6 +131,11 @@ Show the messages in the queue. Same as calling masqmail as `mailq'.
 Accept SMTP commands from stdin.
 Some mailers (e.g. pine) use this option as an interface.
 It can also be used to call masqmail from inetd.
+
+.TP
+\fB\-bV \fR
+
+Show version information, then exit.
 
 .TP
 \fB\-B \fIarg\fR
@@ -84,11 +149,6 @@ masqmail does not convert 8 bit messages to any MIME format if it encounters
 a mail server which does not advertise its 8BITMIME capability,
 masqmail does not advertise this itself.
 This is the same practice as that of exim (but different to sendmail).
-
-.TP
-\fB\-bV \fR
-
-Show version information.
 
 .TP
 \fB\-C \fIfilename\fR
@@ -125,9 +185,10 @@ Kept for compatibility.
 .TP
 \fB\-Mrm \fImsgid...\fR
 
+``Queue manipulation mode''
+
 Remove given messages from the queue.
-Privileged users may remove any message,
-other users only their own.
+Privileged users may remove any message, other users only their own.
 The message identifiers are listed in the output of
 \fImasqmail \-bp\fP (aka. \fImailq\fR).
 
@@ -153,8 +214,10 @@ Hence masqmail ignores this switch.
 
 ``Do Queueing''
 Do not attempt to deliver immediately.
-Any messages will be queued until the next queue running process picks them up and delivers them.
-You get the same effect by setting the do_queue option in /etc/masqmail/masqmail.conf.
+Any messages will be queued until the next queue running process picks them
+up and delivers them.
+You get the same effect by setting the do_queue option in
+/etc/masqmail/masqmail.conf.
 
 .TP
 \fB\-oi\fR
@@ -172,33 +235,50 @@ This especially affects \-om, \-oem, \-oee.
 .TP
 \fB\-q [\fIinterval\fB]\fR
 
-If not given with an argument, run a queue process, i.e. try to deliver all messages in the queue.
-Masqmail sends only to those addresses that are on the local net, not to those that are outside.
-Use \fB\-qo\fR for those.
+Without argument:
+Do a single queue run, i.e. try to deliver all messages in the queue.
+Masqmail sends to addresses on the local host, on the local net,
+and if it detects an online connection, to remote ones too.
+That means, that masqmail sends any queued mail it can.
+.B \-q
+includes
+.B \-qo
+(without argument).
 
-If you have configured inetd to start masqmail,
-you can use this option in a cron job which starts in regular time intervals,
-to mimic the same effect as starting masqmail with \fB\-bd \-q30m\fR.
-
-An argument may be a time interval i.e. a numerical value followed by one of the letters.
-s,m,h,d,w which are interpreted as seconds, minutes, hours, days or weeks respectively.
-Example: \fB\-q30m\fR.
-Masqmail starts as a daemon and a queue runner process will be started automatically
-once in this time interval.
+With an argument:
+Start as a daemon and do a queue run automatically once in the specified
+time interval.
 This is usually used together with \fB\-bd\fR (see above).
+
+An argument may be a time interval i.e. a numerical value followed by one
+of the letters s,m,h,d,w which are interpreted as
+seconds, minutes, hours, days or weeks respectively.
+Example: \fB\-q30m\fR.
+
+Running masqmail from inetd and starting single queue runs from cron
+mimics the same effect as starting masqmail with something like
+\fB\-bd \-q30m\fR.
 
 .TP
 \fB\-qo [\fIname\fB]\fR
 
-Can be followed by a connection name.
-Use this option in your script which starts as soon as a link to the internet
-has been set up (usually ip-up).
-When masqmail is called with this option, the specified route configuration
-is read and the queued mail with destinations on the internet will be sent.
+Online queue runs.
+
+Without a connection name:
+Determine the online status with the configured method
+(see \fBonline_detect\fR in \fBmasqmail.conf(5)\fR)
+and, if a connection is available, send remote mail over it.
+
+With a connection name:
+Send remote mail over the specified connection,
+no online detection is made.
+
+The specified route configuration is read and queued mail to remote
+recipients will be sent.
 The \fIname\fR is defined in the configuration (see \fBonline_routes.\fIname\fR).
 
-If called without \fIname\fR the online status is determined with the configured
-method (see \fBonline_detect\fR in \fBmasqmail.conf(5)\fR)
+Use this option in your script which starts as soon as a link to the internet
+has been set up (usually ip-up).
 
 .TP
 \fB\-t\fR
