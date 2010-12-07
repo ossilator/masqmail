@@ -650,6 +650,7 @@ main(int argc, char *argv[])
 	}
 
 	conf.log_dir = LOG_DIR;
+	/* FIXME: fails if we run as user */
 	logopen();
 	if (!read_conf(conf_file)) {
 		logwrite(LOG_ALERT, "SHUTTING DOWN due to problems reading config\n");
