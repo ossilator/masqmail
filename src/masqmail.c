@@ -562,7 +562,6 @@ main(int argc, char *argv[])
 		} else if (strncmp(opt, "qo", 2) == 0) {
 			/* must be before the `q' check */
 			set_mode(MODE_RUNQUEUE);
-			do_runq = FALSE;
 			do_runq_online = TRUE;
 			/* can be NULL, then we use online detection method */
 			route_name = get_optarg(argv, &arg, opt+2);
