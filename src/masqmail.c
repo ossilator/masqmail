@@ -460,16 +460,19 @@ main(int argc, char *argv[])
 	} else if (strcmp(progname, "mailrm") == 0) {
 		mta_mode = MODE_MCMD;
 		M_cmd = "rm";
-	} else if (strcmp(progname, "runq") == 0) {
-		mta_mode = MODE_RUNQUEUE;
-		do_runq = TRUE;
+	} else if (strcmp(progname, "newaliases") == 0) {
+		mta_mode = MODE_BI;
 	} else if (strcmp(progname, "rmail") == 0) {
 		/* the `rmail' alias should probably be removed now
 		   that we have the rmail script. But let's keep it
 		   for some while for compatibility. 2010-06-19 */
 		mta_mode = MODE_ACCEPT;
 		opt_i = TRUE;
-	} else if (strcmp(progname, "smtpd") == 0 || strcmp(progname, "in.smtpd") == 0) {
+	} else if (strcmp(progname, "runq") == 0) {
+		mta_mode = MODE_RUNQUEUE;
+		do_runq = TRUE;
+	} else if (strcmp(progname, "smtpd") == 0
+	           || strcmp(progname, "in.smtpd") == 0) {
 		mta_mode = MODE_SMTP;
 	}
 
