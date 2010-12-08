@@ -60,9 +60,8 @@ For installation instructions, see INSTALL.
 BUGS
 ----
 
-There are probably a lot of bugs in masqmail. Please report any one you
-discover to me. The more bug reports I get, the better masqmail will
-get.
+There are probably bugs in masqmail. Please report any one you discover
+to me. The more bug reports I get, the better masqmail will get.
 
 See docs/howto-report-bugs for detailed instructions.
 
