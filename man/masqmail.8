@@ -5,7 +5,7 @@ masqmail \- An offline Mail Transfer Agent
 
 .SH SYNOPSIS
 
-.BR masqmail\  [ \-t ] \  [ \-oi ] \  [ \-f\ \fIADDRESS ] \ \fIRECIPIENT...
+.BR masqmail\  [ \-t ] \  [ \-oi ] \  [ \-f\ \fIADDRESS ]\  \fIRECIPIENT...
 
 .B mailq
 .br
@@ -15,7 +15,7 @@ masqmail \- An offline Mail Transfer Agent
 .br
 .B masqmail \-q
 
-.BR masqmail\ \-qo\  [ \fINAME ]
+.BR masqmail\ \-qo\  \fINAME
 
 .BI mailrm\  MSGID...
 .br
@@ -88,32 +88,34 @@ or invoked as
 Do a single queue run.
 Try to deliver all messages in the queue.
 Masqmail sends to addresses on the local host, on the local net,
-and if it detects an online connection to remote ones too.
+and to remote ones, if available online routes permit.
 That means, masqmail sends all queued mail it can.
-.B \-q
-includes
-.B \-qo
-(without argument).
+Online detection is done with the configured
+method (see \fBonline_detect\fR in \fBmasqmail.conf(5)\fR).
 
 .TP
-.B Single queue run (online)
-.B \-qo \fR[\fB\fINAME\fR]
+.B Single queue run (only named route)
+.BI \-qo\  NAME
 
-Do a single queue run and deliver only using one specific online route.
+Do a single queue run and deliver only using the specified online route.
 
-If a connection name is given, then this one will be used.
-
-If no connection name is given, it will be determined with the configured
-method (see \fBonline_detect\fR in \fBmasqmail.conf(5)\fR) and,
-if none is available no mail will be delivered.
-
-The specified route configuration is read and queued mail to matching
-remote recipients will be sent.
-The \fINAME\fR is defined in the configuration
-(see \fBonline_routes.\fINAME\fR).
+The route configuration for \fINAME\fP is read and queued mail
+to matching remote recipients is sent.
+(See \fBonline_routes.\fINAME\fR in the main config file.)
 
 You may want to use this option in scripts that run as soon as a link
 to the internet has been set up (e.g. ip-up).
+
+.B Obsolete behavior:
+Up to now: If
+.B \-qo
+has no argument, the online connection is determinded
+by online detect and, if available, mail is sent through it.
+If none is available no mail is delivered.
+
+This behavior is likely to change in future versions
+because it is included in \-q.
+We could do something more useful instead.
 
 .P
 The other modes are simple ones:
@@ -335,9 +337,9 @@ This especially affects \-om, \-oem, \-oee.
 ``Daemon (queue)'' mode. See above.
 
 .TP
-\fB\-qo [\fIname\fB]\fR
+\fB\-qo \fIname
 
-``Single queue run (online)'' mode. See above.
+``Single queue run (only named route)'' mode. See above.
 
 .TP
 \fB\-t\fR
