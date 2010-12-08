@@ -19,6 +19,12 @@ on that. This fixes also Debian bug #349211.
 
 - The postmaster address is now matched caseless, as required by RFC.
 
+- -qo (without argument) is now considered obsolete. Its behavior (online
+detect and send over the available route) is included in -q. One may
+simply use -q instead. In the -qo case no local mail is sent, but why
+would be not want to do so? -qo (without arg) is still working but will
+likely change its behavior to something more useful in the future.
+
 - Command line address arguments are now added to the recipient
 list instead of substracted, when -t is used. This coveres a rare
 corner-case. It is a change from exim's behavior to postfix's.
