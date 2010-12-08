@@ -7,7 +7,7 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
-0.3.1   Tue, 07 Dec 2010 17:51:27 -0300
+0.3.1   Wed, 08 Dec 2010 18:03:04 -0300
 	* smtp_out.c: changed the SMTP greeting behavior to match RFC
 	  2821 (always try EHLO first). Thanks to inne for pointing me
 	  on that. See also Debian bug #349211
@@ -20,6 +20,7 @@ technical speach and with focus on compatibility.
 	* added -bm for mode accept (it's the default but the other MTAs
 	  have it too)
 	* calling masqmail as `newaliases' is now recognized
+	* mark -qo (without argument) obsolete (see man page)
 	* refactored the cmdline argument processing (-m is recognized,
 	  unknown -oXXX options are ignored now and some corner-cases
 	  covered)
