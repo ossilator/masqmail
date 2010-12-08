@@ -367,23 +367,29 @@ accept_message_prepare(message * msg, guint flags)
 		for_string = g_strdup_printf(" for %s", addr_string(addr));
 	}
 
-	if (msg->received_host == NULL) {
+	if (!msg->received_host) {
 		/* received locally */
-		hdr = create_header(HEAD_RECEIVED, "Received: from %s by %s with %s (%s %s) id %s%s; %s\n",
-		                    passwd->pw_name, conf.host_name, prot_names[msg->received_prot],
-		                    PACKAGE, VERSION, msg->uid, for_string ? for_string : "", rec_timestamp());
+		hdr = create_header(HEAD_RECEIVED,
+		    "Received: from %s by %s with %s (%s %s) id %s%s; %s\n",
+		    passwd->pw_name, conf.host_name,
+		    prot_names[msg->received_prot], PACKAGE, VERSION,
+		    msg->uid, for_string ? for_string : "", rec_timestamp());
 	} else {
 		/* received from remote */
 #ifdef ENABLE_IDENT
 		DEBUG(5) debugf("adding 'Received:' header (5)\n");
-		hdr = create_header(HEAD_RECEIVED, "Received: from %s (ident=%s) by %s with %s (%s %s) id %s%s; %s\n",
-		                    msg->received_host, msg->ident ? msg->ident : "unknown", conf.host_name,
-		                    prot_names[msg->received_prot], PACKAGE, VERSION, msg->uid, for_string ? for_string : "",
-		                    rec_timestamp());
+		hdr = create_header(HEAD_RECEIVED,
+		    "Received: from %s (ident=%s) by %s with %s (%s %s) id %s%s; %s\n",
+		    msg->received_host, msg->ident ? msg->ident : "unknown",
+		    conf.host_name, prot_names[msg->received_prot], PACKAGE,
+		    VERSION, msg->uid, for_string ? for_string : "",
+		    rec_timestamp());
 #else
-		hdr = create_header(HEAD_RECEIVED, "Received: from %s by %s with %s (%s %s) id %s%s; %s\n",
-		                    msg->received_host, conf.host_name, prot_names[msg->received_prot],
-		                    PACKAGE, VERSION, msg->uid, for_string ? for_string : "", rec_timestamp());
+		hdr = create_header(HEAD_RECEIVED,
+		    "Received: from %s by %s with %s (%s %s) id %s%s; %s\n",
+		    msg->received_host, conf.host_name,
+		    prot_names[msg->received_prot], PACKAGE, VERSION,
+		    msg->uid, for_string ? for_string : "", rec_timestamp());
 #endif
 	}
 	header_fold(hdr);
