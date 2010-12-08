@@ -371,8 +371,6 @@ manipulate_queue(char* cmd, char* id[])
 }
 
 /* -qo, -q (without argument), or called as runq */
-/* TODO: are -qo and -q exclusively or not?
-         And how is this related to being a daemon? */
 static int
 run_queue(gboolean do_runq, gboolean do_runq_online, char* route_name)
 {
@@ -390,6 +388,8 @@ run_queue(gboolean do_runq, gboolean do_runq_online, char* route_name)
 			conf.online_detect = g_strdup("argument");
 			set_online_name(route_name);
 		}
+		/* TODO: change behavior of `-qo without argument'?
+		         Because that behavior is included in -q. */
 		ret = queue_run_online();
 	}
 	return ret;
@@ -567,7 +567,12 @@ main(int argc, char *argv[])
 			set_mode(MODE_RUNQUEUE);
 			do_runq_online = TRUE;
 			/* can be NULL, then we use online detection method */
+			/* TODO: behavior might change if it is NULL */
 			route_name = get_optarg(argv, &arg, opt+2);
+			if (!route_name) {
+				fprintf(stderr, "Please do not use -qo without argument anymore; use -q instead.\n");
+				fprintf(stderr, "The behavior for -qo without argument is likely to change.\n");
+			}
 
 		} else if (strncmp(opt, "q", 1) == 0) {
 			/* must be after the `qo' check */
