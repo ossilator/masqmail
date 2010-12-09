@@ -49,10 +49,11 @@ rec_timestamp()
 	memcpy(&local, t, sizeof(struct tm));
 	gmt = gmtime(&now);
 	diff_min = 60 * (local.tm_hour - gmt->tm_hour) + local.tm_min - gmt->tm_min;
-	if (local.tm_year != gmt->tm_year)
+	if (local.tm_year != gmt->tm_year) {
 		diff_min += (local.tm_year > gmt->tm_year) ? 1440 : -1440;
-	else if (local.tm_yday != gmt->tm_yday)
+	} else if (local.tm_yday != gmt->tm_yday) {
 		diff_min += (local.tm_yday > gmt->tm_yday) ? 1440 : -1440;
+	}
 	diff_hour = diff_min / 60;
 	diff_min = abs(diff_min - diff_hour * 60);
 
@@ -75,23 +76,27 @@ find_header(GList * hdr_list, header_id id, gchar * hdr_str)
 	GList *found_list = NULL;
 	GList *node;
 
-	if ((id != HEAD_UNKNOWN) || (hdr_str == NULL)) {
+	if ((id != HEAD_UNKNOWN) || !hdr_str) {
 		foreach(hdr_list, node) {
 			header *hdr = (header *) (node->data);
-			if (hdr->id == id)
+			if (hdr->id == id) {
 				found_list = g_list_append(found_list, hdr);
+			}
 		}
-	} else {
-		foreach(hdr_list, node) {
-			header *hdr = (header *) (node->data);
-			gchar buf[64], *q = buf, *p = hdr->header;
+		return found_list;
+	}
 
-			while (*p != ':' && q < buf + 63 && *p)
-				*(q++) = *(p++);
-			*q = '\0';
+	foreach(hdr_list, node) {
+		header *hdr = (header *) (node->data);
+		gchar buf[64], *q = buf, *p = hdr->header;
 
-			if (strcasecmp(buf, hdr_str) == 0)
-				found_list = g_list_append(found_list, hdr);
+		while (*p != ':' && q < buf+sizeof(buf)-1 && *p) {
+			*(q++) = *(p++);
+		}
+		*q = '\0';
+
+		if (strcasecmp(buf, hdr_str) == 0) {
+			found_list = g_list_append(found_list, hdr);
 		}
 	}
 	return found_list;
@@ -105,10 +110,11 @@ header_unfold(header * hdr)
 	gboolean flag = FALSE;
 
 	while (*p) {
-		if (*p != '\n')
+		if (*p != '\n') {
 			*(q++) = *p;
-		else
+		} else {
 			flag = TRUE;
+		}
 		p++;
 	}
 	*(q++) = '\n';
@@ -130,14 +136,29 @@ header_fold(header * hdr)
 {
 	gint len = strlen(hdr->header);
 	gchar *p, *q;
+	gchar *tmp_hdr;
+	int valueoffset;
+
+	if (len < MAX_HDR_LEN) {
+		/* we don't need to do anything */
+		return;
+	}
+
+	/* the position in hdr->header where the value part starts */
+	valueoffset = hdr->value - hdr->header;
+
+	/* TODO: size is only calculated roughly */
 	/* size is probably overestimated, but so we are on the safe side */
-	gchar *tmp_hdr = g_malloc(len + 2 * len / MAX_HDR_LEN);
+	/* (as much as we already have + chars inserted per break * number
+	    of breaks + some more) */
+	tmp_hdr = g_malloc(len + 2 * (len/MAX_HDR_LEN) + 10);
 
 	p = hdr->header;
 	q = tmp_hdr;
 
-	if (p[len - 1] == '\n')
+	if (p[len - 1] == '\n') {
 		p[len - 1] = '\0';
+	}
 
 	while (*p) {
 		gint i, l;
@@ -148,16 +169,19 @@ header_fold(header * hdr)
 		l = -1;
 		pp = p;
 		while (*pp && (i < MAX_HDR_LEN)) {
-			if ((*pp == ' ') || (*pp == '\t'))
+			if ((*pp == ' ') || (*pp == '\t')) {
 				l = i;
+			}
 			pp++;
 			i++;
 		}
-		if (!*pp)
+		if (!*pp) {
 			l = pp - p;  /* take rest, if EOS found */
+		}
 
 		if (l == -1) {
-			/* no potential break point was found within MAX_HDR_LEN so advance further until the next */
+			/* no potential break point was found within
+			   MAX_HDR_LEN so advance further until the next */
 			while (*pp && *pp != ' ' && *pp != '\t') {
 				pp++;
 				i++;
@@ -173,16 +197,12 @@ header_fold(header * hdr)
 		}
 		*(q++) = '\n';
 		*(q++) = *(p++);  /* this is either space, tab or 0 */
+		/* *(q++) = '\t'; */
 	}
-	{
-		gchar *new_hdr;
 
-		g_free(hdr->header);
-		new_hdr = g_strdup(tmp_hdr);
-		g_free(tmp_hdr);
-		hdr->value = new_hdr + (hdr->value - hdr->header);
-		hdr->header = new_hdr;
-	}
+	g_free(hdr->header);
+	hdr->header = tmp_hdr;
+	hdr->value = hdr->header + valueoffset;
 }
 
 header*
@@ -193,18 +213,26 @@ create_header(header_id id, gchar * fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 
-	if ((hdr = g_malloc(sizeof(header)))) {
+	/* g_malloc() calls exit on failure */
+	hdr = g_malloc(sizeof(header));
 
-		hdr->id = id;
-		hdr->header = g_strdup_vprintf(fmt, args);
-		hdr->value = NULL;
+	hdr->id = id;
+	hdr->header = g_strdup_vprintf(fmt, args);
+	hdr->value = NULL;
 
-		p = hdr->header;
-		while (*p && *p != ':')
+	/* value shall point to the first non-whitespace char in the
+	   value part of the header line (i.e. after the first colon) */
+	p = strchr(hdr->header, ':');
+	if (p) {
+		p++;
+		while (*p == ' ' || *p == '\t' || *p == '\n') {
 			p++;
-		if (*p)
-			hdr->value = p + 1;
+		}
+		hdr->value = (*p) ? p : NULL;
 	}
+
+	DEBUG(3) debugf("create_header(): hdr: `%s'\n", hdr->header);
+	DEBUG(3) debugf("create_header(): val: `%s'\n", hdr->value);
 
 	va_end(args);
 	return hdr;
@@ -214,8 +242,9 @@ void
 destroy_header(header * hdr)
 {
 	if (hdr) {
-		if (hdr->header)
+		if (hdr->header) {
 			g_free(hdr->header);
+		}
 		g_free(hdr);
 	}
 }
@@ -226,11 +255,10 @@ copy_header(header * hdr)
 	header *new_hdr = NULL;
 
 	if (hdr) {
-		if ((new_hdr = g_malloc(sizeof(header)))) {
-			new_hdr->id = hdr->id;
-			new_hdr->header = g_strdup(hdr->header);
-			new_hdr->value = new_hdr->header + (hdr->value - hdr->header);
-		}
+		new_hdr = g_malloc(sizeof(header));
+		new_hdr->id = hdr->id;
+		new_hdr->header = g_strdup(hdr->header);
+		new_hdr->value = new_hdr->header + (hdr->value - hdr->header);
 	}
 	return new_hdr;
 }
@@ -243,31 +271,38 @@ get_header(gchar * line)
 	gint i;
 	header *hdr;
 
-	while (*p && (*p != ':') && (q < buf + 63))
+	while (*p && (*p != ':') && (q < buf+sizeof(buf)-1)) {
 		*(q++) = *(p++);
+	}
 	*q = '\0';
 
-	if (*p != ':')
+	if (*p != ':') {
 		return NULL;
+	}
 
 	hdr = g_malloc(sizeof(header));
 
 	hdr->value = NULL;
 	p++;
 
-	while (*p && (*p == ' ' || *p == '\t'))
+	while (*p && (*p == ' ' || *p == '\t')) {
 		p++;
+	}
 	hdr->value = p;
+	/* Note: an empty value can also mean that it's only the first part
+	         of a folded header line */
 
 	for (i = 0; i < HEAD_NUM_IDS; i++) {
-		if (strcasecmp(header_names[i].header, buf) == 0)
+		if (strcasecmp(header_names[i].header, buf) == 0) {
 			break;
+		}
 	}
 	hdr->id = (header_id) i;
 	hdr->header = g_strdup(line);
 	hdr->value = hdr->header + (hdr->value - line);
 
 	DEBUG(4) debugf("header: %d = %s", hdr->id, hdr->header);
+	/* Note: This only outputs the first line if the header is folded */
 
 	return hdr;
 }
