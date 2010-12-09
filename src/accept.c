@@ -362,7 +362,7 @@ accept_message_prepare(message * msg, guint flags)
 
 	if (g_list_length(msg->rcpt_list) == 1) {
 		address *addr = (address *) (g_list_first(msg->rcpt_list)->data);
-		for_string = g_strdup_printf("\n\tfor %s", addr_string(addr));
+		for_string = g_strdup_printf(" for %s", addr_string(addr));
 	}
 
 	if (!msg->received_host) {
@@ -390,7 +390,7 @@ accept_message_prepare(message * msg, guint flags)
 		    msg->uid, for_string ? for_string : "", rec_timestamp());
 #endif
 	}
-	header_fold(hdr);
+	header_fold(hdr, 78);
 	msg->hdr_list = g_list_prepend(msg->hdr_list, hdr);
 
 	if (for_string)

@@ -128,78 +128,83 @@ header_unfold(header * hdr)
         *(dest++) = '\0';
 }
 
-#define MAX_HDR_LEN 72
+/*
+   fold the header at maxlen chars (newline excluded)
+   (We exclude the newline because the RFCs deal with it this way)
+*/
 void
-header_fold(header * hdr)
+header_fold(header* hdr, unsigned int maxlen)
 {
-	gint len = strlen(hdr->header);
-	gchar *p, *q;
-	gchar *tmp_hdr;
+	int len = strlen(hdr->header);
+	char* src = hdr->header;
+	char* dest;
+	char* tmp;
+	char* p;
 	int valueoffset;
 
-	if (len < MAX_HDR_LEN) {
+	if (len <= maxlen) {
 		/* we don't need to do anything */
 		return;
 	}
 
-	/* the position in hdr->header where the value part starts */
+	/* strip trailing whitespace */
+	for (p=src+len-1; *p==' '||*p=='\t'||*p=='\n'; p--) {
+		*p = '\0';
+		len--;
+		printf("  trailing whitespace\n");
+	}
+	printf("stripped len: %d\n", len);
+
+	/* FIXME: would be nice to have a better size calculation */
+	/* (the current size + what we insert as break, twice as often as
+	    we have breaks in the optimal case) */
+	tmp = malloc(len + 2 * (len/maxlen) * strlen("\n\t"));
+	dest = tmp;
+
+	/* the position in hdr->header where the value part start */
 	valueoffset = hdr->value - hdr->header;
 
-	/* TODO: size is only calculated roughly */
-	/* size is probably overestimated, but so we are on the safe side */
-	/* (as much as we already have + chars inserted per break * number
-	    of breaks + some more) */
-	tmp_hdr = g_malloc(len + 2 * (len/MAX_HDR_LEN) + 10);
+	while (strlen(src) > maxlen) {
+		int i, l;
+		char *pp;
 
-	p = hdr->header;
-	q = tmp_hdr;
-
-	if (p[len - 1] == '\n') {
-		p[len - 1] = '\0';
-	}
-
-	while (*p) {
-		gint i, l;
-		gchar *pp;
-
-		/* look forward and find potential break points */
-		i = 0;
-		l = -1;
-		pp = p;
-		while (*pp && (i < MAX_HDR_LEN)) {
-			if ((*pp == ' ') || (*pp == '\t')) {
-				l = i;
+		for (pp=src+maxlen; pp>src; pp--) {
+			if (*pp==' ' || *pp=='\t' || *p=='\n') {
+				break;
 			}
-			pp++;
-			i++;
+		}
+			
+		if (src == pp) {
+			/* no potential break point was found within
+			   maxlen so advance further until the next */
+			for (pp=src+maxlen; *pp; pp++) {
+				if (*pp==' ' || *pp=='\t' || *p=='\n') {
+					break;
+				}
+			}
 		}
 		if (!*pp) {
-			l = pp - p;  /* take rest, if EOS found */
+			break;
 		}
 
-		if (l == -1) {
-			/* no potential break point was found within
-			   MAX_HDR_LEN so advance further until the next */
-			while (*pp && *pp != ' ' && *pp != '\t') {
-				pp++;
-				i++;
-			}
-			l = i;
+		memcpy(dest, src, pp-src);
+		dest += pp-src;
+		*(dest++) = '\n';
+		*(dest++) = '\t';
+		while (*pp == ' ' || *pp == '\t' || *p=='\n') {
+			pp++;
 		}
+		src = pp;
+	}
+	memcpy(dest, src, strlen(src));
+	dest += strlen(src);
 
-		/* copy */
-		i = 0;
-		while (i < l) {
-			*(q++) = *(p++);
-			i++;
-		}
-		*(q++) = '\n';
-		*(q++) = *(p++);  /* this is either space, tab or 0 */
-		/* *(q++) = '\t'; */
+	if (*(dest-1) != '\n') {
+		*dest = '\n';
+		*(dest+1) = '\0';
 	}
 
-	g_free(hdr->header);
-	hdr->header = tmp_hdr;
+	hdr->header = tmp;
 	hdr->value = hdr->header + valueoffset;
 }
 
