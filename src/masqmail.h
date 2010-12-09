@@ -203,9 +203,9 @@ typedef struct _table_pair {
 } table_pair;
 
 
+/* must match the contents of prot_names[] in accept.c */
 typedef enum _prot_id {
 	PROT_LOCAL = 0,
-	PROT_BSMTP,
 	PROT_SMTP,
 	PROT_ESMTP,
 	PROT_NUM
