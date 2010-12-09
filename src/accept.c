@@ -20,11 +20,11 @@
 #include "masqmail.h"
 #include "readsock.h"
 
+/* must match PROT_* in masqmail.h */
 gchar *prot_names[] = {
 	"local",
-	"bsmtp",
-	"smtp",
-	"esmtp",
+	"SMTP",
+	"ESMTP",
 	"(unknown)"  /* should not happen, but better than crashing. */
 };
 
@@ -308,7 +308,7 @@ accept_message_prepare(message * msg, guint flags)
 				addr = g_strdup(hdr->value);
 				g_strchomp(addr);
 
-				msg->return_path = create_address_qualified(addr, FALSE, msg->received_host));
+				msg->return_path = create_address_qualified(addr, FALSE, msg->received_host);
 				if (msg->return_path) {
 					DEBUG(3) debugf("setting return_path to %s\n", addr_string(msg->return_path));
 					msg->hdr_list = g_list_append( msg->hdr_list, create_header(HEAD_UNKNOWN, "X-Warning: return path set from %s address\n", hdr->id == HEAD_SENDER ? "Sender:" : "From:"));
@@ -330,7 +330,7 @@ accept_message_prepare(message * msg, guint flags)
 			return AERR_NORCPT;
 		}
 
-		if (!has_sender && !has_from)) {
+		if (!has_sender && !has_from) {
 			DEBUG(3) debugf("adding 'From:' header\n");
 			if (msg->full_sender_name) {
 				msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_FROM, "From: \"%s\" <%s@%s>\n", msg->full_sender_name, msg->return_path->local_part, msg->return_path->domain));
