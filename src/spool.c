@@ -182,13 +182,16 @@ spool_read_header(message * msg)
 	/* mail headers */
 	while ((len = read_line(in, buf, MAX_DATALINE)) > 0) {
 		if (strncasecmp(buf, "HD:", 3) == 0) {
+			DEBUG(6) debugf("spool_read_header(): hdr start\n");
 			hdr = get_header(&(buf[3]));
 			msg->hdr_list = g_list_append(msg->hdr_list, hdr);
 		} else if ((buf[0] == ' ' || buf[0] == '\t') && hdr) {
+			DEBUG(6) debugf("spool_read_header(): hdr continuation\n");
 			char *tmp = hdr->header;
 			/* header continuation */
 			hdr->header = g_strconcat(hdr->header, buf, NULL);
 			hdr->value = hdr->header + (hdr->value - tmp);
+			free(tmp);  /* because g_strconcat() allocs and copies */
 		} else {
 			break;
 		}
