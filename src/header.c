@@ -105,29 +105,27 @@ find_header(GList * hdr_list, header_id id, gchar * hdr_str)
 void
 header_unfold(header * hdr)
 {
-	gchar *tmp_hdr = g_malloc(strlen(hdr->header));
-	gchar *p = hdr->header, *q = tmp_hdr;
-	gboolean flag = FALSE;
+        char *src = hdr->header;
+        char *dest = src;
+        char *p;
 
-	while (*p) {
-		if (*p != '\n') {
-			*(q++) = *p;
-		} else {
-			flag = TRUE;
-		}
-		p++;
-	}
-	*(q++) = '\n';
+        p = strchr(src, '\n');
+        if (!p || !p[1]) {
+                /* no folded header */
+                return;
+        }
 
-	if (flag) {
-		gchar *new_hdr;
-
-		g_free(hdr->header);
-		new_hdr = g_strdup(tmp_hdr);
-		g_free(tmp_hdr);
-		hdr->value = new_hdr + (hdr->value - hdr->header);
-		hdr->header = new_hdr;
-	}
+        while (*src) {
+                if (*src == '\n') {
+                        /* ignore */
+                        src++;
+                } else {
+                        /* copy */
+                        *(dest++) = *(src++);
+                }
+        }
+        *(dest++) = '\n';
+        *(dest++) = '\0';
 }
 
 #define MAX_HDR_LEN 72
