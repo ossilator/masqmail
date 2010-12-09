@@ -191,26 +191,23 @@ accept_message_prepare(message * msg, guint flags)
 
 	/* create unique message id */
 	msg->uid = g_malloc(14);
-
 	string_base62(msg->uid, rec_time, 6);
 	msg->uid[6] = '-';
-	string_base62(&(msg->uid[7]), getpid(), 3);
+	string_base62(msg->uid + 7, getpid(), 3);
 	msg->uid[10] = '-';
-	string_base62(&(msg->uid[11]), msg->transfer_id, 2);
-	msg->uid[13] = 0;
+	string_base62(msg->uid + 11, msg->transfer_id, 2);
+	msg->uid[13] = '\0';
 
-	/* if local, get password entry */
-	if (msg->received_host == NULL) {
+	/* if local, get password entry and set return path if missing */
+	if (!msg->received_host) {
 		passwd = g_memdup(getpwuid(geteuid()), sizeof(struct passwd));
 		msg->ident = g_strdup(passwd->pw_name);
-	}
-
-	/* set return path if local */
-	if (msg->return_path == NULL && msg->received_host == NULL) {
-		gchar *path = g_strdup_printf("<%s@%s>", passwd->pw_name, conf.host_name);
-		DEBUG(3) debugf("setting return_path for local accept: %s\n", path);
-		msg->return_path = create_address(path, TRUE);
-		g_free(path);
+		if (!msg->return_path) {
+			gchar *path = g_strdup_printf("<%s@%s>", passwd->pw_name, conf.host_name);
+			DEBUG(3) debugf("setting return_path for local accept: %s\n", path);
+			msg->return_path = create_address(path, TRUE);
+			g_free(path);
+		}
 	}
 
 	/* scan headers */
@@ -224,7 +221,8 @@ accept_message_prepare(message * msg, guint flags)
 		header *hdr;
 
 		for (hdr_node = g_list_first(msg->hdr_list);
-		     hdr_node != NULL; hdr_node = hdr_node_next) {
+		     hdr_node;
+		     hdr_node = hdr_node_next) {
 			hdr_node_next = g_list_next(hdr_node);
 			hdr = ((header *) (hdr_node->data));
 			DEBUG(5) debugf("scanning headers: %s", hdr->header);
@@ -287,16 +285,20 @@ accept_message_prepare(message * msg, guint flags)
 			}
 		}
 
-		if (msg->return_path == NULL) {
-			/* this can happen for pop3 accept only and if no Return-path: header was given */
+		if (!msg->return_path) {
+			/* TODO: do we still need this as we don't fetch
+			         mail anymore? */
+			/* this can happen for pop3 accept only and if no
+			   Return-Path: header was given */
 			GList *hdr_list;
 			header *hdr;
 
 			DEBUG(3) debugf("return_path == NULL\n");
 
 			hdr_list = find_header(msg->hdr_list, HEAD_SENDER, NULL);
-			if (!hdr_list)
+			if (!hdr_list) {
 				hdr_list = find_header(msg->hdr_list, HEAD_FROM, NULL);
+			}
 			if (hdr_list) {
 				gchar *addr;
 				hdr = (header *) (g_list_first(hdr_list)->data);
@@ -306,19 +308,19 @@ accept_message_prepare(message * msg, guint flags)
 				addr = g_strdup(hdr->value);
 				g_strchomp(addr);
 
-				if ((msg->return_path = create_address_qualified(addr, FALSE, msg->received_host)) != NULL) {
+				msg->return_path = create_address_qualified(addr, FALSE, msg->received_host));
+				if (msg->return_path) {
 					DEBUG(3) debugf("setting return_path to %s\n", addr_string(msg->return_path));
-					msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_UNKNOWN,
-					                              "X-Warning: return path set from %s address\n",
-					                              hdr->id == HEAD_SENDER ? "Sender:" : "From:"));
+					msg->hdr_list = g_list_append( msg->hdr_list, create_header(HEAD_UNKNOWN, "X-Warning: return path set from %s address\n", hdr->id == HEAD_SENDER ? "Sender:" : "From:"));
 				}
 				g_free(addr);
 			}
-			if (msg->return_path == NULL) {  /* no Sender: or From: or create_address_qualified failed */
+			if (!msg->return_path) {
+				/* no Sender: or From: or
+				   create_address_qualified failed */
 				msg->return_path = create_address_qualified("postmaster", TRUE, conf.host_name);
 				DEBUG(3) debugf("setting return_path to %s\n", addr_string(msg->return_path));
-				msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_UNKNOWN,
-				                              "X-Warning: real return path is unknown\n"));
+				msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_UNKNOWN, "X-Warning: real return path is unknown\n"));
 			}
 		}
 
@@ -328,17 +330,13 @@ accept_message_prepare(message * msg, guint flags)
 			return AERR_NORCPT;
 		}
 
-		if (!(has_sender || has_from)) {
-			DEBUG(3) debugf("adding 'From' header\n");
-			msg->hdr_list = g_list_append(msg->hdr_list,
-			                msg->full_sender_name
-			                ?
-			                  create_header(HEAD_FROM, "From: \"%s\" <%s@%s>\n", msg->full_sender_name,
-			                                msg->return_path->local_part, msg->return_path->domain)
-			                :
-			                  create_header(HEAD_FROM, "From: <%s@%s>\n",
-			                                msg->return_path->local_part, msg->return_path->domain)
-			                );
+		if (!has_sender && !has_from)) {
+			DEBUG(3) debugf("adding 'From:' header\n");
+			if (msg->full_sender_name) {
+				msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_FROM, "From: \"%s\" <%s@%s>\n", msg->full_sender_name, msg->return_path->local_part, msg->return_path->domain));
+			} else {
+				msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_FROM, "From: <%s@%s>\n", msg->return_path->local_part, msg->return_path->domain));
+			}
 		}
 		if (!has_to_or_cc) {
 			DEBUG(3) debugf("no To: or Cc: header, hence adding `To: undisclosed recipients:;'\n");
@@ -350,13 +348,13 @@ accept_message_prepare(message * msg, guint flags)
 		}
 		if (!has_id) {
 			DEBUG(3) debugf("adding 'Message-ID:' header\n");
-			msg->hdr_list = g_list_append(msg->hdr_list,
-			                              create_header(HEAD_MESSAGE_ID, "Message-ID: <%s@%s>\n", msg->uid, conf.host_name));
+			msg->hdr_list = g_list_append(msg->hdr_list, create_header(HEAD_MESSAGE_ID, "Message-ID: <%s@%s>\n", msg->uid, conf.host_name));
 		}
 	}
 
 	/* Received header: */
 	/* At this point because we have to know the rcpts for the 'for' part */
+	/* The `for' part will only be used if exactly one rcpt is present. */
 	gchar *for_string = NULL;
 	header *hdr = NULL;
 
@@ -364,7 +362,7 @@ accept_message_prepare(message * msg, guint flags)
 
 	if (g_list_length(msg->rcpt_list) == 1) {
 		address *addr = (address *) (g_list_first(msg->rcpt_list)->data);
-		for_string = g_strdup_printf(" for %s", addr_string(addr));
+		for_string = g_strdup_printf("\n\tfor %s", addr_string(addr));
 	}
 
 	if (!msg->received_host) {
