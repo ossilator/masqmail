@@ -1,0 +1,68 @@
+How to do a masqmail release
+============================
+meillo 2010-12-09
+
+
+This document helps me to not forget any steps and to document how I
+did it for any new maintainer who might come after me. This document
+was inspired by docs/README.developers of the nmh project.
+
+
+(1) Be sure that the current state of the project is ready to
+release. Test if it compiles. Test if it works (this should be done
+automatically with a better test suite).
+
+(2) Update ChangeLog and NEWS based on the VCS log. Don't forget to
+update the time of the ChangeLog entry. Check if contributions from
+others are acknowledged adequately (ChangeLog, THANKS).
+
+(3) Remove the -dev suffix from the version number in configure.ac. Run
+autoconf afterwards to transfer the change to the configure script. Build
+masqmail and run it with -bV to check the version.
+
+(4) Run devel/list-versions and devel/update-manpage-date afterwards to
+have the right version and date in the man pages.
+
+(5) Is everything checked in?
+
+(6) Run `make distclean', check for remaining files (just in case). `hg
+st' is helpful. Build anew: `./configure ... && make && sudo make
+install'. Check if everything went well. If so, `make distclean again'.
+
+
+Now we should be ready to release.
+
+
+(7) Run `devel/gen-release ../masqmail-0.x.y.tar.gz'. An md5sum will
+be generated automatically and a detached gpg signature will be created
+(this requires gnupg with a secret key).
+
+(8) Unpack the generated tarball and examine its contents (-t or
+-xv). Build masqmail anew from the tarball, see (6).
+
+(9) Check the md5sum and the signature.
+
+
+Let's release.
+
+
+(10) Upload the tarball, the md5sum and the signature to the website.
+
+(11) Write a release announcement to the mailing list. Preferably, the
+announcement should contain the MD5 hash generated above, and should be
+PGP-signed. It should include the URL for the tarball as well as the URL
+of the website. It should contain a brief summary of visible changes, as
+well as the URL of the webpage that would show a detailed list of changes.
+
+(12) Submit a release info to freshmeat.net.
+
+(13) Add a version tag to the VCS.
+
+(14) Change the version number in configure.ac: Increment it and add
+-dev to it. Run autoconf afterwards to propagate the change.
+
+
+Done.
+
+
+Enjoy the day.  :-)
