@@ -81,8 +81,6 @@ typedef struct _connect_route {
 	gchar *name;
 	gchar *filename;
 
-	gchar *protocol;
-
 	gboolean is_local_net;
 	gboolean last_route;
 

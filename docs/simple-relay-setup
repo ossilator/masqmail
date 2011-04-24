@@ -34,8 +34,6 @@ You need a config file like this one:
 
 Addionally you need to create the route config file like:
 
-    protocol = smtp
-
     # where to relay to; the address and port of the smart host
     mail_host = "mail.gmx.net:25"
     # use a wrapper to enable encryption

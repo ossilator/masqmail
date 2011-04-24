@@ -9,15 +9,13 @@ masqmail.route \- masqmail route configuration file
 This man page describes the syntax of the route configuration files of \fBmasqmail (8)\fR.
 Their usual locations are in \fI/etc/masqmail/\fR.
 
-.SH OPTIONS
-
-.TP
-\fBprotocol\fR = \fIstring\fR
-
-\fIstring\fR can be one of `smtp' or `pipe', default is `smtp'.
-If set to `smtp', mail will be sent with the SMTP protocol to its destination.
-If set to `pipe', you also have to set `pipe' to a command, the message will then be piped to a program.
+Mail will be sent with the SMTP protocol to its destination, unless
+`pipe' is given.
+In this case the message will be piped to the given program.
 See option `pipe' below.
+
+
+.SH OPTIONS
 
 .TP
 \fBmail_host\fR = \fIstring\fR
@@ -305,7 +303,6 @@ interactively on the command line.
 .TP
 \fBpipe\fR = \fIcommand\fR
 
-If set, and protocol is set to `pipe',
 \fIcommand\fR will be called and the message will be piped to its stdin.
 Purpose is to use gateways to uucp, fax, sms or whatever else.
 
@@ -315,15 +312,15 @@ these are the same as for the mda in the main configuration, see \fBmasqmail.con
 .TP
 \fBpipe_fromline = \fIboolean\fR
 
-If this is set, and protocol is set to `pipe',
-a from line will be prepended to the output stream whenever a pipe command is called.
+Only if `pipe' is used.
+A from line will be prepended to the output stream whenever a pipe command is called.
 Default is false.
 
 .TP
 \fBpipe_fromhack = \fIboolean\fR
 
-If this is set, and protocol is set to `pipe',
-each line beginning with `From ' is replaced with `>From ' whenever a pipe command is called.
+Only if `pipe' is used.
+Each line beginning with `From ' is replaced with `>From ' whenever a pipe command is called.
 You probably want this if you have set \fBpipe_fromline\fR above.
 Default is false.
 
