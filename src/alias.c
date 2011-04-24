@@ -155,7 +155,7 @@ expand_one(GList* alias_table, address* addr)
 	
 		if (val[0] == '|') {
 			DEBUG(5) debugf("alias: '%s' is a pipe address\n", val);
-			alias_addr = create_address_pipe(val+1);
+			alias_addr = create_address_pipe(val);
 			g_free(val);
 			DEBUG(6) debugf("alias:     pipe generated: %s\n",
 			                alias_addr->local_part);
