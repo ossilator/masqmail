@@ -40,7 +40,8 @@ base64_encode(guchar * buf, gint len)
 	enc[i++] = '+';
 	enc[i++] = '/';
 
-	outbuf = g_malloc(((len + 3) * 8) / 6);
+	outbuf = g_malloc(((len + 3) * 8) / 6 +1);
+	memset(outbuf, 0, ((len + 3) * 8) / 6 +1);
 	q = outbuf;
 
 	i = 0;
@@ -78,7 +79,8 @@ gchar *base64_decode(gchar * buf, gint * size)
 	guchar *p = buf, *q;
 	guint in[4];
 	/* gchar *out = g_malloc(((strlen(buf)+3) * 3) / 4 + 1); */
-	gchar *out = g_malloc((strlen(buf) + 3) + 1);
+	gchar *out = g_malloc((strlen(buf) + 3) + 1 +1);
+	memset(out, 0, (strlen(buf) + 3) + 1 +1);
 
 	q = out;
 	*size = 0;
@@ -125,5 +127,6 @@ gchar *base64_decode(gchar * buf, gint * size)
 			}
 		}
 	}
+	out[*size] = '\0';
 	return out;
 }
