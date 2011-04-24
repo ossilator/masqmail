@@ -131,14 +131,13 @@ A semicolon `;' separated list of fully qualified email-addresses which are
 considered local although their domain name part is not in the list of \fBlocal_hosts\fR. 
 This list can be seen as an addition to \fBlocal_hosts\fP.
 
-For example: There are two people working at your LAN: person1@yourdomain and person2@yourdomain.
-But there are other persons @yourdomain which are NOT local.
-So you can not put yourdomain to the list of local_hosts.
-If person1 now wants to write to person2@yourdomain and this mail should not leave the LAN then you can put
+Further more only the local part of the addresses will be regarded,
+seeing it as a local user.
 
-local_addresses = "person1@yourdomain;person2@yourdomain"
+Example: \fIlocal_addresses = "person1@yourdomain;person2@yourdomain"\fP
 
-to your masqmail.conf.
+This means mail to person1@yourdomain will effectively go to
+person1@localhost, if not redirected by an alias.
 
 .TP
 \fBnot_local_addresses = \fIlist\fR
