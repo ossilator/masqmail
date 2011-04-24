@@ -35,6 +35,23 @@ the change will have effect next time a delivery is attemped.
 There is no need to restart masqmail or run any command when the alias file has been changed.
 
 
+.SH EXAMPLE
+
+.nf
+# postmaster is required by RFC 2821
+postmaster: root
+
+# forward abuse mail to another address
+abuse: abuse@example.org
+
+# copy root's mail also to meillo
+root: \\root, meillo
+
+# pass mail to a script
+foo: |/usr/bin/foo
+.fi
+
+
 .SH AUTHOR
 
 Masqmail was written by Oliver Kurth.
