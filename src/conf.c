@@ -468,7 +468,7 @@ read_conf(gchar * filename)
 			else {
 				char buf[256];
 				FILE *fptr = fopen(rval, "rt");
-				if (fptr) {
+				if (!fptr) {
 					logwrite(LOG_ALERT, "could not open %s: %s\n", rval, strerror(errno));
 					return FALSE;
 				}
