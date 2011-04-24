@@ -286,17 +286,11 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 					break;
 				}
 				if (!addr->domain) {
+					/* TODO: ``postmaster'' may be unqualified */
 					smtp_printf(out, "501 recipient address must be qualified.\r\n", buf);
 					break;
 				}
-				gboolean do_relay = conf.do_relay;
-				if (!do_relay) {
-					do_relay = addr_is_local(msg->return_path);
-					if (!do_relay) {
-						do_relay = addr_is_local(addr);
-					}
-				}
-				if (!do_relay) {
+				if (!(conf.do_relay || addr_is_local(msg->return_path) || addr_is_local(addr))) {
 					smtp_printf(out, "550 relaying to %s denied.\r\n", addr_string(addr));
 					break;
 				}
