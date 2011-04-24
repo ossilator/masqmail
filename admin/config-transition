@@ -67,6 +67,18 @@ check["alias_local_caseless"] = "conf" SUBSEP "Renamed in 0.3.1" SUBSEP "\
 It is now called 'caseless_matching' instead. \
 "
 
+check["online_detect"] = "conf" SUBSEP "Removed in 0.3.2" SUBSEP "\
+Destilled to online_query. \
+"
+
+check["online_file"] = "conf" SUBSEP "Removed in 0.3.2" SUBSEP "\
+Use online_query=\"/bin/cat /path/to/file\" instead. \
+"
+
+check["online_pipe"] = "conf" SUBSEP "Renamed in 0.3.2" SUBSEP "\
+Now known as online_query. online_detect=pipe is not needed anymore. \
+"
+
 # route files
 
 check["pop3_login"] = "route" SUBSEP "Removed in 0.3.0" SUBSEP "\

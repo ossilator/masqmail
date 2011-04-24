@@ -347,69 +347,43 @@ You probably want this if you have set \fBmda_fromline\fR above.
 Default is false.
 
 .TP
-\fBonline_detect = \fIstring\fR
+\fBonline_query = \fIcommand line\fR
 
-Defines the method masqmail uses to detect whether there is currently an online connection.
-It can have the values \fIfile\fR or \fIpipe\fR.
+Defines the method masqmail uses to detect whether there exists an online connection currently.
 
-When it is set to \fIfile\fR, masqmail first checks for the existence of \fBonline_file\fR
-(see below) and if it exists, it reads it.
-The content of the file should be the name of the current connection as defined
-with \fBconnect_route.\fIname\fR (trailing whitespace is removed).
+Masqmail executes the command given and reads from its standard output.
+The command should just print a route name, as defined
+with \fBonline_routes.\fIname\fR, to standard output and return a zero status code.
+Masqmail assumes it is offline if the script returns with a non-zero status.
+Leading and trailing whitespace is removed from the output.
 
-When it is set to \fIpipe\fR, masqmail calls the executable given by the
-\fBonline_pipe\fR option (see below) and reads the current online status from its standard output.
+Simple example:
+
+.nf
+#!/bin/sh
+test \-e /var/run/masqmail/masqmail-route || exit 1
+cat /var/run/masqmail/masqmail-route
+exit 0
+.fi
 
 No matter how masqmail detects the online status,
 only messages that are accepted at online time will be delivered using the connection.
-The spool still has to be emptied with masqmail \fB\-qo\fIconnection\fR.
+The mail spool still needs to be emptied manually
+(\fB\-qo\fIconnection\fR).
 
-.TP
-\fBonline_file = \fIfile\fR
-
-This is the name of the file checked for when masqmail determines whether it is online.
-The file should only exist when there is currently a connection.
-Create it in your ip-up script with e.g.
-
-echo "connection-name" >/var/run/masqmail/masqmail-route
-
-chmod 0644 /var/run/masqmail/masqmail-route
-
-Do not forget to delete it in your ip-down script.
-
-.TP
-\fBonline_pipe = \fIfile\fR
-
-This is the name of the executable which will be called to determine the online status.
-This executable should just print the name of the current connection to
-the standard output and return a zero status code.
-masqmail assumes it is offline if the script returns with a non zero status.
-Simple example:
-
-#!/bin/sh
-
-[ \-e /var/run/masqmail/masqmail-route ] || exit 1
-
-cat /var/run/masqmail/masqmail-route
-
-exit 0
-
-Of course, instead of the example above you could as well use \fIfile\fR as
-the online detection method, but you can do something more sophisticated.
-
-\fIfile\fR must contain an absolute path to an executable program.
+\fIcommand line\fR must start with an absolute path to an executable program.
 It can contain optional arguments.
 
-Example: \fI/bin/echo foo\fR
-(This tells masqmail to be always online with connection `foo'.)
+To simulate the old online_method=file, use:
+\fI/bin/cat /path/to/file\fP
 
-For querying a masqdialer server
-(= asking it whether a connection exists and what its name is)
+To be always online with connection `foo', use:
+\fI/bin/echo foo\fP
+
+To query a masqdialer server
+(i.e. asking it whether a connection exists and what its name is)
 use:
-
-online_method=pipe
-
-online_pipe="/usr/bin/mservdetect localhost 224"
+\fI/usr/bin/mservdetect localhost 224\fP
 
 
 .TP

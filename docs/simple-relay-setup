@@ -106,8 +106,7 @@ that it is online and can use the default route to deliver mail.
 
 Add this to masqmail.conf:
 
-    online_detect = "pipe"
-    online_pipe = "/bin/echo default"
+    online_query = "/bin/echo default"
 
 Now masqmail will send online mail automatically through the default
 route, each time it does a queue run (every ten minutes).
