@@ -385,8 +385,7 @@ run_queue(gboolean do_runq, gboolean do_runq_online, char* route_name)
 
 	if (do_runq_online) {
 		if (route_name) {
-			conf.online_detect = g_strdup("argument");
-			set_online_name(route_name);
+			conf.online_query = g_strdup_printf("/bin/echo %s", route_name);
 		}
 		/* TODO: change behavior of `-qo without argument'?
 		         Because that behavior is included in -q. */

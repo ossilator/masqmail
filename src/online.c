@@ -17,71 +17,31 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <sys/stat.h>
 #include <sys/wait.h>
 
 #include "masqmail.h"
 #include "peopen.h"
 
-gchar *connection_name;
 
-void
-set_online_name(gchar * name)
+gchar*
+online_query()
 {
-	connection_name = g_strdup(name);
-}
-
-static gchar*
-detect_online_file(const gchar* file)
-{
-	struct stat st;
-	int err;
-	FILE *fptr;
-	char buf[256];
-
-	err = stat(conf.online_file, &st);
-
-	if (err) {
-		if (errno==ENOENT) {
-			logwrite(LOG_NOTICE, "not online.\n");
-			return NULL;
-		}
-		logwrite(LOG_ALERT, "stat of %s failed: %s\n", conf.online_file, strerror(errno));
-		return NULL;
-	}
-
-	fptr = fopen(conf.online_file, "r");
-	if (!fptr) {
-		logwrite(LOG_ALERT, "opening of %s failed: %s\n", conf.online_file, strerror(errno));
-		return NULL;
-	}
-	if (fgets(buf, 256, fptr) == NULL) {
-		logwrite(LOG_ALERT, "empty online file %s\n", conf.online_file);
-		fclose(fptr);
-		return NULL;
-	}
-	g_strstrip(buf);  /* strip whitespace */
-	fclose(fptr);
-	if (strlen(buf) == 0) {
-		logwrite(LOG_ALERT, "only whitespace connection name in %s\n", conf.online_file);
-		return NULL;
-	}
-	return g_strdup(buf);
-}
-
-static gchar*
-detect_online_pipe(const gchar * pipe)
-{
+	gchar* pipe = conf.online_query;
 	pid_t pid;
 	void (*old_signal) (int);
 	int status;
 	FILE *in;
 	gchar *name = NULL;
 
+	if (!conf.online_query) {
+		return NULL;
+	}
+	DEBUG(3) debugf("online query `%s'\n", pipe);
+
 	old_signal = signal(SIGCHLD, SIG_DFL);
 
 	in = peopen(pipe, "r", environ, &pid);
-	if (in == NULL) {
+	if (!in) {
 		logwrite(LOG_ALERT, "could not open pipe '%s': %s\n", pipe, strerror(errno));
 		signal(SIGCHLD, old_signal);
 		return NULL;
@@ -110,38 +70,4 @@ detect_online_pipe(const gchar * pipe)
 	signal(SIGCHLD, old_signal);
 
 	return name;
-}
-
-gchar*
-detect_online()
-{
-	if (!conf.online_detect) {
-		return NULL;
-	}
-
-	if (strcmp(conf.online_detect, "file") == 0) {
-		DEBUG(3) debugf("online detection method 'file'\n");
-		if (!conf.online_file) {
-			logwrite(LOG_ALERT, "online detection mode is 'file', but online_file is undefined\n");
-			return NULL;
-		}
-		return detect_online_file(conf.online_file);
-
-	} else if (strcmp(conf.online_detect, "pipe") == 0) {
-		DEBUG(3) debugf("connection method 'pipe'\n");
-		if (!conf.online_pipe) {
-			logwrite(LOG_ALERT, "online detection mode is 'pipe', but online_pipe is undefined\n");
-			return NULL;
-		}
-		return detect_online_pipe(conf.online_pipe);
-
-	} else if (strcmp(conf.online_detect, "argument") == 0) {
-		DEBUG(3) debugf("online route literally defined\n");
-		/* use the name set with set_online_name() */
-		return connection_name;
-
-	}
-
-	DEBUG(3) debugf("unknown online detection method `%s'\n", conf.online_detect);
-	return NULL;
 }

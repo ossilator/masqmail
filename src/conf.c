@@ -542,12 +542,8 @@ read_conf(gchar * filename)
 			conf.connect_routes = g_list_append(conf.connect_routes, pair);
 		} else if (strcmp(lval, "local_net_route") == 0) {
 			conf.local_net_routes = parse_list(rval, FALSE);
-		} else if (strcmp(lval, "online_detect") == 0)
-			conf.online_detect = g_strdup(rval);
-		else if (strcmp(lval, "online_file") == 0)
-			conf.online_file = g_strdup(rval);
-		else if (strcmp(lval, "online_pipe") == 0)
-			conf.online_pipe = g_strdup(rval);
+		} else if (strcmp(lval, "online_query") == 0)
+			conf.online_query = g_strdup(rval);
 		else if (strcmp(lval, "do_queue") == 0)
 			conf.do_queue = parse_boolean(rval);
 		else if (strcmp(lval, "errmsg_file") == 0)

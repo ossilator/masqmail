@@ -29,8 +29,8 @@ If you want mail that is received by masqmail from your local net to be
 delivered immediately using the route configuration, you have two
 possibilities:
 
-* if you are using the masqdialer system, you just have to set the
-  variables online_detect to pipe and online_pipe to something like
+* if you are using the masqdialer system, you just have to set
+  online_query to something like
 	/usr/bin/mservdetect localhost 224
   if mserver is running on localhost and listens on port 224. See the
   man page to mservdetect(1).
@@ -41,8 +41,8 @@ possibilities:
   and you have to remove the file /var/run/masqmail/masqmail-route in
   your ip-down script:
 	rm /var/run/masqmail/masqmail-route
-  Then you have to set online_detect to file and online_file to
-  /var/run/masqmail/masqmail-route
+  Then you have to set online_query to
+	/bin/cat /var/run/masqmail/masqmail-route
 
 See the route documentation for more.
 

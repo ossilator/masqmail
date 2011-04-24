@@ -694,7 +694,7 @@ deliver_msgout_list_online(GList * msgout_list)
 	gchar *connect_name = NULL;
 	gboolean ok = FALSE;
 
-	connect_name = detect_online();
+	connect_name = online_query();
 	if (!connect_name) {
 		return FALSE;
 	}

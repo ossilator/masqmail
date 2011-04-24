@@ -183,9 +183,7 @@ typedef struct _masqmail_conf {
 	GList *local_net_routes;
 	GList *connect_routes;  /* list of pairs which point to lists */
 
-	gchar *online_detect;
-	gchar *online_file;
-	gchar *online_pipe;
+	gchar *online_query;
 
 	gchar *errmsg_file;
 	gchar *warnmsg_file;
@@ -478,8 +476,7 @@ void queue_list(void);
 gboolean queue_delete(gchar * uid);
 
 /* online.c */
-gchar *detect_online();
-void set_online_name(gchar * name);
+gchar *online_query();
 
 /* permissions.c */
 gboolean is_ingroup(uid_t uid, gid_t gid);
