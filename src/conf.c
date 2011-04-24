@@ -620,7 +620,6 @@ read_route(gchar * filename, gboolean is_local_net)
 	route->filename = g_strdup(filename);
 	route->name = g_strdup(filename);  /* quick hack */
 
-	route->protocol = g_strdup("smtp");
 	route->expand_h_sender_address = TRUE;
 
 	route->is_local_net = is_local_net;
@@ -635,9 +634,7 @@ read_route(gchar * filename, gboolean is_local_net)
 
 	gchar lval[256], rval[2048];
 	while (read_statement(in, lval, 256, rval, 2048)) {
-		if (strcmp(lval, "protocol") == 0)
-			route->protocol = g_strdup(rval);
-		else if (strcmp(lval, "mail_host") == 0)
+		if (strcmp(lval, "mail_host") == 0)
 			route->mail_host = parse_interface(rval, 25);
 		else if (strcmp(lval, "helo_name") == 0)
 			route->helo_name = g_strdup(rval);
@@ -803,8 +800,6 @@ destroy_route(connect_route * r)
 {
 	if (r->filename)
 		g_free(r->filename);
-	if (r->protocol)
-		g_free(r->protocol);
 	if (r->mail_host) {
 		g_free(r->mail_host->address);
 		g_free(r->mail_host);
@@ -890,7 +885,6 @@ create_local_route()
 		return NULL;
 	}
 	memset(route, 0, sizeof(connect_route));
-	route->protocol = g_strdup("smtp");
 	route->is_local_net = TRUE;
 	route->name = g_strdup("default local_net_route");
 	route->expand_h_sender_address = TRUE;

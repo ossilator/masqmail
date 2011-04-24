@@ -268,11 +268,6 @@ deliver_msglist_host_pipe(connect_route * route, GList * msgout_list, gchar * ho
 
 	DEBUG(5) debugf("deliver_msglist_host_pipe entered\n");
 
-	if (route->pipe == NULL) {
-		logwrite(LOG_ALERT, "no pipe command given for route (protocol is pipe!)\n");
-		return FALSE;
-	}
-
 	foreach(msgout_list, msgout_node) {
 		msg_out *msgout = (msg_out *) (msgout_node->data);
 		gboolean flag, ok_fail = FALSE;
@@ -475,11 +470,12 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 gboolean
 deliver_msglist_host(connect_route * route, GList * msgout_list, gchar * host, GList * res_list)
 {
-	DEBUG(5) debugf("protocol = %s\n", route->protocol);
 
-	if (strcmp(route->protocol, "pipe") == 0) {
+	if (route->pipe) {
+		DEBUG(5) debugf("with pipe\n");
 		return deliver_msglist_host_pipe(route, msgout_list, host, res_list);
 	} else {
+		DEBUG(5) debugf("with smtp\n");
 		return deliver_msglist_host_smtp(route, msgout_list, host, res_list);
 	}
 }

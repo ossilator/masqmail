@@ -2,8 +2,6 @@
 # by Philipp Berndt
 
 
-protocol = "smtp"
-
 # encryption is done by communicating through openssl
 
 # Today usually STARTTLS (RFC-3207) is used:
