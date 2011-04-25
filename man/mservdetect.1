@@ -1,7 +1,7 @@
 .TH mservdetect 1 2010-12-08 masqmail-0.3.1 "User Commands"
 
 .SH NAME
-mservdetect \- Helper for masqmail and masqdialer
+mservdetect \- Helper for masqmail in combination with masqdialer
 
 
 .SH SYNOPSIS
@@ -11,8 +11,9 @@ mservdetect \- Helper for masqmail and masqdialer
 .SH DESCRIPTION
 
 Mservdetect is a small helper application for masqmail to detect its online status
-if the modem server masqdialer is used.
-It connects to the\fIhost\fR at \fIport\fR and prints the connection name to stdout.
+through the modem server masqdialer.
+It connects to \fIhost\fR at \fIport\fR, speaking the masqdialer
+protocol, and finally prints the active connection name, if any, to stdout.
 
 If you want to use it, set \fBonline_query\fR=\fI"/usr/bin/mservdetect host port"\fR in
 masqmail.conf.
