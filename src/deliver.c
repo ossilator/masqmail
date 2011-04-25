@@ -235,7 +235,8 @@ deliver_local(msg_out * msgout)
 	return ok;
 }
 
-/* make a list of rcpt's of a message that are local return a new copy of the list */
+/* make a list of rcpt's of a message that are local
+   return a new copy of the list */
 void
 msg_rcptlist_local(GList * rcpt_list, GList ** p_local_list, GList ** p_nonlocal_list)
 {
@@ -559,12 +560,14 @@ deliver_route_msg_list(connect_route * route, GList * msgout_list)
 			continue;
 		}
 
+		/* filter by allowed return paths (= envelope sender) */
 		if (!route_is_allowed_mail_local(route, msgout->msg->return_path)
-		   || !route_is_allowed_return_path(route, msgout->msg-> return_path)) {
+		   || !route_is_allowed_return_path(route, msgout->msg->return_path)) {
 			destroy_msg_out(msgout_cloned);
 			continue;
 		}
 
+		/* filter by allowed rcpt addrs (= envelope rcpts) */
 		GList *rcpt_list_allowed = NULL, *rcpt_list_notallowed = NULL;
 		msg_rcptlist_route(route, msgout_cloned->rcpt_list, &rcpt_list_allowed, &rcpt_list_notallowed);
 
