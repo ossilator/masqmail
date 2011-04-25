@@ -12,10 +12,85 @@ Their usual locations are in \fI/etc/masqmail/\fR.
 Mail will be sent with the SMTP protocol to its destination, unless
 `pipe' is given.
 In this case the message will be piped to the given program.
-See option `pipe' below.
 
 
-.SH OPTIONS
+.SH ROUTE CONDITIONS
+
+.TP
+\fBallowed_mail_locals\fR = \fIlist\fR
+
+This is a semicolon `;' separated list of local parts of envelope
+senders (= mail from = return path) which will be allowed
+to send mail through this connection.
+If unset and \fBnot_allowed_mail_locals\fR is also unset, all users are allowed.
+
+.TP
+\fBnot_allowed_mail_locals\fR = \fIlist\fR
+
+This is a semicolon `;' separated list of local parts of envelope
+senders (= mail from = return path) which will be not allowed
+to send mail through this connection.
+Local parts in this list will not be allowed to use this route even if they
+are part of \fBallowed_mail_locals\fR (see above).
+
+.TP
+\fBallowed_return_paths\fR = \fIlist\fR
+
+This is a semicolon `;' separated list of addresses.
+Messages which have one of these addresses as the return path (=
+envelope sender = mail from) will be used using this route
+(if not also in \fBnot_allowed_return_paths\fR or an item in \fBnot_allowed_mail_locals\fR matches).
+
+Patterns containing `?' and `*' can be used.
+The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
+
+.TP
+\fBnot_allowed_return_paths\fR = \fIlist\fR
+
+This is a semicolon `;' separated list of addresses.
+Messages which have one of these addresses as the return path (=
+envelope sender = mail from) will not
+be used using this route (even if also in \fBallowed_return_paths\fR
+or an item in \fBallowed_mail_locals\fR matches).
+
+Patterns containing `?' and `*' can be used.
+The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
+
+.TP
+\fBallowed_rcpt_domains\fR = \fIlist\fR
+
+A list of recipient domains (of envelope recipients) where mail will be sent to.
+This is for example useful if you use this route configuration when connected to another LAN via ppp.
+Patterns containing `?' and `*' can be used.
+
+.TP
+\fBnot_allowed_rcpt_domains\fR = \fIlist\fR
+
+A list of recipient domains (of envelope recipients) where mail will not be sent to.
+This is for example useful if you send mail directly (\fBmail_host\fR is not set)
+and you know of hosts that will not accept mail from you because they use a dialup list
+(eg. \fBhttp://maps.vix.com/dul/\fR).
+If any domain matches both \fBallowed_rcpt_domains\fR and \fBnot_allowed_rcpt_domains\fR,
+mail will not be sent to this domain.
+Patterns containing `?' and `*' can be used.
+
+.TP
+\fBlast_route\fR = \fIboolean\fR
+
+If this is set, a mail which would have been delivered using this route,
+but has failed temporarily, will not be tried to be delivered using the next route.
+
+If you have set up a special route with filters using the lists `allowed_rcpt_domains',
+`allowed_return_paths', and `allowed_mail_locals' or their complements (not_),
+and the mail passing these rules should be delivered using this route only,
+you should set this to `true'.
+Otherwise the mail would be passed to the next route (if any),
+unless that route has rules which prevent that.
+
+Default is false.
+
+
+.SH SMTP CONFIGURATION
 
 .TP
 \fBmail_host\fR = \fIstring\fR
@@ -87,7 +162,6 @@ SHOULD wait for the 220 greeting of the server.
 
 Default: false
 
-
 .TP
 \fBdo_pipelining\fR = \fIboolean\fR
 
@@ -99,59 +173,84 @@ You do not want to set this to false unless the mail setup on the
 remote server side is really broken.
 Keywords: wingate.
 
-.TP
-\fBallowed_mail_locals\fR = \fIlist\fR
-
-This is a semicolon `;' separated list of local parts which will be allowed
-to send mail through this connection.
-If unset and \fBnot_allowed_mail_locals\fR is also unset, all users are allowed.
 
 .TP
-\fBnot_allowed_mail_locals\fR = \fIlist\fR
+\fBauth_name\fR = \fIstring\fR
 
-This is a semicolon `;' separated list of local parts which will be not allowed
-to send mail through this connection.
-Local parts in this list will not be allowed to use this route even if they
-are part of \fBallowed_mail_locals\fR (see above).
+Set the authentication type for ESMTP AUTH authentication.
+Currently only `cram-md5' and `login' are supported.
 
 .TP
-\fBallowed_return_paths\fR = \fIlist\fR
+\fBauth_login\fR = \fIstring\fR
 
-This is a semicolon `;' separated list of addresses.
-Messages which have one of these addresses as the return path will be used using this route
-(if not also in \fBnot_allowed_return_paths\fR or an item in \fBnot_allowed_mail_locals\fR matches).
-
-Patterns containing `?' and `*' can be used.
-The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
+Your account name for ESMTP AUTH authentication.
 
 .TP
-\fBnot_allowed_return_paths\fR = \fIlist\fR
+\fBauth_secret\fR = \fIstring\fR
 
-This is a semicolon `;' separated list of addresses.
-Messages which have one of these addresses as the return path will not
-be used using this route (even if also in \fBallowed_return_paths\fR
-or an item in \fBallowed_mail_locals\fR matches).
-
-Patterns containing `?' and `*' can be used.
-The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
+Your secret for ESMTP AUTH authentication.
 
 .TP
-\fBallowed_rcpt_domains\fR = \fIlist\fR
+\fBwrapper\fR = \fIcommand\fR
 
-A list of recipient domains where mail will be sent to.
-This is for example useful if you use this route configuration when connected to another LAN via ppp.
-Patterns containing `?' and `*' can be used.
+If set, instead of opening a connection to a remote server,
+\fIcommand\fR will be called and all traffic will be piped to its stdin and from its stdout.
+Purpose is to tunnel ip traffic, eg. for ssl.
+
+Example for SMTP over SSL tunneling:
+.nf
+wrapper="/usr/bin/openssl s_client \-quiet \-connect mail.gmx.net:465 2>/dev/null"
+.fi
+
+SMTP over SSL is supported since masqmail-0.1.8.
+It is marked obsolete by the IETF but is still in use.
+
+
+Example for encryption with STARTTLS (RFC-3207):
+.nf
+# don't forget the instant_helo, otherwise it won't work
+instant_helo=true
+wrapper="/usr/bin/openssl s_client \-quiet \-starttls smtp \-connect mail.gmx.net:25 2>/dev/null"
+.fi
+
+This is supported since masqmail-0.2.28.
+STARTTLS supersedes SMTP over SSL.
+
+Note for openssl:
+Ensure that stderr is redirected.
+Do *not* use \-crlf in the wrapper command, because masqmail does already insert CRLF.
+However, you might want to specify \-crlf if you want to test your wrapper command
+interactively on the command line.
+
+
+.SH PIPE CONFIGURATION
 
 .TP
-\fBnot_allowed_rcpt_domains\fR = \fIlist\fR
+\fBpipe\fR = \fIcommand\fR
 
-A list of recipient domains where mail will not be sent to.
-This is for example useful if you send mail directly (\fBmail_host\fR is not set)
-and you know of hosts that will not accept mail from you because they use a dialup list
-(eg. \fBhttp://maps.vix.com/dul/\fR).
-If any domain matches both \fBallowed_rcpt_domains\fR and \fBnot_allowed_rcpt_domains\fR,
-mail will not be sent to this domain.
-Patterns containing `?' and `*' can be used.
+\fIcommand\fR will be called and the message will be piped to its stdin.
+Purpose is to use gateways to uucp, fax, sms or whatever else.
+
+You can use variables to give as arguments to the command,
+these are the same as for the mda in the main configuration, see \fBmasqmail.conf(5)\fR.
+
+.TP
+\fBpipe_fromline = \fIboolean\fR
+
+Only if `pipe' is used.
+A from line will be prepended to the output stream whenever a pipe command is called.
+Default is false.
+
+.TP
+\fBpipe_fromhack = \fIboolean\fR
+
+Only if `pipe' is used.
+Each line beginning with `From ' is replaced with `>From ' whenever a pipe command is called.
+You probably want this if you have set \fBpipe_fromline\fR above.
+Default is false.
+
+
+.SH ADDRESS REWRITE RULES
 
 .TP
 \fBset_h_from_domain\fR = \fIstring\fR
@@ -236,93 +335,6 @@ Default is true.
 
 Like \fBexpand_h_sender_address\fR, but sets the domain only.
 Deprecated, will be removed in a later version.
-
-.TP
-\fBlast_route\fR = \fIboolean\fR
-
-If this is set, a mail which would have been delivered using this route,
-but has failed temporarily, will not be tried to be delivered using the next route.
-
-If you have set up a special route with filters using the lists `allowed_rcpt_domains',
-`allowed_return_paths', and `allowed_mail_locals' or their complements (not_),
-and the mail passing these rules should be delivered using this route only,
-you should set this to `true'.
-Otherwise the mail would be passed to the next route (if any),
-unless that route has rules which prevent that.
-
-Default is false.
-
-.TP
-\fBauth_name\fR = \fIstring\fR
-
-Set the authentication type for ESMTP AUTH authentication.
-Currently only `cram-md5' and `login' are supported.
-
-.TP
-\fBauth_login\fR = \fIstring\fR
-
-Your account name for ESMTP AUTH authentication.
-
-.TP
-\fBauth_secret\fR = \fIstring\fR
-
-Your secret for ESMTP AUTH authentication.
-
-.TP
-\fBwrapper\fR = \fIcommand\fR
-
-If set, instead of opening a connection to a remote server,
-\fIcommand\fR will be called and all traffic will be piped to its stdin and from its stdout.
-Purpose is to tunnel ip traffic, eg. for ssl.
-
-Example for SMTP over SSL tunneling:
-.nf
-wrapper="/usr/bin/openssl s_client \-quiet \-connect mail.gmx.net:465 2>/dev/null"
-.fi
-
-SMTP over SSL is supported since masqmail-0.1.8.
-It is marked obsolete by the IETF but is still in use.
-
-
-Example for encryption with STARTTLS (RFC-3207):
-.nf
-# don't forget the instant_helo, otherwise it won't work
-instant_helo=true
-wrapper="/usr/bin/openssl s_client \-quiet \-starttls smtp \-connect mail.gmx.net:25 2>/dev/null"
-.fi
-
-This is supported since masqmail-0.2.28.
-STARTTLS supersedes SMTP over SSL.
-
-Note for openssl:
-Ensure that stderr is redirected.
-Do *not* use \-crlf in the wrapper command, because masqmail does already insert CRLF.
-However, you might want to specify \-crlf if you want to test your wrapper command
-interactively on the command line.
-
-.TP
-\fBpipe\fR = \fIcommand\fR
-
-\fIcommand\fR will be called and the message will be piped to its stdin.
-Purpose is to use gateways to uucp, fax, sms or whatever else.
-
-You can use variables to give as arguments to the command,
-these are the same as for the mda in the main configuration, see \fBmasqmail.conf(5)\fR.
-
-.TP
-\fBpipe_fromline = \fIboolean\fR
-
-Only if `pipe' is used.
-A from line will be prepended to the output stream whenever a pipe command is called.
-Default is false.
-
-.TP
-\fBpipe_fromhack = \fIboolean\fR
-
-Only if `pipe' is used.
-Each line beginning with `From ' is replaced with `>From ' whenever a pipe command is called.
-You probably want this if you have set \fBpipe_fromline\fR above.
-Default is false.
 
 
 .SH AUTHOR
