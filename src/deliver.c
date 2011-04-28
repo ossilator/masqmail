@@ -560,21 +560,21 @@ deliver_route_msg_list(connect_route * route, GList * msgout_list)
 			continue;
 		}
 
-		/* filter by allowed return paths (= envelope sender) */
-		if (!route_is_allowed_mail_local(route, msgout->msg->return_path)
-		   || !route_is_allowed_return_path(route, msgout->msg->return_path)) {
+		/* filter by allowed envelope sender */
+		if (!route_sender_is_allowed(route, msgout->msg->return_path)) {
 			destroy_msg_out(msgout_cloned);
 			continue;
 		}
 
-		/* filter by allowed rcpt addrs (= envelope rcpts) */
-		GList *rcpt_list_allowed = NULL, *rcpt_list_notallowed = NULL;
-		msg_rcptlist_route(route, msgout_cloned->rcpt_list, &rcpt_list_allowed, &rcpt_list_notallowed);
-
+		/* filter by allowed envelope rcpts */
+		GList* rcpt_list_allowed = NULL;
+		GList* rcpt_list_notallowed = NULL;
+		route_split_rcpts(route, msgout_cloned->rcpt_list, &rcpt_list_allowed, &rcpt_list_notallowed);
 		if (!rcpt_list_allowed) {
 			destroy_msg_out(msgout_cloned);
 			continue;
 		}
+
 		logwrite(LOG_NOTICE, "%s using '%s'\n", msgout->msg->uid, route->name);
 
 		g_list_free(msgout_cloned->rcpt_list);

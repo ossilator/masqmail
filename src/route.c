@@ -238,49 +238,38 @@ split_rcpts(GList* rcpt_list, GList* localnets, GList** rl_local, GList** rl_loc
 }
 
 static gint
-_g_list_addrcmp(gconstpointer a, gconstpointer b)
+_g_list_addrcmp(gconstpointer pattern, gconstpointer addr)
 {
-	return addr_match((address *) a, (address *) b);
+	int res;
+	address* patternaddr = (address*) pattern;
+	address* stringaddr = (address*) addr;
+
+	DEBUG(6) debugf("_g_list_addrcmp: pattern `%s' `%s' on string `%s' `%s'\n",
+	                patternaddr->local_part, patternaddr->domain,
+	                stringaddr->local_part, stringaddr->domain);
+	/* TODO: check if we should match here dependent on caseless_matching */
+	res = fnmatch(patternaddr->local_part, stringaddr->local_part, 0);
+	if (res != 0) {
+		DEBUG(6) debugf("_g_list_addrcmp: ... failed on local_part\n");
+		return res;
+	}
+	res = fnmatch(patternaddr->domain, stringaddr->domain, FNM_CASEFOLD);
+	DEBUG(6) debugf("_g_list_addrcmp: ... %s\n", (res==0) ? "matched" : "failed on domain");
+	return res;
 }
 
 gboolean
-route_is_allowed_return_path(connect_route * route, address * ret_path)
+route_sender_is_allowed(connect_route * route, address * ret_path)
 {
-	if (route->not_allowed_return_paths != NULL) {
-		if (g_list_find_custom(route->not_allowed_return_paths, ret_path, _g_list_addrcmp) != NULL) {
-			return FALSE;
-		}
+	if (route->denied_senders && g_list_find_custom(route->denied_senders, ret_path, _g_list_addrcmp)) {
+		return FALSE;
 	}
-	if (route->allowed_return_paths != NULL) {
-		if (g_list_find_custom(route->allowed_return_paths, ret_path, _g_list_addrcmp) != NULL) {
+	if (route->allowed_senders) {
+		if (g_list_find_custom(route->allowed_senders, ret_path, _g_list_addrcmp)) {
 			return TRUE;
 		} else {
 			return FALSE;
 		}
-	}
-	return TRUE;
-}
-
-static gint
-_g_list_strcmp(gconstpointer a, gconstpointer b)
-{
-	return (gint) strcmp(a, b);
-}
-
-gboolean
-route_is_allowed_mail_local(connect_route * route, address * ret_path)
-{
-	gchar *loc_part = ret_path->local_part;
-
-	if (route->not_allowed_mail_locals != NULL) {
-		if (g_list_find_custom(route->not_allowed_mail_locals, loc_part, _g_list_strcmp) != NULL)
-			return FALSE;
-	}
-	if (route->allowed_mail_locals != NULL) {
-		if (g_list_find_custom(route->allowed_mail_locals, loc_part, _g_list_strcmp) != NULL)
-			return TRUE;
-		else
-			return FALSE;
 	}
 	return TRUE;
 }
@@ -290,20 +279,20 @@ route_is_allowed_mail_local(connect_route * route, address * ret_path)
    Local domains are NOT regared here, these should be sorted out previously
 */
 void
-msg_rcptlist_route(connect_route * route, GList * rcpt_list, GList ** p_rcpt_list, GList ** p_non_rcpt_list)
+route_split_rcpts(connect_route * route, GList * rcpt_list, GList ** p_rcpt_list, GList ** p_non_rcpt_list)
 {
 	GList *tmp_list = NULL;
 	/* sort out those domains that can be sent over this connection: */
-	if (route->allowed_rcpt_domains) {
-		DEBUG(5) debugf("testing for route->allowed_rcpt_domains\n");
-		split_rcpts(rcpt_list, route->allowed_rcpt_domains, NULL, &tmp_list, p_non_rcpt_list);
+	if (route->allowed_recipients) {
+		DEBUG(5) debugf("testing for route->allowed_recipients\n");
+		split_rcpts(rcpt_list, route->allowed_recipients, NULL, &tmp_list, p_non_rcpt_list);
 	} else {
-		DEBUG(5) debugf("route->allowed_rcpt_domains == NULL\n");
+		DEBUG(5) debugf("route->allowed_recipients == NULL\n");
 		tmp_list = g_list_copy(rcpt_list);
 	}
 
 	/* sort out those domains that cannot be sent over this connection: */
-	split_rcpts(tmp_list, route->not_allowed_rcpt_domains, NULL, p_non_rcpt_list, p_rcpt_list);
+	split_rcpts(tmp_list, route->denied_recipients, NULL, p_non_rcpt_list, p_rcpt_list);
 	g_list_free(tmp_list);
 }
 

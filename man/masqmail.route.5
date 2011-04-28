@@ -17,62 +17,65 @@ In this case the message will be piped to the given program.
 .SH ROUTE CONDITIONS
 
 .TP
-\fBallowed_mail_locals\fR = \fIlist\fR
+\fBallowed_senders\fR = \fIlist\fR
 
-This is a semicolon `;' separated list of local parts of envelope
-senders (= mail from = return path) which will be allowed
-to send mail through this connection.
-If unset and \fBnot_allowed_mail_locals\fR is also unset, all users are allowed.
+This is a semicolon `;' separated list of envelope sender addresses.
+Messages which have one of these addresses as the return path (= mail
+from) are allowed to use this route
+(if not also in \fBdenied_senders\fR).
+
+Glob patterns containing `?' and `*' can be used.
+The special item "<>" matches the null sender address
+(eg. failure notices or delivery notifications).
+If the pattern doesn't contain an `@', it is seen as a pattern for the
+local part only.
+
+Example: \fImeillo;*@*example.org;web*@example.com\fP
+
+(``meillo'' equals ``meillo@*'', i.e. the local part.)
 
 .TP
-\fBnot_allowed_mail_locals\fR = \fIlist\fR
+\fBdenied_senders\fR = \fIlist\fR
 
-This is a semicolon `;' separated list of local parts of envelope
-senders (= mail from = return path) which will be not allowed
-to send mail through this connection.
-Local parts in this list will not be allowed to use this route even if they
-are part of \fBallowed_mail_locals\fR (see above).
-
-.TP
-\fBallowed_return_paths\fR = \fIlist\fR
-
-This is a semicolon `;' separated list of addresses.
+This is a semicolon `;' separated list of envelope sender addresses.
 Messages which have one of these addresses as the return path (=
-envelope sender = mail from) will be used using this route
-(if not also in \fBnot_allowed_return_paths\fR or an item in \fBnot_allowed_mail_locals\fR matches).
+mail from) will not
+be sent using this route (even if also in \fBallowed_senders\fR).
 
-Patterns containing `?' and `*' can be used.
-The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
+Glob patterns containing `?' and `*' can be used.
+The special item "<>" matches the null sender address
+(eg. failure notices or delivery notifications).
+If the pattern doesn't contain an `@', it is seen as a pattern for the
+local part only.
 
-.TP
-\fBnot_allowed_return_paths\fR = \fIlist\fR
-
-This is a semicolon `;' separated list of addresses.
-Messages which have one of these addresses as the return path (=
-envelope sender = mail from) will not
-be used using this route (even if also in \fBallowed_return_paths\fR
-or an item in \fBallowed_mail_locals\fR matches).
-
-Patterns containing `?' and `*' can be used.
-The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
+Example: (see \fIallowed_senders\fP)
 
 .TP
-\fBallowed_rcpt_domains\fR = \fIlist\fR
+\fBallowed_recipients\fR = \fIlist\fR
 
-A list of recipient domains (of envelope recipients) where mail will be sent to.
+A list of envelope recipient addresses where mail can be sent to using
+this route.
 This is for example useful if you use this route configuration when connected to another LAN via ppp.
-Patterns containing `?' and `*' can be used.
+Glob patterns containing `?' and `*' can be used.
+
+Example: \fI*@example.org;*@*foo.bar\fP
+
+(See also examples for \fIallowed_senders\fP)
 
 .TP
-\fBnot_allowed_rcpt_domains\fR = \fIlist\fR
+\fBdenied_recipients\fR = \fIlist\fR
 
-A list of recipient domains (of envelope recipients) where mail will not be sent to.
+A list of envelope recipient addresses where mail will not be sent to
+using this route.
 This is for example useful if you send mail directly (\fBmail_host\fR is not set)
 and you know of hosts that will not accept mail from you because they use a dialup list
 (eg. \fBhttp://maps.vix.com/dul/\fR).
-If any domain matches both \fBallowed_rcpt_domains\fR and \fBnot_allowed_rcpt_domains\fR,
-mail will not be sent to this domain.
-Patterns containing `?' and `*' can be used.
+\fBdenied_recipients\fR overrules \fBallowed_recipients\fR.
+Glob patterns containing `?' and `*' can be used.
+
+Example: \fI*@spamblocker.example.org\fP
+
+(See also examples for \fIallowed_senders\fP)
 
 .TP
 \fBlast_route\fR = \fIboolean\fR
@@ -80,8 +83,9 @@ Patterns containing `?' and `*' can be used.
 If this is set, a mail which would have been delivered using this route,
 but has failed temporarily, will not be tried to be delivered using the next route.
 
-If you have set up a special route with filters using the lists `allowed_rcpt_domains',
-`allowed_return_paths', and `allowed_mail_locals' or their complements (not_),
+If you have set up a special route with filters using the lists
+`allowed_recipients' and `allowed_senders' or their complements
+(denied_),
 and the mail passing these rules should be delivered using this route only,
 you should set this to `true'.
 Otherwise the mail would be passed to the next route (if any),

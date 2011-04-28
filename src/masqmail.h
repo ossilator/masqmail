@@ -84,12 +84,10 @@ typedef struct _connect_route {
 	gboolean is_local_net;
 	gboolean last_route;
 
-	GList *allowed_return_paths;
-	GList *not_allowed_return_paths;
-	GList *allowed_mail_locals;
-	GList *not_allowed_mail_locals;
-	GList *allowed_rcpt_domains;
-	GList *not_allowed_rcpt_domains;
+	GList *allowed_senders;
+	GList *denied_senders;
+	GList *allowed_recipients;
+	GList *denied_recipients;
 
 	interface *mail_host;
 	gchar *wrapper;
@@ -390,7 +388,6 @@ address *addr_find_ancestor(address * addr);
 gboolean addr_is_delivered_children(address * addr);
 gboolean addr_is_finished_children(address * addr);
 gchar *addr_string(address * addr);
-gint addr_match(address * addr1, address * addr2);
 
 /* accept.c */
 accept_error accept_message(FILE * in, message * msg, guint flags);
@@ -493,9 +490,8 @@ void split_rcpts(GList* rcpt_list, GList* localnets, GList** rl_local, GList** r
 gboolean route_strip_msgout(connect_route * route, msg_out * msgout);
 msg_out *route_prepare_msgout(connect_route * route, msg_out * msgout);
 GList *route_msgout_list(connect_route * route, GList * msgout_list);
-gboolean route_is_allowed_return_path(connect_route * route, address * ret_path);
-gboolean route_is_allowed_mail_local(connect_route * route, address * ret_path);
-void msg_rcptlist_route(connect_route * route, GList * rcpt_list, GList ** p_rcpt_list, GList ** p_non_rcpt_list);
+gboolean route_sender_is_allowed(connect_route * route, address * ret_path);
+void route_split_rcpts(connect_route * route, GList * rcpt_list, GList ** p_rcpt_list, GList ** p_non_rcpt_list);
 
 /* tables.c */
 table_pair *create_pair(gchar * key, gpointer value);

@@ -17,7 +17,6 @@
 */
 
 #include "masqmail.h"
-#include <fnmatch.h>
 
 address*
 create_address(gchar * path, gboolean is_rfc821)
@@ -185,16 +184,4 @@ addr_string(address * addr)
 		buffer = g_strdup_printf("<%s@%s>", addr->local_part ? addr->local_part : "", addr->domain ? addr->domain : "");
 	}
 	return buffer;
-}
-
-gint
-addr_match(address * addr1, address * addr2)
-{
-	int res;
-
-	if ((res = fnmatch(addr1->local_part, addr2->local_part, 0)) == 0) {
-		if ((res = fnmatch(addr1->domain, addr2->domain, FNM_CASEFOLD)) == 0)
-			return 0;
-	}
-	return res;
 }
