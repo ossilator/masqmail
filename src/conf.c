@@ -773,16 +773,14 @@ read_route(gchar * filename, gboolean is_local_net)
 			logwrite(LOG_WARNING, "var '%s' not (yet) known, ignored\n", lval);
 	}
 
-	if (route->resolve_list == NULL) {
-		if (is_local_net) {
-			route->resolve_list = g_list_append(NULL, resolve_byname);
-		} else {
+	if (!route->resolve_list) {
 #ifdef ENABLE_RESOLVER
+		if (!is_local_net) {
 			route->resolve_list = g_list_append(route->resolve_list, resolve_dns_mx);
 			route->resolve_list = g_list_append(route->resolve_list, resolve_dns_a);
-#endif
-			route->resolve_list = g_list_append(route->resolve_list, resolve_byname);
 		}
+#endif
+		route->resolve_list = g_list_append(route->resolve_list, resolve_byname);
 	}
 	fclose(in);
 	ok = TRUE;
