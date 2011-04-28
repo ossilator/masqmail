@@ -93,6 +93,19 @@ unless that route has rules which prevent that.
 
 Default is false.
 
+.TP
+\fBconnect_error_fail\fR = \fIboolean\fR
+
+If this is set, a connection error (or if a pipe command could not be
+executed) will cause a mail delivery to fail, ie. it will be bounced.
+If it is unset, it will just be defered.
+
+Default is false.
+The reason for this is that masqmail is designed for non permanent internet connections,
+where such errors may occur quite often, and a bounce would be annoying.
+
+For the default local_net route it is set to true.
+
 
 .SH SMTP CONFIGURATION
 
@@ -117,18 +130,6 @@ For `dns_a', the domain is assumed to be an A pointer.
 For `byname', the library function \fBgethostbyname(3)\fR will be used.
 
 The default is "dns_mx;dns_a;byname".
-
-.TP
-\fBconnect_error_fail\fR = \fIboolean\fR
-
-If this is set, a connection error will cause a mail delivery to fail, ie. it will be bounced.
-If it is unset, it will just be defered.
-
-Default is false.
-The reason for this is that masqmail is designed for non permanent internet connections,
-where such errors may occur quite often, and a bounce would be annoying.
-
-For the default local_net route it is set to true.
 
 .TP
 \fBhelo_name\fR = \fIstring\fR
