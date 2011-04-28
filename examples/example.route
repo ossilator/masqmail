@@ -6,10 +6,10 @@
 #
 
 # users that can send mail over this connection:
-# this is a list of the local parts of the original return addresses, as they are
+# this is a list of the envelope sender addresses, as they are
 # configured with your mail client. If not set, anybody may send.
 
-allowed_mail_locals = "okurth"
+allowed_senders = "okurth"
 
 # local_hosts and local_nets will be checked before this.
 # cpwright.com uses the dialup up list of dul.maps.vix.com,
@@ -20,7 +20,7 @@ allowed_mail_locals = "okurth"
 # You will find this necessary only if you send mail directly
 # (if mail_host is not set below)
 
-not_allowed_rcpt_domains = "cpwright.com"
+denied_recipients = "*@cpwright.com"
 
 #
 # settings:

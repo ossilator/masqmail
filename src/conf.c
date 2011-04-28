@@ -142,8 +142,14 @@ parse_list(gchar * line, gboolean read_file)
 	return list;
 }
 
+/* Split the addrs at '@' into local_part and domain. Without an '@'
+   everything is local_part. Create address structs, which are put
+   into a list and returned.
+   This funktion is used for lists of addrs containing globbing chars (* and ?).
+   We don't need valid RFC821 addresses here, just patterns to match against.
+*/
 static GList*
-parse_address_list(gchar * line, gboolean read_file)
+parse_address_glob_list(gchar * line, gboolean read_file)
 {
 	GList *plain_list = parse_list(line, read_file);
 	GList *node;
@@ -151,13 +157,32 @@ parse_address_list(gchar * line, gboolean read_file)
 
 	foreach(plain_list, node) {
 		gchar *item = (gchar *) (node->data);
-		address *addr = create_address(item, TRUE);
-		if (addr)
-			list = g_list_append(list, addr);
+		char* at;
+		char* p;
+		address *addr = calloc(1, sizeof(address));
+
+		for (p=item+strlen(item)-1; isspace(*p) || *p=='>'; p--) {
+			*p = '\0';
+		}
+		for (p=item; isspace(*p) || *p=='<'; p++) {
+		}
+
+		addr->address = strdup(p);
+		at = strrchr(p, '@');
+		if (at) {
+			*at = '\0';
+			addr->local_part = strdup(p);
+			addr->domain = strdup(at+1);
+		} else {
+			addr->local_part = strdup(p);
+			addr->domain = "";
+		}
+		list = g_list_append(list, addr);
+		DEBUG(6) debugf("parse_address_glob_list: read pattern `%s' `%s'\n",
+		                addr->local_part, addr->domain);
 		g_free(item);
 	}
 	g_list_free(plain_list);
-
 	return list;
 }
 
@@ -648,18 +673,16 @@ read_route(gchar * filename, gboolean is_local_net)
 			route->instant_helo = parse_boolean(rval);
 		else if (strcmp(lval, "do_pipelining") == 0)
 			route->do_pipelining = parse_boolean(rval);
-		else if (strcmp(lval, "allowed_return_paths") == 0)
-			route->allowed_return_paths = parse_address_list(rval, TRUE);
-		else if (strcmp(lval, "allowed_mail_locals") == 0)
-			route->allowed_mail_locals = parse_list(rval, TRUE);
-		else if (strcmp(lval, "not_allowed_return_paths") == 0)
-			route->not_allowed_return_paths = parse_address_list(rval, TRUE);
-		else if (strcmp(lval, "not_allowed_mail_locals") == 0)
-			route->not_allowed_mail_locals = parse_list(rval, TRUE);
-		else if (strcmp(lval, "allowed_rcpt_domains") == 0)
-			route->allowed_rcpt_domains = parse_list(rval, TRUE);
-		else if (strcmp(lval, "not_allowed_rcpt_domains") == 0)
-			route->not_allowed_rcpt_domains = parse_list(rval, TRUE);
+
+		else if (strcmp(lval, "allowed_senders") == 0)
+			route->allowed_senders = parse_address_glob_list(rval, TRUE);
+		else if (strcmp(lval, "denied_senders") == 0)
+			route->denied_senders = parse_address_glob_list(rval, TRUE);
+		else if (strcmp(lval, "allowed_recipients") == 0)
+			route->allowed_recipients = parse_address_glob_list(rval, TRUE);
+		else if (strcmp(lval, "denied_recipients") == 0)
+			route->denied_recipients = parse_address_glob_list(rval, TRUE);
+
 		else if (strcmp(lval, "set_h_from_domain") == 0)
 			route->set_h_from_domain = g_strdup(rval);
 		else if (strcmp(lval, "set_h_reply_to_domain") == 0)
@@ -808,10 +831,10 @@ destroy_route(connect_route * r)
 		g_free(r->wrapper);
 	if (r->helo_name)
 		g_free(r->helo_name);
-	_g_list_free_all(r->allowed_mail_locals);
-	_g_list_free_all(r->not_allowed_mail_locals);
-	_g_list_free_all(r->allowed_rcpt_domains);
-	_g_list_free_all(r->not_allowed_rcpt_domains);
+	_g_list_free_all(r->allowed_senders);
+	_g_list_free_all(r->denied_senders);
+	_g_list_free_all(r->allowed_recipients);
+	_g_list_free_all(r->denied_recipients);
 	if (r->set_h_from_domain)
 		g_free(r->set_h_from_domain);
 	if (r->set_h_reply_to_domain)

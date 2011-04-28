@@ -14,8 +14,8 @@ wrapper="/usr/bin/openssl s_client -quiet -starttls smtp -connect mail.gmx.net:2
 #wrapper="/usr/bin/openssl s_client -quiet -connect mail.gmx.net:465 2>/dev/null"
 
 
-# which addresses are allowed through this route?
-allowed_return_paths = "*@gmx.de;*@gmx.net"
+# which sender addresses are allowed for this route?
+allowed_senders = "*@gmx.de;*@gmx.net"
 
 # the authentication method
 #auth_name = "cram-md5"

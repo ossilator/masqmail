@@ -67,7 +67,7 @@ It is now called 'caseless_matching' instead. \
 "
 
 check["online_detect"] = "conf" SUBSEP "Removed in 0.3.2" SUBSEP "\
-Destilled to online_query. \
+Distilled to online_query. \
 "
 
 check["online_file"] = "conf" SUBSEP "Removed in 0.3.2" SUBSEP "\
@@ -94,6 +94,34 @@ All we have is a comment in the code saying: This option is used by sqilconf. \
 
 check["protocol"] = "route" SUBSEP "Removed in 0.3.2" SUBSEP "\
 If pipe is given, pipe will be used, otherwise smtp will be used. \
+"
+
+check["(^|[ 	])allowed_return_paths"] = "route" SUBSEP "Removed in 0.3.2" SUBSEP "\
+Replaced by 'allowed_senders'. \
+"
+
+check["not_allowed_return_paths"] = "route" SUBSEP "Removed in 0.3.2" SUBSEP "\
+Replaced by 'denied_senders'. \
+"
+
+check["(^|[ 	])allowed_mail_locals"] = "route" SUBSEP "Removed in 0.3.2" SUBSEP "\
+Replaced by 'allowed_senders', if neither wildcards nor '@' is used. \
+"
+
+check["not_allowed_mail_locals"] = "route" SUBSEP "Removed in 0.3.2" SUBSEP "\
+Replaced by 'denied_senders', if neither wildcards nor '@' is used. \
+"
+
+check["(^|[ 	])allowed_rcpt_domains"] = "route" SUBSEP "Removed in 0.3.2" SUBSEP "\
+Replaced by 'allowed_recipients', if the values are prepended with \
+'*@', because 'allowed_recipients' matches complete addresses not just \
+domains. \
+"
+
+check["not_allowed_rcpt_domains"] = "route" SUBSEP "Removed in 0.3.2" SUBSEP "\
+Replaced by 'denied_recipients', if the values are prepended with \
+'*@', because 'allowed_recipients' matches complete addresses not just \
+domains. \
 "
 
 # get files
