@@ -513,15 +513,14 @@ smtp_out_open(gchar * host, gint port, GList * resolve_list)
 }
 
 smtp_base*
-smtp_out_open_child(gchar * cmd)
+smtp_out_open_child(gchar * cmd, char* host)
 {
 	smtp_base *psb;
 	gint sock;
 
 	DEBUG(5) debugf("smtp_out_open_child entered, cmd = %s\n", cmd);
-
+	psb->remote_host = host;
 	sock = child(cmd);
-
 	if (sock > 0) {
 		psb = create_smtpbase(sock);
 		psb->remote_host = NULL;
