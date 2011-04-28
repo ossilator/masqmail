@@ -289,26 +289,28 @@ deliver_msglist_host_pipe(connect_route * route, GList * msgout_list, gchar * ho
 			gchar *cmd = g_malloc(256);
 			GList *var_table = var_table_rcpt(var_table_msg(NULL, msg), rcpt);
 
-			DEBUG(1) debugf("attempting to deliver %s to %s@%s with pipe\n", msg->uid, rcpt->local_part, rcpt->domain);
+			DEBUG(1) debugf("attempting to deliver %s to %s@%s with pipe\n",
+			                msg->uid, rcpt->local_part, rcpt->domain);
 
 			if (!expand(var_table, route->pipe, cmd, 256)) {
-				logwrite(LOG_ALERT, "could not expand string %s\n", route->pipe);
+				logwrite(LOG_ALERT, "could not expand string `%s'\n", route->pipe);
+				destroy_table(var_table);
+				continue;
+			}
+
+			if (pipe_out(msg, msg->hdr_list, rcpt, cmd, (route->pipe_fromline ? MSGSTR_FROMLINE : 0)
+			    | (route->pipe_fromhack ? MSGSTR_FROMHACK : 0))) {
+				logwrite(LOG_NOTICE, "%s => %s@%s with pipe (cmd = '%s')\n",
+					 msg->uid, rcpt->local_part, rcpt->domain, cmd);
+				addr_mark_delivered(rcpt);
+				ok = TRUE;
 			} else {
+				logwrite(LOG_ALERT, "pipe_out '%s' failed\n", route->pipe);
 
-				if (pipe_out(msg, msg->hdr_list, rcpt, cmd, (route->pipe_fromline ? MSGSTR_FROMLINE : 0)
-				    | (route->pipe_fromhack ? MSGSTR_FROMHACK : 0))) {
-					logwrite(LOG_NOTICE, "%s => %s@%s with pipe (cmd = '%s')\n",
-					         msg->uid, rcpt->local_part, rcpt->domain, cmd);
-					addr_mark_delivered(rcpt);
-					ok = TRUE;
+				if (route->connect_error_fail) {
+					addr_mark_failed(rcpt);
 				} else {
-					logwrite(LOG_ALERT, "pipe_out '%s' failed\n", route->pipe);
-
-					if (route->connect_error_fail) {
-						addr_mark_failed(rcpt);
-					} else {
-						addr_mark_defered(rcpt);
-					}
+					addr_mark_defered(rcpt);
 				}
 			}
 
@@ -352,7 +354,7 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 	}
 
 	if (route->wrapper) {
-		psb = smtp_out_open_child(route->wrapper);
+		psb = smtp_out_open_child(route->wrapper, host);
 	} else {
 		psb = smtp_out_open(host, port, res_list);
 	}
@@ -388,17 +390,10 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 		return ok;
 	}
 
-
-	if (route->wrapper) {
-		/* it seems as if the remote_host is only set for logging
-		/* XXX: this could probably be moved into smtp_out_open_child() */
-		psb->remote_host = host;
-	}
-
 	set_heloname(psb, route->helo_name ? route->helo_name : conf.host_name, route->do_correct_helo);
 
 #ifdef ENABLE_AUTH
-	if ((route->auth_name) && (route->auth_login) && (route->auth_secret)) {
+	if (route->auth_name && route->auth_login && route->auth_secret) {
 		set_auth(psb, route->auth_name, route->auth_login, route->auth_secret);
 	}
 #endif
@@ -692,6 +687,8 @@ deliver_msgout_list_online(GList * msgout_list)
 	GList *rf_list = NULL;
 	gchar *connect_name = NULL;
 	gboolean ok = FALSE;
+	GList *route_node;
+	GList *route_list;
 
 	connect_name = online_query();
 	if (!connect_name) {
@@ -707,13 +704,13 @@ deliver_msgout_list_online(GList * msgout_list)
 		return FALSE;
 	}
 
-	GList *route_list = read_route_list(rf_list, FALSE);
+	route_list = read_route_list(rf_list, FALSE);
 	if (!route_list) {
 		logwrite(LOG_ALERT, "could not read route list '%s'\n", connect_name);
 		return FALSE;
 	}
 
-	GList *route_node;
+	/* TODO: Should we stop if the mail was delivered? Dig deeper! */
 	foreach(route_list, route_node) {
 		connect_route *route = (connect_route *) (route_node->data);
 		/* TODO: ok gets overwritten */
@@ -723,6 +720,12 @@ deliver_msgout_list_online(GList * msgout_list)
 	return ok;
 }
 
+/*
+   This function searches in the list of rcpt addresses
+   for local and 'local net' addresses. Remote addresses
+   which are reachable only when online are treated specially
+   in another function.
+*/
 gboolean
 deliver_msg_list(GList * msg_list, guint flags)
 {
@@ -854,11 +857,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 	return ok;
 }
 
-/* This function searches in the list of rcpt addresses
-   for local and 'local net' addresses. Remote addresses
-   which are reachable only when online are treated specially
-   in another function.
-
+/*
    deliver() is called when a message has just been received and should
    be delivered immediately.
 */
