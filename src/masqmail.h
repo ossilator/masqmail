@@ -90,34 +90,28 @@ typedef struct _connect_route {
 	GList *denied_recipients;
 
 	interface *mail_host;
-	gchar *wrapper;
 	gboolean connect_error_fail;
-
+	GList *resolve_list;
 	gchar *helo_name;
 	gboolean do_correct_helo;
 	gboolean instant_helo;
 	gboolean do_pipelining;
+	gchar *auth_name;
+	gchar *auth_login;
+	gchar *auth_secret;
+	gchar *wrapper;
 
 	gchar *set_h_from_domain;
 	gchar *set_h_reply_to_domain;
 	gchar *set_return_path_domain;
-
 	GList *map_h_from_addresses;
 	GList *map_h_reply_to_addresses;
 	GList *map_h_mail_followup_to_addresses;
 	GList *map_return_path_addresses;
-
 	gboolean expand_h_sender_domain;
 	gboolean expand_h_sender_address;
 
-	GList *resolve_list;
-
-	gchar *auth_name;
-	gchar *auth_login;
-	gchar *auth_secret;
-
 	gchar *pipe;
-
 	gboolean pipe_fromline;
 	gboolean pipe_fromhack;
 } connect_route;
