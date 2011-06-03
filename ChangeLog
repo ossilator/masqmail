@@ -7,6 +7,9 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
+0.2.29  Fri, 03 Jun 2011 09:52:44 +0200
+	* Fixed a problem with folded headers. The folded lines of a
+	  long header would be ignored in unpredictable cases.
 0.2.28  Fri, 23 Jul 2010 09:58:56 +0200
 	* added STARTTLS support with external wrappers like openssl.
 	  Added a new route config option `instant_helo' therefore.

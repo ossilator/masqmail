@@ -7,6 +7,14 @@ affect users directly.
 The manual pages describe newly added options. Take them for reference.
 
 
+0.2.29
+
+- Fixed a problem with folded headers. In earlier versions mail to
+many recipients may, in unpredictable cases,  only have been delivered
+to the ones on the first line. This is fixed now. Sorry for the
+inconvenience.
+
+
 0.2.28
 
 - Added STARTTLS support with external wrappers like OpenSSL. See
