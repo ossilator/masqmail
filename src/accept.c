@@ -131,7 +131,11 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 			if (line1[0] == ' ' || line1[0] == '\t') {
 				/* continuation of 'folded' header: */
 				if (hdr) {
-					hdr->header = g_strconcat(hdr->header, line1, NULL);
+					char* cp;
+					cp = g_strconcat(hdr->header, line1, NULL);
+					hdr->value = cp + (hdr->value - hdr->header);
+					free(hdr->header);
+					hdr->header = cp;
 				}
 
 			} else if (line1[0] == '\n') {
