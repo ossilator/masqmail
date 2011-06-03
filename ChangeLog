@@ -7,6 +7,47 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
+0.3.2  Fri, 03 Jun 2011 10:14:33 +0200
+	* Fixed an important bug with folded headers! The folded lines
+	  of a long header would be ignored in unpredictable cases.
+	  Also fixed another problem with folded headers and
+	  g_strconcat() in spool read.
+	* Reworked allowed and denied addrs for routes to be more
+	  consistent and allow more flexible matching:
+	  - allowed_mail_locals + allowed_return_paths ->
+	    allowed_senders
+	  - not_allowed_mail_locals + not_allowed_return_paths ->
+	    denied_senders
+	  - allowed_rcpt_domains -> allowed_recipients
+	  - not_allowed_rcpt_domains -> denied_recipients
+	* Reworked online_detect to the simpler online_query. Only
+	  pipe is supported now. Use
+	    online_query="/bin/cat /path/to/file"
+	  instead of
+	    online_detect=file
+	    online_file=/path/to/file
+	  and
+	    online_query="/path/to/some/script foo"
+	  instead of
+	    online_detect=pipe
+	    online_pipe="/path/to/some/script foo"
+	  See man page masqmail.conf(5) and admin/config-transition.
+	* Removed protocol option from route config because it was
+	  somehow redundant. Now, if `pipe' is set, the protocol will
+	  be pipe, otherwise it'll be smtp. That's just natural.
+	* Bugfix: off-by-one in pipe aliases
+	* Null-terminated the decoded base64 strings.
+	* Now the Received: headers are much friendlier to read. The
+	  header for locally (i.e. non-SMTP) received mail is changed
+	  to the format postfix uses.
+	* Replaced header_fold() with a better implementation and
+	  improved the (yet) unused function header_fold().
+	* Made protocol names upper case, like RFC 5321 requires them.
+	* Several improvements to the man pages.
+	* As always: various refactoring.
+	* Ran aclocal and autoconf.
+	* Added a description of how I create a masqmail release.
+
 0.3.1   Wed, 08 Dec 2010 18:03:04 -0300
 	* smtp_out.c: changed the SMTP greeting behavior to match RFC
 	  2821 (always try EHLO first). Thanks to inne for pointing me
