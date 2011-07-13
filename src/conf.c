@@ -175,7 +175,8 @@ parse_address_glob_list(gchar * line, gboolean read_file)
 			addr->domain = strdup(at+1);
 		} else {
 			addr->local_part = strdup(p);
-			addr->domain = "";
+			/* No `@', thus any domain is okay. */
+			addr->domain = "*";
 		}
 		list = g_list_append(list, addr);
 		DEBUG(6) debugf("parse_address_glob_list: read pattern `%s' `%s'\n",
