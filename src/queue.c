@@ -42,7 +42,7 @@ mix_arr(int *buf, int len)
 }
 
 GList*
-read_queue(gboolean do_readdata)
+read_queue(void)
 {
 	GList *msg_list = NULL;
 	glob_t gl;
@@ -76,7 +76,7 @@ read_queue(gboolean do_readdata)
 
 		DEBUG(5) debugf("uid: %s\n", uid);
 
-		msg_list = g_list_append(msg_list, msg_spool_read(uid, do_readdata));
+		msg_list = g_list_append(msg_list, msg_spool_read(uid, FALSE));
 
 		DEBUG(5) debugf("after read spool file for %s\n", uid);
 
@@ -92,7 +92,7 @@ queue_run()
 	gboolean ok = TRUE;
 
 	logwrite(LOG_NOTICE, "Starting queue run.\n");
-	msg_list = read_queue(FALSE);
+	msg_list = read_queue();
 	if (msg_list) {
 		ok = deliver_msg_list(msg_list, DLVR_ALL);
 		DEBUG(5) debugf("  deliver_msg_list() returned: %d\n", ok);
@@ -110,7 +110,7 @@ queue_run_online()
 	gboolean ok = TRUE;
 
 	logwrite(LOG_NOTICE, "Starting online queue run.\n");
-	msg_list = read_queue(FALSE);
+	msg_list = read_queue();
 	if (msg_list) {
 		ok = deliver_msg_list(msg_list, DLVR_ONLINE);
 		DEBUG(5) debugf("  deliver_msg_list() returned: %d\n", ok);
@@ -140,7 +140,7 @@ queue_list()
 	GList *msg_list;
 	GList *msg_node;
 
-	msg_list = read_queue(FALSE);
+	msg_list = read_queue();
 
 	if (msg_list == NULL) {
 		printf("mail queue is empty.\n");
