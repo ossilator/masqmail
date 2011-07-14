@@ -76,7 +76,7 @@ read_queue(void)
 
 		DEBUG(5) debugf("uid: %s\n", uid);
 
-		msg_list = g_list_append(msg_list, msg_spool_read(uid, FALSE));
+		msg_list = g_list_append(msg_list, msg_spool_read(uid));
 
 		DEBUG(5) debugf("after read spool file for %s\n", uid);
 
