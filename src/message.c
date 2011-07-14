@@ -163,17 +163,8 @@ destroy_msg_list(GList * msg_list)
 msg_out*
 create_msg_out(message * msg)
 {
-	msg_out *msgout = NULL;
-
-	msgout = g_malloc(sizeof(msg_out));
-	if (msgout) {
-		msgout->msg = msg;
-		msgout->return_path = NULL;
-		msgout->rcpt_list = NULL;
-
-		msgout->hdr_list = NULL;
-		msgout->xtra_hdr_list = NULL;
-	}
+	msg_out *msgout = g_malloc0(sizeof(msg_out));
+	msgout->msg = msg;
 	return msgout;
 }
 
