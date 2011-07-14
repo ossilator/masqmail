@@ -211,8 +211,15 @@ but from users unable to set their address in their mail clients.
 .TP
 \fBdo_queue = \fIboolean\fR
 
-If this is set, mail will not be delivered immediately when accepted.
+If this is set, masqmail will not try to deliver mail immediately when accepted.
+Instead it will always queue it.
+(Note: Masqmail will always automatically queue mail if neccesary,
+i.e. if it cannot deliver because no suitable route was available for example.)
+
 Same as calling masqmail with the \fB\-odq\fR option.
+Usually you should leave this option unset.
+
+Default: false
 
 .TP
 \fBonline_routes.\fIname\fR = \fIlist\fR
