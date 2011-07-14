@@ -351,10 +351,11 @@ smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
 				DEBUG(1) debugf("queuing forced by configuration or option.\n");
 			} else {
 				pid = fork();
-				if (pid == 0) {
-					_exit(deliver(msg));
-				} else if (pid < 0) {
+				if (pid < 0) {
 					logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n", msg->uid);
+				} else if (pid == 0) {
+					/* FIXME: most likely inverted exit code */
+					_exit(deliver(msg));
 				}
 			}
 			psc->rcpt_seen = psc->from_seen = FALSE;
