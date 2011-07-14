@@ -422,7 +422,6 @@ gboolean deliver_msglist_host(connect_route * route, GList * msg_list, gchar * h
 gboolean deliver_route_msgout_list(connect_route * route, GList * msgout_list);
 gboolean deliver_route_msg_list(connect_route * route, GList * msgout_list);
 gboolean deliver_finish(msg_out * msgout);
-gboolean deliver_finish_list(GList * msgout_list);
 gboolean deliver_msg_list(GList * msg_list, guint flags);
 gboolean deliver(message * msg);
 

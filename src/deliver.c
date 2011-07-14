@@ -668,20 +668,6 @@ deliver_finish(msg_out * msgout)
 }
 
 gboolean
-deliver_finish_list(GList * msgout_list)
-{
-	gboolean ok = TRUE;
-	GList *msgout_node;
-	foreach(msgout_list, msgout_node) {
-		msg_out *msgout = (msg_out *) (msgout_node->data);
-		if (!deliver_finish(msgout)) {
-			ok = FALSE;
-		}
-	}
-	return ok;
-}
-
-gboolean
 deliver_msgout_list_online(GList * msgout_list)
 {
 	GList *rf_list = NULL;
