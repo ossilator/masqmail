@@ -457,7 +457,7 @@ gboolean spool_unlock(gchar * uid);
 gboolean spool_delete_all(message * msg);
 
 /* queue.c */
-GList *read_queue(gboolean do_readdata);
+GList *read_queue(void);
 gboolean queue_run(void);
 gboolean queue_run_online(void);
 void queue_list(void);
