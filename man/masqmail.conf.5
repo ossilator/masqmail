@@ -59,8 +59,14 @@ You still have to set \fBlog_dir\fR for debug files.
 \fBdebug_level = \fIn\fR
 
 Set the debug level.
-Valid values are 0 to 6, increasing it further makes no difference.
-Be careful if you set this as high as 5 or higher, the logs may very soon fill your hard drive.
+Valid values are 0 to 6 and 9.
+Be careful if you set this as high as 5 or higher,
+the logs may very soon fill your hard drive.
+Level 9 enables printing of debug messages to stderr during reading of
+the config file.
+The debug file comes available for the first time after this step.
+Thus nothing but stderr is available.
+Level 9 is almost never interesting.
 
 .TP
 \fBlog_dir = \fIfile\fR

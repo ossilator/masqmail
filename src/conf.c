@@ -62,7 +62,7 @@ parse_boolean(gchar * rval)
 {
 	gchar **str;
 
-	DEBUG(6) fprintf(stderr, "parse_boolean: %s\n", rval);
+	DEBUG(9) fprintf(stderr, "parse_boolean: %s\n", rval);
 
 	str = true_strings;
 	while (*str) {
@@ -100,7 +100,7 @@ parse_list_file(gchar * fname)
 		fgets(buf, 255, fptr);
 		if (buf[0] && (buf[0] != '#') && (buf[0] != '\n')) {
 			g_strchomp(buf);
-			DEBUG(6) fprintf(stderr,"parse_list_file: item = %s\n", buf);
+			DEBUG(9) fprintf(stderr,"parse_list_file: item = %s\n", buf);
 			list = g_list_append(list, g_strdup(buf));
 		}
 	}
@@ -117,7 +117,7 @@ parse_list(gchar * line, gboolean read_file)
 	gchar buf[256];
 	gchar *p, *q;
 
-	DEBUG(6) fprintf(stderr, "parsing list %s, file?:%d\n", line, read_file);
+	DEBUG(9) fprintf(stderr, "parsing list %s, file?:%d\n", line, read_file);
 
 	p = line;
 	while (*p != '\0') {
@@ -134,7 +134,7 @@ parse_list(gchar * line, gboolean read_file)
 			/* just a normal item */
 			list = g_list_append(list, g_strdup(buf));
 
-		DEBUG(6) fprintf(stderr, "item = %s\n", buf);
+		DEBUG(9) fprintf(stderr, "item = %s\n", buf);
 
 		if (*p)
 			p++;
@@ -226,7 +226,7 @@ parse_interface(gchar * line, gint def_port)
 	gchar *p, *q;
 	interface *iface;
 
-	DEBUG(6) fprintf(stderr, "parse_interface: %s\n", line);
+	DEBUG(9) fprintf(stderr, "parse_interface: %s\n", line);
 
 	p = line;
 	q = buf;
@@ -242,7 +242,7 @@ parse_interface(gchar * line, gint def_port)
 		iface->port = atoi(p);
 	} else
 		iface->port = def_port;
-	DEBUG(6) fprintf(stderr,"rval=%s, address:port=%s:%i\n",line, iface->address, iface->port);
+	DEBUG(9) fprintf(stderr,"rval=%s, address:port=%s:%i\n",line, iface->address, iface->port);
 
 	return iface;
 }
@@ -256,7 +256,7 @@ parse_network(gchar * line, gint def_port)
 	struct in_addr addr, mask_addr, net_addr, *p_net_addr;
 	guint n;
 
-	DEBUG(6) fprintf(stderr, "parse_network: %s\n", line);
+	DEBUG(9) fprintf(stderr, "parse_network: %s\n", line);
 
 	p = line;
 	q = buf;
@@ -341,13 +341,13 @@ read_lval(FILE * in, gchar * buf, gint size)
 	gint c;
 	gchar *ptr = buf;
 
-	DEBUG(6) fprintf(stderr, "read_lval()\n");
+	DEBUG(9) fprintf(stderr, "read_lval()\n");
 
 	if (!eat_spaces(in))
 		return FALSE;
 
 	c = fgetc(in);
-	DEBUG(6) fprintf(stderr, "read_lval() 2\n");
+	DEBUG(9) fprintf(stderr, "read_lval() 2\n");
 	while ((isalnum(c) || c == '_' || c == '-' || c == '.')
 	       && (ptr < buf + size - 1)
 	       && (c != EOF)) {
@@ -367,7 +367,7 @@ read_lval(FILE * in, gchar * buf, gint size)
 
 	eat_spaces(in);
 
-	DEBUG(6) fprintf(stderr, "lval = %s\n", buf);
+	DEBUG(9) fprintf(stderr, "lval = %s\n", buf);
 
 	return buf[0] != '\0';
 }
@@ -378,7 +378,7 @@ read_rval(FILE * in, gchar * buf, gint size)
 	gint c;
 	gchar *ptr = buf;
 
-	DEBUG(6) fprintf(stderr, "read_rval()\n");
+	DEBUG(9) fprintf(stderr, "read_rval()\n");
 
 	if (!eat_spaces(in))
 		return FALSE;
@@ -415,7 +415,7 @@ read_rval(FILE * in, gchar * buf, gint size)
 
 	eat_line_trailing(in);
 
-	DEBUG(6) fprintf(stderr, "rval = %s\n", buf);
+	DEBUG(9) fprintf(stderr, "rval = %s\n", buf);
 
 	return TRUE;
 }
@@ -425,7 +425,7 @@ read_statement(FILE * in, gchar * lval, gint lsize, gchar * rval, gint rsize)
 {
 	gint c;
 
-	DEBUG(6) fprintf(stderr, "read_statement()\n");
+	DEBUG(9) fprintf(stderr, "read_statement()\n");
 
 	/* eat comments and empty lines: */
 	if (!eat_comments(in))
@@ -435,14 +435,14 @@ read_statement(FILE * in, gchar * lval, gint lsize, gchar * rval, gint rsize)
 		return FALSE;
 	}
 
-	DEBUG(6) fprintf(stderr, "  lval = %s\n", lval);
+	DEBUG(9) fprintf(stderr, "  lval = %s\n", lval);
 	if ((c = fgetc(in) == '=')) {
 		if (read_rval(in, rval, rsize)) {
-			DEBUG(6) fprintf(stderr, "  rval = %s\n", rval);
+			DEBUG(9) fprintf(stderr, "  rval = %s\n", rval);
 			return TRUE;
 		}
 	} else {
-		DEBUG(6) fprintf(stderr,"  '=' expected after %s, char was '%c'\n", lval, c);
+		DEBUG(9) fprintf(stderr,"  '=' expected after %s, char was '%c'\n", lval, c);
 		fprintf(stderr, "'=' expected after %s, char was '%c'\n", lval, c);
 	}
 	return FALSE;
@@ -469,7 +469,7 @@ read_conf(gchar * filename)
 
 	gchar lval[256], rval[2048];
 	while (read_statement(in, lval, 256, rval, 2048)) {
-		DEBUG(6) fprintf(stderr,"read_conf(): lval=%s\n", lval);
+		DEBUG(9) fprintf(stderr,"read_conf(): lval=%s\n", lval);
 		if (strcmp(lval, "debug_level") == 0)
 			conf.debug_level = atoi(rval);
 		else if (strcmp(lval, "run_as_user") == 0) {
@@ -585,7 +585,7 @@ read_conf(gchar * filename)
 			conf.log_user = g_strdup(rval);
 		else if(strcmp(lval, "max_msg_size") == 0) {
 			conf.max_msg_size = atol(rval);
-			DEBUG(6) fprintf(stderr,"rval=%s, conf.max_msg_size=%ld\n",
+			DEBUG(9) fprintf(stderr,"rval=%s, conf.max_msg_size=%ld\n",
 			                 rval, conf.max_msg_size);
 		}
 		else
