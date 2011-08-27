@@ -61,8 +61,10 @@ sigterm_handler(int sig)
 	sigterm_in_progress = 1;
 
 	if (pidfile) {
-		uid_t uid;
-		uid = seteuid(0);
+		uid_t uid = geteuid();
+		if (seteuid(0) != 0) {
+			logwrite(LOG_ALERT, "sigterm_handler: could not set euid to %d: %s\n", 0, strerror(errno));
+		}
 		if (unlink(pidfile) != 0)
 			logwrite(LOG_WARNING, "could not delete pid file %s: %s\n", pidfile, strerror(errno));
 		seteuid(uid);  /* we exit anyway after this, just to be sure */
@@ -187,8 +189,7 @@ mode_smtp()
 	conf.do_verbose = FALSE;
 
 	if (!conf.run_as_user) {
-		seteuid(conf.orig_uid);
-		setegid(conf.orig_gid);
+		set_euidgid(conf.orig_uid, conf.orig_gid, NULL, NULL);
 	}
 
 	DEBUG(5) debugf("accepting smtp message on stdin\n");
@@ -217,8 +218,7 @@ mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags,
 	}
 
 	if (!conf.run_as_user) {
-		seteuid(conf.orig_uid);
-		setegid(conf.orig_gid);
+		set_euidgid(conf.orig_uid, conf.orig_gid, NULL, NULL);
 	}
 
 	DEBUG(5) debugf("accepting message on stdin\n");
@@ -647,10 +647,15 @@ main(int argc, char *argv[])
 	 */
 	if ((strcmp(conf_file, CONF_FILE) != 0) && (conf.orig_uid != 0)) {
 		conf.run_as_user = TRUE;
-		seteuid(conf.orig_uid);
-		setegid(conf.orig_gid);
-		setuid(conf.orig_uid);
-		setgid(conf.orig_gid);
+		set_euidgid(conf.orig_uid, conf.orig_gid, NULL, NULL);
+		if (setgid(conf.orig_gid)) {
+			logwrite(LOG_ALERT, "could not set gid to %d: %s\n", conf.orig_gid, strerror(errno));
+			exit(1);
+		}
+		if (setuid(conf.orig_uid)) {
+			logwrite(LOG_ALERT, "could not set uid to %d: %s\n", conf.orig_uid, strerror(errno));
+			exit(1);
+		}
 	}
 
 	conf.log_dir = LOG_DIR;
