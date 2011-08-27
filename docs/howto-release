@@ -27,7 +27,7 @@ have the right version and date in the man pages.
 
 (6) Run `make distclean', check for remaining files (just in case). `hg
 st' is helpful. Build anew: `./configure ... && make && sudo make
-install'. Check if everything went well. If so, `make distclean again'.
+install'. Check if everything went well. If so, `make distclean' again.
 
 
 Now we should be ready to release.
