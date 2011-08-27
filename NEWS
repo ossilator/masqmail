@@ -7,6 +7,12 @@ affect users directly.
 The manual pages describe newly added options. Take them for reference.
 
 
+0.3.3
+
+-  Fixed a possible security problem, reported by John Lightsey. Unwanted
+identity changes to the user root could have appeared.
+
+
 0.3.2
 
 - Fixed an important bug with folded headers! In earlier versions mail
