@@ -131,14 +131,7 @@ listen_port(GList * iface_list, gint qival, char *argv[])
 
 	/* now that we have our socket(s), we can give up root privileges */
 	if (!conf.run_as_user) {
-		if (setegid(conf.mail_gid) != 0) {
-			logwrite(LOG_ALERT, "could not change gid to %d: %s\n", conf.mail_gid, strerror(errno));
-			exit(1);
-		}
-		if (seteuid(conf.mail_uid) != 0) {
-			logwrite(LOG_ALERT, "could not change uid to %d: %s\n", conf.mail_uid, strerror(errno));
-			exit(1);
-		}
+		set_euidgid(conf.mail_uid, conf.mail_gid, NULL, NULL);
 	}
 
 	/*  sel_ret = 0; */
