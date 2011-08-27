@@ -65,8 +65,9 @@ logopen()
 		uid_t saved_uid;
 		gid_t saved_gid;
 
-		saved_gid = setegid(conf.mail_gid);
-		saved_uid = seteuid(conf.mail_uid);
+		if (!conf.run_as_user) {
+			set_euidgid(conf.mail_uid, conf.mail_gid, &saved_uid, &saved_gid);
+		}
 
 		filename = g_strdup_printf("%s/masqmail.log", conf.log_dir);
 		logfile = fopen(filename, "a");
@@ -76,8 +77,9 @@ logopen()
 		}
 		g_free(filename);
 
-		seteuid(saved_uid);
-		setegid(saved_gid);
+		if (!conf.run_as_user) {
+			set_euidgid(saved_uid, saved_gid, NULL, NULL);
+		}
 	}
 
 #ifdef ENABLE_DEBUG
@@ -114,35 +116,26 @@ vlogwrite(int pri, const char *fmt, va_list args)
 		va_copy(args_copy, args);
 		vfprintf(stdout, fmt, args_copy);
 		va_end(args_copy);
-		fflush(stdout);  /* is this necessary? */
+		fflush(stdout);  /* in case output ends not with newline */
 	}
 
 	pri &= ~LOG_VERBOSE;
-	if (pri) {
-		if (conf.use_syslog)
-			vsyslog(pri, fmt, args);
-		else {
-			if (pri <= conf.log_max_pri) {
-				FILE *file = logfile ? logfile : stderr;
-				time_t now = time(NULL);
-				struct tm *t = localtime(&now);
-				gchar buf[24];
-				uid_t saved_uid;
-				gid_t saved_gid;
+	if (!pri) {
+		return;
+	}
+	if (conf.use_syslog)
+		vsyslog(pri, fmt, args);
+	else if (pri <= conf.log_max_pri) {
+		FILE *file = logfile ? logfile : stderr;
+		time_t now = time(NULL);
+		struct tm *t = localtime(&now);
+		gchar buf[24];
 
-				saved_gid = setegid(conf.mail_gid);
-				saved_uid = seteuid(conf.mail_uid);
+		strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
+		fprintf(file, "%s [%d] ", buf, getpid());
 
-				strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
-				fprintf(file, "%s [%d] ", buf, getpid());
-
-				vfprintf(file, fmt, args);
-				fflush(file);
-
-				seteuid(saved_uid);
-				setegid(saved_gid);
-			}
-		}
+		vfprintf(file, fmt, args);
+		fflush(file);
 	}
 }
 
