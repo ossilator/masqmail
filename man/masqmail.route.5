@@ -158,7 +158,7 @@ If this is set, masqmail does not wait for the greeting of the SMTP server
 after opening the connection.
 Instead it says EHLO right away (ESMTP is assumed).
 Use this option with wrappers that eat the 220 greeting of the SMTP server.
-Common examples are STARTTLS wrappers, like `openssl s_client -starttls smtp ...'.
+Common examples are STARTTLS wrappers, like `openssl s_client \-starttls smtp ...'.
 
 If this option is set and a 220 greeting is received though,
 everything should still work.
