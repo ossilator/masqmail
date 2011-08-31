@@ -4,9 +4,9 @@
 mm_bin=../../src/masqmail
 
 
-hfrom="\"Fritz Meier\" <`logname`@localhost>"
+hfrom="\"Fritz Meier\" <$LOGNAME@localhost>"
 hto=$hfrom
-to=`logname`@localhost
+to=$LOGNAME@localhost
 hsubject="Masqmail test: localhost-stdin"
 
 

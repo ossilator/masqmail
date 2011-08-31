@@ -3,9 +3,9 @@
 # path to the masqmail executable
 mm_bin=../../src/masqmail
 
-hfrom="\"Fritz Meier\" <`logname`@RECV_HOST>"
+hfrom="\"Fritz Meier\" <$LOGNAME@RECV_HOST>"
 hto="$hfrom"
-to=`logname`@RECV_HOST
+to=$LOGNAME@RECV_HOST
 hsubject="Masqmail test: relay-to-hostname-mta"
 
 
