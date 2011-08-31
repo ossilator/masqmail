@@ -13,4 +13,4 @@ clean:
 
 realclean: clean
 	rm -rf ./input ./lock
-	rm -f *.log `logname`
+	rm -f *.log $(LOGNAME)
