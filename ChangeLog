@@ -7,13 +7,18 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
-0.3.3  Sat, 27 Aug 2011 18:35:34 +0200
+0.3.3  Wed, 31 Aug 2011 08:38:13 +0200
 	* Fixed a possible security problem, reported by John Lightsey. See
 	  Debian bug #638002. The return value of seteuid() calls was handled
 	  wrong or not at all. Now, the (already available) set_euidgid()
 	  function is used when possible. Additionally, removed the unnecessary
 	  identity change when writing into an already open file descriptor.
 	* Added debug level 9 for msgs to stderr during reading config.
+	* Fixed local-part only address patterns in route conditions. The man
+	  page claimed behavior that wasn't implemented up to now. Thanks to
+	  Juergen Daubert for the bug report.
+	* Switched default listen address back from 127.0.0.1 to `localhost'.
+	  Better be straight-forward than too clever.
 
 0.3.2  Fri, 03 Jun 2011 10:14:33 +0200
 	* Fixed an important bug with folded headers! The folded lines
