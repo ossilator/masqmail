@@ -12,6 +12,9 @@ The manual pages describe newly added options. Take them for reference.
 -  Fixed a possible security problem, reported by John Lightsey. Unwanted
 identity changes to the user root could have appeared.
 
+- Fixed local-part only address patterns in route conditions, as already
+described in the man page.
+
 
 0.3.2
 
