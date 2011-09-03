@@ -200,19 +200,6 @@ clone_msg_out(msg_out * msgout_orig)
 	return NULL;
 }
 
-GList*
-create_msg_out_list(GList * msg_list)
-{
-	GList *msgout_list = NULL;
-	GList *msg_node;
-
-	foreach(msg_list, msg_node) {
-		message *msg = (message *) (msg_node->data);
-		msgout_list = g_list_append(msgout_list, create_msg_out(msg));
-	}
-	return msgout_list;
-}
-
 void
 destroy_msg_out(msg_out * msgout)
 {

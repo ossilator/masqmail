@@ -365,7 +365,6 @@ gint msg_calc_size(message * msg, gboolean is_smtp);
 
 msg_out *create_msg_out(message * msg);
 msg_out *clone_msg_out(msg_out * msgout_orig);
-GList *create_msg_out_list(GList * msg_list);
 void destroy_msg_out(msg_out * msgout);
 void destroy_msg_out_list(GList * msgout_list);
 
