@@ -692,11 +692,13 @@ deliver_msgout_list_online(GList * msgout_list)
 
 	connect_name = online_query();
 	if (!connect_name) {
+		DEBUG(5) debugf("online query returned false\n");
 		return FALSE;
 	}
 
 	/* we are online! */
-	logwrite(LOG_NOTICE, "detected online configuration %s\n", connect_name);
+	DEBUG(5) debugf("processing query_routes\n");
+	logwrite(LOG_NOTICE, "detected online configuration `%s'\n", connect_name);
 
 	rf_list = (GList *) table_find(conf.connect_routes, connect_name);
 	if (!rf_list) {
@@ -710,13 +712,13 @@ deliver_msgout_list_online(GList * msgout_list)
 		return FALSE;
 	}
 
-	/* TODO: Should we stop if the mail was delivered? Dig deeper! */
 	foreach(route_list, route_node) {
 		connect_route *route = (connect_route *) (route_node->data);
 		/* TODO: ok gets overwritten */
 		ok = deliver_route_msg_list(route, msgout_list);
 	}
 	destroy_route_list(route_list);
+
 	return ok;
 }
 
@@ -850,6 +852,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 		destroy_msg_out_list(other_msgout_list);
 	}
 
+	/* unlock spool files */
 	foreach(msgout_list, msgout_node) {
 		msg_out *msgout = (msg_out *) (msgout_node->data);
 		if (spool_unlock(msgout->msg->uid)) {
@@ -857,17 +860,17 @@ deliver_msg_list(GList * msg_list, guint flags)
 		} else {
 			DEBUG(5) debugf("spool_unlock(%s) failed.\n", msgout->msg->uid);
 		}
-
 	}
-
 	destroy_msg_out_list(msgout_list);
 
 	return ok;
 }
 
 /*
-   deliver() is called when a message has just been received and should
-   be delivered immediately.
+   deliver() is called when a message has just been received
+   (mode_accept and smtp_in) and should be delivered immediately
+   (neither -odq nor do_queue). Only this one message will be tried to
+   deliver then.
 */
 gboolean
 deliver(message * msg)
