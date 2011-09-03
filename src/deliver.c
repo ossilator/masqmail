@@ -729,13 +729,21 @@ deliver_msgout_list_online(GList * msgout_list)
 gboolean
 deliver_msg_list(GList * msg_list, guint flags)
 {
-	GList *msgout_list = create_msg_out_list(msg_list);
+	GList *msgout_list = NULL;
+	GList *msg_node;
 	GList *local_msgout_list = NULL;
 	GList *localnet_msgout_list = NULL;
 	GList *other_msgout_list = NULL;
 	GList *msgout_node;
 	GList *alias_table = NULL;
 	gboolean ok = TRUE;
+
+	/* create msgout_list */
+	foreach(msg_list, msg_node) {
+		message *msg = (message *) msg_node->data;
+		msgout_list = g_list_append(msgout_list, create_msg_out(msg));
+	}
+
 
 	if (conf.alias_file) {
 		alias_table = table_read(conf.alias_file, ':');
