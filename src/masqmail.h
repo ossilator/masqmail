@@ -480,6 +480,8 @@ msgout_perhost *create_msgout_perhost(gchar * host);
 void destroy_msgout_perhost(msgout_perhost * mo_ph);
 void rewrite_headers(msg_out * msgout, connect_route * route);
 void split_rcpts(GList* rcpt_list, GList* localnets, GList** rl_local, GList** rl_localnet, GList** rl_others);
+GList* local_rcpts(GList* rcpt_list);
+GList* remote_rcpts(GList* rcpt_list);
 gboolean route_strip_msgout(connect_route * route, msg_out * msgout);
 msg_out *route_prepare_msgout(connect_route * route, msg_out * msgout);
 GList *route_msgout_list(connect_route * route, GList * msgout_list);

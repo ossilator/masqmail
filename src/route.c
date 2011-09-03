@@ -237,6 +237,52 @@ split_rcpts(GList* rcpt_list, GList* localnets, GList** rl_local, GList** rl_loc
 	}
 }
 
+/*
+Return a new list of the local rcpts in the rcpt_list
+TODO: This function is almost exactly the same as remote_rcpts(). Merge?
+*/
+GList*
+local_rcpts(GList* rcpt_list)
+{
+	GList *rcpt_node;
+	GList *local_rcpts = NULL;
+	address *rcpt = NULL;
+
+	if (!rcpt_list) {
+		return NULL;
+	}
+	foreach(rcpt_list, rcpt_node) {
+		rcpt = (address *) (rcpt_node->data);
+		if (addr_is_local(rcpt)) {
+			local_rcpts = g_list_append(local_rcpts, rcpt);
+		}
+	}
+	return local_rcpts;
+}
+
+/*
+Return a new list of non-local rcpts in the rcpt_list
+TODO: This function is almost exactly the same as local_rcpts(). Merge?
+*/
+GList*
+remote_rcpts(GList* rcpt_list)
+{
+	GList *rcpt_node;
+	GList *remote_rcpts = NULL;
+	address *rcpt = NULL;
+
+	if (!rcpt_list) {
+		return NULL;
+	}
+	foreach(rcpt_list, rcpt_node) {
+		rcpt = (address *) (rcpt_node->data);
+		if (!addr_is_local(rcpt)) {
+			remote_rcpts = g_list_append(remote_rcpts, rcpt);
+		}
+	}
+	return remote_rcpts;
+}
+
 static gint
 _g_list_addrcmp(gconstpointer pattern, gconstpointer addr)
 {
