@@ -638,7 +638,7 @@ read_route(gchar * filename, gboolean is_perma)
 	DEBUG(5) debugf("read_route, filename = %s\n", filename);
 
 	route->filename = g_strdup(filename);
-	route->name = g_strdup(filename);  /* quick hack */
+	route->name = route->filename;  /* quick hack */
 
 	route->expand_h_sender_address = TRUE;
 
