@@ -276,9 +276,8 @@ typedef struct _msgout_perhost {
 #define ACC_SAVE_ENVELOPE_TO 0x0100  /* save an existent Envelope-to header as X-Orig-Envelope-to */
 
 #define DLVR_LOCAL 0x01
-#define DLVR_LAN 0x02
-#define DLVR_ONLINE 0x04
-#define DLVR_ALL (DLVR_LOCAL|DLVR_LAN|DLVR_ONLINE)
+#define DLVR_ONLINE 0x02
+#define DLVR_ALL (DLVR_LOCAL|DLVR_ONLINE)
 
 /* transport flags */
 #define MSGSTR_FROMLINE 0x01
