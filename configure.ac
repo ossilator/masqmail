@@ -138,7 +138,7 @@ AC_SUBST(BASE64_LIBS)
 
 dnl libcrypto
 AC_ARG_WITH(libcrypto,
-	[  --with-libcrypto        use libcrypto],
+	[  --with-libcrypto        use libcrypto (usually not needed)],
 	)
 if test "x$with_libcrypto" != 'xyes'; then
 	with_libcrypto='no'
