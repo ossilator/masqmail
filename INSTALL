@@ -72,7 +72,12 @@ enables ESMTP AUTH support (disabled by default)
 --enable-ident
 enables RFC 1413 support. If you have the libident dynamic library
 installed, this will be linked, otherwise it will be statically linked
-using the sources included in the package.
+using the sources included in the package. Ident support brings few
+advantages. If mail is received from machines that run identd, the
+Received headers and log messages include a user name too. Additionally
+a user can remove queued mail if it had been sent by himself from another
+machine running identd. In any case: You cannot trust the ident
+information more than you trust the specific remote machine.
 
 --disable-resolver
 disables resolver support. Without the resolver functions, masqmail
