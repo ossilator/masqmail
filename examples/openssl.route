@@ -5,7 +5,8 @@
 # encryption is done by communicating through openssl
 
 # Today usually STARTTLS (RFC-3207) is used:
-# don't forget the instant_helo, otherwise it won't work, because the wrapper eats the 220 greeting
+# don't forget the instant_helo, otherwise it won't work,
+# because the wrapper eats the 220 greeting
 instant_helo=true
 wrapper="/usr/bin/openssl s_client -quiet -starttls smtp -connect mail.gmx.net:25 2>/dev/null"
 
