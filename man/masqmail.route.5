@@ -104,7 +104,7 @@ Default is false.
 The reason for this is that masqmail is designed for non permanent internet connections,
 where such errors may occur quite often, and a bounce would be annoying.
 
-For the default local_net route it is set to true.
+You probably want to set this to true for permanent routes.
 
 
 .SH SMTP CONFIGURATION
@@ -125,9 +125,13 @@ You can optionally give a port number following the host name and a colon, eg ma
 Specify the method how the domain of the server is resolved.
 Possible values are dns_mx, dns_a, byname.
 For `dns_mx', the domain is assumed to be an MX pointer to a list of host names,
-these will be tried each in order (lowest preference value first, equal preference values in random order).
+these will be tried each in order
+(lowest preference value first, equal preference values in random order).
 For `dns_a', the domain is assumed to be an A pointer.
 For `byname', the library function \fBgethostbyname(3)\fR will be used.
+
+For routes to a local network, where you likely don't have a DNS service,
+use only `byname'.
 
 The default is "dns_mx;dns_a;byname".
 

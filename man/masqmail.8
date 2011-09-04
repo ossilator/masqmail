@@ -87,8 +87,8 @@ or invoked as
 
 Do a single queue run.
 Try to deliver all messages in the queue.
-Masqmail sends to addresses on the local host, on the local net,
-and to remote ones, if available online routes permit.
+Masqmail sends to addresses on the local host
+and to remote ones, if available online routes permit it.
 That means, masqmail sends all queued mail it can.
 Online detection is done with the configured
 method (see \fBonline_query\fR in \fBmasqmail.conf(5)\fR).
@@ -101,7 +101,7 @@ Do a single queue run and deliver only using the specified online route.
 
 The route configuration for \fINAME\fP is read and queued mail
 to matching remote recipients is sent.
-(See \fBonline_routes.\fINAME\fR in the main config file.)
+(See \fBquery_routes.\fINAME\fR in the main config file.)
 
 You may want to use this option in scripts that run as soon as a link
 to the internet has been set up (e.g. ip-up).

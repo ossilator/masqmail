@@ -667,15 +667,34 @@ deliver_finish(msg_out * msgout)
 	return TRUE;
 }
 
-gboolean
-deliver_msgout_list_online(GList * msgout_list)
+int
+deliver_remote(GList* remote_msgout_list)
 {
+	int ok = TRUE;
+	GList *route_list = NULL;
+	GList *route_node;
 	GList *rf_list = NULL;
 	gchar *connect_name = NULL;
-	gboolean ok = FALSE;
-	GList *route_node;
-	GList *route_list;
 
+	if (!remote_msgout_list) {
+		return FALSE;
+	}
+
+	/* perma routes */
+	if (conf.perma_routes) {
+		DEBUG(5) debugf("processing perma_routes\n");
+
+		route_list = read_route_list(conf.perma_routes, TRUE);
+		foreach(route_list, route_node) {
+			connect_route *route = (connect_route *) (route_node->data);
+			if (!deliver_route_msg_list(route, remote_msgout_list)) {
+				ok = FALSE;
+			}
+		}
+		destroy_route_list(route_list);
+	}
+
+	/* query routes */
 	connect_name = online_query();
 	if (!connect_name) {
 		DEBUG(5) debugf("online query returned false\n");
@@ -686,7 +705,7 @@ deliver_msgout_list_online(GList * msgout_list)
 	DEBUG(5) debugf("processing query_routes\n");
 	logwrite(LOG_NOTICE, "detected online configuration `%s'\n", connect_name);
 
-	rf_list = (GList *) table_find(conf.connect_routes, connect_name);
+	rf_list = (GList *) table_find(conf.query_routes, connect_name);
 	if (!rf_list) {
 		logwrite(LOG_ALERT, "route list with name '%s' not found.\n", connect_name);
 		return FALSE;
@@ -701,7 +720,7 @@ deliver_msgout_list_online(GList * msgout_list)
 	foreach(route_list, route_node) {
 		connect_route *route = (connect_route *) (route_node->data);
 		/* TODO: ok gets overwritten */
-		ok = deliver_route_msg_list(route, msgout_list);
+		ok = deliver_route_msg_list(route, remote_msgout_list);
 	}
 	destroy_route_list(route_list);
 
@@ -709,10 +728,8 @@ deliver_msgout_list_online(GList * msgout_list)
 }
 
 /*
-   This function searches in the list of rcpt addresses
-   for local and 'local net' addresses. Remote addresses
-   which are reachable only when online are treated specially
-   in another function.
+   This function splits the list of rcpt addresses
+   into local and remote addresses and processes them accordingly.
 */
 gboolean
 deliver_msg_list(GList * msg_list, guint flags)
@@ -720,8 +737,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 	GList *msgout_list = NULL;
 	GList *msg_node;
 	GList *local_msgout_list = NULL;
-	GList *localnet_msgout_list = NULL;
-	GList *other_msgout_list = NULL;
+	GList *remote_msgout_list = NULL;
 	GList *msgout_node;
 	GList *alias_table = NULL;
 	gboolean ok = TRUE;
@@ -732,7 +748,6 @@ deliver_msg_list(GList * msg_list, guint flags)
 		msgout_list = g_list_append(msgout_list, create_msg_out(msg));
 	}
 
-
 	if (conf.alias_file) {
 		alias_table = table_read(conf.alias_file, ':');
 	}
@@ -742,7 +757,6 @@ deliver_msg_list(GList * msg_list, guint flags)
 		msg_out *msgout = (msg_out *) (msgout_node->data);
 		GList *rcpt_list;
 		GList *local_rcpt_list = NULL;
-		GList *localnet_rcpt_list = NULL;
 		GList *other_rcpt_list = NULL;
 
 		if (!spool_lock(msgout->msg->uid)) {
@@ -767,7 +781,9 @@ deliver_msg_list(GList * msg_list, guint flags)
 			rcpt_list = aliased_rcpt_list;
 		}
 
-		split_rcpts(rcpt_list, conf.local_nets, &local_rcpt_list, &localnet_rcpt_list, &other_rcpt_list);
+		/* split_rcpts(rcpt_list, NULL, &local_rcpt_list, * NULL, &other_rcpt_list); */
+		local_rcpt_list = local_rcpts(rcpt_list);
+		other_rcpt_list = remote_rcpts(rcpt_list);
 		g_list_free(rcpt_list);
 
 		/* local recipients */
@@ -777,18 +793,11 @@ deliver_msg_list(GList * msg_list, guint flags)
 			local_msgout_list = g_list_append(local_msgout_list, local_msgout);
 		}
 
-		/* local net recipients */
-		if ((flags & DLVR_LAN) && localnet_rcpt_list) {
-			msg_out *localnet_msgout = clone_msg_out(msgout);
-			localnet_msgout->rcpt_list = localnet_rcpt_list;
-			localnet_msgout_list = g_list_append(localnet_msgout_list, localnet_msgout);
-		}
-
-		/* remote recipients (the rest), requires online delivery  */
+		/* remote recipients, requires online delivery  */
 		if ((flags & DLVR_ONLINE) && other_rcpt_list) {
-			msg_out *other_msgout = clone_msg_out(msgout);
-			other_msgout->rcpt_list = other_rcpt_list;
-			other_msgout_list = g_list_append(other_msgout_list, other_msgout);
+			msg_out *remote_msgout = clone_msg_out(msgout);
+			remote_msgout->rcpt_list = other_rcpt_list;
+			remote_msgout_list = g_list_append(remote_msgout_list, remote_msgout);
 		}
 	}
 
@@ -796,7 +805,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 		destroy_table(alias_table);
 	}
 
-	/* actual delivery */
+	/* process local/remote msgout lists -> delivery */
 
 	if (local_msgout_list) {
 		DEBUG(5) debugf("local_msgout_list\n");
@@ -809,33 +818,10 @@ deliver_msg_list(GList * msg_list, guint flags)
 		destroy_msg_out_list(local_msgout_list);
 	}
 
-	if (localnet_msgout_list) {
-		GList *route_list = NULL;
-		GList *route_node;
-
-		DEBUG(5) debugf("localnet_msgout_list\n");
-		if (conf.local_net_routes) {
-			route_list = read_route_list(conf.local_net_routes, TRUE);
-		} else {
-			route_list = g_list_append(NULL, create_local_route());
-		}
-
-		foreach(route_list, route_node) {
-			connect_route *route = (connect_route *) (route_node->data);
-			if (!deliver_route_msg_list(route, localnet_msgout_list)) {
-				ok = FALSE;
-			}
-		}
-		destroy_msg_out_list(localnet_msgout_list);
-		destroy_route_list(route_list);
-	}
-
-	if (other_msgout_list) {
-		DEBUG(5) debugf("other_msgout_list\n");
-		if (!deliver_msgout_list_online(other_msgout_list)) {
-			ok = FALSE;
-		}
-		destroy_msg_out_list(other_msgout_list);
+	if (remote_msgout_list) {
+		DEBUG(5) debugf("remote_msgout_list\n");
+		deliver_remote(remote_msgout_list);
+		destroy_msg_out_list(remote_msgout_list);
 	}
 
 	/* unlock spool files */

@@ -14,6 +14,7 @@ test: test.tpl
 
 test.route:
 	echo mail_host=\"`hostname`\" >$@
+	echo "resolve_list = byname" >>$@
 
 clean:
 	rm -f test.conf test test.route

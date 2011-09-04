@@ -1,0 +1,16 @@
+# Example route for a local network
+# see also: man 5 masqmail.route
+#
+# Include this route with
+#     permanent_routes = "/etc/masqmail/localnet.route"
+# in masqmail.conf
+
+# adjust this to the machines on the local net
+allowed_recipients = "*@*mydomain.invalid;*@also.onlocal.net"
+
+# We expect the target hosts to be online. If not, fail.
+# Use this setting if you are sure the target hosts are online.
+connect_error_fail = true
+
+# If you don't want to query the DNS, uncomment:
+#resolve_list = "byname"
