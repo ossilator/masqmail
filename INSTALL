@@ -12,19 +12,18 @@ glib-1.2, you need to adjust configure.ac. See the comment in there.
 You need a user and a group for masqmail to run. If
 
 	grep '^mail:' /etc/passwd
-	grep '^trusted:' /etc/group
+	grep '^mail:' /etc/group
 
-shows that the user `mail' and the group `trusted' exist, it's
-probably best to use these. If they don't exist, create them:
+shows that the user `mail' and the group `mail' exist, it's probably
+best to use these. If they don't exist, create them:
 
-	groupadd -g 42 trusted
-	useradd -u 23 -g trusted -d /nonexistent -s /bin/false -c "masqmail MTA" mail
+	groupadd -g 12 mail
+	useradd -u 8 -g mail -d /nonexistent -s /bin/false -c "masqmail MTA" mail
 
-If you use other names than `mail' and `trusted' use the options
-described below for configure. The 23 and 42 are just a suggestion,
-you can use any (not yet used) number you like, but preferably one
-lower than 100. It does not have to be the same for the user `mail'
-and the group `trusted'.
+The 8 and 12 are common uid/gid for the user and group `mail', but you can
+use any (not yet used) number you like, preferably one lower than 100.
+If you use other names than `mail' and `mail', you need to use the
+configure options described below.
 
 
 Compiling is a matter of the usual procedure. In the source directory,
@@ -50,7 +49,7 @@ sets the user as which masqmail will run. Default is 'mail'. USER has
 to exist before you 'make install'.
 
 --with-group=GROUP
-sets the group as which masqmail will run. Default is 'trusted'. GROUP
+sets the group as which masqmail will run. Default is 'mail'. GROUP
 has to exist before you 'make install'.
 
 
@@ -107,11 +106,11 @@ should give output similar to
 
 	-rwsr-xr-x 1 root root    399356 May 10 12:34 /usr/local/sbin/masqmail
 	drwxr-xr-x 2 root root      4096 May 10 12:34 /etc/masqmail
-	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/log/masqmail
-	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/run/masqmail
-	drwxr-xr-x 5 mail trusted   4096 May 10 12:34 /var/spool/masqmail
-	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/input
-	drwxr-xr-x 2 mail trusted   4096 May 10 12:34 /var/spool/masqmail/lock
+	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/log/masqmail
+	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/run/masqmail
+	drwxr-xr-x 5 mail mail      4096 May 10 12:34 /var/spool/masqmail
+	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/spool/masqmail/input
+	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/spool/masqmail/lock
 
 Important are the set-user-id bit for /usr/local/sbin/masqmail and
 the permissions of all files.
