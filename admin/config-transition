@@ -78,6 +78,24 @@ check["online_pipe"] = "conf" SUBSEP "Renamed in 0.3.2" SUBSEP "\
 Now known as online_query. online_detect=pipe is not needed anymore. \
 "
 
+check["connect_route\\\\."] = "conf" SUBSEP "Removed in 0.3.4" SUBSEP "\
+The option had been already obsolete. Use \`query_routes.' instead.\
+"
+
+check["online_routes\\\\."] = "conf" SUBSEP "Renamed in 0.3.4" SUBSEP "\
+Known as \`query_routes.' now.\
+"
+
+check["local_net_route"] = "conf" SUBSEP "Renamed in 0.3.4" SUBSEP "\
+Known as \`permanent_routes' now, because that's what they actually are.\
+"
+
+check["local_nets"] = "conf" SUBSEP "Removed in 0.3.4" SUBSEP "\
+There is no concept of a \`\`local net'' in masqmail anymore. \
+Create a permanent route with \`allowed_recipients' set accordingly. \
+See man pages and example configurations for details.\
+"
+
 # route files
 
 check["pop3_login"] = "route" SUBSEP "Removed in 0.3.0" SUBSEP "\

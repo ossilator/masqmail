@@ -13,10 +13,10 @@ do_queue = false
 host_name="MASQMAIL-TEST"
 
 # we want to deliver through a route named `test' to a local MTA
-# thus we do not define any hosts or nets as local
-# all mail should go through the `test' route.
-online_query = "/bin/cat PWD/online"
-online_routes.test = "PWD/test.route"
+# thus we do not define any hosts as local. All mail should go through
+# the route.
+permanent_routes = "PWD/test.route"
+
 
 # spool files in the current directory
 spool_dir="PWD"

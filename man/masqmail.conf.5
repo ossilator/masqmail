@@ -25,8 +25,8 @@ List items are separated with semicolons `;'.
 For some values, patterns (like `*',`?') can be used.
 The spaces in front of and after the equal sign `=' are optional.
 
-Most lists (exceptions: \fBlocal_hosts\fR, \fBlocal_nets\fR, \fBlisten_addresses\fR,
-and \fBonline_routes\fR) accept files.
+Most lists (exceptions: \fBlocal_hosts\fR, \fBlisten_addresses\fR,
+\fBquery_routes.\fIname\fR and \fBpermanent_routes\fR) accept files.
 These will be recognized by a leading slash `/'.
 The contents of these files will be included at the position of the file name,
 there can be items or other files before and after the file entry.
@@ -164,13 +164,6 @@ local_hosts = "localhost;myhost;mydomain.net"
 not_local_addresses = "eric@mydomain.net"
 
 .TP
-\fBlocal_nets = \fIlist\fR
-
-A semicolon `;' separated list of hostnames which are on the `local' net.
-Delivery to these hosts is attempted immediately.
-You can use patterns with `*', e.g. "*.bar.com".
-
-.TP
 \fBlisten_addresses = \fIlist\fR
 
 A semicolon `;' separated list of interfaces on which connections will be accepted.
@@ -222,35 +215,55 @@ Usually you should leave this option unset.
 Default: false
 
 .TP
-\fBonline_routes.\fIname\fR = \fIlist\fR
+\fBpermanent_routes\fR = \fIlist\fR
 
-Replace \fIname\fR with a name to identify a connection.
-Set this to a filename (or a list of filenames) for the special route configuration for that connection.
-You will use that name to call masqmail with the \fB\-qo\fR option every time a
-connection to your ISP is set up.
+Set this to the filename (or a semicolon-separated list of filenames)
+of the route configuration for always available connections.
+Main purpose is to define a mail server with mail_host in your local network,
+or if masqmail should send mail directly to the target host.
+If you have only a single host, you can leave it unset.
+
+A setting `\fBlocal_nets\fR = \fI"*home.net"\fR' in versions <= 0.3.3
+is in newer versions configured as:
+`\fBpermanent_routes\fR = \fI"/etc/masqmail/homenet.route"\fR'
+and the route file `homenet.route' containing:
+.in +1in
+.nf
+allowed_recipients = "*@*home.net"
+connect_error_fail = true
+resolve_list = byname
+.fi
+.in 0
+This is just as it had been with \fBlocal_net_route\fP,
+with the exception that the filtering for appropriate addresses
+is only in the route file and not with \fBlocal_nets\fR.
+
+.TP
+\fBquery_routes.\fIname\fR = \fIlist\fR
+
+Replace \fIname\fR with a name to identify the connection.
+Set this to a filename (or a semicolon-separated list of filenames)
+for the route configuration for that connection.
+
+Routes of this kind cannot be expected to be online always.
+Masqmail will query which of the routes are online.
+
+You can use the name to call masqmail with the \fB\-qo\fR option every time a
+connection to your ISP is set up, in order to send queued mail through this 
+route.
 
 Example: Your ISP has the name FastNet.
 Then you write the following line in the main configuration:
 
- \fBonline_routes.FastNet\fR = \fI"/etc/masqmail/fastnet.route"\fR
+\fBquery_routes.\fBFastNet\fR = \fI"/etc/masqmail/fastnet.route"\fR
 
-\fI/etc/masqmail/fastnet.route\fR is the route configuration file, see \fBmasqmail.route(5)\fR.
-As soon as a link to FastNet has been set up, you call masqmail \fB\-qo \fIFastNet\fR.
+\fI/etc/masqmail/fastnet.route\fR is the route configuration file,
+see \fBmasqmail.route(5)\fR.
+As soon as a link to FastNet has been set up,
+you call `masqmail \fB\-qo \fIFastNet\fR'.
 Masqmail will then read the specified file and send the mails.
 
-.TP
-\fBconnect_route.\fIname\fR = \fIlist\fR
-
-Old name for \fBonline_routes\fR.
-
-.TP
-\fBlocal_net_route = \fIfile\fR
-
-This is similar to \fBonline_routes.\fIname\fR but used for delilvery to the local net.
-Recipient addresses that are in local_nets will be routed using this route configuration.
-Main purpose is to define a mail server with mail_host in your local network.
-In simple environments this can be left unset.
-If unset, a default route configuration (named ``default local_net_route'') will be used.
+See \fBonline_query\fP.
 
 .TP
 \fBalias_file = \fIfile\fR
@@ -366,7 +379,7 @@ Defines the method masqmail uses to detect whether there exists an online connec
 
 Masqmail executes the command given and reads from its standard output.
 The command should just print a route name, as defined
-with \fBonline_routes.\fIname\fR, to standard output and return a zero status code.
+with \fBquery_routes.\fIname\fR, to standard output and return a zero status code.
 Masqmail assumes it is offline if the script returns with a non-zero status.
 Leading and trailing whitespace is removed from the output.
 

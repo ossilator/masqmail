@@ -28,7 +28,7 @@ Configuration
 You need a config file like this one:
 
     host_name = "foo.example.org"
-    online_routes.default = /etc/masqmail/default.route
+    query_routes.default = /etc/masqmail/default.route
 
 (Substitute a real hostname, of course.)
 

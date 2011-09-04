@@ -81,7 +81,7 @@ typedef struct _connect_route {
 	gchar *name;
 	gchar *filename;
 
-	gboolean is_local_net;
+	gboolean is_perma;
 	gboolean last_route;
 
 	GList *allowed_senders;
@@ -138,7 +138,6 @@ typedef struct _masqmail_conf {
 	GList *local_hosts;
 	GList *local_addresses;
 	GList *not_local_addresses;
-	GList *local_nets;
 	GList *listen_addresses;
 
 	/* ANSI C defines unsigned long to be at least 32bit
@@ -170,8 +169,8 @@ typedef struct _masqmail_conf {
 	gchar *alias_file;
 	int (*localpartcmp) (const char *, const char *);
 
-	GList *local_net_routes;
-	GList *connect_routes;  /* list of pairs which point to lists */
+	GList *perma_routes;
+	GList *query_routes;  /* list of pairs which point to lists */
 
 	gchar *online_query;
 
@@ -261,7 +260,7 @@ typedef struct _msg_out {
 	GList *rcpt_list;
 
 	GList *hdr_list;
-	GList *xtra_hdr_list;
+	GList *xtra_hdr_list;  /* rewritten headers */
 } msg_out;
 
 typedef struct _msgout_perhost {
@@ -344,11 +343,10 @@ int child(const char *command);
 /* conf.c */
 void init_conf();
 gboolean read_conf(gchar * filename);
-connect_route *read_route(gchar * filename, gboolean is_local_net);
-GList *read_route_list(GList * rf_list, gboolean is_local_net);
+connect_route *read_route(gchar * filename, gboolean is_perma);
+GList *read_route_list(GList * rf_list, gboolean is_perma);
 void destroy_route(connect_route * r);
 void destroy_route_list(GList * list);
-connect_route *create_local_route();
 
 /* expand.c */
 GList *var_table_rcpt(GList * var_table, address * rcpt);

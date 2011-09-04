@@ -506,8 +506,6 @@ read_conf(gchar * filename)
 			conf.local_addresses = parse_list(rval, TRUE);
 		else if (strcmp(lval, "not_local_addresses") == 0)
 			conf.not_local_addresses = parse_list(rval, TRUE);
-		else if (strcmp(lval, "local_nets") == 0)
-			conf.local_nets = parse_list(rval, FALSE);
 		else if (strcmp(lval, "do_save_envelope_to") == 0)
 			conf.do_save_envelope_to = parse_boolean(rval);
 		else if (strcmp(lval, "defer_all") == 0)
@@ -558,13 +556,12 @@ read_conf(gchar * filename)
 #else
 			logwrite(LOG_WARNING, "%s ignored: not compiled with ident support\n", lval);
 #endif
-		} else if ((strncmp(lval, "connect_route.", 14) == 0)
-		           || (strncmp(lval, "online_routes.", 14) == 0)) {
+		} else if (strncmp(lval, "query_routes.", 13) == 0) {
 			GList *file_list = parse_list(rval, FALSE);
-			table_pair *pair = create_pair(&(lval[14]), file_list);
-			conf.connect_routes = g_list_append(conf.connect_routes, pair);
-		} else if (strcmp(lval, "local_net_route") == 0) {
-			conf.local_net_routes = parse_list(rval, FALSE);
+			table_pair *pair = create_pair(lval+13, file_list);
+			conf.query_routes = g_list_append(conf.query_routes, pair);
+		} else if (strcmp(lval, "permanent_routes") == 0) {
+			conf.perma_routes = parse_list(rval, FALSE);
 		} else if (strcmp(lval, "online_query") == 0)
 			conf.online_query = g_strdup(rval);
 		else if (strcmp(lval, "do_queue") == 0)
@@ -630,7 +627,7 @@ read_conf(gchar * filename)
 }
 
 connect_route*
-read_route(gchar * filename, gboolean is_local_net)
+read_route(gchar * filename, gboolean is_perma)
 {
 	gboolean ok = FALSE;
 	FILE *in;
@@ -645,7 +642,7 @@ read_route(gchar * filename, gboolean is_local_net)
 
 	route->expand_h_sender_address = TRUE;
 
-	route->is_local_net = is_local_net;
+	route->is_perma = is_perma;
 
 	route->do_pipelining = TRUE;
 
@@ -773,10 +770,8 @@ read_route(gchar * filename, gboolean is_local_net)
 
 	if (!route->resolve_list) {
 #ifdef ENABLE_RESOLVER
-		if (!is_local_net) {
-			route->resolve_list = g_list_append(route->resolve_list, resolve_dns_mx);
-			route->resolve_list = g_list_append(route->resolve_list, resolve_dns_a);
-		}
+		route->resolve_list = g_list_append(route->resolve_list, resolve_dns_mx);
+		route->resolve_list = g_list_append(route->resolve_list, resolve_dns_a);
 #endif
 		route->resolve_list = g_list_append(route->resolve_list, resolve_byname);
 	}
@@ -855,7 +850,7 @@ destroy_route(connect_route * r)
 }
 
 GList*
-read_route_list(GList * rf_list, gboolean is_local_net)
+read_route_list(GList * rf_list, gboolean is_perma)
 {
 	GList *list = NULL;
 	GList *node;
@@ -867,7 +862,7 @@ read_route_list(GList * rf_list, gboolean is_local_net)
 
 	foreach(rf_list, node) {
 		gchar *fname = (gchar *) (node->data);
-		connect_route *route = read_route(fname, is_local_net);
+		connect_route *route = read_route(fname, is_perma);
 		if (route)
 			list = g_list_append(list, route);
 		else
@@ -892,22 +887,4 @@ destroy_route_list(GList * list)
 		destroy_route(route);
 	}
 	g_list_free(list);
-}
-
-connect_route*
-create_local_route()
-{
-	connect_route *route;
-
-	route = g_malloc(sizeof(connect_route));
-	if (!route) {
-		return NULL;
-	}
-	memset(route, 0, sizeof(connect_route));
-	route->is_local_net = TRUE;
-	route->name = g_strdup("default local_net_route");
-	route->expand_h_sender_address = TRUE;
-	route->resolve_list = g_list_append(NULL, resolve_byname);
-	route->connect_error_fail = TRUE;
-	return route;
 }
