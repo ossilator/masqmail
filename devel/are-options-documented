@@ -16,6 +16,7 @@ cat man/masqmail.*.5 | grep -o '^\\fB[^(\\]*\\f.' |
 cat src/conf.c | grep 'lval,.*"' |
     sed 's,[^"]*",,; s,"\, [0-9]*,",; s,".*,,' | sort -u >"$code"
 
-diff -U 0 "$code" "$docs" | grep -v '^@@'
+diff -U 0 "$code" "$docs" | grep -v '^@@' |
+    sed 's/^---.*/--- code/;s/^+++.*/+++ docs/'
 
 rm -f "$docs" "$code"
