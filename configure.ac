@@ -95,10 +95,10 @@ if test "x$with_user" = 'x'; then
 fi
 
 AC_ARG_WITH(group,
-	[  --with-group=GROUP      set group [trusted]],
+	[  --with-group=GROUP      set group [mail]],
 	)
 if test "x$with_group" = 'x'; then
-	with_group='trusted'
+	with_group='mail'
 fi
 
 dnl debugging support (default is use it)

@@ -6,9 +6,9 @@ Debian
 
 If you compile for Debian, do the configure with at least these options:
 
-	./configure --with-liblockfile --with-group=mail
+	./configure --with-liblockfile
 
-Use the group `mail' instead of the group `trusted'.
+(You probably like to add `--enable-auth and --enable-ident'.)
 
 You can also build your own Debian package with
 
