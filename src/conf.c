@@ -260,7 +260,7 @@ parse_network(gchar * line, gint def_port)
 
 	p = line;
 	q = buf;
-	while ((*p != '\0') && (*p != '/') && (q < buf + 255))
+	while (*p && (*p != '/') && (q < buf + 255))
 		*(q++) = *(p++);
 	*q = '\0';
 
