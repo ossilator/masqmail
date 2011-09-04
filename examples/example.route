@@ -11,7 +11,7 @@
 
 allowed_senders = "okurth"
 
-# local_hosts and local_nets will be checked before this.
+# local_hosts will be checked before this.
 # cpwright.com uses the dialup up list of dul.maps.vix.com,
 # so I cannot send any mail over this connection to that domain.
 # There are probably many others... :-( (No, this is okay. Nobody

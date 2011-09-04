@@ -193,16 +193,12 @@ rewrite_headers(msg_out * msgout, connect_route * route)
 /*
 Split a recipient list into the three groups:
 - local recipients
-- local net recipients
-- other/remote/online recipients
-It should be possible to call the function like:
-	split_rcpts(rcpts, hostlist, local, others, others);
-This would split online between local and localnet+online recipients.
-(untested yet; remove this line if you saw it worked -- meillo 2010-10-21)
-If host_list is NULL, only splitting between local and other is done.
+- those maching the patterns
+- those not matching the patterns
+If patterns is NULL: only splitting between local and others is done.
 */
 void
-split_rcpts(GList* rcpt_list, GList* localnets, GList** rl_local, GList** rl_localnet, GList** rl_others)
+split_rcpts(GList* rcpt_list, GList* patterns, GList** rl_local, GList** rl_matching, GList** rl_others)
 {
 	GList *rcpt_node;
 	GList *host_node = NULL;
@@ -219,16 +215,16 @@ split_rcpts(GList* rcpt_list, GList* localnets, GList** rl_local, GList** rl_loc
 			if (rl_local)
 				*rl_local = g_list_append(*rl_local, rcpt);
 		} else {
-			/* if localnets is NULL, host_node will be NULL,
+			/* if patterns is NULL, host_node will be NULL,
 			   hence all non-locals are put to others */
-			foreach(localnets, host_node) {
+			foreach(patterns, host_node) {
 				gchar *host = (gchar *) (host_node->data);
 				if (fnmatch(host, rcpt->domain, FNM_CASEFOLD) == 0)
 					break;
 			}
 			if (host_node) {
-				if (rl_localnet)
-					*rl_localnet = g_list_append(*rl_localnet, rcpt);
+				if (rl_matching)
+					*rl_matching = g_list_append(*rl_matching, rcpt);
 			} else {
 				if (rl_others)
 					*rl_others = g_list_append(*rl_others, rcpt);
