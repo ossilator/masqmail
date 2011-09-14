@@ -85,13 +85,6 @@ uses only gethostbyname() to resolve DNS names, and you cannot send
 mail without a smart host. Not recommended.
 
 
---with-libcryto
-instead of using the md5 and hmac functions within the package, link
-dynamically with libcrypto. This applies only if you have SMTP AUTH
-enabled. Only makes sense if your resources are limited and you have
-libcrypto installed. Untested.
-
-
 --disable-debug
 disables debugging; setting it on the command line or in the
 configuration has no effect. Strongly discouraged, since you miss
