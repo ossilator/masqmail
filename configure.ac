@@ -196,7 +196,7 @@ AC_SUBST(with_spooldir)
 
 dnl configuration file
 AC_ARG_WITH(confdir,
-	[  --with-confdir          directory for configuration [/etc/masqmail]],
+	[  --with-confdir=DIR      directory for configuration [/etc/masqmail]],
 	,
 	with_confdir='/etc/masqmail'
 	)
