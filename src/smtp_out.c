@@ -31,16 +31,8 @@
 #include "readsock.h"
 
 #ifdef ENABLE_AUTH
-
-#ifdef USE_LIB_CRYPTO
-#include <openssl/hmac.h>
-#include <openssl/md5.h>
-#include <openssl/evp.h>
-#else
 #include "md5/md5.h"
 #include "md5/hmac_md5.h"
-#endif
-
 #include "base64/base64.h"
 #endif
 
@@ -567,21 +559,13 @@ smtp_out_auth_cram_md5(smtp_base * psb)
 			guchar digest[16], *reply64, *reply;
 			gchar digest_string[33];
 			gint i;
-#ifdef USE_LIB_CRYPTO
-			unsigned int digest_len;
-#endif
 
 			DEBUG(5) debugf("smtp_out_auth_cram_md5():\n");
 			DEBUG(5) debugf("  encoded challenge = %s\n", chall64);
 			DEBUG(5) debugf("  decoded challenge = %s, size = %d\n", chall, chall_size);
 			DEBUG(5) debugf("  secret = %s\n", psb->auth_secret);
 
-#ifdef USE_LIB_CRYPTO
-			HMAC(EVP_md5(), psb->auth_secret, strlen(psb->auth_secret), chall, chall_size, digest, &digest_len);
-#else
 			hmac_md5(chall, chall_size, psb->auth_secret, strlen(psb->auth_secret), digest);
-#endif
-
 			for (i = 0; i < 16; i++)
 				sprintf(&(digest_string[i + i]), "%02x", (unsigned int) (digest[i]));
 			digest_string[32] = '\0';

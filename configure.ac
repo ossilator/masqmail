@@ -136,25 +136,8 @@ if test "x$auth_enabled" = xyes; then
 fi
 AC_SUBST(BASE64_LIBS)
 
-dnl libcrypto
-AC_ARG_WITH(libcrypto,
-	[  --with-libcrypto        use libcrypto (usually not needed)],
-	)
-if test "x$with_libcrypto" != 'xyes'; then
-	with_libcrypto='no'
-fi
-
 if test "x$need_md5" = 'xyes'; then
-dnl check whether we have md5 in libcrypto if md5 needed and we shall link with libcrypto
-	if test "x$with_libcrypto" = "xyes"; then
-		AC_CHECK_LIB(crypto, MD5, has_crypto='yes', AC_MSG_ERROR('no libcrypto'))
-		if test "x$has_crypto" = 'xyes'; then
-			AC_DEFINE(USE_LIB_CRYPTO, 1, [If libcrypto is available])
-			MD5_LIBS='-lcrypto'
-		fi
-	else
-		MD5_LIBS='md5/libmd5.a'
-	fi
+	MD5_LIBS='md5/libmd5.a'
 fi
 AC_SUBST(MD5_LIBS)
 
