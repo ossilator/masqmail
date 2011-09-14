@@ -75,7 +75,6 @@ map_return_path_addresses = "okurth: kurth@innominate.de"
 map_h_from_addresses = "okurth: Oliver Kurth <kurth@innominate.de>"
 
 # if your mail server outside uses the AUTH machanism, set the following.
-# You need to compile masqmail with AUTH support (--enable-auth option for ./configure):
 # for auth_name, only 'cram-md5' and 'login' are supported.
 # see also: man 5 masqmail.route
 
