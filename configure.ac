@@ -122,12 +122,13 @@ dnl optional features
 MD5_LIBS=''
 BASE64_LIBS=''
 
-dnl auth support (default is to not use it)
+dnl auth support (default: use it)
 AC_ARG_ENABLE(auth,
-	[  --enable-auth           enable AUTH (RFC 2554) client support],
+	[  --disable-auth          disable AUTH (RFC 2554) client support],
 	if test "x$enable_auth" != 'xno'; then
 		auth_enabled='yes'
 	fi,
+	auth_enabled='yes'
 	)
 if test "x$auth_enabled" = xyes; then
 	AC_DEFINE(ENABLE_AUTH, 1, [If AUTH is enabled])

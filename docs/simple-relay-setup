@@ -19,7 +19,7 @@ Follow the description in INSTALL.
 
 A common configure call would be:
 
-    ./configure --enable-auth --enable-ident
+    ./configure --enable-ident
 
 
 Configuration

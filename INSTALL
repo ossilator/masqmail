@@ -66,9 +66,6 @@ sets the default configuration directory to CONFDIR, in case you
 prefer another location than /etc/masqmail/.
 
 
---enable-auth
-enables ESMTP AUTH support (disabled by default)
-
 --enable-ident
 enables RFC 1413 support. If you have the libident dynamic library
 installed, this will be linked, otherwise it will be statically linked
@@ -83,6 +80,9 @@ information more than you trust the specific remote machine.
 disables resolver support. Without the resolver functions, masqmail
 uses only gethostbyname() to resolve DNS names, and you cannot send
 mail without a smart host. Not recommended.
+
+--disable-auth
+disables ESMTP AUTH support (enabled by default)
 
 
 --disable-debug
