@@ -21,7 +21,7 @@
 #define MAX_VAR 50
 
 GList*
-var_table_rcpt(GList * var_table, address * rcpt)
+var_table_rcpt(GList *var_table, address *rcpt)
 {
 	gchar *tmp_str;
 
@@ -36,7 +36,7 @@ var_table_rcpt(GList * var_table, address * rcpt)
 }
 
 GList*
-var_table_msg(GList * var_table, message * msg)
+var_table_msg(GList *var_table, message *msg)
 {
 	address *ret_path = msg->return_path;
 	gchar *tmp_str;
@@ -55,7 +55,7 @@ var_table_msg(GList * var_table, message * msg)
 }
 
 GList*
-var_table_conf(GList * var_table)
+var_table_conf(GList *var_table)
 {
 	var_table = g_list_prepend(var_table, create_pair_string("host_name", conf.host_name));
 	var_table = g_list_prepend(var_table, create_pair_string("package", PACKAGE));
@@ -65,7 +65,7 @@ var_table_conf(GList * var_table)
 }
 
 gint
-expand(GList * var_list, gchar * format, gchar * result, gint result_len)
+expand(GList *var_list, gchar *format, gchar *result, gint result_len)
 {
 	gchar *p = format, *q = result;
 	gchar *vq;

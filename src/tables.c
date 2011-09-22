@@ -22,7 +22,7 @@
 #include "masqmail.h"
 
 table_pair*
-create_pair(gchar * key, gpointer value)
+create_pair(gchar *key, gpointer value)
 {
 	table_pair *pair;
 
@@ -34,7 +34,7 @@ create_pair(gchar * key, gpointer value)
 }
 
 table_pair*
-create_pair_string(gchar * key, gpointer value)
+create_pair_string(gchar *key, gpointer value)
 {
 	table_pair *pair;
 
@@ -46,7 +46,7 @@ create_pair_string(gchar * key, gpointer value)
 }
 
 table_pair*
-parse_table_pair(gchar * line, char delim)
+parse_table_pair(gchar *line, char delim)
 {
 	gchar buf[256];
 	gchar *p, *q;
@@ -72,7 +72,7 @@ parse_table_pair(gchar * line, char delim)
 }
 
 gpointer*
-table_find_func(GList * table_list, gchar * key, int (*cmp_func) (const char *, const char *))
+table_find_func(GList *table_list, gchar *key, int (*cmp_func) (const char *, const char *))
 {
 	GList *node;
 
@@ -85,13 +85,13 @@ table_find_func(GList * table_list, gchar * key, int (*cmp_func) (const char *, 
 }
 
 gpointer*
-table_find(GList * table_list, gchar * key)
+table_find(GList *table_list, gchar *key)
 {
 	return table_find_func(table_list, key, strcmp);
 }
 
 gpointer*
-table_find_case(GList * table_list, gchar * key)
+table_find_case(GList *table_list, gchar *key)
 {
 	return table_find_func(table_list, key, strcasecmp);
 }
@@ -103,13 +103,13 @@ fnmatch0(const char *pattern, const char *string)
 }
 
 gpointer*
-table_find_fnmatch(GList * table_list, gchar * key)
+table_find_fnmatch(GList *table_list, gchar *key)
 {
 	return table_find_func(table_list, key, fnmatch0);
 }
 
 GList*
-table_read(gchar * fname, gchar delim)
+table_read(gchar *fname, gchar delim)
 {
 	GList *list = NULL;
 	FILE *fptr;
@@ -137,7 +137,7 @@ table_read(gchar * fname, gchar delim)
 }
 
 void
-destroy_table(GList * table)
+destroy_table(GList *table)
 {
 	GList *node;
 

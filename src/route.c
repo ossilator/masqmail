@@ -22,7 +22,7 @@
 #include "masqmail.h"
 
 msgout_perhost*
-create_msgout_perhost(gchar * host)
+create_msgout_perhost(gchar *host)
 {
 	msgout_perhost *mo_ph = g_malloc(sizeof(msgout_perhost));
 	if (mo_ph) {
@@ -33,7 +33,7 @@ create_msgout_perhost(gchar * host)
 }
 
 void
-destroy_msgout_perhost(msgout_perhost * mo_ph)
+destroy_msgout_perhost(msgout_perhost *mo_ph)
 {
 	GList *mo_node;
 
@@ -48,7 +48,7 @@ destroy_msgout_perhost(msgout_perhost * mo_ph)
 }
 
 void
-rewrite_headers(msg_out * msgout, connect_route * route)
+rewrite_headers(msg_out *msgout, connect_route *route)
 {
 	/* if set_h_from_domain is set, replace domain in all
 	   From: headers.
@@ -198,7 +198,7 @@ Split a recipient list into the three groups:
 If patterns is NULL: only splitting between local and others is done.
 */
 void
-split_rcpts(GList* rcpt_list, GList* patterns, GList** rl_local, GList** rl_matching, GList** rl_others)
+split_rcpts(GList *rcpt_list, GList *patterns, GList **rl_local, GList **rl_matching, GList **rl_others)
 {
 	GList *rcpt_node;
 	GList *host_node = NULL;
@@ -238,7 +238,7 @@ Return a new list of the local rcpts in the rcpt_list
 TODO: This function is almost exactly the same as remote_rcpts(). Merge?
 */
 GList*
-local_rcpts(GList* rcpt_list)
+local_rcpts(GList *rcpt_list)
 {
 	GList *rcpt_node;
 	GList *local_rcpts = NULL;
@@ -261,7 +261,7 @@ Return a new list of non-local rcpts in the rcpt_list
 TODO: This function is almost exactly the same as local_rcpts(). Merge?
 */
 GList*
-remote_rcpts(GList* rcpt_list)
+remote_rcpts(GList *rcpt_list)
 {
 	GList *rcpt_node;
 	GList *remote_rcpts = NULL;
@@ -283,8 +283,8 @@ static gint
 _g_list_addrcmp(gconstpointer pattern, gconstpointer addr)
 {
 	int res;
-	address* patternaddr = (address*) pattern;
-	address* stringaddr = (address*) addr;
+	address *patternaddr = (address*) pattern;
+	address *stringaddr = (address*) addr;
 
 	DEBUG(6) debugf("_g_list_addrcmp: pattern `%s' `%s' on string `%s' `%s'\n",
 	                patternaddr->local_part, patternaddr->domain,
@@ -301,7 +301,7 @@ _g_list_addrcmp(gconstpointer pattern, gconstpointer addr)
 }
 
 gboolean
-route_sender_is_allowed(connect_route * route, address * ret_path)
+route_sender_is_allowed(connect_route *route, address *ret_path)
 {
 	if (route->denied_senders && g_list_find_custom(route->denied_senders, ret_path, _g_list_addrcmp)) {
 		return FALSE;
@@ -321,7 +321,7 @@ route_sender_is_allowed(connect_route * route, address * ret_path)
    Local domains are NOT regared here, these should be sorted out previously
 */
 void
-route_split_rcpts(connect_route * route, GList * rcpt_list, GList ** p_rcpt_list, GList ** p_non_rcpt_list)
+route_split_rcpts(connect_route *route, GList *rcpt_list, GList **p_rcpt_list, GList **p_non_rcpt_list)
 {
 	GList *tmp_list = NULL;
 	/* sort out those domains that can be sent over this connection: */
@@ -339,7 +339,7 @@ route_split_rcpts(connect_route * route, GList * rcpt_list, GList ** p_rcpt_list
 }
 
 msg_out*
-route_prepare_msgout(connect_route * route, msg_out * msgout)
+route_prepare_msgout(connect_route *route, msg_out *msgout)
 {
 	message *msg = msgout->msg;
 	GList *rcpt_list = msgout->rcpt_list;
@@ -389,7 +389,7 @@ route_prepare_msgout(connect_route * route, msg_out * msgout)
  */
 
 GList*
-route_msgout_list(connect_route * route, GList * msgout_list)
+route_msgout_list(connect_route *route, GList *msgout_list)
 {
 	GList *mo_ph_list = NULL;
 	GList *msgout_node;

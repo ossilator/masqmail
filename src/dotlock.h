@@ -18,5 +18,5 @@
 
 #define MAX_LOCKAGE 300
 
-gboolean dot_lock(gchar * lock_name, gchar * hitch_name);
-gboolean dot_unlock(gchar * lock_name);
+gboolean dot_lock(gchar *lock_name, gchar *hitch_name);
+gboolean dot_unlock(gchar *lock_name);

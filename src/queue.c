@@ -189,7 +189,7 @@ queue_list()
 }
 
 gboolean
-queue_delete(gchar * uid)
+queue_delete(gchar *uid)
 {
 	gboolean hdr_ok = TRUE;
 	gboolean dat_ok = TRUE;

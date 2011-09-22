@@ -15,5 +15,5 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-gchar *base64_encode(guchar * buf, gint len);
-gchar *base64_decode(gchar * buf, gint * size);
+gchar *base64_encode(guchar *buf, gint len);
+gchar *base64_decode(gchar *buf, gint *size);

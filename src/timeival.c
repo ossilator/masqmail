@@ -22,7 +22,7 @@
 #include "masqmail.h"
 
 gint
-time_interval(gchar * str)
+time_interval(gchar *str)
 {
 	gchar buf[16];
 	gchar *p = str, *q = buf;

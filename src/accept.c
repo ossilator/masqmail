@@ -29,7 +29,7 @@ gchar *prot_names[] = {
 };
 
 static gchar*
-string_base62(gchar * res, guint value, gchar len)
+string_base62(gchar *res, guint value, gchar len)
 {
 	static gchar base62_chars[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	gchar *p = res + len;
@@ -62,7 +62,7 @@ _g_list_addr_isequal(gconstpointer a, gconstpointer b)
 */
 
 accept_error
-accept_message_stream(FILE * in, message * msg, guint flags)
+accept_message_stream(FILE *in, message *msg, guint flags)
 {
 	gchar *line, *line1;
 	int line_size = MAX_DATALINE;
@@ -131,7 +131,7 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 			if (line1[0] == ' ' || line1[0] == '\t') {
 				/* continuation of 'folded' header: */
 				if (hdr) {
-					char* cp;
+					char *cp;
 					cp = g_strconcat(hdr->header, line1, NULL);
 					hdr->value = cp + (hdr->value - hdr->header);
 					free(hdr->header);
@@ -186,7 +186,7 @@ accept_message_stream(FILE * in, message * msg, guint flags)
 }
 
 accept_error
-accept_message_prepare(message * msg, guint flags)
+accept_message_prepare(message *msg, guint flags)
 {
 	struct passwd *passwd = NULL;
 	time_t rec_time = time(NULL);
@@ -399,7 +399,7 @@ accept_message_prepare(message * msg, guint flags)
 }
 
 accept_error
-accept_message(FILE * in, message * msg, guint flags)
+accept_message(FILE *in, message *msg, guint flags)
 {
 	accept_error err;
 

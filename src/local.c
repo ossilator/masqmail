@@ -24,7 +24,7 @@
 #include "peopen.h"
 
 static void
-message_stream(FILE * out, message * msg, GList * hdr_list, guint flags)
+message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 {
 	time_t now = time(NULL);
 	GList *node;
@@ -50,7 +50,7 @@ message_stream(FILE * out, message * msg, GList * hdr_list, guint flags)
 }
 
 gboolean
-append_file(message * msg, GList * hdr_list, gchar * user)
+append_file(message *msg, GList *hdr_list, gchar *user)
 {
 	struct passwd *pw;
 	gboolean ok = FALSE;
@@ -145,7 +145,7 @@ append_file(message * msg, GList * hdr_list, gchar * user)
 }
 
 gboolean
-pipe_out(message * msg, GList * hdr_list, address * rcpt, gchar * cmd, guint flags)
+pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 {
 	gchar *envp[40];
 	FILE *out;

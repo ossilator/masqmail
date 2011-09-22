@@ -21,7 +21,7 @@
 #include <fnmatch.h>
 
 gboolean
-addr_is_local(address * addr)
+addr_is_local(address *addr)
 {
 	GList *dom_node;
 	GList *addr_node;
@@ -65,7 +65,7 @@ addr_is_local(address * addr)
 }
 
 static GList*
-parse_list(gchar * line)
+parse_list(gchar *line)
 {
 	GList *list = NULL;
 	gchar buf[256];
@@ -107,14 +107,14 @@ parse_list(gchar * line)
 addr is assumed to be local and no pipe address nor not-to-expand
 */
 static GList*
-expand_one(GList* alias_table, address* addr)
+expand_one(GList *alias_table, address *addr)
 {
 	GList *val_list;
 	GList *val_node;
 	GList *alias_list = NULL;
 	GList *alias_node;
 	gchar *val;
-	address* alias_addr;
+	address *alias_addr;
 
 	/* expand the local alias */
 	DEBUG(6) debugf("alias: '%s' is local and will get expanded\n", addr->local_part);
@@ -198,7 +198,7 @@ expand_one(GList* alias_table, address* addr)
 }
 
 GList*
-alias_expand(GList* alias_table, GList* rcpt_list, GList* non_rcpt_list)
+alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list)
 {
 	GList *rcpt_node = NULL;
 	GList *alias_list = NULL;

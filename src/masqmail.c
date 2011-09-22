@@ -76,7 +76,7 @@ sigterm_handler(int sig)
 
 #ifdef ENABLE_IDENT  /* so far used for that only */
 static gboolean
-is_in_netlist(gchar * host, GList * netlist)
+is_in_netlist(gchar *host, GList *netlist)
 {
 	guint hostip = inet_addr(host);
 	struct in_addr addr;
@@ -102,7 +102,7 @@ cp: pointing to the char after the option
              ^          ^
 */
 gchar*
-get_optarg(char* argv[], gint* argp, char* cp)
+get_optarg(char *argv[], gint *argp, char *cp)
 {
 	if (*cp) {
 		/* this kind: -xval */
@@ -118,7 +118,7 @@ get_optarg(char* argv[], gint* argp, char* cp)
 }
 
 gboolean
-write_pidfile(gchar * name)
+write_pidfile(gchar *name)
 {
 	FILE *fptr;
 
@@ -204,7 +204,7 @@ mode_smtp()
 
 /* default mode if address args or -t is specified, or called as rmail */
 static void
-mode_accept(address * return_path, gchar * full_sender_name, guint accept_flags, char **addresses, int addr_cnt)
+mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags, char **addresses, int addr_cnt)
 {
 	/* accept message on stdin */
 	accept_error err;
@@ -312,7 +312,7 @@ until this changes, we don't need any facility for further commands
 return success if at least one message had been deleted
 */
 static int
-manipulate_queue(char* cmd, char* id[])
+manipulate_queue(char *cmd, char *id[])
 {
 	gboolean ok = FALSE;
 
@@ -372,7 +372,7 @@ manipulate_queue(char* cmd, char* id[])
 
 /* -qo, -q (without argument), or called as runq */
 static int
-run_queue(gboolean do_runq, gboolean do_runq_online, char* route_name)
+run_queue(gboolean do_runq, gboolean do_runq_online, char *route_name)
 {
 	int ret;
 
@@ -431,7 +431,7 @@ int
 main(int argc, char *argv[])
 {
 	gchar *progname;
-	char* opt;
+	char *opt;
 	gint arg;
 
 	gboolean do_listen = FALSE;

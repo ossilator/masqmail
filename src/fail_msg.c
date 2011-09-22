@@ -23,7 +23,7 @@
 #include "readsock.h"
 
 gboolean
-fail_msg(message * msg, gchar * template, GList * failed_rcpts, gchar * err_fmt, va_list args)
+fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt, va_list args)
 {
 	gboolean ok = FALSE;
 	address *ret_path = NULL;
@@ -130,7 +130,7 @@ result: |nnnyyyynnnnyyyyyyyyyynnnnnnn
 */
 
 static gboolean
-warn_msg_is_due(message * msg)
+warn_msg_is_due(message *msg)
 {
 	time_t now = time(NULL);
 
@@ -155,7 +155,7 @@ warn_msg_is_due(message * msg)
 }
 
 gboolean
-warn_msg(message * msg, gchar * template, GList * defered_rcpts, gchar * err_fmt, va_list args)
+warn_msg(message *msg, gchar *template, GList *defered_rcpts, gchar *err_fmt, va_list args)
 {
 	time_t now = time(NULL);
 

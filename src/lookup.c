@@ -122,7 +122,7 @@ dns_next()
 }
 
 static int
-dns_getip(guint32 * ip)
+dns_getip(guint32 *ip)
 {
 	int ret;
 
@@ -167,7 +167,7 @@ dns_getmx(int *pref)
 }
 
 int
-dns_look_ip(gchar * domain, guint32 * ip)
+dns_look_ip(gchar *domain, guint32 *ip)
 {
 	gchar *n = domain;
 
@@ -203,7 +203,7 @@ dns_look_ip(gchar * domain, guint32 * ip)
 }
 
 GList*
-resolve_dns_a(GList * list, gchar * domain)
+resolve_dns_a(GList *list, gchar *domain)
 {
 	int ret;
 
@@ -235,7 +235,7 @@ _mx_sort_func(gconstpointer aa, gconstpointer bb)
 }
 
 GList*
-resolve_dns_mx(GList * list, gchar * domain)
+resolve_dns_mx(GList *list, gchar *domain)
 {
 	GList *node;
 	int ret;
@@ -286,7 +286,7 @@ resolve_dns_mx(GList * list, gchar * domain)
 /* now something completely different... */
 
 GList*
-resolve_byname(GList * list, gchar * domain)
+resolve_byname(GList *list, gchar *domain)
 {
 	struct hostent *hent;
 

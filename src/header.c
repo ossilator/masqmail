@@ -71,7 +71,7 @@ rec_timestamp()
    else finds all headers matching header
 */
 GList*
-find_header(GList * hdr_list, header_id id, gchar * hdr_str)
+find_header(GList *hdr_list, header_id id, gchar *hdr_str)
 {
 	GList *found_list = NULL;
 	GList *node;
@@ -103,7 +103,7 @@ find_header(GList * hdr_list, header_id id, gchar * hdr_str)
 }
 
 void
-header_unfold(header * hdr)
+header_unfold(header *hdr)
 {
         char *src = hdr->header;
         char *dest = src;
@@ -133,13 +133,13 @@ header_unfold(header * hdr)
    (We exclude the newline because the RFCs deal with it this way)
 */
 void
-header_fold(header* hdr, unsigned int maxlen)
+header_fold(header *hdr, unsigned int maxlen)
 {
 	int len = strlen(hdr->header);
-	char* src = hdr->header;
-	char* dest;
-	char* tmp;
-	char* p;
+	char *src = hdr->header;
+	char *dest;
+	char *tmp;
+	char *p;
 	int valueoffset;
 
 	if (len <= maxlen) {
@@ -209,7 +209,7 @@ header_fold(header* hdr, unsigned int maxlen)
 }
 
 header*
-create_header(header_id id, gchar * fmt, ...)
+create_header(header_id id, gchar *fmt, ...)
 {
 	gchar *p;
 	header *hdr;
@@ -242,7 +242,7 @@ create_header(header_id id, gchar * fmt, ...)
 }
 
 void
-destroy_header(header * hdr)
+destroy_header(header *hdr)
 {
 	if (hdr) {
 		if (hdr->header) {
@@ -253,7 +253,7 @@ destroy_header(header * hdr)
 }
 
 header*
-copy_header(header * hdr)
+copy_header(header *hdr)
 {
 	header *new_hdr = NULL;
 
@@ -267,7 +267,7 @@ copy_header(header * hdr)
 }
 
 header*
-get_header(gchar * line)
+get_header(gchar *line)
 {
 	gchar *p = line;
 	gchar buf[64], *q = buf;

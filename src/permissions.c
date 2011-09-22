@@ -53,7 +53,7 @@ gboolean
 is_privileged_user(uid_t uid)
 {
 	/* uncomment these lines if you need the `uucp' group to be trusted too
-	struct group* grent = getgrnam("uucp");
+	struct group *grent = getgrnam("uucp");
 
 	if (is_ingroup(uid, grent->gr_gid)) {
 		return TRUE;
@@ -64,7 +64,7 @@ is_privileged_user(uid_t uid)
 }
 
 void
-set_euidgid(gint uid, gint gid, uid_t * old_uid, gid_t * old_gid)
+set_euidgid(gint uid, gint gid, uid_t *old_uid, gid_t *old_gid)
 {
 	if (old_uid)
 		*old_uid = geteuid();
@@ -84,7 +84,7 @@ set_euidgid(gint uid, gint gid, uid_t * old_uid, gid_t * old_gid)
 }
 
 void
-set_identity(uid_t old_uid, gchar * task_name)
+set_identity(uid_t old_uid, gchar *task_name)
 {
 	if (!conf.run_as_user) {
 		if (!is_privileged_user(old_uid)) {
