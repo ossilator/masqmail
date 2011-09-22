@@ -21,7 +21,7 @@
 #endif
 
 gboolean
-set_address_header_domain(header * hdr, gchar * domain)
+set_address_header_domain(header *hdr, gchar *domain)
 {
 	gchar *p = hdr->value;
 	gchar *new_hdr = g_strndup(hdr->header, hdr->value - hdr->header);
@@ -67,7 +67,7 @@ set_address_header_domain(header * hdr, gchar * domain)
 }
 
 gboolean
-map_address_header(header * hdr, GList * table)
+map_address_header(header *hdr, GList *table)
 {
 	GList *addr_list = addr_list_append_rfc822(NULL, hdr->value, conf.host_name);
 	GList *addr_node;

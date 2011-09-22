@@ -18,7 +18,7 @@
 #include "masqmail.h"
 
 static GList*
-resolve_ip(GList * list, gchar * ip)
+resolve_ip(GList *list, gchar *ip)
 {
 	struct in_addr ia;
 	if (inet_aton(ip, &ia)) {
@@ -34,7 +34,7 @@ resolve_ip(GList * list, gchar * ip)
 }
 
 mxip_addr*
-connect_hostlist(int *psockfd, gchar * host, guint port, GList * addr_list)
+connect_hostlist(int *psockfd, gchar *host, guint port, GList *addr_list)
 {
 	GList *addr_node;
 	struct sockaddr_in saddr;
@@ -86,7 +86,7 @@ connect_hostlist(int *psockfd, gchar * host, guint port, GList * addr_list)
 */
 
 mxip_addr*
-connect_resolvelist(int *psockfd, gchar * host, guint port, GList * res_func_list)
+connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_func_list)
 {
 	GList *res_node;
 	GList *addr_list;

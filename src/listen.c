@@ -93,7 +93,7 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 }
 
 void
-listen_port(GList * iface_list, gint qival, char *argv[])
+listen_port(GList *iface_list, gint qival, char *argv[])
 {
 	int i;
 	fd_set active_fd_set, read_fd_set;

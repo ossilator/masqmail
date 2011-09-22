@@ -43,7 +43,7 @@ smtp_cmd smtp_cmds[] = {
 };
 
 static smtp_cmd_id
-get_id(const gchar * line)
+get_id(const gchar *line)
 {
 	gint i;
 	for (i = 0; i < SMTP_NUM_IDS; i++) {
@@ -80,7 +80,7 @@ get_size(gchar *line, unsigned long *msize) {
    Return false if address is too long.
 */
 static gboolean
-get_address(gchar * line, gchar * addr)
+get_address(gchar *line, gchar *addr)
 {
 	gchar *p = line;
 	gchar *q = addr;
@@ -110,7 +110,7 @@ get_address(gchar * line, gchar * addr)
 }
 
 static smtp_connection*
-create_base(gchar * remote_host)
+create_base(gchar *remote_host)
 {
 	smtp_connection *base = g_malloc(sizeof(smtp_connection));
 	if (!base) {
@@ -130,7 +130,7 @@ create_base(gchar * remote_host)
 }
 
 static void
-smtp_printf(FILE * out, gchar * fmt, ...)
+smtp_printf(FILE *out, gchar *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -153,7 +153,7 @@ smtp_printf(FILE * out, gchar * fmt, ...)
 }
 
 void
-smtp_in(FILE * in, FILE * out, gchar * remote_host, gchar * ident)
+smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
 {
 	gchar *buffer;
 	smtp_cmd_id cmd_id;

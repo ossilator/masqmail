@@ -26,7 +26,7 @@
 gchar*
 online_query()
 {
-	gchar* pipe = conf.online_query;
+	gchar *pipe = conf.online_query;
 	pid_t pid;
 	void (*old_signal) (int);
 	int status;

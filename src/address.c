@@ -19,7 +19,7 @@
 #include "masqmail.h"
 
 address*
-create_address(gchar * path, gboolean is_rfc821)
+create_address(gchar *path, gboolean is_rfc821)
 {
 	address *addr;
 	addr = _create_address(path, NULL, is_rfc821);
@@ -31,7 +31,7 @@ create_address(gchar * path, gboolean is_rfc821)
 }
 
 address*
-create_address_qualified(gchar * path, gboolean is_rfc821, gchar * domain)
+create_address_qualified(gchar *path, gboolean is_rfc821, gchar *domain)
 {
 	address *addr = create_address(path, is_rfc821);
 
@@ -43,7 +43,7 @@ create_address_qualified(gchar * path, gboolean is_rfc821, gchar * domain)
 
 /* nothing special about pipes here, but its only called for that purpose */
 address*
-create_address_pipe(gchar * path)
+create_address_pipe(gchar *path)
 {
 	address *addr = g_malloc(sizeof(address));
 
@@ -58,7 +58,7 @@ create_address_pipe(gchar * path)
 }
 
 void
-destroy_address(address * addr)
+destroy_address(address *addr)
 {
 	DEBUG(6) debugf("destroy_address entered\n");
 
@@ -70,7 +70,7 @@ destroy_address(address * addr)
 }
 
 address*
-copy_modify_address(const address * orig, gchar * l_part, gchar * dom)
+copy_modify_address(const address *orig, gchar *l_part, gchar *dom)
 {
 	address *addr = NULL;
 
@@ -101,7 +101,7 @@ copy_modify_address(const address * orig, gchar * l_part, gchar * dom)
 }
 
 gboolean
-addr_isequal(address * addr1, address * addr2, int (*cmpfunc) (const char*, const char*))
+addr_isequal(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*))
 {
 	return (cmpfunc(addr1->local_part, addr2->local_part) == 0)
 	       && (strcasecmp(addr1->domain, addr2->domain) == 0);
@@ -109,7 +109,7 @@ addr_isequal(address * addr1, address * addr2, int (*cmpfunc) (const char*, cons
 
 /* searches in ancestors of addr1 */
 gboolean
-addr_isequal_parent(address* addr1, address* addr2, int (*cmpfunc) (const char*, const char*))
+addr_isequal_parent(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*))
 {
 	address *addr;
 
@@ -123,7 +123,7 @@ addr_isequal_parent(address* addr1, address* addr2, int (*cmpfunc) (const char*,
 /* careful, this is recursive */
 /* returns TRUE if ALL children have been delivered */
 gboolean
-addr_is_delivered_children(address * addr)
+addr_is_delivered_children(address *addr)
 {
 	GList *addr_node;
 
@@ -141,7 +141,7 @@ addr_is_delivered_children(address * addr)
 /* careful, this is recursive */
 /* returns TRUE if ALL children have been either delivered or have failed */
 gboolean
-addr_is_finished_children(address * addr)
+addr_is_finished_children(address *addr)
 {
 	GList *addr_node;
 
@@ -158,7 +158,7 @@ addr_is_finished_children(address * addr)
 
 /* find original address */
 address*
-addr_find_ancestor(address * addr)
+addr_find_ancestor(address *addr)
 {
 	while (addr->parent)
 		addr = addr->parent;
@@ -166,7 +166,7 @@ addr_find_ancestor(address * addr)
 }
 
 gchar*
-addr_string(address * addr)
+addr_string(address *addr)
 {
 	static gchar *buffer = NULL;
 

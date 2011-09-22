@@ -37,7 +37,7 @@
 #endif
 
 void
-destroy_smtpbase(smtp_base * psb)
+destroy_smtpbase(smtp_base *psb)
 {
 	fclose(psb->in);
 	fclose(psb->out);
@@ -60,7 +60,7 @@ destroy_smtpbase(smtp_base * psb)
 }
 
 gchar*
-set_heloname(smtp_base * psb, gchar * default_name, gboolean do_correct)
+set_heloname(smtp_base *psb, gchar *default_name, gboolean do_correct)
 {
 	struct sockaddr_in sname;
 	int len = sizeof(struct sockaddr_in);
@@ -90,7 +90,7 @@ set_heloname(smtp_base * psb, gchar * default_name, gboolean do_correct)
 #ifdef ENABLE_AUTH
 
 gboolean
-set_auth(smtp_base * psb, gchar * name, gchar * login, gchar * secret)
+set_auth(smtp_base *psb, gchar *name, gchar *login, gchar *secret)
 {
 	if ((strcasecmp(name, "CRAM-MD5") == 0) || (strcasecmp(name, "LOGIN") == 0)) {
 		psb->auth_name = g_strdup(name);
@@ -136,7 +136,7 @@ create_smtpbase(gint sock)
 }
 
 static gboolean
-read_response(smtp_base * psb, int timeout)
+read_response(smtp_base *psb, int timeout)
 {
 	gint buf_pos = 0;
 	gchar code[5];
@@ -170,7 +170,7 @@ read_response(smtp_base * psb, int timeout)
 }
 
 static gboolean
-check_response(smtp_base * psb, gboolean after_data)
+check_response(smtp_base *psb, gboolean after_data)
 {
 	char c = psb->buffer[0];
 
@@ -191,7 +191,7 @@ check_response(smtp_base * psb, gboolean after_data)
 }
 
 static gchar*
-get_response_arg(gchar * response)
+get_response_arg(gchar *response)
 {
 	gchar buf[SMTP_BUF_LEN];
 	gchar *p = response, *q = buf;
@@ -208,7 +208,7 @@ get_response_arg(gchar * response)
 }
 
 static gboolean
-check_helo_response(smtp_base * psb)
+check_helo_response(smtp_base *psb)
 {
 	gchar *ptr;
 
@@ -292,7 +292,7 @@ made it impossible to use AUTH with servers that would send odd
 greeting messages.
 */
 static gboolean
-smtp_helo(smtp_base * psb, gchar * helo)
+smtp_helo(smtp_base *psb, gchar *helo)
 {
 	fprintf(psb->out, "EHLO %s\r\n", helo);
 	fflush(psb->out);
@@ -330,7 +330,7 @@ smtp_helo(smtp_base * psb, gchar * helo)
 }
 
 static void
-smtp_cmd_mailfrom(smtp_base * psb, address * return_path, guint size)
+smtp_cmd_mailfrom(smtp_base *psb, address *return_path, guint size)
 {
 	if (psb->use_size) {
 		fprintf(psb->out, "MAIL FROM:%s SIZE=%d\r\n", addr_string(return_path), size);
@@ -347,7 +347,7 @@ smtp_cmd_mailfrom(smtp_base * psb, address * return_path, guint size)
 }
 
 static void
-smtp_cmd_rcptto(smtp_base * psb, address * rcpt)
+smtp_cmd_rcptto(smtp_base *psb, address *rcpt)
 {
 	fprintf(psb->out, "RCPT TO:%s\r\n", addr_string(rcpt));
 	fflush(psb->out);
@@ -355,7 +355,7 @@ smtp_cmd_rcptto(smtp_base * psb, address * rcpt)
 }
 
 static void
-send_data_line(smtp_base * psb, gchar * data)
+send_data_line(smtp_base *psb, gchar *data)
 {
 	/* According to RFC 821 each line should be terminated with CRLF.
 	   Since a dot on a line itself marks the end of data, each line
@@ -386,7 +386,7 @@ send_data_line(smtp_base * psb, gchar * data)
 }
 
 static void
-send_header(smtp_base * psb, GList * hdr_list)
+send_header(smtp_base *psb, GList *hdr_list)
 {
 	GList *node;
 	gint num_hdrs = 0;
@@ -412,7 +412,7 @@ send_header(smtp_base * psb, GList * hdr_list)
 }
 
 static void
-send_data(smtp_base * psb, message * msg)
+send_data(smtp_base *psb, message *msg)
 {
 	GList *node;
 	gint num_lines = 0;
@@ -435,7 +435,7 @@ send_data(smtp_base * psb, message * msg)
 }
 
 void
-smtp_out_mark_rcpts(smtp_base * psb, GList * rcpt_list)
+smtp_out_mark_rcpts(smtp_base *psb, GList *rcpt_list)
 {
 	GList *rcpt_node;
 	for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
@@ -452,7 +452,7 @@ smtp_out_mark_rcpts(smtp_base * psb, GList * rcpt_list)
 }
 
 void
-smtp_out_log_failure(smtp_base * psb, message * msg)
+smtp_out_log_failure(smtp_base *psb, message *msg)
 {
 	gchar *err_str;
 
@@ -477,7 +477,7 @@ smtp_out_log_failure(smtp_base * psb, message * msg)
 }
 
 smtp_base*
-smtp_out_open(gchar * host, gint port, GList * resolve_list)
+smtp_out_open(gchar *host, gint port, GList *resolve_list)
 {
 	smtp_base *psb;
 	gint sock;
@@ -505,7 +505,7 @@ smtp_out_open(gchar * host, gint port, GList * resolve_list)
 }
 
 smtp_base*
-smtp_out_open_child(gchar * cmd, char* host)
+smtp_out_open_child(gchar *cmd, char *host)
 {
 	smtp_base *psb;
 	gint sock;
@@ -524,7 +524,7 @@ smtp_out_open_child(gchar * cmd, char* host)
 }
 
 gboolean
-smtp_out_rset(smtp_base * psb)
+smtp_out_rset(smtp_base *psb)
 {
 	gboolean ok;
 
@@ -544,7 +544,7 @@ smtp_out_rset(smtp_base * psb)
 #ifdef ENABLE_AUTH
 
 static gboolean
-smtp_out_auth_cram_md5(smtp_base * psb)
+smtp_out_auth_cram_md5(smtp_base *psb)
 {
 	gboolean ok = FALSE;
 
@@ -596,7 +596,7 @@ smtp_out_auth_cram_md5(smtp_base * psb)
 }
 
 static gboolean
-smtp_out_auth_login(smtp_base * psb)
+smtp_out_auth_login(smtp_base *psb)
 {
 	gboolean ok = FALSE;
 	fprintf(psb->out, "AUTH LOGIN\r\n");
@@ -644,7 +644,7 @@ smtp_out_auth_login(smtp_base * psb)
 }
 
 gboolean
-smtp_out_auth(smtp_base * psb)
+smtp_out_auth(smtp_base *psb)
 {
 	gboolean ok = FALSE;
 	gint i = 0;
@@ -670,7 +670,7 @@ smtp_out_auth(smtp_base * psb)
 #endif
 
 gboolean
-smtp_out_init(smtp_base * psb, gboolean instant_helo)
+smtp_out_init(smtp_base *psb, gboolean instant_helo)
 {
 	gboolean ok;
 
@@ -702,7 +702,7 @@ smtp_out_init(smtp_base * psb, gboolean instant_helo)
 }
 
 gint
-smtp_out_msg(smtp_base * psb, message * msg, address * return_path, GList * rcpt_list, GList * hdr_list)
+smtp_out_msg(smtp_base *psb, message *msg, address *return_path, GList *rcpt_list, GList *hdr_list)
 {
 	gint i, size;
 	gboolean ok = TRUE;
@@ -882,7 +882,7 @@ smtp_out_msg(smtp_base * psb, message * msg, address * return_path, GList * rcpt
 }
 
 gboolean
-smtp_out_quit(smtp_base * psb)
+smtp_out_quit(smtp_base *psb)
 {
 	fprintf(psb->out, "QUIT\r\n");
 	fflush(psb->out);
@@ -895,7 +895,7 @@ smtp_out_quit(smtp_base * psb)
 }
 
 gint
-smtp_deliver(gchar * host, gint port, GList * resolve_list, message * msg, address * return_path, GList * rcpt_list)
+smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg, address *return_path, GList *rcpt_list)
 {
 	smtp_base *psb;
 	smtp_error err;

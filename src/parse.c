@@ -35,7 +35,7 @@ static gchar *specials = "()<>@,;:\\\".[]`";
 char *parse_error = NULL;
 
 static gchar*
-skip_comment(gchar * p)
+skip_comment(gchar *p)
 {
 
 #ifdef PARSE_TEST
@@ -55,7 +55,7 @@ skip_comment(gchar * p)
 }
 
 static gboolean
-read_word(gchar * p, gchar ** b, gchar ** e)
+read_word(gchar *p, gchar **b, gchar **e)
 {
 #ifdef PARSE_TEST
 	g_print("read_word: %s\n", p);
@@ -85,7 +85,7 @@ read_word(gchar * p, gchar ** b, gchar ** e)
 }
 
 static gboolean
-read_word_with_dots(gchar * p, gchar ** b, gchar ** e)
+read_word_with_dots(gchar *p, gchar **b, gchar **e)
 {
 	gchar *b0 = p;
 
@@ -108,7 +108,7 @@ read_word_with_dots(gchar * p, gchar ** b, gchar ** e)
 }
 
 static gboolean
-read_domain(gchar * p, gchar ** b, gchar ** e)
+read_domain(gchar *p, gchar **b, gchar **e)
 {
 #ifdef PARSE_TEST
 	g_print("read_domain: %s\n", p);
@@ -134,8 +134,8 @@ read_domain(gchar * p, gchar ** b, gchar ** e)
 }
 
 gboolean
-parse_address_rfc822(gchar* string, gchar** local_begin, gchar** local_end, gchar** domain_begin,
-                     gchar** domain_end, gchar** address_end)
+parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin,
+                     gchar **domain_end, gchar **address_end)
 {
 	gint angle_brackets = 0;
 
@@ -284,8 +284,8 @@ parse_address_rfc822(gchar* string, gchar** local_begin, gchar** local_end, gcha
 }
 
 gboolean
-parse_address_rfc821(gchar* string, gchar** local_begin, gchar** local_end, gchar** domain_begin,
-                     gchar** domain_end, gchar** address_end)
+parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin,
+                     gchar **domain_end, gchar **address_end)
 {
 	gint angle_brackets = 0;
 
@@ -379,7 +379,7 @@ parse_address_rfc821(gchar* string, gchar** local_begin, gchar** local_end, gcha
   parses both rfc 821 and rfc 822 addresses, depending on flag is_rfc821
 */
 address*
-_create_address(gchar * string, gchar ** end, gboolean is_rfc821)
+_create_address(gchar *string, gchar **end, gboolean is_rfc821)
 {
 	gchar *loc_beg, *loc_end;
 	gchar *dom_beg, *dom_end;
@@ -448,19 +448,19 @@ _create_address(gchar * string, gchar ** end, gboolean is_rfc821)
 }
 
 address*
-create_address_rfc822(gchar * string, gchar ** end)
+create_address_rfc822(gchar *string, gchar **end)
 {
 	return _create_address(string, end, FALSE);
 }
 
 address*
-create_address_rfc821(gchar * string, gchar ** end)
+create_address_rfc821(gchar *string, gchar **end)
 {
 	return _create_address(string, end, TRUE);
 }
 
 GList*
-addr_list_append_rfc822(GList * addr_list, gchar * string, gchar * domain)
+addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain)
 {
 	gchar *p = string;
 	gchar *end;

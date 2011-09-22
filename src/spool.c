@@ -23,7 +23,7 @@
 #include "dotlock.h"
 
 static gint
-read_line(FILE * in, gchar * buf, gint buf_len)
+read_line(FILE *in, gchar *buf, gint buf_len)
 {
 	gint p = 0;
 	gint c;
@@ -49,7 +49,7 @@ read_line(FILE * in, gchar * buf, gint buf_len)
 }
 
 static void
-spool_write_rcpt(FILE * out, address * rcpt)
+spool_write_rcpt(FILE *out, address *rcpt)
 {
 	gchar dlvrd_char = addr_is_delivered(rcpt) ? 'X' : (addr_is_failed(rcpt) ? 'F' : ' ');
 
@@ -68,7 +68,7 @@ spool_write_rcpt(FILE * out, address * rcpt)
 }
 
 static address*
-spool_scan_rcpt(gchar * line)
+spool_scan_rcpt(gchar *line)
 {
 	address *rcpt = NULL;
 
@@ -88,7 +88,7 @@ spool_scan_rcpt(gchar * line)
 }
 
 gboolean
-spool_read_data(message * msg)
+spool_read_data(message *msg)
 {
 	FILE *in;
 	gchar *spool_file;
@@ -119,7 +119,7 @@ spool_read_data(message * msg)
 }
 
 gboolean
-spool_read_header(message * msg)
+spool_read_header(message *msg)
 {
 	FILE *in;
 	gchar *spool_file;
@@ -201,7 +201,7 @@ spool_read_header(message * msg)
 }
 
 message*
-msg_spool_read(gchar * uid)
+msg_spool_read(gchar *uid)
 {
 	message *msg;
 	gboolean ok = FALSE;
@@ -220,7 +220,7 @@ msg_spool_read(gchar * uid)
    mail ids. Better call spool_write(msg, FALSE).
 */
 static gboolean
-spool_write_header(message * msg)
+spool_write_header(message *msg)
 {
 	GList *node;
 	gchar *spool_file, *tmp_file;
@@ -295,7 +295,7 @@ spool_write_header(message * msg)
 }
 
 gboolean
-spool_write(message * msg, gboolean do_write_data)
+spool_write(message *msg, gboolean do_write_data)
 {
 	GList *list;
 	gchar *spool_file, *tmp_file;
@@ -360,7 +360,7 @@ spool_write(message * msg, gboolean do_write_data)
 #define MAX_LOCKAGE 300
 
 gboolean
-spool_lock(gchar * uid)
+spool_lock(gchar *uid)
 {
 	uid_t saved_uid, saved_gid;
 	gchar *hitch_name;
@@ -391,7 +391,7 @@ spool_lock(gchar * uid)
 }
 
 gboolean
-spool_unlock(gchar * uid)
+spool_unlock(gchar *uid)
 {
 	uid_t saved_uid, saved_gid;
 	gchar *lock_name;
@@ -413,7 +413,7 @@ spool_unlock(gchar * uid)
 }
 
 gboolean
-spool_delete_all(message * msg)
+spool_delete_all(message *msg)
 {
 	uid_t saved_uid, saved_gid;
 	gchar *spool_file;

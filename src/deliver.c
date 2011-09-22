@@ -27,7 +27,7 @@
 /* collect failed/defered rcpts for failure/warning messages */
 /* returns TRUE if either there are no failures or a failure message has been successfully sent */
 gboolean
-delivery_failures(message * msg, GList * rcpt_list, gchar * err_fmt, ...)
+delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
 {
 	gboolean ok_fail = TRUE, ok_warn = TRUE;
 	time_t now = time(NULL);
@@ -69,7 +69,7 @@ _g_list_strcasecmp(gconstpointer a, gconstpointer b)
 }
 
 gboolean
-deliver_local_mbox(message* msg, GList* hdr_list, address* rcpt, address* env_addr)
+deliver_local_mbox(message *msg, GList *hdr_list, address *rcpt, address *env_addr)
 {
 	DEBUG(1) debugf("attempting to deliver %s with mbox\n", msg->uid);
 	if (append_file(msg, hdr_list, rcpt->local_part)) {
@@ -92,7 +92,7 @@ deliver_local_mbox(message* msg, GList* hdr_list, address* rcpt, address* env_ad
 }
 
 gboolean
-deliver_local_pipe(message* msg, GList* hdr_list, address* rcpt, address* env_addr)
+deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt, address *env_addr)
 {
 	guint flags;
 
@@ -117,7 +117,7 @@ deliver_local_pipe(message* msg, GList* hdr_list, address* rcpt, address* env_ad
 }
 
 gboolean
-deliver_local_mda(message* msg, GList* hdr_list, address* rcpt, address* env_addr)
+deliver_local_mda(message *msg, GList *hdr_list, address *rcpt, address *env_addr)
 {
 	gboolean ok = FALSE;
 	gchar *cmd = g_malloc(256);
@@ -151,7 +151,7 @@ deliver_local_mda(message* msg, GList* hdr_list, address* rcpt, address* env_add
 }
 
 gboolean
-deliver_local(msg_out * msgout)
+deliver_local(msg_out *msgout)
 {
 	message *msg = msgout->msg;
 	GList *rcpt_list = msgout->rcpt_list;
@@ -238,7 +238,7 @@ deliver_local(msg_out * msgout)
 /* make a list of rcpt's of a message that are local
    return a new copy of the list */
 void
-msg_rcptlist_local(GList * rcpt_list, GList ** p_local_list, GList ** p_nonlocal_list)
+msg_rcptlist_local(GList *rcpt_list, GList **p_local_list, GList **p_nonlocal_list)
 {
 	GList *rcpt_node;
 
@@ -262,7 +262,7 @@ msg_rcptlist_local(GList * rcpt_list, GList ** p_local_list, GList ** p_nonlocal
 }
 
 gboolean
-deliver_msglist_host_pipe(connect_route * route, GList * msgout_list, gchar * host, GList * res_list)
+deliver_msglist_host_pipe(connect_route *route, GList *msgout_list, gchar *host, GList *res_list)
 {
 	gboolean ok = TRUE;
 	GList *msgout_node;
@@ -334,7 +334,7 @@ deliver_msglist_host_pipe(connect_route * route, GList * msgout_list, gchar * ho
    Returns TRUE if at least one msg was delivered to at least one rcpt.
 */
 gboolean
-deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * host, GList * res_list)
+deliver_msglist_host_smtp(connect_route *route, GList *msgout_list, gchar *host, GList *res_list)
 {
 	gboolean ok = FALSE;
 	GList *msgout_node;
@@ -464,7 +464,7 @@ deliver_msglist_host_smtp(connect_route * route, GList * msgout_list, gchar * ho
 }
 
 gboolean
-deliver_msglist_host(connect_route * route, GList * msgout_list, gchar * host, GList * res_list)
+deliver_msglist_host(connect_route *route, GList *msgout_list, gchar *host, GList *res_list)
 {
 
 	if (route->pipe) {
@@ -480,7 +480,7 @@ deliver_msglist_host(connect_route * route, GList * msgout_list, gchar * host, G
   delivers messages in msgout_list using route
 */
 gboolean
-deliver_route_msgout_list(connect_route * route, GList * msgout_list)
+deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 {
 	gboolean ok = FALSE;
 	GList *mo_ph_list;
@@ -522,7 +522,7 @@ deliver_route_msgout_list(connect_route * route, GList * msgout_list)
   delivers messages in msg_list using route by calling deliver_route_msgout_list()
 */
 gboolean
-deliver_route_msg_list(connect_route * route, GList * msgout_list)
+deliver_route_msg_list(connect_route *route, GList *msgout_list)
 {
 	GList *msgout_list_deliver = NULL;
 	GList *msgout_node;
@@ -562,8 +562,8 @@ deliver_route_msg_list(connect_route * route, GList * msgout_list)
 		}
 
 		/* filter by allowed envelope rcpts */
-		GList* rcpt_list_allowed = NULL;
-		GList* rcpt_list_notallowed = NULL;
+		GList *rcpt_list_allowed = NULL;
+		GList *rcpt_list_notallowed = NULL;
 		route_split_rcpts(route, msgout_cloned->rcpt_list, &rcpt_list_allowed, &rcpt_list_notallowed);
 		if (!rcpt_list_allowed) {
 			destroy_msg_out(msgout_cloned);
@@ -600,7 +600,7 @@ deliver_route_msg_list(connect_route * route, GList * msgout_list)
    to make sure that they will not be delivered again.
 */
 void
-update_non_rcpt_list(msg_out * msgout)
+update_non_rcpt_list(msg_out *msgout)
 {
 	GList *rcpt_node;
 	message *msg = msgout->msg;
@@ -621,7 +621,7 @@ update_non_rcpt_list(msg_out * msgout)
    returns TRUE if all went well.
 */
 gboolean
-deliver_finish(msg_out * msgout)
+deliver_finish(msg_out *msgout)
 {
 	GList *rcpt_node;
 	message *msg = msgout->msg;
@@ -668,7 +668,7 @@ deliver_finish(msg_out * msgout)
 }
 
 int
-deliver_remote(GList* remote_msgout_list)
+deliver_remote(GList *remote_msgout_list)
 {
 	int ok = TRUE;
 	GList *route_list = NULL;
@@ -732,7 +732,7 @@ deliver_remote(GList* remote_msgout_list)
    into local and remote addresses and processes them accordingly.
 */
 gboolean
-deliver_msg_list(GList * msg_list, guint flags)
+deliver_msg_list(GList *msg_list, guint flags)
 {
 	GList *msgout_list = NULL;
 	GList *msg_node;
@@ -781,7 +781,7 @@ deliver_msg_list(GList * msg_list, guint flags)
 			rcpt_list = aliased_rcpt_list;
 		}
 
-		/* split_rcpts(rcpt_list, NULL, &local_rcpt_list, * NULL, &other_rcpt_list); */
+		/* split_rcpts(rcpt_list, NULL, &local_rcpt_list, NULL, &other_rcpt_list); */
 		local_rcpt_list = local_rcpts(rcpt_list);
 		other_rcpt_list = remote_rcpts(rcpt_list);
 		g_list_free(rcpt_list);
@@ -845,7 +845,7 @@ deliver_msg_list(GList * msg_list, guint flags)
    deliver then.
 */
 gboolean
-deliver(message * msg)
+deliver(message *msg)
 {
 	gboolean ok;
 	GList *msg_list = g_list_append(NULL, msg);

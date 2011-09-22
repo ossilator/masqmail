@@ -30,7 +30,7 @@
 #include "dotlock.h"
 
 gboolean
-dot_lock(gchar * lock_name, gchar * hitch_name)
+dot_lock(gchar *lock_name, gchar *hitch_name)
 {
 	gboolean ok = FALSE;
 	int fd;
@@ -72,7 +72,7 @@ dot_lock(gchar * lock_name, gchar * hitch_name)
 }
 
 gboolean
-dot_unlock(gchar * lock_name)
+dot_unlock(gchar *lock_name)
 {
 	unlink(lock_name);
 

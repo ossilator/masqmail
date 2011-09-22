@@ -22,7 +22,7 @@
 #include "base64.h"
 
 gchar*
-base64_encode(guchar * buf, gint len)
+base64_encode(guchar *buf, gint len)
 {
 	guchar *outbuf, *q;
 	gchar enc[64];
@@ -74,7 +74,7 @@ base64_encode(guchar * buf, gint len)
 	return outbuf;
 }
 
-gchar *base64_decode(gchar * buf, gint * size)
+gchar *base64_decode(gchar *buf, gint *size)
 {
 	guchar *p = buf, *q;
 	guint in[4];

@@ -49,7 +49,7 @@ init_conf()
 	}
 }
 
-static gchar* true_strings[] = {
+static gchar *true_strings[] = {
 	"yes", "on", "true", NULL
 };
 
@@ -58,7 +58,7 @@ static gchar *false_strings[] = {
 };
 
 static gboolean
-parse_boolean(gchar * rval)
+parse_boolean(gchar *rval)
 {
 	gchar **str;
 
@@ -84,7 +84,7 @@ parse_boolean(gchar * rval)
 
 /* make a list from each line in a file */
 static GList*
-parse_list_file(gchar * fname)
+parse_list_file(gchar *fname)
 {
 	GList *list = NULL;
 	FILE *fptr;
@@ -111,7 +111,7 @@ parse_list_file(gchar * fname)
 
 /* given a semicolon separated string, this function makes a GList out of it. */
 GList*
-parse_list(gchar * line, gboolean read_file)
+parse_list(gchar *line, gboolean read_file)
 {
 	GList *list = NULL;
 	gchar buf[256];
@@ -149,7 +149,7 @@ parse_list(gchar * line, gboolean read_file)
    We don't need valid RFC821 addresses here, just patterns to match against.
 */
 static GList*
-parse_address_glob_list(gchar * line, gboolean read_file)
+parse_address_glob_list(gchar *line, gboolean read_file)
 {
 	GList *plain_list = parse_list(line, read_file);
 	GList *node;
@@ -157,8 +157,8 @@ parse_address_glob_list(gchar * line, gboolean read_file)
 
 	foreach(plain_list, node) {
 		gchar *item = (gchar *) (node->data);
-		char* at;
-		char* p;
+		char *at;
+		char *p;
 		address *addr = calloc(1, sizeof(address));
 
 		for (p=item+strlen(item)-1; isspace(*p) || *p=='>'; p--) {
@@ -188,7 +188,7 @@ parse_address_glob_list(gchar * line, gboolean read_file)
 }
 
 static GList*
-parse_resolve_list(gchar * line)
+parse_resolve_list(gchar *line)
 {
 	GList *list;
 	GList *list_node;
@@ -220,7 +220,7 @@ parse_resolve_list(gchar * line)
 }
 
 static interface*
-parse_interface(gchar * line, gint def_port)
+parse_interface(gchar *line, gint def_port)
 {
 	gchar buf[256];
 	gchar *p, *q;
@@ -249,7 +249,7 @@ parse_interface(gchar * line, gint def_port)
 
 #ifdef ENABLE_IDENT  /* so far used for that only */
 static struct in_addr*
-parse_network(gchar * line, gint def_port)
+parse_network(gchar *line, gint def_port)
 {
 	gchar buf[256];
 	gchar *p, *q;
@@ -292,7 +292,7 @@ parse_network(gchar * line, gint def_port)
 #endif
 
 static gboolean
-eat_comments(FILE * in)
+eat_comments(FILE *in)
 {
 	gint c;
 
@@ -311,7 +311,7 @@ eat_comments(FILE * in)
 
 /* after parsing, eat trailing character until LF */
 static gboolean
-eat_line_trailing(FILE * in)
+eat_line_trailing(FILE *in)
 {
 	gint c;
 
@@ -322,7 +322,7 @@ eat_line_trailing(FILE * in)
 }
 
 static gboolean
-eat_spaces(FILE * in)
+eat_spaces(FILE *in)
 {
 	gint c;
 
@@ -336,7 +336,7 @@ eat_spaces(FILE * in)
 }
 
 static gboolean
-read_lval(FILE * in, gchar * buf, gint size)
+read_lval(FILE *in, gchar *buf, gint size)
 {
 	gint c;
 	gchar *ptr = buf;
@@ -373,7 +373,7 @@ read_lval(FILE * in, gchar * buf, gint size)
 }
 
 static gboolean
-read_rval(FILE * in, gchar * buf, gint size)
+read_rval(FILE *in, gchar *buf, gint size)
 {
 	gint c;
 	gchar *ptr = buf;
@@ -421,7 +421,7 @@ read_rval(FILE * in, gchar * buf, gint size)
 }
 
 static gboolean
-read_statement(FILE * in, gchar * lval, gint lsize, gchar * rval, gint rsize)
+read_statement(FILE *in, gchar *lval, gint lsize, gchar *rval, gint rsize)
 {
 	gint c;
 
@@ -449,7 +449,7 @@ read_statement(FILE * in, gchar * lval, gint lsize, gchar * rval, gint rsize)
 }
 
 gboolean
-read_conf(gchar * filename)
+read_conf(gchar *filename)
 {
 	FILE *in;
 
@@ -610,13 +610,13 @@ read_conf(gchar * filename)
 		conf.warn_intervals = parse_list("1h;4h;8h;1d;2d;3d", FALSE);
 
 	if (!conf.local_hosts) {
-		char* shortname = strdup(conf.host_name);
-		char* p = strchr(shortname, '.');
+		char *shortname = strdup(conf.host_name);
+		char *p = strchr(shortname, '.');
 		if (p) {
 			*p = '\0';
 		}
 		/* we don't care if shortname and conf.host_name are the same */
-		char* local_hosts_str = g_strdup_printf("localhost;%s;%s", shortname, conf.host_name);
+		char *local_hosts_str = g_strdup_printf("localhost;%s;%s", shortname, conf.host_name);
 		conf.local_hosts = parse_list(local_hosts_str, FALSE);
 		free(shortname);
 		free(local_hosts_str);
@@ -627,7 +627,7 @@ read_conf(gchar * filename)
 }
 
 connect_route*
-read_route(gchar * filename, gboolean is_perma)
+read_route(gchar *filename, gboolean is_perma)
 {
 	gboolean ok = FALSE;
 	FILE *in;
@@ -799,7 +799,7 @@ read_route(gchar * filename, gboolean is_perma)
 }
 
 static void
-_g_list_free_all(GList * list)
+_g_list_free_all(GList *list)
 {
 	GList *node;
 	if (list) {
@@ -810,7 +810,7 @@ _g_list_free_all(GList * list)
 }
 
 void
-destroy_route(connect_route * r)
+destroy_route(connect_route *r)
 {
 	if (r->filename)
 		g_free(r->filename);
@@ -850,7 +850,7 @@ destroy_route(connect_route * r)
 }
 
 GList*
-read_route_list(GList * rf_list, gboolean is_perma)
+read_route_list(GList *rf_list, gboolean is_perma)
 {
 	GList *list = NULL;
 	GList *node;
@@ -878,7 +878,7 @@ read_route_list(GList * rf_list, gboolean is_perma)
 }
 
 void
-destroy_route_list(GList * list)
+destroy_route_list(GList *list)
 {
 	GList *node;
 

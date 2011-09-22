@@ -46,7 +46,7 @@ create_message()
    internal format. Dot-stuffing is ignored in the size.
 */
 gint
-msg_calc_size(message * msg, gboolean is_smtp)
+msg_calc_size(message *msg, gboolean is_smtp)
 {
 	GList *node;
 	gint l_cnt = 0;  /* line count (we need to add so many '\r' for SMTP) */
@@ -91,7 +91,7 @@ msg_calc_size(message * msg, gboolean is_smtp)
 }
 
 void
-msg_free_data(message * msg)
+msg_free_data(message *msg)
 {
 	GList *node;
 
@@ -106,7 +106,7 @@ msg_free_data(message * msg)
 }
 
 void
-destroy_message(message * msg)
+destroy_message(message *msg)
 {
 	GList *node;
 
@@ -149,7 +149,7 @@ destroy_message(message * msg)
 }
 
 void
-destroy_msg_list(GList * msg_list)
+destroy_msg_list(GList *msg_list)
 {
 	GList *msg_node;
 
@@ -161,7 +161,7 @@ destroy_msg_list(GList * msg_list)
 }
 
 msg_out*
-create_msg_out(message * msg)
+create_msg_out(message *msg)
 {
 	msg_out *msgout = g_malloc0(sizeof(msg_out));
 	msgout->msg = msg;
@@ -169,7 +169,7 @@ create_msg_out(message * msg)
 }
 
 msg_out*
-clone_msg_out(msg_out * msgout_orig)
+clone_msg_out(msg_out *msgout_orig)
 {
 	if (msgout_orig) {
 		msg_out *msgout = create_msg_out(msgout_orig->msg);
@@ -192,7 +192,7 @@ clone_msg_out(msg_out * msgout_orig)
 }
 
 void
-destroy_msg_out(msg_out * msgout)
+destroy_msg_out(msg_out *msgout)
 {
 	if (msgout) {
 		if (msgout->return_path)
@@ -212,7 +212,7 @@ destroy_msg_out(msg_out * msgout)
 }
 
 void
-destroy_msg_out_list(GList * msgout_list)
+destroy_msg_out_list(GList *msgout_list)
 {
 	GList *msgout_node;
 

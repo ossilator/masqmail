@@ -40,7 +40,7 @@ The computed HMAC will be written to `digest'.
 Ensure digest points to hashsize bytes of allocated memory.
 */
 void
-hmac_md5(unsigned char* text, int textlen, unsigned char* key, int keylen, unsigned char* digest)
+hmac_md5(unsigned char *text, int textlen, unsigned char *key, int keylen, unsigned char *digest)
 {
 	int i;
 	MD5_CTX context;

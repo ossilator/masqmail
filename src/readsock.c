@@ -59,7 +59,7 @@ alarm_off()
 }
 
 static void
-_read_chug(FILE * in)
+_read_chug(FILE *in)
 {
 	int c = 0;
 
@@ -70,7 +70,7 @@ _read_chug(FILE * in)
 }
 
 static int
-_read_line(FILE * in, char *buf, int buf_len, int timeout)
+_read_line(FILE *in, char *buf, int buf_len, int timeout)
 {
 	int p = 0;
 	int c = 0;
@@ -97,7 +97,7 @@ _read_line(FILE * in, char *buf, int buf_len, int timeout)
 }
 
 int
-read_sockline(FILE * in, char *buf, int buf_len, int timeout, unsigned int flags)
+read_sockline(FILE *in, char *buf, int buf_len, int timeout, unsigned int flags)
 {
 	int p = 0;
 
@@ -131,7 +131,7 @@ read_sockline(FILE * in, char *buf, int buf_len, int timeout, unsigned int flags
 }
 
 int
-read_sockline1(FILE * in, char **pbuf, int *buf_len, int timeout, unsigned int flags)
+read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout, unsigned int flags)
 {
 	int p = 0, size = *buf_len;
 	char *buf;

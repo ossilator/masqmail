@@ -62,7 +62,7 @@ main()
 	puts("---- Following are the test vectors from RFC 2104");
 
 
-	char* d01 = "Hi There";
+	char *d01 = "Hi There";
 	char k01[16];
 	for (i=0; i<16; i++) {
 		k01[i] = 0x0b;
@@ -75,8 +75,8 @@ main()
 	printf(" (was computed)\n\n");
 
 
-	char* d02 = "what do ya want for nothing?";
-	char* k02 = "Jefe";
+	char *d02 = "what do ya want for nothing?";
+	char *k02 = "Jefe";
 	printf("750c783e6ab0b503eaa86e310a5db738 (should be)\n");
 	hmac_md5(d02, strlen(d02), k02, strlen(k02), digest);
 	for (i = 0; i < 16; i++) {
