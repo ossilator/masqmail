@@ -1,19 +1,20 @@
-/*  MasqMail
-    Copyright (C) 1999/2000 Oliver Kurth
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 1999/2000 Oliver Kurth
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 #include <sys/wait.h>
@@ -141,10 +142,12 @@ listen_port(GList *iface_list, gint qival, char *argv[])
 
 	while (1) {
 
-		/* if we were interrupted by an incoming connection (or a signal)
-		   we have to recalculate the time until the next queue run should
-		   occur. select may put a value into tm, but doc for select() says
-		   we should not use it. */
+		/*
+		**  if we were interrupted by an incoming connection (or a
+		**  signal) we have to recalculate the time until the next
+		**  queue run should occur. select may put a value into tm,
+		**  but doc for select() says we should not use it.
+		*/
 		if (qival > 0) {
 			time(&time_now);
 			if (sel_ret == 0) {  /* we are either just starting or did a queue run */
@@ -160,8 +163,11 @@ listen_port(GList *iface_list, gint qival, char *argv[])
 					tm.tv_sec = 0;
 			}
 		}
-		/* Block until input arrives on one or more active sockets,
-		   or signal arrives, or queuing interval time elapsed (if qival > 0) */
+		/*
+		**  Block until input arrives on one or more active sockets,
+		**  or signal arrives, or queuing interval time elapsed
+		**  (if qival > 0)
+		*/
 		read_fd_set = active_fd_set;
 		if ((sel_ret = select(FD_SETSIZE, &read_fd_set, NULL, NULL, qival > 0 ? &tm : NULL)) < 0) {
 			if (errno != EINTR) {
@@ -194,8 +200,10 @@ listen_port(GList *iface_list, gint qival, char *argv[])
 				}
 			}
 		} else {
-			/* If select returns 0, the interval time has elapsed.
-			   We start a new queue runner process */
+			/*
+			**  If select returns 0, the interval time has elapsed.
+			**  We start a new queue runner process
+			*/
 			int pid;
 			signal(SIGCHLD, sigchld_handler);
 			if ((pid = fork()) == 0) {

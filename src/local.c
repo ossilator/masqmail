@@ -1,20 +1,21 @@
-/*  MasqMail
-    Copyright (C) 1999-2001 Oliver Kurth
-    Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 1999-2001 Oliver Kurth
+**  Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 #include <sys/wait.h>
@@ -131,10 +132,12 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 	}
 
 	if (!uid_ok || !gid_ok) {
-		/* FIXME: if this fails we HAVE to exit, because we shall not run
-		   with some users id. But we do not return, and so this message
-		   will not be finished, so the user will get the message again
-		   next time a delivery is attempted... */
+		/*
+		**  FIXME: if this fails we HAVE to exit, because we shall
+		**  not run with some users id. But we do not return, and so
+		**  this message will not be finished, so the user will get
+		**  the message again next time a delivery is attempted...
+		*/
 		logwrite(LOG_ALERT, "could not set back uid or gid after local delivery: %s\n", strerror(errno));
 		logwrite(LOG_ALERT, "uid=%d, gid=%d, euid=%d, egid=%d, want = %d, %d\n",
 		         getuid(), getgid(), geteuid(), getegid(), saved_uid, saved_gid);

@@ -1,29 +1,30 @@
-/* smtp_out.c
-    Copyright (C) 1999-2001 Oliver Kurth
-    Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
-
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
+/*
+**  smtp_out.c
+**  Copyright (C) 1999-2001 Oliver Kurth
+**  Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+*/
 
 /*
-  I always forget these rfc numbers:
-  RFC 821  (SMTP)
-  RFC 1869 (ESMTP)
-  RFC 1870 (ESMTP SIZE)
-  RFC 2197 (ESMTP PIPELINE)
-  RFC 2554 (ESMTP AUTH)
+**  I always forget these rfc numbers:
+**  RFC 821  (SMTP)
+**  RFC 1869 (ESMTP)
+**  RFC 1870 (ESMTP SIZE)
+**  RFC 2197 (ESMTP PIPELINE)
+**  RFC 2554 (ESMTP AUTH)
 */
 
 #include "masqmail.h"
@@ -73,9 +74,12 @@ set_heloname(smtp_base *psb, gchar *default_name, gboolean do_correct)
 		if (host_entry) {
 			psb->helo_name = g_strdup(host_entry->h_name);
 		} else {
-			/* we failed to look up our own name. Instead of giving our local hostname,
-			   we may give our IP number to show the server that we are at least
-			   willing to be honest. For the really picky ones. */
+			/*
+			**  we failed to look up our own name. Instead of
+			**  giving our local hostname, we may give our IP
+			**  number to show the server that we are at least
+			**  willing to be honest. For the really picky ones.
+			*/
 			DEBUG(5) debugf("failed to look up own host name.\n");
 			psb->helo_name = g_strdup_printf("[%s]", inet_ntoa(sname.sin_addr));
 		}
@@ -276,20 +280,20 @@ check_helo_response(smtp_base *psb)
 }
 
 /*
-We first try EHLO, but if it fails HELO in a second fall back try.
-This is what is requested by RFC 2821 (sec 3.2):
-
-	Once the server has sent the welcoming message and
-	the client has received it, the client normally sends
-	the EHLO command to the server, [...]
-	For a particular connection attempt, if the server
-	returns a "command not recognized" response to EHLO,
-	the client SHOULD be able to fall back and send HELO.
-
-Up to and including version 0.3.0 masqmail used ESMTP only if the
-string ``ESMTP'' appeared within the server's greeting message. This
-made it impossible to use AUTH with servers that would send odd
-greeting messages.
+**  We first try EHLO, but if it fails HELO in a second fall back try.
+**  This is what is requested by RFC 2821 (sec 3.2):
+**
+**      Once the server has sent the welcoming message and
+**      the client has received it, the client normally sends
+**      the EHLO command to the server, [...]
+**      For a particular connection attempt, if the server
+**      returns a "command not recognized" response to EHLO,
+**      the client SHOULD be able to fall back and send HELO.
+**
+**  Up to and including version 0.3.0 masqmail used ESMTP only if the
+**  string ``ESMTP'' appeared within the server's greeting message. This
+**  made it impossible to use AUTH with servers that would send odd
+**  greeting messages.
 */
 static gboolean
 smtp_helo(smtp_base *psb, gchar *helo)
@@ -310,8 +314,10 @@ smtp_helo(smtp_base *psb, gchar *helo)
 		return FALSE;
 	}
 
-	/* our guess that server understands EHLO could have been wrong,
-	   try again with HELO */
+	/*
+	**  our guess that server understands EHLO could have been wrong,
+	**  try again with HELO
+	*/
 
 	fprintf(psb->out, "HELO %s\r\n", helo);
 	fflush(psb->out);
@@ -357,13 +363,13 @@ smtp_cmd_rcptto(smtp_base *psb, address *rcpt)
 static void
 send_data_line(smtp_base *psb, gchar *data)
 {
-	/* According to RFC 821 each line should be terminated with CRLF.
-	   Since a dot on a line itself marks the end of data, each line
-	   beginning with a dot is prepended with another dot.
-	 */
+	/*
+	**  According to RFC 821 each line should be terminated with CRLF.
+	**  Since a dot on a line itself marks the end of data, each line
+	**  beginning with a dot is prepended with another dot.
+	*/
 	gchar *ptr;
-	gboolean new_line = TRUE;  /* previous versions assumed that each item was exactly one line.
-	                              This is no longer the case */
+	gboolean new_line = TRUE;  /* previous versions assumed that each item was exactly one line.  This is no longer the case */
 
 	ptr = data;
 	while (*ptr) {
@@ -702,7 +708,8 @@ smtp_out_init(smtp_base *psb, gboolean instant_helo)
 }
 
 gint
-smtp_out_msg(smtp_base *psb, message *msg, address *return_path, GList *rcpt_list, GList *hdr_list)
+smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
+		GList *rcpt_list, GList *hdr_list)
 {
 	gint i, size;
 	gboolean ok = TRUE;
@@ -732,8 +739,10 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path, GList *rcpt_lis
 	}
 
 	if (ok) {
-		/* pretend the message is a bit larger,
-		   just in case the size calculation is buggy */
+		/*
+		**  pretend the message is a bit larger,
+		**  just in case the size calculation is buggy
+		*/
 		smtp_cmd_mailfrom(psb, return_path, psb->use_size ? size+SMTP_SIZE_ADD : 0);
 
 		if (!psb->use_pipelining) {
@@ -775,8 +784,10 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path, GList *rcpt_lis
 			}
 		}
 
-		/* There is no point in going on if no recp.s were accpted.
-		   But we can check that at this point only if not pipelining: */
+		/*
+		**  There is no point in going on if no recp.s were accpted.
+		**  But we can check that at this point only if not pipelining:
+		*/
 		ok = (ok && (psb->use_pipelining || (rcpt_accept > 0)));
 		if (ok) {
 
@@ -786,17 +797,22 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path, GList *rcpt_lis
 			DEBUG(4) debugf("C: DATA\r\n");
 
 			if (psb->use_pipelining) {
-				/* the first pl'ed command was MAIL FROM
-				   the last was DATA, whose response can be handled by the 'normal' code
-				   all in between were RCPT TO:
-				 */
+				/*
+				**  the first pl'ed command was MAIL FROM
+				**  the last was DATA, whose response can be
+				**  handled by the 'normal' code all in
+				**  between were RCPT TO:
+				*/
 				/* response to MAIL FROM: */
 				if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
 					if ((ok = check_response(psb, FALSE))) {
 
-						/* response(s) to RCPT TO:
-						   this is very similar to the sequence above for no pipeline
-						 */
+						/*
+						**  response(s) to RCPT TO:
+						**  this is very similar to
+						**  the sequence above for no
+						**  pipeline
+						*/
 						for (i = 0; i < rcpt_cnt; i++) {
 							if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
 								address *rcpt = g_list_nth_data(rcpt_list, i);
@@ -804,10 +820,12 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path, GList *rcpt_lis
 									rcpt_accept++;
 									addr_mark_delivered(rcpt);
 								} else {
-									/* if server returned an error 4xx or 5xx for one recp. we
-									   may still try the others. But if it is a timeout, eof
-									   or unexpected response, it is more serious and we
-									   should give up. */
+									/*
+									** if server returned an error 4xx or 5xx for one recp. we
+									**  may still try the others. But if it is a timeout, eof
+									**  or unexpected response, it is more serious and we
+									**  should give up.
+									*/
 									if ((psb->error != smtp_trylater) &&
 										(psb->error != smtp_fail)) {
 										ok = FALSE;
@@ -870,9 +888,11 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path, GList *rcpt_lis
 				         msg->uid, addr_string(rcpt), psb->remote_host);
 		}
 	} else {
-		/* if something went wrong,
-		   we have to unmark the rcpts prematurely marked as delivered
-		   and mark the status */
+		/*
+		**  if something went wrong,
+		**  we have to unmark the rcpts prematurely marked as
+		**  delivered and mark the status
+		*/
 		smtp_out_mark_rcpts(psb, rcpt_list);
 
 		/* log the failure: */
@@ -895,7 +915,8 @@ smtp_out_quit(smtp_base *psb)
 }
 
 gint
-smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg, address *return_path, GList *rcpt_list)
+smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg,
+		address *return_path, GList *rcpt_list)
 {
 	smtp_base *psb;
 	smtp_error err;

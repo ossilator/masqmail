@@ -1,19 +1,20 @@
-/*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 1999 Oliver Kurth
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 #include "masqmail.h"
 
@@ -76,15 +77,15 @@ connect_hostlist(int *psockfd, gchar *host, guint port, GList *addr_list)
 	return NULL;
 }
 
-/* Given a list of resolver functions, this function
-   resolve the host and tries to connect to the addresses
-   returned. If a connection attemp is timed out or refused,
-   the next address is tried.
-
-   TODO: the resolver functions might return duplicate addresses,
-   if attempt failed for one it should not be tried again.
+/*
+**  Given a list of resolver functions, this function
+**  resolve the host and tries to connect to the addresses
+**  returned. If a connection attemp is timed out or refused,
+**  the next address is tried.
+**
+**  TODO: the resolver functions might return duplicate addresses,
+**  if attempt failed for one it should not be tried again.
 */
-
 mxip_addr*
 connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_func_list)
 {
@@ -104,8 +105,11 @@ connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_func_list)
 			g_list_free(addr_list);
 			return addr;
 		}
-		/* previous versions complained, until someone tried to use a hostname
-		   out there that begins with a digit. eg. '3dwars.de'. */
+		/*
+		**  previous versions complained, until someone tried
+		**  to use a hostname out there that begins with a
+		**  digit. eg. '3dwars.de'.
+		*/
 	}
 
 	if (res_func_list == NULL) {

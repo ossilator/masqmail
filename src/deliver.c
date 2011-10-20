@@ -1,20 +1,21 @@
-/*  MasqMail
-    Copyright (C) 1999-2002 Oliver Kurth
-    Copyright (C) 2008, 2010 markus schnalke <meillo@marmaro.de>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 1999-2002 Oliver Kurth
+**  Copyright (C) 2008, 2010 markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 #include <fnmatch.h>
@@ -24,8 +25,11 @@
 #include "masqmail.h"
 #include "smtp_out.h"
 
-/* collect failed/defered rcpts for failure/warning messages */
-/* returns TRUE if either there are no failures or a failure message has been successfully sent */
+/*
+**  collect failed/defered rcpts for failure/warning messages
+**  returns TRUE if either there are no failures or a failure message has
+**  been successfully sent
+*/
 gboolean
 delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
 {
@@ -173,9 +177,11 @@ deliver_local(msg_out *msgout)
 		address *ret_path = msg->return_path;
 		header *retpath_hdr, *envto_hdr;
 
-		/* we need a private copy of the hdr list because we add headers
-		   here that belong to the rcpt only. g_list_copy copies only
-		   the nodes, so it is safe to g_list_free it */
+		/*
+		**  we need a private copy of the hdr list because we add
+		**  headers here that belong to the rcpt only. g_list_copy
+		**  copies only the nodes, so it is safe to g_list_free it
+		*/
 		hdr_list = g_list_copy(msg->hdr_list);
 		retpath_hdr = create_header(HEAD_ENVELOPE_TO, "Envelope-to: %s\n", addr_string(env_addr));
 		envto_hdr = create_header(HEAD_RETURN_PATH, "Return-path: %s\n", addr_string(ret_path));
@@ -184,8 +190,10 @@ deliver_local(msg_out *msgout)
 		hdr_list = g_list_prepend(hdr_list, retpath_hdr);
 
 		if (rcpt->local_part[0] == '|') {
-			/* probably for expanded aliases, but why not done
-			   like with the mda? //meillo 2010-12-06 */
+			/*
+			**  probably for expanded aliases, but why not done
+			**  like with the mda? //meillo 2010-12-06
+			*/
 			if (deliver_local_pipe(msg, hdr_list, rcpt, env_addr)) {
 				ok = TRUE;
 			}
@@ -235,10 +243,13 @@ deliver_local(msg_out *msgout)
 	return ok;
 }
 
-/* make a list of rcpt's of a message that are local
-   return a new copy of the list */
+/*
+**  make a list of rcpt's of a message that are local
+**  return a new copy of the list
+*/
 void
-msg_rcptlist_local(GList *rcpt_list, GList **p_local_list, GList **p_nonlocal_list)
+msg_rcptlist_local(GList *rcpt_list, GList **p_local_list,
+		GList **p_nonlocal_list)
 {
 	GList *rcpt_node;
 
@@ -329,12 +340,14 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list, gchar *host,
 	return ok;
 }
 
-/* deliver list of messages to one host and finishes them if the message was
-   delivered to at least one rcpt.
-   Returns TRUE if at least one msg was delivered to at least one rcpt.
+/*
+**  deliver list of messages to one host and finishes them if the message was
+**  delivered to at least one rcpt.
+**  Returns TRUE if at least one msg was delivered to at least one rcpt.
 */
 gboolean
-deliver_msglist_host_smtp(connect_route *route, GList *msgout_list, gchar *host, GList *res_list)
+deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
+		gchar *host, GList *res_list)
 {
 	gboolean ok = FALSE;
 	GList *msgout_node;
@@ -477,7 +490,7 @@ deliver_msglist_host(connect_route *route, GList *msgout_list, gchar *host, GLis
 }
 
 /*
-  delivers messages in msgout_list using route
+** delivers messages in msgout_list using route
 */
 gboolean
 deliver_route_msgout_list(connect_route *route, GList *msgout_list)
@@ -501,11 +514,12 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 		return FALSE;
 	}
 
-	/* TODO: It would be nice to be able to fork for each host.
-	   We cannot do that yet because of complications with finishing the
-	   messages. Threads could be a solution because they use the same
-	   memory. But we are not thread safe yet...
-	 */
+	/*
+	**  TODO: It would be nice to be able to fork for each host.
+	**  We cannot do that yet because of complications with finishing the
+	**  messages. Threads could be a solution because they use the same
+	**  memory. But we are not thread safe yet...
+	*/
 	foreach(mo_ph_list, mo_ph_node) {
 		msgout_perhost *mo_ph = (msgout_perhost *) (mo_ph_node->data);
 		if (deliver_msglist_host(route, mo_ph->msgout_list, mo_ph->host, route->resolve_list)) {
@@ -518,8 +532,9 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 }
 
 /*
-  calls route_prepare_msg()
-  delivers messages in msg_list using route by calling deliver_route_msgout_list()
+** calls route_prepare_msg()
+** delivers messages in msg_list using route by calling
+** deliver_route_msgout_list()
 */
 gboolean
 deliver_route_msg_list(connect_route *route, GList *msgout_list)
@@ -536,12 +551,16 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 		GList *rcpt_list_non_delivered = NULL;
 		GList *rcpt_node;
 
-		/* we have to delete already delivered rcpt's because a
-		   previous route may have delivered to it */
+		/*
+		**  we have to delete already delivered rcpt's because a
+		**  previous route may have delivered to it
+		*/
 		foreach(msgout_cloned->rcpt_list, rcpt_node) {
 			address *rcpt = (address *) (rcpt_node->data);
-			/* failed addresses already have been bounced;
-			   there should be a better way to handle those. */
+			/*
+			**  failed addresses already have been bounced;
+			**  there should be a better way to handle those.
+			*/
 			if (!addr_is_delivered(rcpt) && !addr_is_failed(rcpt)
 			    && !(rcpt->flags & ADDR_FLAG_LAST_ROUTE)) {
 				rcpt_list_non_delivered = g_list_append(rcpt_list_non_delivered, rcpt);
@@ -596,8 +615,9 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 	return ok;
 }
 
-/* copy pointers of delivered addresses to the msg's non_rcpt_list,
-   to make sure that they will not be delivered again.
+/*
+**  copy pointers of delivered addresses to the msg's non_rcpt_list,
+**  to make sure that they will not be delivered again.
 */
 void
 update_non_rcpt_list(msg_out *msgout)
@@ -613,12 +633,13 @@ update_non_rcpt_list(msg_out *msgout)
 	}
 }
 
-/* after delivery attempts, we check if there are any rcpt addresses left in
-   the message. If all addresses have been completed, the spool files will be
-   deleted, otherwise the header spool will be written back. We never changed
-   the data spool, so there is no need to write that back.
-
-   returns TRUE if all went well.
+/*
+**  after delivery attempts, we check if there are any rcpt addresses left in
+**  the message. If all addresses have been completed, the spool files will be
+**  deleted, otherwise the header spool will be written back. We never changed
+**  the data spool, so there is no need to write that back.
+**
+**  returns TRUE if all went well.
 */
 gboolean
 deliver_finish(msg_out *msgout)
@@ -629,18 +650,21 @@ deliver_finish(msg_out *msgout)
 
 	update_non_rcpt_list(msgout);
 
-	/* we NEVER made copies of the addresses, flags affecting addresses
-	   were always set on the original address structs */
+	/*
+	**  we NEVER made copies of the addresses, flags affecting addresses
+	**  were always set on the original address structs
+	*/
 	foreach(msg->rcpt_list, rcpt_node) {
 		address *rcpt = (address *) (rcpt_node->data);
 		if (!addr_is_finished_children(rcpt)) {
 			finished = FALSE;
 		} else {
-			/* if ALL children have been delivered, mark parent as
-			   delivered. if there is one or more not delivered,
-			   it must have failed, we mark the parent as failed
-			   as well.
-			 */
+			/*
+			**  if ALL children have been delivered, mark parent as
+			**  delivered. if there is one or more not delivered,
+			**  it must have failed, we mark the parent as failed
+			**  as well.
+			*/
 			if (addr_is_delivered_children(rcpt)) {
 				addr_mark_delivered(rcpt);
 			} else {
@@ -728,8 +752,8 @@ deliver_remote(GList *remote_msgout_list)
 }
 
 /*
-   This function splits the list of rcpt addresses
-   into local and remote addresses and processes them accordingly.
+**  This function splits the list of rcpt addresses
+**  into local and remote addresses and processes them accordingly.
 */
 gboolean
 deliver_msg_list(GList *msg_list, guint flags)
@@ -839,10 +863,10 @@ deliver_msg_list(GList *msg_list, guint flags)
 }
 
 /*
-   deliver() is called when a message has just been received
-   (mode_accept and smtp_in) and should be delivered immediately
-   (neither -odq nor do_queue). Only this one message will be tried to
-   deliver then.
+**  deliver() is called when a message has just been received
+**  (mode_accept and smtp_in) and should be delivered immediately
+**  (neither -odq nor do_queue). Only this one message will be tried to
+**  deliver then.
 */
 gboolean
 deliver(message *msg)

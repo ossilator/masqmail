@@ -1,6 +1,7 @@
-/* This a snippet I found in sourceforge. I just changed the identing
-   style to my own and deleted the main function. -- oku
-   The functions destroy_argv() and create_argv() were added by oku.
+/*
+**  This a snippet I found in sourceforge. I just changed the identing
+**  style to my own and deleted the main function. -- oku
+**  The functions destroy_argv() and create_argv() were added by oku.
 */
 
 #include <errno.h>
@@ -55,7 +56,8 @@ create_argv(const char *cmd, int count)
 }
 
 FILE*
-peidopen(const char *command, const char *type, char *const envp[], int *ret_pid, uid_t uid, gid_t gid)
+peidopen(const char *command, const char *type, char *const envp[],
+		int *ret_pid, uid_t uid, gid_t gid)
 {
 	enum { Read, Write } mode;
 	int pipe_fd[2];
@@ -93,7 +95,7 @@ peidopen(const char *command, const char *type, char *const envp[], int *ret_pid
 		if (close(pipe_fd[mode == Read ? 0 : 1]) != -1 &&
 			dup2(pipe_fd[mode == Read ? 1 : 0],
 				 mode == Read ? STDOUT_FILENO : STDIN_FILENO) != -1) {
-			/*      char *argv [] = { "/bin/sh", "-c", (char*) command, NULL }; */
+			/* char *argv [] = { "/bin/sh", "-c", (char*) command, NULL }; */
 			char **argv = create_argv(command, 10);
 			int ret;
 

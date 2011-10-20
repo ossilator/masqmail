@@ -1,20 +1,21 @@
-/*  MasqMail
-    Copyright (C) 1999-2001 Oliver Kurth
-    Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 1999-2001 Oliver Kurth
+**  Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 #include <stdio.h>
@@ -34,9 +35,11 @@
 
 #include "masqmail.h"
 
-/* mutually exclusive modes. Note that there is no 'queue daemon' mode.
-   It, as well as the distinction beween the two (non exclusive) daemon
-   (queue and listen) modes, is handled by flags.*/
+/*
+**  mutually exclusive modes. Note that there is no 'queue daemon' mode.
+**  It, as well as the distinction beween the two (non exclusive) daemon
+**  (queue and listen) modes, is handled by flags.
+*/
 enum mta_mode {
 	MODE_NONE = 0,  /* to check if a mode was set */
 	MODE_ACCEPT,  /* accept message on stdin (fallback mode) */
@@ -95,11 +98,11 @@ is_in_netlist(gchar *host, GList *netlist)
 #endif
 
 /*
-argv: the original argv
-argp: number of arg (may get modified!)
-cp: pointing to the char after the option
-    e.g.  `-d 6'     `-d6'
-             ^          ^
+**  argv: the original argv
+**  argp: number of arg (may get modified!)
+**  cp: pointing to the char after the option
+**    e.g.  `-d 6'     `-d6'
+**             ^          ^
 */
 gchar*
 get_optarg(char *argv[], gint *argp, char *cp)
@@ -161,9 +164,10 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 
 	conf.do_verbose = FALSE;
 
-	/* closing and reopening the log ensures that it is open afterwards
-	   because it is possible that the log is assigned to fd 1 and gets
-	   thus closes by fclose(stdout). Similar for the debugfile.
+	/*
+	**  closing and reopening the log ensures that it is open afterwards
+	**  because it is possible that the log is assigned to fd 1 and gets
+	**  thus closes by fclose(stdout). Similar for the debugfile.
 	*/
 	logclose();
 	fclose(stdin);
@@ -204,7 +208,8 @@ mode_smtp()
 
 /* default mode if address args or -t is specified, or called as rmail */
 static void
-mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags, char **addresses, int addr_cnt)
+mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
+		char **addresses, int addr_cnt)
 {
 	/* accept message on stdin */
 	accept_error err;
@@ -293,11 +298,11 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags, c
 			exit(0);
 		} else {
 			/*
-			TODO:
-			Should we really fail here? Because the mail is queued
-			already. If we fail the client might submit it again.
-			If at-once-delivery is seen as an additional best-effort
-			service, then we should still exit successful here.
+			**  TODO: Should we really fail here? Because the
+			**  mail is queued already. If we fail the client
+			**  might submit it again.  If at-once-delivery
+			**  is seen as an additional best-effort service,
+			**  then we should still exit successful here.
 			*/
 			exit(1);
 		}
@@ -305,11 +310,11 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags, c
 }
 
 /*
-if -Mrm is given
-
-currently only the `rm' command is supported
-until this changes, we don't need any facility for further commands
-return success if at least one message had been deleted
+**  if -Mrm is given
+**
+**  currently only the `rm' command is supported
+**  until this changes, we don't need any facility for further commands
+**  return success if at least one message had been deleted
 */
 static int
 manipulate_queue(char *cmd, char *id[])
@@ -387,8 +392,10 @@ run_queue(gboolean do_runq, gboolean do_runq_online, char *route_name)
 		if (route_name) {
 			conf.online_query = g_strdup_printf("/bin/echo %s", route_name);
 		}
-		/* TODO: change behavior of `-qo without argument'?
-		         Because that behavior is included in -q. */
+		/*
+		**  TODO: change behavior of `-qo without argument'?
+		**  Because that behavior is included in -q.
+		*/
 		ret = queue_run_online();
 	}
 	return ret;
@@ -412,7 +419,8 @@ mode_version(void)
 	with_ident = " +ident";
 #endif
 
-	printf("%s %s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_auth, with_ident);
+	printf("%s %s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_auth,
+			with_ident);
 }
 
 void
@@ -462,9 +470,11 @@ main(int argc, char *argv[])
 	} else if (strcmp(progname, "newaliases") == 0) {
 		mta_mode = MODE_BI;
 	} else if (strcmp(progname, "rmail") == 0) {
-		/* the `rmail' alias should probably be removed now
-		   that we have the rmail script. But let's keep it
-		   for some while for compatibility. 2010-06-19 */
+		/*
+		**  the `rmail' alias should probably be removed now
+		**  that we have the rmail script. But let's keep it
+		**  for some while for compatibility. 2010-06-19
+		*/
 		mta_mode = MODE_ACCEPT;
 		opt_i = TRUE;
 	} else if (strcmp(progname, "runq") == 0) {
@@ -601,10 +611,10 @@ main(int argc, char *argv[])
 
 	if (!mta_mode && arg==argc && !opt_t) {
 		/*
-		In this case no rcpts can be found, thus no mail
-		can be sent, thus masqmail will always fail. We
-		rather do something better instead. This covers
-		also the case of calling masqmail without args.
+		**  In this case no rcpts can be found, thus no mail
+		**  can be sent, thus masqmail will always fail. We
+		**  rather do something better instead. This covers
+		**  also the case of calling masqmail without args.
 		*/
 		mode_version();
 		exit(0);
@@ -638,13 +648,14 @@ main(int argc, char *argv[])
 
 	init_conf();
 
-	/* if we are not privileged, and the config file was changed we
-	   implicetely set the the run_as_user flag and give up all
-	   privileges.
-
-	   So it is possible for a user to run his own daemon without
-	   breaking security.
-	 */
+	/*
+	**  if we are not privileged, and the config file was changed we
+	**  implicetely set the the run_as_user flag and give up all
+	**  privileges.
+	**
+	**  So it is possible for a user to run his own daemon without
+	**  breaking security.
+	*/
 	if ((strcmp(conf_file, CONF_FILE) != 0) && (conf.orig_uid != 0)) {
 		conf.run_as_user = TRUE;
 		set_euidgid(conf.orig_uid, conf.orig_gid, NULL, NULL);
@@ -677,12 +688,13 @@ main(int argc, char *argv[])
 		conf.debug_level = debug_level;
 	}
 
-	/* It appears that changing to / ensures that we are never in
-	   a directory which we cannot access. This situation could be
-	   possible after changing identity.
-	   Maybe we should only change to / if we not run as user, to
-	   allow relative paths for log files in test setups for
-	   instance.
+	/*
+	**  It appears that changing to / ensures that we are never in
+	**  a directory which we cannot access. This situation could be
+	**  possible after changing identity.
+	**  Maybe we should only change to / if we not run as user, to
+	**  allow relative paths for log files in test setups for
+	**  instance.
 	*/
 	chdir("/");
 

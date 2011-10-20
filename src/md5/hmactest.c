@@ -6,23 +6,23 @@
 #include "hmac_md5.h"
 
 /*
-instead of pad0_copy(d, s, sz) use:
-	memset(d, 0, sz);
-	memcpy(d, s, strlen(s));
-
-static void
-pad0_copy(char *d, char *s, int sz)
-{
-	int i = 0;
-	while (*s && (i < sz)) {
-		*(d++) = *(s++);
-		i++;
-	}
-	while (i <= sz) {
-		*(d++) = 0;
-		i++;
-	}
-}
+**  instead of pad0_copy(d, s, sz) use:
+**  	memset(d, 0, sz);
+**  	memcpy(d, s, strlen(s));
+**  
+**  static void
+**  pad0_copy(char *d, char *s, int sz)
+**  {
+**  	int i = 0;
+**  	while (*s && (i < sz)) {
+**  		*(d++) = *(s++);
+**  		i++;
+**  	}
+**  	while (i <= sz) {
+**  		*(d++) = 0;
+**  		i++;
+**  	}
+**  }
 */
 
 int

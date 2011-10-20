@@ -1,20 +1,21 @@
-/*  MasqMail
-    Copyright (C) 2000-2001 Oliver Kurth
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
+/*
+**  MasqMail
+**  Copyright (C) 2000-2001 Oliver Kurth
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+*/
 
 #include <sys/wait.h>
 
@@ -23,7 +24,8 @@
 #include "readsock.h"
 
 gboolean
-fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt, va_list args)
+fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
+		va_list args)
 {
 	gboolean ok = FALSE;
 	address *ret_path = NULL;
@@ -124,11 +126,10 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt, va_
 }
 
 /*
-ival  : |--|--|----|--------|--------|
-warned: |-------W-------------W------
-result: |nnnyyyynnnnyyyyyyyyyynnnnnnn
+**  ival  : |--|--|----|--------|--------|
+**  warned: |-------W-------------W------
+**  result: |nnnyyyynnnnyyyyyyyyyynnnnnnn
 */
-
 static gboolean
 warn_msg_is_due(message *msg)
 {
@@ -155,7 +156,8 @@ warn_msg_is_due(message *msg)
 }
 
 gboolean
-warn_msg(message *msg, gchar *template, GList *defered_rcpts, gchar *err_fmt, va_list args)
+warn_msg(message *msg, gchar *template, GList *defered_rcpts, gchar *err_fmt,
+		va_list args)
 {
 	time_t now = time(NULL);
 
