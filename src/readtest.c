@@ -1,4 +1,3 @@
-
 #include "masqmail.h"
 #include "readsock.h"
 

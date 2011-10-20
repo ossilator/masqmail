@@ -1,20 +1,21 @@
-/*  MasqMail
-    Copyright (C) 1999-2001 Oliver Kurth
-    Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 1999-2001 Oliver Kurth
+**  Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 #include <config.h>
 
@@ -140,8 +141,10 @@ typedef struct _masqmail_conf {
 	GList *not_local_addresses;
 	GList *listen_addresses;
 
-	/* ANSI C defines unsigned long to be at least 32bit
-	   i.e. ca. 4GB max; that should be enough. */
+	/*
+	**  ANSI C defines unsigned long to be at least 32bit
+	**  i.e. ca. 4GB max; that should be enough.
+	*/
 	gulong max_msg_size;
 
 	gboolean do_save_envelope_to;

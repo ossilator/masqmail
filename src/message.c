@@ -1,20 +1,21 @@
-/*  MasqMail
-    Copyright (C) 1999-2001 Oliver Kurth
-    Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 1999-2001 Oliver Kurth
+**  Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 #include "masqmail.h"
@@ -31,19 +32,19 @@ create_message()
 }
 
 /*
-   This function is currently (0.2.24) only used for client side SMTP
-   SIZE support (RFC 1870). The flag is_smtp is always true therefore.
-
-   Their definition of the message size in RFC 1870 is:
-
-       The message size is defined as the number of octets, including
-       CR-LF pairs, but not the SMTP DATA command's terminating dot
-       or doubled quoting dots, to be transmitted by the SMTP client
-       after receiving reply code 354 to the DATA command.
-
-   l_cnt (line count) covers '\r' characters which are not present in
-   masqmail's internal format. Dots are also not stuffed in the
-   internal format. Dot-stuffing is ignored in the size.
+**  This function is currently (0.2.24) only used for client side SMTP
+**  SIZE support (RFC 1870). The flag is_smtp is always true therefore.
+**
+**  Their definition of the message size in RFC 1870 is:
+**
+**      The message size is defined as the number of octets, including
+**      CR-LF pairs, but not the SMTP DATA command's terminating dot
+**      or doubled quoting dots, to be transmitted by the SMTP client
+**      after receiving reply code 354 to the DATA command.
+**
+**  l_cnt (line count) covers '\r' characters which are not present in
+**  masqmail's internal format. Dots are also not stuffed in the
+**  internal format. Dot-stuffing is ignored in the size.
 */
 gint
 msg_calc_size(message *msg, gboolean is_smtp)

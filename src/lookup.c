@@ -1,21 +1,22 @@
-/* MasqMail
- * Copyright (C) Oliver Kurth
- * Copyright (C) markus schnalke <meillo@marmaro.de>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
+/*
+**  MasqMail
+**  Copyright (C) Oliver Kurth
+**  Copyright (C) markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+*/
 
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -64,10 +65,10 @@ dns_resolve(char *domain, int type, gboolean do_search)
 
 	if (resp_len <= 0) {
 		/*
-		   if (errno == ECONNREFUSED) return DNS_SOFT;
-		   if (h_errno == TRY_AGAIN) return DNS_SOFT;
-		   return DNS_HARD;
-		 */
+		**  if (errno == ECONNREFUSED) return DNS_SOFT;
+		**  if (h_errno == TRY_AGAIN) return DNS_SOFT;
+		**  return DNS_HARD;
+		*/
 		return -1;
 	}
 	if (resp_len >= sizeof(response))
@@ -257,10 +258,11 @@ resolve_dns_mx(GList *list, gchar *domain)
 
 		DEBUG(5) debugf("DNS: found %d mx records\n", cnt);
 
-		/* to randomize sequences with equal pref values,
-		   we temporarily 'misused' the ip field and
-		   put a random number in it as a secondary sort key.
-		 */
+		/*
+		**  to randomize sequences with equal pref values,
+		**  we temporarily 'misused' the ip field and
+		**  put a random number in it as a secondary sort key.
+		*/
 		list = g_list_sort(list, _mx_sort_func);
 
 		/* CNAME resolving has to be added as well. */

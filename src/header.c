@@ -1,19 +1,20 @@
-/*  MasqMail
-    Copyright (C) 2000 Oliver Kurth
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 2000 Oliver Kurth
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 #include "masqmail.h"
 
@@ -66,9 +67,10 @@ rec_timestamp()
 	return buf;
 }
 
-/* finds list of headers matching id
-   if id == HEAD_UNKNOWN and header == NULL finds all unknown headers
-   else finds all headers matching header
+/*
+**  finds list of headers matching id
+**  if id == HEAD_UNKNOWN and header == NULL finds all unknown headers
+**  else finds all headers matching header
 */
 GList*
 find_header(GList *hdr_list, header_id id, gchar *hdr_str)
@@ -129,8 +131,8 @@ header_unfold(header *hdr)
 }
 
 /*
-   fold the header at maxlen chars (newline excluded)
-   (We exclude the newline because the RFCs deal with it this way)
+**  fold the header at maxlen chars (newline excluded)
+**  (We exclude the newline because the RFCs deal with it this way)
 */
 void
 header_fold(header *hdr, unsigned int maxlen)
@@ -155,9 +157,11 @@ header_fold(header *hdr, unsigned int maxlen)
 	}
 	printf("stripped len: %d\n", len);
 
-	/* FIXME: would be nice to have a better size calculation */
-	/* (the current size + what we insert as break, twice as often as
-	    we have breaks in the optimal case) */
+	/*
+	**  FIXME: would be nice to have a better size calculation
+	**  (the current size + what we insert as break, twice as often as
+	**  we have breaks in the optimal case)
+	*/
 	tmp = malloc(len + 2 * (len/maxlen) * strlen("\n\t"));
 	dest = tmp;
 
@@ -223,8 +227,10 @@ create_header(header_id id, gchar *fmt, ...)
 	hdr->header = g_strdup_vprintf(fmt, args);
 	hdr->value = NULL;
 
-	/* value shall point to the first non-whitespace char in the
-	   value part of the header line (i.e. after the first colon) */
+	/*
+	**  value shall point to the first non-whitespace char in the
+	**  value part of the header line (i.e. after the first colon)
+	*/
 	p = strchr(hdr->header, ':');
 	if (p) {
 		p++;
@@ -292,8 +298,10 @@ get_header(gchar *line)
 		p++;
 	}
 	hdr->value = p;
-	/* Note: an empty value can also mean that it's only the first part
-	         of a folded header line */
+	/*
+	**  Note: an empty value can also mean that it's only the first part
+	**  of a folded header line
+	*/
 
 	for (i = 0; i < HEAD_NUM_IDS; i++) {
 		if (strcasecmp(header_names[i].header, buf) == 0) {

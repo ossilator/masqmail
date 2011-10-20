@@ -1,33 +1,35 @@
-/*  MasqMail
-    Copyright (C) 1999-2001 Oliver Kurth
-    Copyright (C) 2010  markus schnalke <meillo@marmaro.de>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 1999-2001 Oliver Kurth
+**  Copyright (C) 2010  markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 #ifndef PARSE_TEST
 #include "masqmail.h"
 #endif
 
-/* This is really dangerous. I hope that I was careful enough,
-   but maybe there is some malformed address possible that causes
-   this to segfault or be caught in endless loops.
+/*
+**  This is really dangerous. I hope that I was careful enough,
+**  but maybe there is some malformed address possible that causes
+**  this to segfault or be caught in endless loops.
 
-   If you find something like that, PLEASE mail the string to me
-   (no matter how idiotic it is), so that I can debug that.
-   Those things really should not happen.
+**  If you find something like that, PLEASE mail the string to me
+**  (no matter how idiotic it is), so that I can debug that.
+**  Those things really should not happen.
 */
 
 static gchar *specials = "()<>@,;:\\\".[]`";
@@ -134,8 +136,8 @@ read_domain(gchar *p, gchar **b, gchar **e)
 }
 
 gboolean
-parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin,
-                     gchar **domain_end, gchar **address_end)
+parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end,
+		gchar **domain_begin, gchar **domain_end, gchar **address_end)
 {
 	gint angle_brackets = 0;
 
@@ -183,8 +185,10 @@ parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end, gcha
 				p++;
 			}
 		}
-		/* we now have a non-space char that is not
-		   the beginning of a comment */
+		/*
+		**  we now have a non-space char that is not
+		**  the beginning of a comment
+		*/
 
 		if (*p == '@' || *p == ',') {
 			/* the last word was the local_part of an addr-spec */
@@ -284,8 +288,8 @@ parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end, gcha
 }
 
 gboolean
-parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin,
-                     gchar **domain_end, gchar **address_end)
+parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end,
+		gchar **domain_begin, gchar **domain_end, gchar **address_end)
 {
 	gint angle_brackets = 0;
 
@@ -371,12 +375,12 @@ parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end, gcha
 }
 
 /*
-  allocate address, reading from string.
-  On failure, returns NULL.
-  after call, end contains a pointer to the end of the parsed string
-  end may be NULL, if we are not interested.
-
-  parses both rfc 821 and rfc 822 addresses, depending on flag is_rfc821
+**  allocate address, reading from string.
+**  On failure, returns NULL.
+**  after call, end contains a pointer to the end of the parsed string
+**  end may be NULL, if we are not interested.
+**
+**  parses both rfc 821 and rfc 822 addresses, depending on flag is_rfc821
 */
 address*
 _create_address(gchar *string, gchar **end, gboolean is_rfc821)

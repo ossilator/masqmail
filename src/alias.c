@@ -1,20 +1,21 @@
-/*  MasqMail
-    Copyright (C) 2000-2001 Oliver Kurth
-    Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 2000-2001 Oliver Kurth
+**  Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 #include "masqmail.h"
@@ -104,7 +105,7 @@ parse_list(gchar *line)
 }
 
 /*
-addr is assumed to be local and no pipe address nor not-to-expand
+**  addr is assumed to be local and no pipe address nor not-to-expand
 */
 static GList*
 expand_one(GList *alias_table, address *addr)
@@ -120,8 +121,10 @@ expand_one(GList *alias_table, address *addr)
 	DEBUG(6) debugf("alias: '%s' is local and will get expanded\n", addr->local_part);
 
 	if (strcasecmp(addr->local_part, "postmaster") == 0) {
-		/* postmaster must always be matched caseless
-		   see RFC 822 and RFC 5321 */
+		/*
+		**  postmaster must always be matched caseless
+		**  see RFC 822 and RFC 5321
+		*/
 		val = (gchar *) table_find_func(alias_table, addr->local_part, strcasecmp);
 	} else {
 		val = (gchar *) table_find_func(alias_table, addr->local_part, conf.localpartcmp);
@@ -241,8 +244,11 @@ alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list)
 			if (addr_isequal(addr, non_addr, conf.localpartcmp)) {
 				done_list = g_list_remove_link(done_list, rcpt_node);
 				g_list_free_1(rcpt_node);
-				/* this address is still in the children lists
-				   of the original address, simply mark them delivered */
+				/*
+				**  this address is still in the children
+				**  lists of the original address, simply
+				**  mark them delivered
+				*/
 				addr_mark_delivered(addr);
 				break;
 			}

@@ -1,32 +1,33 @@
-/*  MasqMail
-    Copyright (C) 1999-2001 Oliver Kurth
-    Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 1999-2001 Oliver Kurth
+**  Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 #include "masqmail.h"
 #include "readsock.h"
 
 /*
-  I always forget these rfc numbers:
-  RFC 821  (SMTP)
-  RFC 1869 (ESMTP)
-  RFC 1870 (ESMTP SIZE)
-  RFC 2197 (ESMTP PIPELINE)
-  RFC 2554 (ESMTP AUTH)
+**  I always forget these rfc numbers:
+**  RFC 821  (SMTP)
+**  RFC 1869 (ESMTP)
+**  RFC 1870 (ESMTP SIZE)
+**  RFC 2197 (ESMTP PIPELINE)
+**  RFC 2554 (ESMTP AUTH)
 */
 
 
@@ -74,10 +75,11 @@ get_size(gchar *line, unsigned long *msize) {
 }
 
 
-/* this is a quick hack: we expect the address to be syntactically correct
-   and containing the mailbox only, though we first check for size in
-   smtp_in().
-   Return false if address is too long.
+/*
+**  this is a quick hack: we expect the address to be syntactically correct
+**  and containing the mailbox only, though we first check for size in
+**  smtp_in().
+**  Return false if address is too long.
 */
 static gboolean
 get_address(gchar *line, gchar *addr)

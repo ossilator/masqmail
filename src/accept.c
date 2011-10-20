@@ -1,20 +1,21 @@
-/*  MasqMail
-    Copyright (C) 1999-2001 Oliver Kurth
-    Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 1999-2001 Oliver Kurth
+**  Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 #include "masqmail.h"
@@ -54,11 +55,12 @@ _g_list_addr_isequal(gconstpointer a, gconstpointer b)
 	return ret;
 }
 
-/* accept message from anywhere.
-   A message from local is indicated by msg->recieved_host == NULL
-
-   The -t option: With the ACC_RCPT_FROM_HEAD flag the addrs found found
-   in To/Cc/Bcc headers are added to the recipient list.
+/*
+**  accept message from anywhere.
+**  A message from local is indicated by msg->recieved_host == NULL
+**
+**  The -t option: With the ACC_RCPT_FROM_HEAD flag the addrs found found
+**  in To/Cc/Bcc headers are added to the recipient list.
 */
 
 accept_error
@@ -146,9 +148,14 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 				if ((hdr = get_header(line1))) {
 					msg->hdr_list = g_list_append(msg->hdr_list, hdr);
 				} else {
-					/* if get_header() returns NULL, no header was recognized,
-					   so this seems to be the first data line of a broken mailer
-					   which does not send an empty line after the headers */
+					/*
+					**  if get_header() returns NULL,
+					**  no header was recognized,
+					**  so this seems to be the first
+					**  data line of a broken mailer
+					**  which does not send an empty
+					**  line after the headers
+					*/
 					in_headers = FALSE;
 					msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
 				}
@@ -290,10 +297,12 @@ accept_message_prepare(message *msg, guint flags)
 		}
 
 		if (!msg->return_path) {
-			/* TODO: do we still need this as we don't fetch
-			         mail anymore? */
-			/* this can happen for pop3 accept only and if no
-			   Return-Path: header was given */
+			/*
+			**  TODO: do we still need this as we don't fetch
+			**        mail anymore?
+			**  This can happen for pop3 accept only and if no
+			**  Return-Path: header was given
+			*/
 			GList *hdr_list;
 			header *hdr;
 

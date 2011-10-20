@@ -1,20 +1,21 @@
-/*  MasqMail
-    Copyright (C) 1999-2001 Oliver Kurth
-    Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+/*
+**  MasqMail
+**  Copyright (C) 1999-2001 Oliver Kurth
+**  Copyright (C) 2010 markus schnalke <meillo@marmaro.de>
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
 #include <fnmatch.h>
@@ -50,9 +51,10 @@ destroy_msgout_perhost(msgout_perhost *mo_ph)
 void
 rewrite_headers(msg_out *msgout, connect_route *route)
 {
-	/* if set_h_from_domain is set, replace domain in all
-	   From: headers.
-	 */
+	/*
+	**  if set_h_from_domain is set, replace domain in all
+	**  From: headers.
+	*/
 	msgout->hdr_list = g_list_copy(msgout->msg->hdr_list);
 
 	/* map from addresses */
@@ -191,14 +193,15 @@ rewrite_headers(msg_out *msgout, connect_route *route)
 }
 
 /*
-Split a recipient list into the three groups:
-- local recipients
-- those maching the patterns
-- those not matching the patterns
-If patterns is NULL: only splitting between local and others is done.
+**  Split a recipient list into the three groups:
+**  - local recipients
+**  - those maching the patterns
+**  - those not matching the patterns
+**  If patterns is NULL: only splitting between local and others is done.
 */
 void
-split_rcpts(GList *rcpt_list, GList *patterns, GList **rl_local, GList **rl_matching, GList **rl_others)
+split_rcpts(GList *rcpt_list, GList *patterns, GList **rl_local,
+		GList **rl_matching, GList **rl_others)
 {
 	GList *rcpt_node;
 	GList *host_node = NULL;
@@ -215,8 +218,10 @@ split_rcpts(GList *rcpt_list, GList *patterns, GList **rl_local, GList **rl_matc
 			if (rl_local)
 				*rl_local = g_list_append(*rl_local, rcpt);
 		} else {
-			/* if patterns is NULL, host_node will be NULL,
-			   hence all non-locals are put to others */
+			/*
+			**  if patterns is NULL, host_node will be NULL,
+			**  hence all non-locals are put to others
+			*/
 			foreach(patterns, host_node) {
 				gchar *host = (gchar *) (host_node->data);
 				if (fnmatch(host, rcpt->domain, FNM_CASEFOLD) == 0)
@@ -234,8 +239,8 @@ split_rcpts(GList *rcpt_list, GList *patterns, GList **rl_local, GList **rl_matc
 }
 
 /*
-Return a new list of the local rcpts in the rcpt_list
-TODO: This function is almost exactly the same as remote_rcpts(). Merge?
+**  Return a new list of the local rcpts in the rcpt_list
+**  TODO: This function is almost exactly the same as remote_rcpts(). Merge?
 */
 GList*
 local_rcpts(GList *rcpt_list)
@@ -257,8 +262,8 @@ local_rcpts(GList *rcpt_list)
 }
 
 /*
-Return a new list of non-local rcpts in the rcpt_list
-TODO: This function is almost exactly the same as local_rcpts(). Merge?
+**  Return a new list of non-local rcpts in the rcpt_list
+**  TODO: This function is almost exactly the same as local_rcpts(). Merge?
 */
 GList*
 remote_rcpts(GList *rcpt_list)
@@ -317,8 +322,8 @@ route_sender_is_allowed(connect_route *route, address *ret_path)
 }
 
 /*
-   Make lists of matching/not matching rcpts.
-   Local domains are NOT regared here, these should be sorted out previously
+**  Make lists of matching/not matching rcpts.
+**  Local domains are NOT regared here, these should be sorted out previously
 */
 void
 route_split_rcpts(connect_route *route, GList *rcpt_list, GList **p_rcpt_list, GList **p_non_rcpt_list)
@@ -356,9 +361,10 @@ route_prepare_msgout(connect_route *route, msg_out *msgout)
 			}
 		}
 
-		/* rewrite return path if there is a table, use that
-		   if an address is found and if it has a domain, use that
-		 */
+		/*
+		**  rewrite return path if there is a table, use that
+		**  if an address is found and if it has a domain, use that
+		*/
 		if (route->map_return_path_addresses) {
 			address *ret_path = NULL;
 			DEBUG(5) debugf("looking up %s in map_return_path_addresses\n", msg->return_path->local_part);
@@ -383,11 +389,11 @@ route_prepare_msgout(connect_route *route, msg_out *msgout)
 	return NULL;
 }
 
-/* put msgout's is msgout_list into bins (msgout_perhost structs) for each
-   host. Used if there is no mail_host.
-   route param is not used, we leave it here because that may change.
- */
-
+/*
+**  put msgout's is msgout_list into bins (msgout_perhost structs) for each
+**  host. Used if there is no mail_host.
+**  route param is not used, we leave it here because that may change.
+*/
 GList*
 route_msgout_list(connect_route *route, GList *msgout_list)
 {
@@ -415,8 +421,13 @@ route_msgout_list(connect_route *route, GList *msgout_list)
 				/* there is already a rcpt for this host */
 				msg_out *msgout_last = (msg_out *) ((g_list_last(mo_ph->msgout_list))->data);
 				if (msgout_last->msg == msgout->msg) {
-					/* if it is also the same message, it must be the last one appended
-					   to mo_ph->msgout_list (since outer loop goes through msgout_list) */
+					/*
+					**  if it is also the same message,
+					**  it must be the last one
+					**  appended to mo_ph->msgout_list
+					**  (since outer loop goes through
+					**  msgout_list)
+					*/
 					msgout_last->rcpt_list = g_list_append(msgout_last->rcpt_list, rcpt);
 				} else {
 					/* if not, we append a new msgout */
