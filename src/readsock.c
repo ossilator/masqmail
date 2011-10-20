@@ -151,7 +151,7 @@ read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout,
 	}
 
 	if (!*pbuf)
-		*pbuf = g_malloc(size);
+		*pbuf = (char *) g_malloc(size);
 	buf = *pbuf;
 
 	while (1) {
