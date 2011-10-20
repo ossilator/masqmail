@@ -139,10 +139,8 @@ connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_func_list)
 			}
 
 			g_list_free(addr_list);
-		} else {
-			if (!g_list_next(res_node)) {
-				logwrite(LOG_ALERT, "could not resolve %s: %s\n", host, hstrerror(h_errno));
-			}
+		} else if (!g_list_next(res_node)) {
+			logwrite(LOG_ALERT, "could not resolve %s: %s\n", host, hstrerror(h_errno));
 		}
 	}
 	return NULL;
