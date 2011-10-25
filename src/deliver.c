@@ -273,7 +273,8 @@ msg_rcptlist_local(GList *rcpt_list, GList **p_local_list,
 }
 
 gboolean
-deliver_msglist_host_pipe(connect_route *route, GList *msgout_list, gchar *host, GList *res_list)
+deliver_msglist_host_pipe(connect_route *route, GList *msgout_list,
+		gchar *host, GList *res_list)
 {
 	gboolean ok = TRUE;
 	GList *msgout_node;
@@ -477,7 +478,8 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 }
 
 gboolean
-deliver_msglist_host(connect_route *route, GList *msgout_list, gchar *host, GList *res_list)
+deliver_msglist_host(connect_route *route, GList *msgout_list, gchar *host,
+		GList *res_list)
 {
 
 	if (route->pipe) {
@@ -503,7 +505,8 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 
 	if (route->mail_host) {
 		/* this is easy... deliver everything to a smart host for relay */
-		return deliver_msglist_host(route, msgout_list, NULL, route->resolve_list);
+		return deliver_msglist_host(route, msgout_list, NULL,
+				route->resolve_list);
 	}
 
 	/* this is not easy... */
@@ -522,7 +525,8 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 	*/
 	foreach(mo_ph_list, mo_ph_node) {
 		msgout_perhost *mo_ph = (msgout_perhost *) (mo_ph_node->data);
-		if (deliver_msglist_host(route, mo_ph->msgout_list, mo_ph->host, route->resolve_list)) {
+		if (deliver_msglist_host(route, mo_ph->msgout_list,
+				mo_ph->host, route->resolve_list)) {
 			ok = TRUE;
 		}
 		destroy_msgout_perhost(mo_ph);
@@ -583,13 +587,15 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 		/* filter by allowed envelope rcpts */
 		GList *rcpt_list_allowed = NULL;
 		GList *rcpt_list_notallowed = NULL;
-		route_split_rcpts(route, msgout_cloned->rcpt_list, &rcpt_list_allowed, &rcpt_list_notallowed);
+		route_split_rcpts(route, msgout_cloned->rcpt_list,
+				&rcpt_list_allowed, &rcpt_list_notallowed);
 		if (!rcpt_list_allowed) {
 			destroy_msg_out(msgout_cloned);
 			continue;
 		}
 
-		logwrite(LOG_NOTICE, "%s using '%s'\n", msgout->msg->uid, route->name);
+		logwrite(LOG_NOTICE, "%s using '%s'\n", msgout->msg->uid,
+				route->name);
 
 		g_list_free(msgout_cloned->rcpt_list);
 		msgout_cloned->rcpt_list = rcpt_list_allowed;
