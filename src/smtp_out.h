@@ -76,7 +76,7 @@ gchar *set_heloname(smtp_base *psb, gchar *default_name, gboolean do_correct);
 gboolean set_auth(smtp_base *psb, gchar *name, gchar *login, gchar *secret);
 void destroy_smtpbase(smtp_base *psb);
 smtp_base *smtp_out_open(gchar *host, gint port, GList *resolve_list);
-smtp_base *smtp_out_open_child(gchar *cmd, char *host);
+smtp_base *smtp_out_open_child(gchar *cmd);
 gboolean smtp_out_rset(smtp_base *psb);
 gboolean smtp_out_init(smtp_base *psb, gboolean instant_helo);
 gint smtp_out_msg(smtp_base *psb, message *msg, address *return_path, GList *rcpt_list, GList *hdr_list);
