@@ -519,14 +519,13 @@ smtp_out_open_child(gchar *cmd, char *host)
 	DEBUG(5) debugf("smtp_out_open_child entered, cmd = %s\n", cmd);
 	psb->remote_host = host;
 	sock = child(cmd);
-	if (sock > 0) {
-		psb = create_smtpbase(sock);
-		psb->remote_host = NULL;
-
-		return psb;
+	if (sock <= 0) {
+		return NULL;
 	}
+	psb = create_smtpbase(sock);
+	psb->remote_host = NULL;
 
-	return NULL;
+	return psb;
 }
 
 gboolean
