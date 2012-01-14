@@ -15,18 +15,20 @@
 #include "peopen.h"
 #include "masqmail.h"
 
-static void
-destroy_argv(char **arr)
-{
-	char *p = arr[0];
-	int i = 0;
-
-	while (p) {
-		free(p);
-		p = arr[i++];
-	}
-	free(arr);
-}
+/*
+** static void
+** destroy_argv(char **arr)
+** {
+** 	char *p = arr[0];
+** 	int i = 0;
+** 
+** 	while (p) {
+** 		free(p);
+** 		p = arr[i++];
+** 	}
+** 	free(arr);
+** }
+*/
 
 static char**
 create_argv(const char *cmd, int count)
