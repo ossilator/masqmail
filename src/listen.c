@@ -57,18 +57,7 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 	gchar *ident = NULL;
 
 	rem_host = g_strdup(inet_ntoa(sock_addr->sin_addr));
-#ifdef ENABLE_IDENT
-	{
-		gchar *id = NULL;
-		if ((id = (gchar *) ident_id(sock, 60))) {
-			ident = g_strdup(id);
-		}
-		logwrite(LOG_NOTICE, "connect from host %s, port %hd ident=%s\n", rem_host,
-		         ntohs(sock_addr->sin_port), ident ? ident : "(unknown)");
-	}
-#else
 	logwrite(LOG_NOTICE, "connect from host %s, port %hd\n", rem_host, ntohs(sock_addr->sin_port));
-#endif
 
 	/* start child for connection: */
 	signal(SIGCHLD, sigchld_handler);
@@ -84,10 +73,6 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 	} else if (pid < 0) {
 		logwrite(LOG_WARNING, "could not fork for incoming smtp connection: %s\n", strerror(errno));
 	}
-#ifdef ENABLE_IDENT
-	if (ident != NULL)
-		g_free(ident);
-#endif
 
 	close(sock);
 	close(dup_sock);

@@ -10,8 +10,6 @@
 
 #undef ENABLE_AUTH
 
-#undef ENABLE_IDENT
-
 #undef CONF_DIR
 
 #undef DATA_DIR

@@ -142,21 +142,6 @@ if test "x$need_md5" = 'xyes'; then
 fi
 AC_SUBST(MD5_LIBS)
 
-dnl ident support (default is to not use it)
-IDENT_LIBS=''
-AC_ARG_ENABLE(ident,
-	[  --enable-ident          enable ident (RFC 1413) support],
-	if test "x$enable_ident" != 'xno'; then
-		ident_enabled='yes'
-	fi,
-	)
-AC_SUBST(has_ident)
-if test "x$ident_enabled" = xyes; then
-	AC_DEFINE(ENABLE_IDENT, 1, [If ident is enabled])
-	AC_CHECK_LIB(ident, ident_id, IDENT_LIBS='-lident', IDENT_LIBS='libident/libident.a')
-fi
-AC_SUBST(IDENT_LIBS)
-
 dnl liblockfile
 AC_ARG_WITH(liblockfile,
 	[  --with-liblockfile      use liblock (for Debian)],
@@ -226,6 +211,5 @@ AC_OUTPUT(Makefile \
 	src/Makefile \
 	src/base64/Makefile \
 	src/md5/Makefile \
-	src/libident/Makefile \
 	man/Makefile
 	)

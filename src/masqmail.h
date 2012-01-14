@@ -41,10 +41,6 @@
 
 #include <glib.h>
 
-#ifdef ENABLE_IDENT
-#include "libident/ident.h"
-#endif
-
 #include "lookup.h"
 
 typedef struct _interface {
@@ -151,8 +147,6 @@ typedef struct _masqmail_conf {
 
 	gboolean defer_all;
 	gboolean do_relay;
-
-	GList *ident_trusted_nets;
 
 	gboolean do_queue;
 
