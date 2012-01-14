@@ -16,9 +16,9 @@ Set up
 
 Follow the description in INSTALL.
 
-A common configure call would be:
+Most times it's simply:
 
-    ./configure --enable-ident
+    ./configure
 
 
 Configuration

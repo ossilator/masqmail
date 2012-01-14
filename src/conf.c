@@ -249,50 +249,6 @@ parse_interface(gchar *line, gint def_port)
 	return iface;
 }
 
-#ifdef ENABLE_IDENT  /* so far used for that only */
-static struct in_addr*
-parse_network(gchar *line, gint def_port)
-{
-	gchar buf[256];
-	gchar *p, *q;
-	struct in_addr addr, mask_addr, net_addr, *p_net_addr;
-	guint n;
-
-	DEBUG(9) fprintf(stderr, "parse_network: %s\n", line);
-
-	p = line;
-	q = buf;
-	while (*p && (*p != '/') && (q < buf + 255))
-		*(q++) = *(p++);
-	*q = '\0';
-
-	if ((addr.s_addr = inet_addr(buf)) == INADDR_NONE) {
-		fprintf(stderr, "'%s' is not a valid address (must be ip)\n", buf);
-		exit(1);
-	}
-
-	if (*p) {
-		guint i;
-		p++;
-		i = atoi(p);
-		if ((i >= 0) && (i <= 32))
-			n = i ? ~((1 << (32 - i)) - 1) : 0;
-		else {
-			fprintf(stderr, "'%d' is not a valid net mask (must be >= 0 and <= 32)\n", i);
-			exit(1);
-		}
-	} else
-		n = 0;
-
-	mask_addr.s_addr = htonl(n);
-	net_addr.s_addr = mask_addr.s_addr & addr.s_addr;
-
-	p_net_addr = g_malloc(sizeof(struct in_addr));
-	p_net_addr->s_addr = net_addr.s_addr;
-	return p_net_addr;
-}
-#endif
-
 static gboolean
 eat_comments(FILE *in)
 {
@@ -544,20 +500,6 @@ read_conf(gchar *filename)
 				g_free(node->data);
 			}
 			g_list_free(tmp_list);
-		} else if (strcmp(lval, "ident_trusted_nets") == 0) {
-#ifdef ENABLE_IDENT
-			GList *node;
-			GList *tmp_list = parse_list(rval, FALSE);
-
-			conf.ident_trusted_nets = NULL;
-			foreach(tmp_list, node) {
-				conf.ident_trusted_nets = g_list_append(conf.ident_trusted_nets, parse_network((gchar *) (node->data), 25));
-				g_free(node->data);
-			}
-			g_list_free(tmp_list);
-#else
-			logwrite(LOG_WARNING, "%s ignored: not compiled with ident support\n", lval);
-#endif
 		} else if (strncmp(lval, "query_routes.", 13) == 0) {
 			GList *file_list = parse_list(rval, FALSE);
 			table_pair *pair = create_pair(lval+13, file_list);

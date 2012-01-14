@@ -77,26 +77,6 @@ sigterm_handler(int sig)
 	raise(sig);
 }
 
-#ifdef ENABLE_IDENT  /* so far used for that only */
-static gboolean
-is_in_netlist(gchar *host, GList *netlist)
-{
-	guint hostip = inet_addr(host);
-	struct in_addr addr;
-
-	addr.s_addr = hostip;
-	if (addr.s_addr != INADDR_NONE) {
-		GList *node;
-		foreach(netlist, node) {
-			struct in_addr *net = (struct in_addr *) (node->data);
-			if ((addr.s_addr & net->s_addr) == net->s_addr)
-				return TRUE;
-		}
-	}
-	return FALSE;
-}
-#endif
-
 /*
 **  argv: the original argv
 **  argp: number of arg (may get modified!)
@@ -361,12 +341,8 @@ manipulate_queue(char *cmd, char *id[])
 			continue;
 		}
 
-		if ( (msg->received_host || (msg->received_prot != PROT_LOCAL))
-#ifdef ENABLE_IDENT
-		    && !is_in_netlist(msg->received_host, conf.ident_trusted_nets)
-#endif
-		) {
-			fprintf(stderr, "message %s was not received locally or from a trusted network\n", *id);
+		if (msg->received_host || (msg->received_prot != PROT_LOCAL)) {
+			fprintf(stderr, "message %s was not received locally\n", *id);
 			continue;
 		}
 
@@ -407,7 +383,6 @@ mode_version(void)
 {
 	gchar *with_resolver = "";
 	gchar *with_auth = "";
-	gchar *with_ident = "";
 
 #ifdef ENABLE_RESOLVER
 	with_resolver = " +resolver";
@@ -415,12 +390,8 @@ mode_version(void)
 #ifdef ENABLE_AUTH
 	with_auth = " +auth";
 #endif
-#ifdef ENABLE_IDENT
-	with_ident = " +ident";
-#endif
 
-	printf("%s %s%s%s%s\n", PACKAGE, VERSION, with_resolver, with_auth,
-			with_ident);
+	printf("%s %s%s%s\n", PACKAGE, VERSION, with_resolver, with_auth);
 }
 
 void

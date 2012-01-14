@@ -16,9 +16,6 @@ by markus schnalke (ISC License)
 src/md5/md5.*
 by Solar Designer (in the Public Domain)
 
-src/libident/*
-by Peter Eriksson (in the Public Domain)
-
 admin/rmail
 by luciano l. mannucci and Wietse Venema (no license applies)
 

@@ -335,8 +335,7 @@ This is not necessarily identical with the Message ID as given in the Message ID
 
 received_host - the host the mail was received from
 
-ident - the ident, this is either the ident delivered by the ident protocol
-or the user id of the sender if the message was received locally.
+ident - the user id of the sender if the message was received locally.
 
 return_path_local - the local part of the return path (sender).
 
@@ -412,14 +411,6 @@ To query a masqdialer server
 (i.e. asking it whether a connection exists and what its name is)
 use:
 \fI/usr/bin/mservdetect localhost 224\fP
-
-
-.TP
-\fBident_trusted_nets = \fIlist\fR
-
-\fIlist\fR is a list of networks of the form a.b.c.d/e (e.g. 192.168.1.0/24),
-from which the ident given by the ident protocol will be trusted,
-so a user can delete his mail from the queue if the ident is identical to his login name.
 
 .TP
 \fBerrmsg_file = \fIfile\fR
