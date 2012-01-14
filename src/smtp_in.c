@@ -162,7 +162,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
 	message *msg = NULL;
 	smtp_connection *psc;
 	int len;
-	unsigned long size, msize;
+	unsigned long msize;
 
 	DEBUG(5) debugf("smtp_in entered, remote_host = %s\n", remote_host);
 

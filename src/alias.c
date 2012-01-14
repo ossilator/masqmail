@@ -115,7 +115,6 @@ expand_one(GList *alias_table, address *addr)
 	GList *alias_list = NULL;
 	GList *alias_node;
 	gchar *val;
-	address *alias_addr;
 
 	/* expand the local alias */
 	DEBUG(6) debugf("alias: '%s' is local and will get expanded\n", addr->local_part);
@@ -142,7 +141,6 @@ expand_one(GList *alias_table, address *addr)
 	foreach(val_list, val_node) {
 		gchar *val = (gchar *) (val_node->data);
 		address *alias_addr;
-		address *addr_parent = NULL;
 	
 		DEBUG(6) debugf("alias: processing '%s'\n", val);
 

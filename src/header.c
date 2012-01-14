@@ -169,7 +169,6 @@ header_fold(header *hdr, unsigned int maxlen)
 	valueoffset = hdr->value - hdr->header;
 
 	while (strlen(src) > maxlen) {
-		int i, l;
 		char *pp;
 
 		for (pp=src+maxlen; pp>src; pp--) {
