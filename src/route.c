@@ -204,7 +204,7 @@ split_rcpts(GList *rcpt_list, GList *patterns, GList **rl_local,
 		GList **rl_matching, GList **rl_others)
 {
 	GList *rcpt_node;
-	GList *host_node = NULL;
+	GList *pat_node = NULL;
 	address *rcpt = NULL;
 
 	if (rcpt_list == NULL)
@@ -212,22 +212,23 @@ split_rcpts(GList *rcpt_list, GList *patterns, GList **rl_local,
 
 	foreach(rcpt_list, rcpt_node) {
 		rcpt = (address *) (rcpt_node->data);
-		host_node = NULL;
+		pat_node = NULL;
 
 		if (addr_is_local(rcpt)) {
 			if (rl_local)
 				*rl_local = g_list_append(*rl_local, rcpt);
 		} else {
 			/*
-			**  if patterns is NULL, host_node will be NULL,
+			**  if patterns is NULL, pat_node will be NULL,
 			**  hence all non-locals are put to others
 			*/
-			foreach(patterns, host_node) {
-				gchar *host = (gchar *) (host_node->data);
-				if (fnmatch(host, rcpt->domain, FNM_CASEFOLD) == 0)
+			foreach(patterns, pat_node) {
+				address *pat = (address *) (pat_node->data);
+				if (fnmatch(pat->domain, rcpt->domain, FNM_CASEFOLD)==0 && fnmatch(pat->local_part, rcpt->local_part, 0)==0) {  /* TODO: match local_part caseless? */
 					break;
+				}
 			}
-			if (host_node) {
+			if (pat_node) {
 				if (rl_matching)
 					*rl_matching = g_list_append(*rl_matching, rcpt);
 			} else {
