@@ -423,7 +423,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 				msg_out *msgout = (msg_out *) (msgout_node->data);
 				smtp_out_mark_rcpts(psb, msgout->rcpt_list);
 
-				if (delivery_failures(msgout->msg, msgout->rcpt_list, "while connected with %s, the server replied\n\t%s", host, psb->buffer)) {
+				if (delivery_failures(msgout->msg, msgout->rcpt_list, "while connected with %s, the server replied\n\t%s", (route->wrapper) ? "<wrapper>" : host, psb->buffer)) {
 					deliver_finish(msgout);
 				}
 			}
@@ -450,7 +450,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 
 		smtp_out_msg(psb, msg, msgout->return_path, msgout->rcpt_list, msgout->hdr_list);
 
-		ok_fail = delivery_failures(msg, msgout->rcpt_list, "while connected with %s, the server replied\n\t%s", host, psb->buffer);
+		ok_fail = delivery_failures(msg, msgout->rcpt_list, "while connected with %s, the server replied\n\t%s", (route->wrapper) ? "<wrapper>" : host, psb->buffer);
 
 		if ((psb->error == smtp_eof) || (psb->error == smtp_timeout)) {
 			/* connection lost */
@@ -583,6 +583,7 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 
 		/* filter by allowed envelope sender */
 		if (!route_sender_is_allowed(route, msgout->msg->return_path)) {
+			DEBUG(6) debugf("sender `%s' is not allowed for this route\n", msgout->msg->return_path);
 			destroy_msg_out(msgout_cloned);
 			continue;
 		}
