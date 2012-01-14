@@ -25,7 +25,6 @@
 #include <ctype.h>
 
 #include "readsock.h"
-/*#include "masqmail.h"*/
 
 jmp_buf jmp_timeout;
 
@@ -150,8 +149,13 @@ read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout,
 		_read_chug(in);
 	}
 
-	if (!*pbuf)
-		*pbuf = (char *) g_malloc(size);
+	if (!*pbuf) {
+		*pbuf = (char *) malloc(size);
+		if (!*pbuf) {
+			fprintf(stderr, "Out of memory.\n");
+			exit(1);
+		}
+	}
 	buf = *pbuf;
 
 	while (1) {

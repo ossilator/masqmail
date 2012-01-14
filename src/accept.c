@@ -42,19 +42,6 @@ string_base62(gchar *res, guint value, gchar len)
 	return res;
 }
 
-static gint
-_g_list_addr_isequal(gconstpointer a, gconstpointer b)
-{
-	address *addr1 = (address *) a;
-	address *addr2 = (address *) b;
-	int ret;
-
-	if ((ret = strcasecmp(addr1->domain, addr2->domain)) == 0) {
-		return strcmp(addr1->local_part, addr2->local_part);
-	}
-	return ret;
-}
-
 /*
 **  accept message from anywhere.
 **  A message from local is indicated by msg->recieved_host == NULL
