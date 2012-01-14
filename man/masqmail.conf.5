@@ -122,6 +122,8 @@ Default: none; \fBhost_name\fP MUST be set in the config file
 \fBlocal_hosts = \fIlist\fR
 
 A semicolon `;' separated list of hostnames which are considered local.
+Can contain glob patterns, like
+`*example.org' or `mail?.*mydomain.net'.
 Normally you should set it to "localhost;foo;foo.bar.com" if your host has the
 fully qualified domain name `foo.bar.com'.
 
