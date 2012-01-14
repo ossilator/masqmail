@@ -261,7 +261,7 @@ msg_rcptlist_local(GList *rcpt_list, GList **p_local_list,
 
 		/* search for local host list: */
 		foreach(conf.local_hosts, dom_node) {
-			if (strcasecmp(dom_node->data, rcpt->domain) == 0) {
+			if (fnmatch(dom_node->data, rcpt->domain, FNM_CASEFOLD)==0) {
 				*p_local_list = g_list_append(*p_local_list, rcpt);
 				DEBUG(5) debugf("<%s@%s> is local\n", rcpt->local_part, rcpt->domain);
 				break;
