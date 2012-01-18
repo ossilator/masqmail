@@ -7,6 +7,30 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
+0.3.4  Wed, 18 Jan 2012 09:21:54 +0100
+	* Reworked the route concept. Better names: ``online_routes'' is now
+	  known as ``query_routes'' and the ``local_net_route'' in now named
+	  ``permanent_routes''. Removed the idea of the localnet because it
+	  is only part of the more general concept: permanent routes. Removed
+	  `local_nets'; they are now represented by allowed_recipients in a
+	  permanent route. (See: examples/localnet.route) Now, there is no
+	  more abiguity between `local' and `local net'. Run
+	  admin/config-transition on your config to learn how to update it.
+	* Switched the default group for masqmail from `trusted' to `mail'.
+	* Fixed a problem with psb->remote_host, introduced in version 0.3.2
+	  (changeset 412385b57dc4).
+	* Fixed a bug in matching of allowed recipients. Thanks to Juergen
+	  Daubert for finding and reporting the issue.
+	* Enabled auth support per default.
+	* Removed support for openssl linking. It had been rarely used and
+	  could have caused legal problems. We don't miss functionality here,
+	  because we already have builtin MD5 support.
+	* Removed ident support. This had been discussed on the mailing list
+	  in Oct 2011.
+	* `local_hosts' now understands glob patterns like `*example.org'.
+	* Lots of refactoring and removal of unused code.
+	* Smaller cleanups of the man pages.
+
 0.3.3  Wed, 31 Aug 2011 08:38:13 +0200
 	* Fixed a possible security problem, reported by John Lightsey. See
 	  Debian bug #638002. The return value of seteuid() calls was handled
