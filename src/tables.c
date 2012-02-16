@@ -19,8 +19,8 @@
 */
 
 #include <fnmatch.h>
-
 #include "masqmail.h"
+
 
 table_pair*
 create_pair(gchar *key, gpointer value)
@@ -55,8 +55,9 @@ parse_table_pair(gchar *line, char delim)
 
 	p = line;
 	q = buf;
-	while ((*p != '\0') && (*p != delim) && q < buf + 255)
+	while (*p && (*p != delim) && q < buf + 255) {
 		*(q++) = *(p++);
+	}
 	*q = '\0';
 
 	pair = g_malloc(sizeof(table_pair));
@@ -64,24 +65,26 @@ parse_table_pair(gchar *line, char delim)
 
 	if (*p) {
 		p++;
-		/*    while(isspace(*p)) p++; */
+		/* while(isspace(*p)) p++; */
 		pair->value = (gpointer *) (g_strdup(g_strstrip(p)));
-	} else
+	} else {
 		pair->value = (gpointer *) g_strdup("");
+	}
 
 	return pair;
 }
 
 gpointer*
-table_find_func(GList *table_list, gchar *key, int (*cmp_func) (const char *,
-		const char *))
+table_find_func(GList *table_list, gchar *key,
+		int (*cmp_func) (const char *, const char *))
 {
 	GList *node;
 
 	foreach(table_list, node) {
 		table_pair *pair = (table_pair *) (node->data);
-		if (cmp_func(pair->key, key) == 0)
+		if (cmp_func(pair->key, key) == 0) {
 			return pair->value;
+		}
 	}
 	return NULL;
 }
@@ -115,27 +118,30 @@ table_read(gchar *fname, gchar delim)
 {
 	GList *list = NULL;
 	FILE *fptr;
+	gchar buf[256];
 
-	if ((fptr = fopen(fname, "rt"))) {
-		gchar buf[256];
-
-		while (fgets(buf, 255, fptr)) {
-			if (buf[0] && (buf[0] != '#') && (buf[0] != '\n')) {
-				table_pair *pair;
-				g_strchomp(buf);
-				pair = parse_table_pair(buf, delim);
-				list = g_list_append(list, pair);
-			}
-		}
-		fclose(fptr);
-		if (!list)
-			logwrite(LOG_NOTICE, "table file %s contained no entries\n", fname);
-		return list;
+	if (!(fptr = fopen(fname, "rt"))) {
+		logwrite(LOG_ALERT, "could not open table file %s: %s. Thus "
+				"no aliasing will be done\n",
+				fname, strerror(errno));
+		return NULL;
 	}
-	logwrite(LOG_ALERT, "could not open table file %s: %s."
-	                    " Thus no aliasing will be done\n", fname, strerror(errno));
 
-	return NULL;
+	while (fgets(buf, sizeof buf, fptr)) {
+		if (!*buf || *buf == '#' || *buf == '\n') {
+			continue;
+		}
+		table_pair *pair;
+		g_strchomp(buf);
+		pair = parse_table_pair(buf, delim);
+		list = g_list_append(list, pair);
+	}
+	fclose(fptr);
+	if (!list) {
+		logwrite(LOG_NOTICE, "table file %s contained no entries\n",
+				fname);
+	}
+	return list;
 }
 
 void
