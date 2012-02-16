@@ -39,10 +39,14 @@ sigchld_handler(int sig)
 
 	pid = waitpid(0, &status, 0);
 	if (pid > 0) {
-		if (WEXITSTATUS(status) != 0)
-			logwrite(LOG_WARNING, "process %d exited with %d\n", pid, WEXITSTATUS(status));
-		if (WIFSIGNALED(status))
-			logwrite(LOG_WARNING, "process with pid %d got signal: %d\n", pid, WTERMSIG(status));
+		if (WEXITSTATUS(status) != 0) {
+			logwrite(LOG_WARNING, "process %d exited with %d\n",
+					pid, WEXITSTATUS(status));
+		}
+		if (WIFSIGNALED(status)) {
+			logwrite(LOG_WARNING, "process %d got signal: %d\n",
+					pid, WTERMSIG(status));
+		}
 	}
 	signal(SIGCHLD, sigchld_handler);
 }
@@ -63,16 +67,16 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 	/* start child for connection: */
 	signal(SIGCHLD, sigchld_handler);
 	pid = fork();
-	if (pid == 0) {
+	if (pid < 0) {
+		logwrite(LOG_WARNING, "could not fork for incoming smtp "
+				"connection: %s\n", strerror(errno));
+	} else if (pid == 0) {
+		/* child */
 		close(listen_sock);
 		out = fdopen(sock, "w");
 		in = fdopen(dup_sock, "r");
-
 		smtp_in(in, out, rem_host, ident);
-
 		_exit(0);
-	} else if (pid < 0) {
-		logwrite(LOG_WARNING, "could not fork for incoming smtp connection: %s\n", strerror(errno));
 	}
 
 	close(sock);
@@ -104,10 +108,12 @@ listen_port(GList *iface_list, gint qival, char *argv[])
 			continue;
 		}
 		if (listen(sock, 1) < 0) {
-			logwrite(LOG_ALERT, "listen: (terminating): %s\n", strerror(errno));
+			logwrite(LOG_ALERT, "listen: (terminating): %s\n",
+					strerror(errno));
 			exit(1);
 		}
-		logwrite(LOG_NOTICE, "listening on interface %s:%d\n", iface->address, iface->port);
+		logwrite(LOG_NOTICE, "listening on interface %s:%d\n",
+				iface->address, iface->port);
 		DEBUG(5) debugf("sock = %d\n", sock);
 		FD_SET(sock, &active_fd_set);
 	}
@@ -136,7 +142,8 @@ listen_port(GList *iface_list, gint qival, char *argv[])
 		*/
 		if (qival > 0) {
 			time(&time_now);
-			if (sel_ret == 0) {  /* we are either just starting or did a queue run */
+			if (!sel_ret) {
+				/* either just starting or after a queue run */
 				tm.tv_sec = qival;
 				tm.tv_usec = 0;
 				time_before = time_now;
@@ -144,9 +151,10 @@ listen_port(GList *iface_list, gint qival, char *argv[])
 				tm.tv_sec = qival - (time_now - time_before);
 				tm.tv_usec = 0;
 
-				/* race condition, very unlikely (but possible): */
-				if (tm.tv_sec < 0)
+				/* race condition, unlikely (but possible): */
+				if (tm.tv_sec < 0) {
 					tm.tv_sec = 0;
+				}
 			}
 		}
 		/*
@@ -155,34 +163,41 @@ listen_port(GList *iface_list, gint qival, char *argv[])
 		**  (if qival > 0)
 		*/
 		read_fd_set = active_fd_set;
-		if ((sel_ret = select(FD_SETSIZE, &read_fd_set, NULL, NULL, qival > 0 ? &tm : NULL)) < 0) {
+		if ((sel_ret = select(FD_SETSIZE, &read_fd_set, NULL, NULL,
+				qival > 0 ? &tm : NULL)) < 0) {
 			if (errno != EINTR) {
-				logwrite(LOG_ALERT, "select: (terminating): %s\n", strerror(errno));
+				logwrite(LOG_ALERT, "select: (terminating): "
+						"%s\n", strerror(errno));
 				exit(1);
-			} else {
-				if (sighup_seen) {
-					logwrite(LOG_NOTICE, "HUP signal received. Restarting daemon\n");
+			} else if (sighup_seen) {
+				logwrite(LOG_NOTICE, "HUP signal received. "
+						"Restarting daemon\n");
 
-					for (i = 0; i < FD_SETSIZE; i++)
-						if (FD_ISSET(i, &active_fd_set))
-							close(i);
+				for (i = 0; i < FD_SETSIZE; i++)
+					if (FD_ISSET(i, &active_fd_set))
+						close(i);
 
-					execv(argv[0], &(argv[0]));
-					logwrite(LOG_ALERT, "restarting failed: %s\n", strerror(errno));
-					exit(1);
-				}
+				execv(argv[0], &(argv[0]));
+				logwrite(LOG_ALERT, "restarting failed: %s\n",
+						strerror(errno));
+				exit(1);
 			}
 		} else if (sel_ret > 0) {
 			for (i = 0; i < FD_SETSIZE; i++) {
-				if (FD_ISSET(i, &read_fd_set)) {
-					int sock = i;
-					int new;
-					size = sizeof(clientname);
-					new = accept(sock, (struct sockaddr *) &clientname, &size);
-					if (new < 0) {
-						logwrite(LOG_ALERT, "accept: (ignoring): %s\n", strerror(errno));
-					} else
-						accept_connect(sock, new, &clientname);
+				int sock = i;
+				int new;
+
+				if (!FD_ISSET(i, &read_fd_set)) {
+					continue;
+				}
+				size = sizeof(clientname);
+				new = accept(sock, (struct sockaddr *)
+						&clientname, &size);
+				if (new < 0) {
+					logwrite(LOG_ALERT, "accept: (ignoring): %s\n", strerror(errno));
+				} else {
+					accept_connect(sock, new,
+							&clientname);
 				}
 			}
 		} else {
@@ -197,7 +212,8 @@ listen_port(GList *iface_list, gint qival, char *argv[])
 
 				_exit(0);
 			} else if (pid < 0) {
-				logwrite(LOG_ALERT, "could not fork for queue run");
+				logwrite(LOG_ALERT, "could not fork for "
+						"queue run");
 			}
 		}
 	}
