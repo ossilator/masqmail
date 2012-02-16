@@ -57,7 +57,8 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 	gchar *ident = NULL;
 
 	rem_host = g_strdup(inet_ntoa(sock_addr->sin_addr));
-	logwrite(LOG_NOTICE, "connect from host %s, port %hd\n", rem_host, ntohs(sock_addr->sin_port));
+	logwrite(LOG_NOTICE, "connect from host %s, port %hu\n",
+			rem_host, ntohs(sock_addr->sin_port));
 
 	/* start child for connection: */
 	signal(SIGCHLD, sigchld_handler);
