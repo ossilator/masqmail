@@ -25,7 +25,7 @@ create_address(gchar *path, gboolean is_rfc821)
 	address *addr;
 	addr = _create_address(path, NULL, is_rfc821);
 
-	if (addr != NULL) {
+	if (addr) {
 		addr_unmark_delivered(addr);
 	}
 	return addr;
@@ -36,8 +36,8 @@ create_address_qualified(gchar *path, gboolean is_rfc821, gchar *domain)
 {
 	address *addr = create_address(path, is_rfc821);
 
-	if (addr != NULL && addr->domain == NULL) {
-			addr->domain = g_strdup(domain);
+	if (addr && !addr->domain) {
+		addr->domain = g_strdup(domain);
 	}
 	return addr;
 }
@@ -52,7 +52,6 @@ create_address_pipe(gchar *path)
 		memset(addr, 0, sizeof(address));
 		addr->address = g_strchomp(g_strdup(path));
 		addr->local_part = g_strdup(addr->address);
-
 		addr->domain = g_strdup("localhost");  /* quick hack */
 	}
 	return addr;
@@ -62,11 +61,9 @@ void
 destroy_address(address *addr)
 {
 	DEBUG(6) debugf("destroy_address entered\n");
-
 	g_free(addr->address);
 	g_free(addr->local_part);
 	g_free(addr->domain);
-
 	g_free(addr);
 }
 
@@ -78,23 +75,13 @@ copy_modify_address(const address *orig, gchar *l_part, gchar *dom)
 	if (!orig) {
 		return NULL;
 	}
-
-	if ((addr = g_malloc(sizeof(address))) == NULL) {
+	if (!(addr = g_malloc(sizeof(address)))) {
 		return NULL;
 	}
-
 	addr->address = g_strdup(orig->address);
-
-	if (l_part == NULL)
-		addr->local_part = g_strdup(orig->local_part);
-	else
-		addr->local_part = g_strdup(l_part);
-
-	if (dom == NULL)
-		addr->domain = g_strdup(orig->domain);
-	else
-		addr->domain = g_strdup(dom);
-
+	addr->local_part = l_part ? g_strdup(l_part) :
+			g_strdup(orig->local_part);
+	addr->domain = dom ? g_strdup(dom) : g_strdup(orig->domain);
 	addr->flags = 0;
 	addr->children = NULL;
 	addr->parent = NULL;
@@ -102,22 +89,25 @@ copy_modify_address(const address *orig, gchar *l_part, gchar *dom)
 }
 
 gboolean
-addr_isequal(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*))
+addr_isequal(address *addr1, address *addr2,
+		int (*cmpfunc) (const char*, const char*))
 {
-	return (cmpfunc(addr1->local_part, addr2->local_part) == 0)
-	       && (strcasecmp(addr1->domain, addr2->domain) == 0);
+	return (cmpfunc(addr1->local_part, addr2->local_part)==0) &&
+			(strcasecmp(addr1->domain, addr2->domain)==0);
 }
 
 /* searches in ancestors of addr1 */
 gboolean
-addr_isequal_parent(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*))
+addr_isequal_parent(address *addr1, address *addr2,
+		int (*cmpfunc) (const char*, const char*))
 {
 	address *addr;
 
-	for (addr = addr1; addr; addr = addr->parent)
-		if (addr_isequal(addr, addr2, cmpfunc))
+	for (addr = addr1; addr; addr = addr->parent) {
+		if (addr_isequal(addr, addr2, cmpfunc)) {
 			return TRUE;
-
+		}
+	}
 	return FALSE;
 }
 
@@ -128,13 +118,14 @@ addr_is_delivered_children(address *addr)
 {
 	GList *addr_node;
 
-	if (addr->children == NULL)
+	if (!addr->children) {
 		return addr_is_delivered(addr);
-
+	}
 	foreach(addr->children, addr_node) {
 		address *addr = (address *) (addr_node->data);
-		if (!addr_is_delivered_children(addr))
+		if (!addr_is_delivered_children(addr)) {
 			return FALSE;
+		}
 	}
 	return TRUE;
 }
@@ -146,13 +137,14 @@ addr_is_finished_children(address *addr)
 {
 	GList *addr_node;
 
-	if (addr->children == NULL)
+	if (!addr->children) {
 		return (addr_is_failed(addr) || addr_is_delivered(addr));
-
+	}
 	foreach(addr->children, addr_node) {
 		address *addr = (address *) (addr_node->data);
-		if (!addr_is_finished_children(addr))
+		if (!addr_is_finished_children(addr)) {
 			return FALSE;
+		}
 	}
 	return TRUE;
 }
@@ -161,8 +153,9 @@ addr_is_finished_children(address *addr)
 address*
 addr_find_ancestor(address *addr)
 {
-	while (addr->parent)
+	while (addr->parent) {
 		addr = addr->parent;
+	}
 	return addr;
 }
 
@@ -171,18 +164,20 @@ addr_string(address *addr)
 {
 	static gchar *buffer = NULL;
 
-	if (addr == NULL) {
+	if (!addr) {
 		g_free(buffer);
 		buffer = NULL;
 		return NULL;
 	}
-	if (buffer)
+	if (buffer) {
 		g_free(buffer);
-
-	if (addr->local_part[0] == '\0') {
+	}
+	if (!*addr->local_part) {
 		buffer = g_strdup("<>");
 	} else {
-		buffer = g_strdup_printf("<%s@%s>", addr->local_part ? addr->local_part : "", addr->domain ? addr->domain : "");
+		buffer = g_strdup_printf("<%s@%s>",
+				addr->local_part ? addr->local_part : "",
+				addr->domain ? addr->domain : "");
 	}
 	return buffer;
 }
