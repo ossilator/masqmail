@@ -39,9 +39,11 @@ child(const char *command)
 		pid_t pid;
 
 		pid = fork();
-		if (pid == 0) {
-			int i, max_fd = sysconf(_SC_OPEN_MAX);
+		if (pid == -1) {
+			return -1;
+		} else if (pid == 0) {
 			/* child */
+			int i, max_fd = sysconf(_SC_OPEN_MAX);
 			dup2(pipe[0], 0);
 			dup2(pipe[0], 1);
 			dup2(pipe[0], 2);
@@ -52,14 +54,15 @@ child(const char *command)
 				close(i);
 
 			{
-				char *argv[] = { "/bin/sh", "-c", (char *) command, NULL };
+				char *argv[] = { "/bin/sh", "-c",
+						(char *) command, NULL };
 				execve(*argv, argv, NULL);
 			}
-			logwrite(LOG_ALERT, "execve failed: %s\n", strerror(errno));
+			logwrite(LOG_ALERT, "execve failed: %s\n",
+					strerror(errno));
 			_exit(1);
-		} else if (pid == -1) {
-			return -1;
 		} else {
+			/* parent */
 			close(pipe[0]);
 			return pipe[1];
 		}
