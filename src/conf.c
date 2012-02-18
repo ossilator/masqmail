@@ -256,22 +256,6 @@ eat_comments(FILE *in)
 	return FALSE;
 }
 
-/*
-** after parsing, eat trailing characters until and including the Newline
-*/
-static gboolean
-eat_line_trailing(FILE *in)
-{
-	gint c;
-
-	while ((c = fgetc(in)) != EOF) {
-		if (c == '\n') {
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
 static gboolean
 eat_spaces(FILE *in)
 {
@@ -332,38 +316,48 @@ read_rval(FILE *in, gchar *buf, gint size)
 	}
 
 	c = fgetc(in);
-	if (c != '\"') {
-		while ((isalnum(c) || c == '_' || c == '-' || c == '.'
-		        || c == '/' || c == '@' || c == ';' || c == ':')
-		       && (ptr < buf + size - 1)
-		       && (c != EOF)) {
-			*ptr = c;
-			ptr++;
-			c = fgetc(in);
+	if (c != '"') {
+		/* unquoted rval */
+		ungetc(c, in);
+		while ((c = fgetc(in)) != EOF) {
+			if (ptr >= buf+size-1) {
+				/* rval too long */
+				break;
+			}
+			if (!isalnum(c) && c != '_' && c != '-' &&
+					c != '.' && c != '/' && c != '@' &&
+					c != ';' && c != ':') {
+				break;
+			}
+			*ptr++ = c;
 		}
 		*ptr = '\0';
 		ungetc(c, in);
 	} else {
+		/* quoted rval */
 		gboolean escape = FALSE;
-		c = fgetc(in);
-		while (((c != '\"') || escape) && (ptr < buf + size - 1)) {
-			if (c != '\n') {  /* ignore line breaks */
-				if ((c == '\\') && (!escape)) {
-					escape = TRUE;
-				} else {
-					*ptr = c;
-					ptr++;
-					escape = FALSE;
-				}
+		while ((c = fgetc(in)) != EOF) {
+			if (ptr >= buf+size-1) {
+				/* rval too long */
+				break;
 			}
-			c = fgetc(in);
+			if (!escape && c == '"') {
+				break;
+			}
+			if (!escape && c == '\\') {
+				escape = TRUE;
+				continue;
+			}
+			*ptr++ = c;
+			escape = FALSE;
 		}
 		*ptr = '\0';
 	}
-
-	eat_line_trailing(in);
-
 	DEBUG(9) fprintf(stderr, "rval = %s\n", buf);
+	/* eat trailing of line */
+	while ((c = fgetc(in)) != EOF && c != '\n') {
+		continue;
+	}
 
 	return TRUE;
 }
