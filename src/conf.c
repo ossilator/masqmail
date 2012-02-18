@@ -376,30 +376,31 @@ read_statement(FILE *in, gchar *lval, gint lsize, gchar *rval, gint rsize)
 	DEBUG(9) fprintf(stderr, "read_statement()\n");
 
 	/* eat comments and empty lines: */
-	if (!eat_comments(in))
+	if (!eat_comments(in)) {
 		return FALSE;
-
+	}
 	if (!read_lval(in, lval, lsize)) {
 		return FALSE;
 	}
 
 	DEBUG(9) fprintf(stderr, "  lval = %s\n", lval);
-	if ((c = fgetc(in) == '=')) {
-		if (read_rval(in, rval, rsize)) {
-			DEBUG(9) fprintf(stderr, "  rval = %s\n", rval);
-			return TRUE;
-		}
-	} else {
-		DEBUG(9) fprintf(stderr,"  '=' expected after %s, char was '%c'\n", lval, c);
-		fprintf(stderr, "'=' expected after %s, char was '%c'\n", lval, c);
+	if ((c = fgetc(in) != '=')) {
+		fprintf(stderr, "'=' expected after %s, char was '%c'\n",
+				lval, c);
 	}
-	return FALSE;
+	if (!read_rval(in, rval, rsize)) {
+		return FALSE;
+	}
+	DEBUG(9) fprintf(stderr, "  rval = %s\n", rval);
+	return TRUE;
 }
 
 gboolean
 read_conf(gchar *filename)
 {
 	FILE *in;
+	gchar lval[256], rval[2048];
+	GList *listen_addrs_tmp = NULL;
 
 	conf.log_max_pri = 7;
 	conf.do_relay = TRUE;
@@ -408,143 +409,146 @@ read_conf(gchar *filename)
 	conf.max_msg_size = 0; /* no limit on msg size */
 	conf.spool_dir = SPOOL_DIR;
 	conf.mail_dir = "/var/mail";
-	conf.listen_addresses = g_list_append(NULL, parse_interface("localhost", 25));
 
-	if ((in = fopen(filename, "r")) == NULL) {
-		logwrite(LOG_ALERT, "could not open config file %s: %s\n", filename, strerror(errno));
+	if (!(in = fopen(filename, "r"))) {
+		logwrite(LOG_ALERT, "could not open config file %s: %s\n",
+				filename, strerror(errno));
 		return FALSE;
 	}
 
-	gchar lval[256], rval[2048];
 	while (read_statement(in, lval, sizeof lval, rval, sizeof rval)) {
 		DEBUG(9) fprintf(stderr,"read_conf(): lval=%s\n", lval);
-		if (strcmp(lval, "debug_level") == 0)
+		if (strcmp(lval, "debug_level")==0) {
 			conf.debug_level = atoi(rval);
-		else if (strcmp(lval, "run_as_user") == 0) {
-			if (!conf.run_as_user)  /* you should not be able to reset that flag */
+		} else if (strcmp(lval, "run_as_user")==0) {
+			if (!conf.run_as_user) {
+				/* you should not be able to reset that flag */
 				conf.run_as_user = parse_boolean(rval);
-		} else if (strcmp(lval, "use_syslog") == 0)
+			}
+		} else if (strcmp(lval, "use_syslog")==0) {
 			conf.use_syslog = parse_boolean(rval);
-		else if (strcmp(lval, "mail_dir") == 0)
+		} else if (strcmp(lval, "mail_dir")==0) {
 			conf.mail_dir = g_strdup(rval);
-		else if (strcmp(lval, "lock_dir") == 0)
+		} else if (strcmp(lval, "lock_dir")==0) {
 			conf.lock_dir = g_strdup(rval);
-		else if (strcmp(lval, "spool_dir") == 0)
+		} else if (strcmp(lval, "spool_dir")==0) {
 			conf.spool_dir = g_strdup(rval);
-		else if (strcmp(lval, "log_dir") == 0)
+		} else if (strcmp(lval, "log_dir")==0) {
 			conf.log_dir = g_strdup(rval);
-		else if (strcmp(lval, "host_name") == 0) {
-			if (rval[0] != '/')
+		} else if (strcmp(lval, "host_name")==0) {
+			if (rval[0] != '/') {
 				conf.host_name = g_strdup(rval);
-			else {
+			} else {
 				char buf[256];
 				FILE *fptr = fopen(rval, "rt");
 				if (!fptr) {
-					logwrite(LOG_ALERT, "could not open %s: %s\n", rval, strerror(errno));
+					logwrite(LOG_ALERT, "could not open "
+							"%s: %s\n", rval,
+							strerror(errno));
 					return FALSE;
 				}
-				fgets(buf, 255, fptr);
-				g_strchomp(buf);
+				fgets(buf, sizeof buf, fptr);
+				g_strstrip(buf);
 				conf.host_name = g_strdup(buf);
 				fclose(fptr);
 			}
-		} else if (strcmp(lval, "local_hosts") == 0)
+		} else if (strcmp(lval, "local_hosts")==0) {
 			conf.local_hosts = parse_list(rval, TRUE);
-		else if (strcmp(lval, "local_addresses") == 0)
+		} else if (strcmp(lval, "local_addresses")==0) {
 			conf.local_addresses = parse_list(rval, TRUE);
-		else if (strcmp(lval, "not_local_addresses") == 0)
+		} else if (strcmp(lval, "not_local_addresses")==0) {
 			conf.not_local_addresses = parse_list(rval, TRUE);
-		else if (strcmp(lval, "do_save_envelope_to") == 0)
+		} else if (strcmp(lval, "do_save_envelope_to")==0) {
 			conf.do_save_envelope_to = parse_boolean(rval);
-		else if (strcmp(lval, "defer_all") == 0)
+		} else if (strcmp(lval, "defer_all")==0) {
 			conf.defer_all = parse_boolean(rval);
-		else if (strcmp(lval, "do_relay") == 0)
+		} else if (strcmp(lval, "do_relay")==0) {
 			conf.do_relay = parse_boolean(rval);
-		else if (strcmp(lval, "alias_file") == 0) {
+		} else if (strcmp(lval, "alias_file")==0) {
 			conf.alias_file = g_strdup(rval);
-		} else if (strcmp(lval, "globalias_file") == 0) {
+		} else if (strcmp(lval, "globalias_file")==0) {
 			conf.globalias_file = g_strdup(rval);
-		} else if (strcmp(lval, "caseless_matching") == 0) {
-			conf.localpartcmp = parse_boolean(rval) ? strcasecmp : strcmp;
-		} else if (strcmp(lval, "mbox_default") == 0) {
+		} else if (strcmp(lval, "caseless_matching")==0) {
+			conf.localpartcmp = parse_boolean(rval) ?
+					strcasecmp : strcmp;
+		} else if (strcmp(lval, "mbox_default")==0) {
 			conf.mbox_default = g_strdup(rval);
-		} else if (strcmp(lval, "mbox_users") == 0) {
+		} else if (strcmp(lval, "mbox_users")==0) {
 			conf.mbox_users = parse_list(rval, TRUE);
-		} else if (strcmp(lval, "mda_users") == 0) {
+		} else if (strcmp(lval, "mda_users")==0) {
 			conf.mda_users = parse_list(rval, TRUE);
-		} else if (strcmp(lval, "mda") == 0) {
+		} else if (strcmp(lval, "mda")==0) {
 			conf.mda = g_strdup(rval);
-		} else if (strcmp(lval, "mda_fromline") == 0) {
+		} else if (strcmp(lval, "mda_fromline")==0) {
 			conf.mda_fromline = parse_boolean(rval);
-		} else if (strcmp(lval, "mda_fromhack") == 0) {
+		} else if (strcmp(lval, "mda_fromhack")==0) {
 			conf.mda_fromhack = parse_boolean(rval);
-		} else if (strcmp(lval, "pipe_fromline") == 0) {
+		} else if (strcmp(lval, "pipe_fromline")==0) {
 			conf.pipe_fromline = parse_boolean(rval);
-		} else if (strcmp(lval, "pipe_fromhack") == 0) {
+		} else if (strcmp(lval, "pipe_fromhack")==0) {
 			conf.pipe_fromhack = parse_boolean(rval);
-		} else if (strcmp(lval, "listen_addresses") == 0) {
-			GList *node;
-			GList *tmp_list = parse_list(rval, TRUE);
-
-			conf.listen_addresses = NULL;
-			foreach(tmp_list, node) {
-				conf.listen_addresses = g_list_append(conf.listen_addresses, parse_interface((gchar *) (node-> data), 25));
-				g_free(node->data);
-			}
-			g_list_free(tmp_list);
-		} else if (strncmp(lval, "query_routes.", 13) == 0) {
+		} else if (strcmp(lval, "listen_addresses")==0) {
+			listen_addrs_tmp = parse_list(rval, TRUE);
+		} else if (strncmp(lval, "query_routes.", 13)==0) {
 			GList *file_list = parse_list(rval, FALSE);
 			table_pair *pair = create_pair(lval+13, file_list);
-			conf.query_routes = g_list_append(conf.query_routes, pair);
-		} else if (strcmp(lval, "permanent_routes") == 0) {
+			conf.query_routes = g_list_append(conf.query_routes,
+					pair);
+		} else if (strcmp(lval, "permanent_routes")==0) {
 			conf.perma_routes = parse_list(rval, FALSE);
-		} else if (strcmp(lval, "online_query") == 0)
+		} else if (strcmp(lval, "online_query")==0) {
 			conf.online_query = g_strdup(rval);
-		else if (strcmp(lval, "do_queue") == 0)
+		} else if (strcmp(lval, "do_queue")==0) {
 			conf.do_queue = parse_boolean(rval);
-		else if (strcmp(lval, "errmsg_file") == 0)
+		} else if (strcmp(lval, "errmsg_file")==0) {
 			conf.errmsg_file = g_strdup(rval);
-		else if (strcmp(lval, "warnmsg_file") == 0)
+		} else if (strcmp(lval, "warnmsg_file")==0) {
 			conf.warnmsg_file = g_strdup(rval);
-		else if (strcmp(lval, "warn_intervals") == 0)
+		} else if (strcmp(lval, "warn_intervals")==0) {
 			conf.warn_intervals = parse_list(rval, TRUE);
-		else if (strcmp(lval, "max_defer_time") == 0) {
+		} else if (strcmp(lval, "max_defer_time")==0) {
 			gint ival = time_interval(rval);
-			if (ival < 0)
-				logwrite(LOG_WARNING, "invalid time interval for 'max_defer_time': %s\n", rval);
-			else
+			if (ival < 0) {
+				logwrite(LOG_WARNING, "invalid time interval "
+						"for 'max_defer_time': %s\n",
+						rval);
+			} else {
 				conf.max_defer_time = ival;
-		} else if (strcmp(lval, "log_user") == 0)
+			}
+		} else if (strcmp(lval, "log_user")==0) {
 			conf.log_user = g_strdup(rval);
-		else if(strcmp(lval, "max_msg_size") == 0) {
+		} else if(strcmp(lval, "max_msg_size")==0) {
 			conf.max_msg_size = atol(rval);
-			DEBUG(9) fprintf(stderr,"rval=%s, conf.max_msg_size=%ld\n",
+			DEBUG(9) fprintf(stderr,
+					"rval=%s, conf.max_msg_size=%ld\n",
 			                 rval, conf.max_msg_size);
+		} else {
+			logwrite(LOG_WARNING, "var '%s' unknown: ignored\n",
+					lval);
 		}
-		else
-			logwrite(LOG_WARNING, "var '%s' not (yet) known, ignored\n", lval);
 	}
 	fclose(in);
 
 	if (!conf.host_name) {
-		logwrite(LOG_ALERT, "`host_name' MUST be set in masqmail.conf. See man page\n");
+		logwrite(LOG_ALERT, "`host_name' MUST be set in "
+				"masqmail.conf. See man page\n");
 		return FALSE;
 	}
-
-	if (conf.errmsg_file == NULL)
+	if (!conf.errmsg_file) {
 		conf.errmsg_file = g_strdup(DATA_DIR "/tpl/failmsg.tpl");
-	if (conf.warnmsg_file == NULL)
+	}
+	if (!conf.warnmsg_file) {
 		conf.warnmsg_file = g_strdup(DATA_DIR "/tpl/warnmsg.tpl");
-
-	if (conf.lock_dir == NULL)
+	}
+	if (!conf.lock_dir) {
 		conf.lock_dir = g_strdup_printf("%s/lock/", conf.spool_dir);
-
-	if (conf.mbox_default == NULL)
+	}
+	if (!conf.mbox_default) {
 		conf.mbox_default = g_strdup("mbox");
-
-	if (conf.warn_intervals == NULL)
+	}
+	if (!conf.warn_intervals) {
 		conf.warn_intervals = parse_list("1h;4h;8h;1d;2d;3d", TRUE);
-
+	}
 	if (!conf.local_hosts) {
 		char *shortname = strdup(conf.host_name);
 		char *p = strchr(shortname, '.');
@@ -558,7 +562,21 @@ read_conf(gchar *filename)
 		free(shortname);
 		free(local_hosts_str);
 	}
+	if (!listen_addrs_tmp) {
+		conf.listen_addresses = g_list_append(NULL,
+				parse_interface("localhost", 25));
+	} else {
+		GList *node;
 
+		foreach(listen_addrs_tmp, node) {
+			conf.listen_addresses =
+					g_list_append(conf.listen_addresses,
+					parse_interface((gchar *) node->data,
+					25));
+			g_free(node->data);
+		}
+		g_list_free(listen_addrs_tmp);
+	}
 
 	return TRUE;
 }
@@ -566,76 +584,73 @@ read_conf(gchar *filename)
 connect_route*
 read_route(gchar *filename, gboolean is_perma)
 {
-	gboolean ok = FALSE;
 	FILE *in;
-
-	connect_route *route = g_malloc(sizeof(connect_route));
-	memset(route, 0, sizeof(connect_route));
+	connect_route *route;
+	gchar lval[256], rval[2048];
 
 	DEBUG(5) debugf("read_route, filename = %s\n", filename);
 
-	route->filename = g_strdup(filename);
-	route->name = route->filename;  /* quick hack */
-
-	route->expand_h_sender_address = TRUE;
-
-	route->is_perma = is_perma;
-
-	route->do_pipelining = TRUE;
-
-	if ((in = fopen(route->filename, "r")) == NULL) {
-		logwrite(LOG_ALERT, "could not open route file %s: %s\n", route->filename, strerror(errno));
-		g_free(route);
+	if (!(in = fopen(filename, "r"))) {
+		logwrite(LOG_ALERT, "could not open route file %s: %s\n",
+				filename, strerror(errno));
 		return NULL;
 	}
 
-	gchar lval[256], rval[2048];
+	route = g_malloc(sizeof(connect_route));
+	memset(route, 0, sizeof(connect_route));
+	route->filename = g_strdup(filename);
+	route->name = route->filename;  /* quick hack */
+	route->expand_h_sender_address = TRUE;
+	route->is_perma = is_perma;
+	route->do_pipelining = TRUE;
+
 	while (read_statement(in, lval, sizeof lval, rval, sizeof rval)) {
-		if (strcmp(lval, "mail_host") == 0)
+		if (strcmp(lval, "mail_host")==0) {
 			route->mail_host = parse_interface(rval, 25);
-		else if (strcmp(lval, "helo_name") == 0)
+		} else if (strcmp(lval, "helo_name")==0) {
 			route->helo_name = g_strdup(rval);
-		else if (strcmp(lval, "wrapper") == 0)
+		} else if (strcmp(lval, "wrapper")==0) {
 			route->wrapper = g_strdup(rval);
-		else if (strcmp(lval, "connect_error_fail") == 0)
+		} else if (strcmp(lval, "connect_error_fail")==0) {
 			route->connect_error_fail = parse_boolean(rval);
-		else if (strcmp(lval, "do_correct_helo") == 0)
+		} else if (strcmp(lval, "do_correct_helo")==0) {
 			route->do_correct_helo = parse_boolean(rval);
-		else if (strcmp(lval, "instant_helo") == 0)
+		} else if (strcmp(lval, "instant_helo")==0) {
 			route->instant_helo = parse_boolean(rval);
-		else if (strcmp(lval, "do_pipelining") == 0)
+		} else if (strcmp(lval, "do_pipelining")==0) {
 			route->do_pipelining = parse_boolean(rval);
 
-		else if (strcmp(lval, "allowed_senders") == 0)
+		} else if (strcmp(lval, "allowed_senders")==0) {
 			route->allowed_senders = parse_address_glob_list(rval);
-		else if (strcmp(lval, "denied_senders") == 0)
+		} else if (strcmp(lval, "denied_senders")==0) {
 			route->denied_senders = parse_address_glob_list(rval);
-		else if (strcmp(lval, "allowed_recipients") == 0)
+		} else if (strcmp(lval, "allowed_recipients")==0) {
 			route->allowed_recipients = parse_address_glob_list(rval);
-		else if (strcmp(lval, "denied_recipients") == 0)
+		} else if (strcmp(lval, "denied_recipients")==0) {
 			route->denied_recipients = parse_address_glob_list(rval);
 
-		else if (strcmp(lval, "set_h_from_domain") == 0)
+		} else if (strcmp(lval, "set_h_from_domain")==0) {
 			route->set_h_from_domain = g_strdup(rval);
-		else if (strcmp(lval, "set_h_reply_to_domain") == 0)
+		} else if (strcmp(lval, "set_h_reply_to_domain")==0) {
 			route->set_h_reply_to_domain = g_strdup(rval);
-		else if (strcmp(lval, "set_return_path_domain") == 0)
+		} else if (strcmp(lval, "set_return_path_domain")==0) {
 			route->set_return_path_domain = g_strdup(rval);
-		else if (strcmp(lval, "map_return_path_addresses") == 0) {
+		} else if (strcmp(lval, "map_return_path_addresses")==0) {
 			GList *node, *list;
 
 			list = parse_list(rval, TRUE);
 			foreach(list, node) {
 				gchar *item = (gchar *) (node->data);
 				table_pair *pair = parse_table_pair(item, ':');
-				address *addr = create_address((gchar *) (pair->value), TRUE);
+				address *addr = create_address(
+						(gchar *) (pair->value), TRUE);
 				g_free(pair->value);
 				pair->value = (gpointer *) addr;
-				route->map_return_path_addresses = g_list_append(route->map_return_path_addresses, pair);
+				route->map_return_path_addresses = g_list_append( route->map_return_path_addresses, pair);
 				g_free(item);
 			}
 			g_list_free(list);
-		} else if (strcmp(lval, "map_h_from_addresses") == 0) {
+		} else if (strcmp(lval, "map_h_from_addresses")==0) {
 			GList *list, *node;
 
 			list = parse_list(rval, TRUE);
@@ -646,7 +661,7 @@ read_route(gchar *filename, gboolean is_perma)
 				g_free(item);
 			}
 			g_list_free(list);
-		} else if (strcmp(lval, "map_h_reply_to_addresses") == 0) {
+		} else if (strcmp(lval, "map_h_reply_to_addresses")==0) {
 			GList *list, *node;
 
 			list = parse_list(rval, TRUE);
@@ -657,7 +672,7 @@ read_route(gchar *filename, gboolean is_perma)
 				g_free(item);
 			}
 			g_list_free(list);
-		} else if (strcmp(lval, "map_h_mail_followup_to_addresses") == 0) {
+		} else if (strcmp(lval, "map_h_mail_followup_to_addresses")==0) {
 			GList *list, *node;
 
 			list = parse_list(rval, TRUE);
@@ -668,68 +683,68 @@ read_route(gchar *filename, gboolean is_perma)
 				g_free(item);
 			}
 			g_list_free(list);
-		} else if (strcmp(lval, "expand_h_sender_domain") == 0) {
+		} else if (strcmp(lval, "expand_h_sender_domain")==0) {
 			route->expand_h_sender_domain = parse_boolean(rval);
-		} else if (strcmp(lval, "expand_h_sender_address") == 0) {
+		} else if (strcmp(lval, "expand_h_sender_address")==0) {
 			route->expand_h_sender_address = parse_boolean(rval);
-		} else if (strcmp(lval, "resolve_list") == 0)
+		} else if (strcmp(lval, "resolve_list")==0) {
 			route->resolve_list = parse_resolve_list(rval);
-		else if (strcmp(lval, "do_ssl") == 0) {
+		} else if (strcmp(lval, "do_ssl")==0) {
 			/* we ignore this. This option is used by sqilconf */
 			;
-		}
 #ifdef ENABLE_AUTH
-		else if (strcmp(lval, "auth_name") == 0) {
+		} else if (strcmp(lval, "auth_name")==0) {
 			route->auth_name = g_strdup(rval);
-		} else if (strcmp(lval, "auth_login") == 0) {
+		} else if (strcmp(lval, "auth_login")==0) {
 			route->auth_login = g_strdup(rval);
-		} else if (strcmp(lval, "auth_secret") == 0) {
+		} else if (strcmp(lval, "auth_secret")==0) {
 			route->auth_secret = g_strdup(rval);
-		}
 #else
-		else if ((strcmp(lval, "auth_name") == 0)
-		         || (strcmp(lval, "auth_login") == 0)
-		         || (strcmp(lval, "auth_secret") == 0)) {
-			logwrite(LOG_WARNING, "%s ignored: not compiled with auth support.\n", lval);
+		} else if ((strcmp(lval, "auth_name")==0) ||
+				(strcmp(lval, "auth_login")==0) ||
+				(strcmp(lval, "auth_secret")==0)) {
+			logwrite(LOG_WARNING, "%s ignored: not compiled with "
+					"auth support.\n", lval);
 		}
 #endif
-		else if (strcmp(lval, "pipe") == 0) {
+		} else if (strcmp(lval, "pipe")==0) {
 			route->pipe = g_strdup(rval);
-		} else if (strcmp(lval, "pipe_fromline") == 0) {
+		} else if (strcmp(lval, "pipe_fromline")==0) {
 			route->pipe_fromline = parse_boolean(rval);
-		} else if (strcmp(lval, "pipe_fromhack") == 0) {
+		} else if (strcmp(lval, "pipe_fromhack")==0) {
 			route->pipe_fromhack = parse_boolean(rval);
-		} else if (strcmp(lval, "last_route") == 0) {
+		} else if (strcmp(lval, "last_route")==0) {
 			route->last_route = parse_boolean(rval);
-		} else
-			logwrite(LOG_WARNING, "var '%s' not (yet) known, ignored\n", lval);
+		} else {
+			logwrite(LOG_WARNING, "var '%s' unknown: ignored\n",
+					lval);
+		}
 	}
 
 	if (!route->resolve_list) {
 #ifdef ENABLE_RESOLVER
-		route->resolve_list = g_list_append(route->resolve_list, resolve_dns_mx);
-		route->resolve_list = g_list_append(route->resolve_list, resolve_dns_a);
+		route->resolve_list = g_list_append(route->resolve_list,
+				resolve_dns_mx);
+		route->resolve_list = g_list_append(route->resolve_list,
+				resolve_dns_a);
 #endif
-		route->resolve_list = g_list_append(route->resolve_list, resolve_byname);
+		route->resolve_list = g_list_append(route->resolve_list,
+				resolve_byname);
 	}
 	fclose(in);
-	ok = TRUE;
 
-	/* warn user about misconfigurations: */
-	if ((route->map_h_from_addresses != NULL) && (route->set_h_from_domain != NULL)) {
-		logwrite(LOG_WARNING, "'map_h_from_addresses' overrides 'set_h_from_domain'\n");
+	/* warn user about mis-configurations: */
+	if (route->map_h_from_addresses && route->set_h_from_domain) {
+		logwrite(LOG_WARNING, "'map_h_from_addresses' overrides "
+				"'set_h_from_domain'\n");
 		g_free(route->set_h_from_domain);
 		route->set_h_from_domain = NULL;
 	}
-	if ((route->map_h_reply_to_addresses != NULL) && (route->set_h_reply_to_domain != NULL)) {
-		logwrite(LOG_WARNING, "'map_h_reply_to_addresses' overrides 'set_h_reply_to_domain'\n");
+	if (route->map_h_reply_to_addresses && route->set_h_reply_to_domain) {
+		logwrite(LOG_WARNING, "'map_h_reply_to_addresses' overrides "
+				"'set_h_reply_to_domain'\n");
 		g_free(route->set_h_reply_to_domain);
 		route->set_h_reply_to_domain = NULL;
-	}
-
-	if (!ok) {
-		g_free(route);
-		route = NULL;
 	}
 
 	return route;
@@ -739,50 +754,64 @@ static void
 _g_list_free_all(GList *list)
 {
 	GList *node;
-	if (list) {
-		foreach(list, node)
-			g_free(node->data);
-		g_list_free(list);
+	if (!list) {
+		return;
 	}
+	foreach(list, node) {
+		g_free(node->data);
+	}
+	g_list_free(list);
 }
 
 void
 destroy_route(connect_route *r)
 {
-	if (r->filename)
+	if (r->filename) {
 		g_free(r->filename);
+	}
 	if (r->mail_host) {
 		g_free(r->mail_host->address);
 		g_free(r->mail_host);
 	}
-	if (r->wrapper)
+	if (r->wrapper) {
 		g_free(r->wrapper);
-	if (r->helo_name)
+	}
+	if (r->helo_name) {
 		g_free(r->helo_name);
+	}
 	_g_list_free_all(r->allowed_senders);
 	_g_list_free_all(r->denied_senders);
 	_g_list_free_all(r->allowed_recipients);
 	_g_list_free_all(r->denied_recipients);
-	if (r->set_h_from_domain)
+	if (r->set_h_from_domain) {
 		g_free(r->set_h_from_domain);
-	if (r->set_h_reply_to_domain)
+	}
+	if (r->set_h_reply_to_domain) {
 		g_free(r->set_h_reply_to_domain);
-	if (r->set_return_path_domain)
+	}
+	if (r->set_return_path_domain) {
 		g_free(r->set_return_path_domain);
-	if (r->map_h_reply_to_addresses)
+	}
+	if (r->map_h_reply_to_addresses) {
 		destroy_table(r->map_h_reply_to_addresses);
-	if (r->resolve_list)
+	}
+	if (r->resolve_list) {
 		g_list_free(r->resolve_list);
+	}
 #ifdef ENABLE_AUTH
-	if (r->auth_name)
+	if (r->auth_name) {
 		g_free(r->auth_name);
-	if (r->auth_login)
+	}
+	if (r->auth_login) {
 		g_free(r->auth_login);
-	if (r->auth_secret)
+	}
+	if (r->auth_secret) {
 		g_free(r->auth_secret);
+	}
 #endif
-	if (r->pipe)
+	if (r->pipe) {
 		g_free(r->pipe);
+	}
 	g_free(r);
 }
 
@@ -796,21 +825,20 @@ read_route_list(GList *rf_list, gboolean is_perma)
 	if (!conf.run_as_user) {
 		set_euidgid(0, 0, &saved_uid, &saved_gid);
 	}
-
 	foreach(rf_list, node) {
 		gchar *fname = (gchar *) (node->data);
 		connect_route *route = read_route(fname, is_perma);
-		if (route)
+		if (route) {
 			list = g_list_append(list, route);
-		else
-			logwrite(LOG_ALERT, "could not read route configuration %s\n", fname);
+		} else {
+			logwrite(LOG_ALERT, "could not read route "
+					"configuration %s\n", fname);
+		}
 	}
-
 	/* set uid and gid back */
 	if (!conf.run_as_user) {
 		set_euidgid(saved_uid, saved_gid, NULL, NULL);
 	}
-
 	return list;
 }
 
