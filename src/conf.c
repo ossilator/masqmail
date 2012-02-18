@@ -281,7 +281,6 @@ read_lval(FILE *in, gchar *buf, gint size)
 		return FALSE;
 	}
 
-	c = fgetc(in);
 	DEBUG(9) fprintf(stderr, "read_lval() 2\n");
 	while (1) {
 		if ((c = fgetc(in)) == EOF) {
