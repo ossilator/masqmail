@@ -31,23 +31,21 @@ init_conf()
 	struct passwd *passwd;
 	struct group *group;
 
+	if (!(passwd = getpwnam(DEF_MAIL_USER))) {
+		fprintf(stderr, "user %s not found! (terminating)\n",
+				DEF_MAIL_USER);
+		exit(1);
+	}
+	if (!(group = getgrnam(DEF_MAIL_GROUP))) {
+		fprintf(stderr, "group %s not found! (terminating)\n",
+				DEF_MAIL_GROUP);
+		exit(1);
+	}
 	memset(&conf, 0, sizeof(masqmail_conf));
-
 	conf.orig_uid = getuid();
 	conf.orig_gid = getgid();
-
-	if ((passwd = getpwnam(DEF_MAIL_USER)))
-		conf.mail_uid = passwd->pw_uid;
-	else {
-		fprintf(stderr, "user %s not found! (terminating)\n", DEF_MAIL_USER);
-		exit(1);
-	}
-	if ((group = getgrnam(DEF_MAIL_GROUP)))
-		conf.mail_gid = group->gr_gid;
-	else {
-		fprintf(stderr, "group %s not found! (terminating)\n", DEF_MAIL_GROUP);
-		exit(1);
-	}
+	conf.mail_uid = passwd->pw_uid;
+	conf.mail_gid = group->gr_gid;
 }
 
 static gchar *true_strings[] = {
@@ -64,96 +62,83 @@ parse_boolean(gchar *rval)
 	gchar **str;
 
 	DEBUG(9) fprintf(stderr, "parse_boolean: %s\n", rval);
-
-	str = true_strings;
-	while (*str) {
-		if (strncasecmp(*str, rval, strlen(*str)) == 0)
+	for (str = true_strings; *str; str++) {
+		if (strncasecmp(*str, rval, strlen(*str))==0) {
 			return TRUE;
-		str++;
+		}
 	}
-
-	str = false_strings;
-	while (*str) {
-		if (strncasecmp(*str, rval, strlen(*str)) == 0)
+	for (str = false_strings; *str; str++) {
+		if (strncasecmp(*str, rval, strlen(*str))==0) {
 			return FALSE;
-		str++;
+		}
 	}
-
 	fprintf(stderr, "cannot parse value '%s'\n", rval);
 	exit(1);
 }
 
-/* make a list from each line in a file */
+/*
+** make a list from the lines of a file
+*/
 static GList*
-parse_list_file(gchar *fname)
+parse_list_file(const gchar *fname)
 {
 	GList *list = NULL;
 	FILE *fptr;
-
-	if ((fptr = fopen(fname, "rt")) == NULL) {
-		logwrite(LOG_ALERT, "could not open %s for reading: %s\n", fname, strerror(errno));
-		exit(1);
-	}
-
 	gchar buf[256];
 
-	while (!feof(fptr)) {
-		fgets(buf, 255, fptr);
-		if (buf[0] && (buf[0] != '#') && (buf[0] != '\n')) {
-			g_strchomp(buf);
-			DEBUG(9) fprintf(stderr,"parse_list_file: item = %s\n", buf);
-			list = g_list_append(list, g_strdup(buf));
+	if (!(fptr = fopen(fname, "rt"))) {
+		logwrite(LOG_ALERT, "could not open %s for reading: %s\n",
+				fname, strerror(errno));
+		exit(1);
+	}
+	while (!fgets(buf, sizeof buf, fptr)) {
+		g_strstrip(buf);
+		if (!*buf || *buf == '#') {
+			continue;
 		}
+		DEBUG(9) fprintf(stderr, "parse_list_file: item = %s\n", buf);
+		list = g_list_append(list, g_strdup(buf));
 	}
 	fclose(fptr);
 
 	return list;
 }
 
-/* given a semicolon separated string, this function makes a GList out of it. */
-GList*
+/*
+** given a semicolon separated string, this function makes a GList out of it.
+*/
+static GList*
 parse_list(gchar *line, gboolean read_file)
 {
 	GList *list = NULL;
-	gchar buf[256];
-	gchar *p, *q;
+	gchar *tok;
 
-	DEBUG(9) fprintf(stderr, "parsing list %s, file?:%d\n", line, read_file);
-
-	p = line;
-	while (*p != '\0') {
-		q = buf;
-
-		while (*p && (*p != ';') && (q < buf + 255))
-			*(q++) = *(p++);
-		*q = '\0';
-
-		if ((buf[0] == '/') && (read_file))
+	DEBUG(9) fprintf(stderr, "parsing list %s, file?:%d\n",
+			line, read_file);
+	for (tok = strtok(strdup(line), ";"); tok; tok = strtok(NULL, ";")) {
+		DEBUG(9) fprintf(stderr, "item = %s\n", tok);
+		if (read_file && *tok == '/') {
 			/* item is a filename, include its contents */
-			list = g_list_concat(list, parse_list_file(buf));
-		else
+			list = g_list_concat(list, parse_list_file(tok));
+		} else {
 			/* just a normal item */
-			list = g_list_append(list, g_strdup(buf));
-
-		DEBUG(9) fprintf(stderr, "item = %s\n", buf);
-
-		if (*p)
-			p++;
+			list = g_list_append(list, g_strdup(tok));
+		}
 	}
 	return list;
 }
 
 /*
 **  Split the addrs at '@' into local_part and domain. Without an '@'
-**  everything is local_part. Create address structs, which are put into a
-**  list and returned.  This funktion is used for lists of addrs containing
-**  globbing chars (* and ?).  We don't need valid RFC821 addresses here,
-**  just patterns to match against.
+**  everything is local_part. Create and return a list of address structs.
+**  This funktion is used for lists of addrs containing globbing chars
+**  (* and ?).  We don't need valid RFC821 addresses here, just patterns
+**  to match against.
 */
 static GList*
-parse_address_glob_list(gchar *line, gboolean read_file)
+parse_address_glob_list(gchar *line)
 {
-	GList *plain_list = parse_list(line, read_file);
+	GList *plain_list = parse_list(line, TRUE);
 	GList *node;
 	GList *list = NULL;
 
@@ -181,7 +166,8 @@ parse_address_glob_list(gchar *line, gboolean read_file)
 			addr->domain = "*";
 		}
 		list = g_list_append(list, addr);
-		DEBUG(6) debugf("parse_address_glob_list: read pattern `%s' `%s'\n",
+		DEBUG(6) debugf("parse_address_glob_list: "
+				"read pattern `%s' `%s'\n",
 		                addr->local_part, addr->domain);
 		g_free(item);
 	}
@@ -195,20 +181,20 @@ parse_resolve_list(gchar *line)
 	GList *list;
 	GList *list_node;
 	GList *res_list = NULL;
+	gchar *item;
 
-	list = parse_list(line, FALSE);
+	list = parse_list(line, TRUE);
 	if (!list) {
 		return NULL;
 	}
-
 	foreach(list, list_node) {
-		gchar *item = (gchar *) (list_node->data);
-		if (strcmp(item, "byname") == 0) {
+		item = (gchar *) list_node->data;
+		if (strcmp(item, "byname")==0) {
 			res_list = g_list_append(res_list, resolve_byname);
 #ifdef ENABLE_RESOLVER
-		} else if (strcmp(item, "dns_a") == 0) {
+		} else if (strcmp(item, "dns_a")==0) {
 			res_list = g_list_append(res_list, resolve_dns_a);
-		} else if (strcmp(item, "dns_mx") == 0) {
+		} else if (strcmp(item, "dns_mx")==0) {
 			res_list = g_list_append(res_list, resolve_dns_mx);
 #endif
 		} else {
@@ -224,28 +210,17 @@ parse_resolve_list(gchar *line)
 static interface*
 parse_interface(gchar *line, gint def_port)
 {
-	gchar buf[256];
-	gchar *p, *q;
-	interface *iface;
+	gchar *cp;
+	interface *iface = g_malloc(sizeof(interface));
 
 	DEBUG(9) fprintf(stderr, "parse_interface: %s\n", line);
-
-	p = line;
-	q = buf;
-	while ((*p != '\0') && (*p != ':') && (q < buf + 255))
-		*(q++) = *(p++);
-	*q = '\0';
-
-	iface = g_malloc(sizeof(interface));
-	iface->address = g_strdup(buf);
-
-	if (*p) {
-		p++;
-		iface->port = atoi(p);
-	} else
-		iface->port = def_port;
-	DEBUG(9) fprintf(stderr,"rval=%s, address:port=%s:%i\n",line, iface->address, iface->port);
-
+	if ((cp = strchr(line, ':'))) {
+		*cp = '\0';
+	}
+	iface->address = g_strdup(line);
+	iface->port = (cp) ? atoi(++cp) : def_port;
+	DEBUG(9) fprintf(stderr,"found: address:port=%s:%u\n",
+			iface->address, iface->port);
 	return iface;
 }
 
@@ -253,30 +228,48 @@ static gboolean
 eat_comments(FILE *in)
 {
 	gint c;
+	int incomment = 0;
 
-	for (c = fgetc(in); (c == '#' || isspace(c)) && c != EOF;
-		 c = fgetc(in)) {
-		if (c == '#') {
-			gint c;
-			for (c = fgetc(in); (c != '\n') && (c != EOF); c = fgetc(in));
+	while ((c = fgetc(in)) != EOF) {
+		if (incomment) {
+			/* eat until end of line */
+			if (c == '\n') {
+				incomment = 0;
+				continue;
+			} else {
+				continue;
+			}
+		} else {
+			/* eat whitespace and watch for comments */
+			if (isspace(c)) {
+				continue;
+			} else if (c == '#') {
+				incomment = 1;
+				continue;
+			} else {
+				/* found something (that's not our business) */
+				ungetc(c, in);
+				return TRUE;
+			}
 		}
 	}
-	if (c == EOF)
-		return FALSE;
-	ungetc(c, in);
-	return TRUE;
+	return FALSE;
 }
 
-/* after parsing, eat trailing character until LF */
+/*
+** after parsing, eat trailing characters until and including the Newline
+*/
 static gboolean
 eat_line_trailing(FILE *in)
 {
 	gint c;
 
-	for (c = fgetc(in); c != EOF && c != '\n'; c = fgetc(in));
-	if (c == EOF)
-		return FALSE;
-	return TRUE;
+	while ((c = fgetc(in)) != EOF) {
+		if (c == '\n') {
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 static gboolean
@@ -284,13 +277,13 @@ eat_spaces(FILE *in)
 {
 	gint c;
 
-	for (c = fgetc(in); c != EOF && isspace(c); c = fgetc(in)) {
-		/* empty */
+	while ((c = fgetc(in)) != EOF) {
+		if (!isspace(c)) {
+			ungetc(c, in);
+			return TRUE;
+		}
 	}
-	if (c == EOF)
-		return FALSE;
-	ungetc(c, in);
-	return TRUE;
+	return FALSE;
 }
 
 static gboolean
@@ -300,34 +293,31 @@ read_lval(FILE *in, gchar *buf, gint size)
 	gchar *ptr = buf;
 
 	DEBUG(9) fprintf(stderr, "read_lval()\n");
-
-	if (!eat_spaces(in))
+	if (!eat_spaces(in)) {
 		return FALSE;
+	}
 
 	c = fgetc(in);
 	DEBUG(9) fprintf(stderr, "read_lval() 2\n");
-	while ((isalnum(c) || c == '_' || c == '-' || c == '.')
-	       && (ptr < buf + size - 1)
-	       && (c != EOF)) {
-		*ptr = c;
-		ptr++;
-		c = fgetc(in);
+	while (1) {
+		if ((c = fgetc(in)) == EOF) {
+			fprintf(stderr, "unexpected EOF after %s\n", buf);
+			return FALSE;
+		}
+		if (ptr >= buf+size-1) {
+			fprintf(stderr, "lval too long\n");
+			break;
+		}
+		if (!isalnum(c) && c != '_' && c != '-' && c != '.') {
+			break;
+		}
+		*ptr++ = c;
 	}
 	*ptr = '\0';
 	ungetc(c, in);
-
-	if (c == EOF) {
-		fprintf(stderr, "unexpected EOF after %s\n", buf);
-		return FALSE;
-	} else if (ptr >= buf + size - 1) {
-		fprintf(stderr, "lval too long\n");
-	}
-
 	eat_spaces(in);
-
 	DEBUG(9) fprintf(stderr, "lval = %s\n", buf);
-
-	return buf[0] != '\0';
+	return *buf != '\0';
 }
 
 static gboolean
@@ -337,9 +327,9 @@ read_rval(FILE *in, gchar *buf, gint size)
 	gchar *ptr = buf;
 
 	DEBUG(9) fprintf(stderr, "read_rval()\n");
-
-	if (!eat_spaces(in))
+	if (!eat_spaces(in)) {
 		return FALSE;
+	}
 
 	c = fgetc(in);
 	if (c != '\"') {
@@ -426,7 +416,7 @@ read_conf(gchar *filename)
 	}
 
 	gchar lval[256], rval[2048];
-	while (read_statement(in, lval, 256, rval, 2048)) {
+	while (read_statement(in, lval, sizeof lval, rval, sizeof rval)) {
 		DEBUG(9) fprintf(stderr,"read_conf(): lval=%s\n", lval);
 		if (strcmp(lval, "debug_level") == 0)
 			conf.debug_level = atoi(rval);
@@ -459,7 +449,7 @@ read_conf(gchar *filename)
 				fclose(fptr);
 			}
 		} else if (strcmp(lval, "local_hosts") == 0)
-			conf.local_hosts = parse_list(rval, FALSE);
+			conf.local_hosts = parse_list(rval, TRUE);
 		else if (strcmp(lval, "local_addresses") == 0)
 			conf.local_addresses = parse_list(rval, TRUE);
 		else if (strcmp(lval, "not_local_addresses") == 0)
@@ -494,7 +484,7 @@ read_conf(gchar *filename)
 			conf.pipe_fromhack = parse_boolean(rval);
 		} else if (strcmp(lval, "listen_addresses") == 0) {
 			GList *node;
-			GList *tmp_list = parse_list(rval, FALSE);
+			GList *tmp_list = parse_list(rval, TRUE);
 
 			conf.listen_addresses = NULL;
 			foreach(tmp_list, node) {
@@ -517,7 +507,7 @@ read_conf(gchar *filename)
 		else if (strcmp(lval, "warnmsg_file") == 0)
 			conf.warnmsg_file = g_strdup(rval);
 		else if (strcmp(lval, "warn_intervals") == 0)
-			conf.warn_intervals = parse_list(rval, FALSE);
+			conf.warn_intervals = parse_list(rval, TRUE);
 		else if (strcmp(lval, "max_defer_time") == 0) {
 			gint ival = time_interval(rval);
 			if (ival < 0)
@@ -553,7 +543,7 @@ read_conf(gchar *filename)
 		conf.mbox_default = g_strdup("mbox");
 
 	if (conf.warn_intervals == NULL)
-		conf.warn_intervals = parse_list("1h;4h;8h;1d;2d;3d", FALSE);
+		conf.warn_intervals = parse_list("1h;4h;8h;1d;2d;3d", TRUE);
 
 	if (!conf.local_hosts) {
 		char *shortname = strdup(conf.host_name);
@@ -561,9 +551,10 @@ read_conf(gchar *filename)
 		if (p) {
 			*p = '\0';
 		}
-		/* we don't care if shortname and conf.host_name are the same */
-		char *local_hosts_str = g_strdup_printf("localhost;%s;%s", shortname, conf.host_name);
-		conf.local_hosts = parse_list(local_hosts_str, FALSE);
+		/* don't care if shortname and conf.host_name are the same */
+		char *local_hosts_str = g_strdup_printf("localhost;%s;%s",
+				shortname, conf.host_name);
+		conf.local_hosts = parse_list(local_hosts_str, TRUE);
 		free(shortname);
 		free(local_hosts_str);
 	}
@@ -599,7 +590,7 @@ read_route(gchar *filename, gboolean is_perma)
 	}
 
 	gchar lval[256], rval[2048];
-	while (read_statement(in, lval, 256, rval, 2048)) {
+	while (read_statement(in, lval, sizeof lval, rval, sizeof rval)) {
 		if (strcmp(lval, "mail_host") == 0)
 			route->mail_host = parse_interface(rval, 25);
 		else if (strcmp(lval, "helo_name") == 0)
@@ -616,13 +607,13 @@ read_route(gchar *filename, gboolean is_perma)
 			route->do_pipelining = parse_boolean(rval);
 
 		else if (strcmp(lval, "allowed_senders") == 0)
-			route->allowed_senders = parse_address_glob_list(rval, TRUE);
+			route->allowed_senders = parse_address_glob_list(rval);
 		else if (strcmp(lval, "denied_senders") == 0)
-			route->denied_senders = parse_address_glob_list(rval, TRUE);
+			route->denied_senders = parse_address_glob_list(rval);
 		else if (strcmp(lval, "allowed_recipients") == 0)
-			route->allowed_recipients = parse_address_glob_list(rval, TRUE);
+			route->allowed_recipients = parse_address_glob_list(rval);
 		else if (strcmp(lval, "denied_recipients") == 0)
-			route->denied_recipients = parse_address_glob_list(rval, TRUE);
+			route->denied_recipients = parse_address_glob_list(rval);
 
 		else if (strcmp(lval, "set_h_from_domain") == 0)
 			route->set_h_from_domain = g_strdup(rval);
