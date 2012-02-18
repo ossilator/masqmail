@@ -125,20 +125,20 @@ vlogwrite(int pri, const char *fmt, va_list args)
 	if (!pri) {
 		return;
 	}
-	if (conf.use_syslog)
+	if (conf.use_syslog) {
 		vsyslog(pri, fmt, args);
-	else if (pri <= conf.log_max_pri) {
-		FILE *file = logfile ? logfile : stderr;
-		time_t now = time(NULL);
-		struct tm *t = localtime(&now);
-		gchar buf[24];
-
-		strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
-		fprintf(file, "%s [%d] ", buf, getpid());
-
-		vfprintf(file, fmt, args);
-		fflush(file);
+		return;
 	}
+	FILE *file = logfile ? logfile : stderr;
+	time_t now = time(NULL);
+	struct tm *t = localtime(&now);
+	gchar buf[24];
+
+	strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
+	fprintf(file, "%s [%d] ", buf, getpid());
+
+	vfprintf(file, fmt, args);
+	fflush(file);
 }
 
 #ifdef ENABLE_DEBUG

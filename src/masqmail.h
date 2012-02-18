@@ -129,7 +129,6 @@ typedef struct _masqmail_conf {
 
 	gint debug_level;
 	gboolean use_syslog;
-	guint log_max_pri;
 
 	gchar *host_name;
 	GList *local_hosts;
