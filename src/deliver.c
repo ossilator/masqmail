@@ -774,6 +774,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 	GList *remote_msgout_list = NULL;
 	GList *msgout_node;
 	GList *alias_table = NULL;
+	GList *globalias_table = NULL;
 	gboolean ok = TRUE;
 
 	/* create msgout_list */
@@ -782,6 +783,9 @@ deliver_msg_list(GList *msg_list, guint flags)
 		msgout_list = g_list_append(msgout_list, create_msg_out(msg));
 	}
 
+	if (conf.globalias_file) {
+		globalias_table = table_read(conf.globalias_file, ':');
+	}
 	if (conf.alias_file) {
 		alias_table = table_read(conf.alias_file, ':');
 	}
@@ -808,9 +812,19 @@ deliver_msg_list(GList *msg_list, guint flags)
 				logwrite(LOG_ALERT, "invalid log_user address `%s', ignoring\n", conf.log_user);
 			}
 		}
+		if (globalias_table) {
+			GList *globaliased_rcpt_list;
+			globaliased_rcpt_list = alias_expand(globalias_table,
+					rcpt_list,
+					msgout->msg->non_rcpt_list, 1);
+			g_list_free(rcpt_list);
+			rcpt_list = globaliased_rcpt_list;
+		}
 		if (alias_table) {
 			GList *aliased_rcpt_list;
-			aliased_rcpt_list = alias_expand(alias_table, rcpt_list, msgout->msg->non_rcpt_list);
+			aliased_rcpt_list = alias_expand(alias_table,
+					rcpt_list,
+					msgout->msg->non_rcpt_list, 0);
 			g_list_free(rcpt_list);
 			rcpt_list = aliased_rcpt_list;
 		}
@@ -837,6 +851,9 @@ deliver_msg_list(GList *msg_list, guint flags)
 
 	if (alias_table) {
 		destroy_table(alias_table);
+	}
+	if (globalias_table) {
+		destroy_table(globalias_table);
 	}
 
 	/* process local/remote msgout lists -> delivery */

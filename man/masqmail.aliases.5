@@ -7,21 +7,44 @@ masqmail.aliases \- masqmail alias file format
 .SH DESCRIPTION
 
 This man page describes the format of the masqmail alias file.
-Its usual location is \fI/etc/aliases\fR.
+It's usual location is \fI/etc/aliases\fR.
+
+There exists also a variant of this format for glob patterns.
+It's used with the \fIglobalias_file\fP config option.
+
+The difference between the two formats are only on the left-hand side.
+A normal alias file has a local_part there that gets string-compared
+against the local part;
+whereas a glob alias file has a glob pattern that is matched against
+the whole address. The right-hand side of the two aliasing kinds
+has the same format.
 
 
 .SH FILE FORMAT
 
-The alias file consists of lines of the form:
+Normal alias files consist of lines of the form:
+
+.RS
 local_part: item1, item2, ...
+.RE
+
+Glob-pattern alias files consist of lines of the form:
+
+.RS
+glob_pattern: item1, item2, ...
+.RE
+
 Items can be surrounded by double quotes `"'.
 If within the quotes other quotes are needed for an address they can be
 escaped with a leading backslash `\\'.
 
-A leading backslash `\\' indicates that this address shall not be further expanded.
+A leading backslash `\\' indicates that this address shall not be
+further expanded.
 
-A leading pipe symbol `|' indicates that the item shall be treated as a pipe command.
-The content of the message will then be sent to the standard input of the command.
+A leading pipe symbol `|' indicates that the item shall be treated as a
+pipe command.
+The content of the message will then be sent to the standard input of the
+command.
 The command will run under the user id and group id masqmail is running as.
 If quotes are needed, the pipe symbol must appear within the quotes.
 
@@ -32,11 +55,15 @@ This means that if there is a message still in the queue and you change
 any alias which matches one of the recipient addresses,
 the change will have effect next time a delivery is attemped.
 
-There is no need to restart masqmail or run any command when the alias file has been changed.
+There is no need to restart masqmail or run any command when the alias
+file has been changed. (`masqmail -bi' is a no-op.)
 
 
 .SH EXAMPLE
 
+A normal alias file:
+
+.RS
 .nf
 # postmaster is required by RFC 2821
 postmaster: root
@@ -50,6 +77,28 @@ root: \\root, meillo
 # pass mail to a script
 foo: |/usr/bin/foo
 .fi
+.RE
+
+
+A glob-pattern alias file:
+
+.RS
+.nf
+# the postmaster for any domain on this host
+postmaster@*: ken
+
+# split virtual domains
+info@foo.example.org: doug
+info@bar.example.org: rob
+
+# the order of entries is important
+# this must be before the catch-all line
+list\-*@example.org: |/path/to/some/script
+
+# catch-all address forwarded to extern
+*@example.org: brian@other.host.net
+.fi
+.RE
 
 
 .SH AUTHOR
@@ -57,8 +106,10 @@ foo: |/usr/bin/foo
 Masqmail was written by Oliver Kurth.
 It is now maintained by Markus Schnalke <meillo@marmaro.de>.
 
-You will find the newest version of masqmail at \fBhttp://marmaro.de/prog/masqmail/\fR.
-There is also a mailing list, you will find information about it at masqmail's main site.
+You will find the newest version of masqmail at
+\fBhttp://marmaro.de/prog/masqmail/\fR.
+There is also a mailing list, you will find information about
+it at masqmail's main site.
 
 
 .SH BUGS

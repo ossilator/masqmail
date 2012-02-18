@@ -472,6 +472,8 @@ read_conf(gchar *filename)
 			conf.do_relay = parse_boolean(rval);
 		else if (strcmp(lval, "alias_file") == 0) {
 			conf.alias_file = g_strdup(rval);
+		} else if (strcmp(lval, "globalias_file") == 0) {
+			conf.globalias_file = g_strdup(rval);
 		} else if (strcmp(lval, "caseless_matching") == 0) {
 			conf.localpartcmp = parse_boolean(rval) ? strcasecmp : strcmp;
 		} else if (strcmp(lval, "mbox_default") == 0) {
