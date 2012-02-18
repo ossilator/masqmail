@@ -396,7 +396,6 @@ read_conf(gchar *filename)
 	gchar lval[256], rval[2048];
 	GList *listen_addrs_tmp = NULL;
 
-	conf.log_max_pri = 7;
 	conf.do_relay = TRUE;
 	conf.localpartcmp = strcmp;
 	conf.max_defer_time = 86400 * 4;  /* 4 days */
