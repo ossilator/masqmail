@@ -28,22 +28,24 @@ addr_is_local(address *addr)
 	GList *addr_node;
 	address *a;
 
-	if (addr->domain == NULL) {
+	if (!addr->domain) {
 		return TRUE;
 	}
 	foreach(conf.local_hosts, dom_node) {
 		/* Note: FNM_CASEFOLD is a GNU extension */
-		if (fnmatch(dom_node->data, addr->domain, FNM_CASEFOLD) != 0) {
+		if (fnmatch(dom_node->data, addr->domain, FNM_CASEFOLD)!=0) {
 			/* no match, try next */
 			continue;
 		}
 		foreach(conf.not_local_addresses, addr_node) {
-			a = create_address_qualified(addr_node->data, TRUE, conf.host_name);
-			DEBUG(6) debugf("not_local_addresses: addr_node->data=%s a->address=%s\n",
+			a = create_address_qualified(addr_node->data, TRUE,
+					conf.host_name);
+			DEBUG(6) debugf("not_local_addresses: "
+					"addr_node->data=%s a->address=%s\n",
 			                addr_node->data, a->address);
 			if (addr_isequal(a, addr, conf.localpartcmp)) {
+				/* also in not_local_addresses */
 				destroy_address(a);
-				/* in local_hosts but also in not_local_addresses */
 				return FALSE;
 			}
 			destroy_address(a);
@@ -52,12 +54,14 @@ addr_is_local(address *addr)
 		return TRUE;
 	}
 	foreach(conf.local_addresses, addr_node) {
-		a = create_address_qualified(addr_node->data, TRUE, conf.host_name);
-		DEBUG(6) debugf("local_addresses: addr_node->data=%s a->address=%s\n",
+		a = create_address_qualified(addr_node->data, TRUE,
+				conf.host_name);
+		DEBUG(6) debugf("local_addresses: addr_node->data=%s "
+				"a->address=%s\n",
 		                addr_node->data, a->address);
 		if (addr_isequal(a, addr, conf.localpartcmp)) {
-			destroy_address(a);
 			/* in local_addresses */
+			destroy_address(a);
 			return TRUE;
 		}
 		destroy_address(a);
@@ -73,33 +77,37 @@ parse_list(gchar *line)
 	gchar *p, *q;
 
 	p = line;
-	while (*p != '\0') {
+	while (*p) {
 		q = buf;
-		while (isspace(*p))
+		while (isspace(*p)) {
 			p++;
+		}
 		if (*p != '"') {
-			while (*p && (*p != ',') && (q < buf + 255))
+			while (*p && (*p != ',') && (q < buf + 255)) {
 				*(q++) = *(p++);
+			}
 			*q = '\0';
 		} else {
 			gboolean escape = FALSE;
 			p++;
-			while (*p && (*p != '"' || escape) && (q < buf + 255)) {
-				if ((*p == '\\') && !escape)
+			while (*p && (*p != '"' || escape) && (q < buf+255)) {
+				if ((*p == '\\') && !escape) {
 					escape = TRUE;
-				else {
+				} else {
 					escape = FALSE;
 					*(q++) = *p;
 				}
 				p++;
 			}
 			*q = '\0';
-			while (*p && (*p != ','))
+			while (*p && (*p != ',')) {
 				p++;
+			}
 		}
 		list = g_list_append(list, g_strdup(g_strchomp(buf)));
-		if (*p)
+		if (*p) {
 			p++;
+		}
 	}
 	return list;
 }
@@ -107,13 +115,11 @@ parse_list(gchar *line)
 static int
 globaliascmp(const char *pattern, const char *addr)
 {
-	if (conf.localpartcmp==strcasecmp) {
+	if (conf.localpartcmp == strcasecmp) {
 		return fnmatch(pattern, addr, FNM_CASEFOLD);
 	} else if (strncasecmp(addr, "postmaster", 10)==0) {
-		/*
-		**  postmaster must always be matched caseless
-		**  see RFC 822 and RFC 5321
-		*/
+		/* postmaster must always be matched caseless
+		** see RFC 822 and RFC 5321 */
 		return fnmatch(pattern, addr, FNM_CASEFOLD);
 	} else {
 		/* case-sensitive */
@@ -142,10 +148,8 @@ expand_one(GList *alias_table, address *addr, int doglob)
 				globaliascmp);
 
 	} else if (strcasecmp(addr->local_part, "postmaster") == 0) {
-		/*
-		**  postmaster must always be matched caseless
-		**  see RFC 822 and RFC 5321
-		*/
+		/* postmaster must always be matched caseless
+		** see RFC 822 and RFC 5321 */
 		val = (gchar *) table_find_func(alias_table, addr->local_part,
 				strcasecmp);
 	} else {
@@ -171,8 +175,10 @@ expand_one(GList *alias_table, address *addr, int doglob)
 		DEBUG(6) debugf("alias: processing '%s'\n", val);
 
 		if (val[0] == '\\') {
-			DEBUG(5) debugf("alias: '%s' is marked as final, hence completed\n", val);
-			alias_addr = create_address_qualified(val+1, TRUE, conf.host_name);
+			DEBUG(5) debugf("alias: '%s' is marked as final, "
+					"hence completed\n", val);
+			alias_addr = create_address_qualified(val+1, TRUE,
+					conf.host_name);
 			g_free(val);
 			DEBUG(6) debugf("alias:     address generated: '%s'\n",
 			                alias_addr->address);
@@ -181,7 +187,8 @@ expand_one(GList *alias_table, address *addr, int doglob)
 		}
 	
 		if (val[0] == '|') {
-			DEBUG(5) debugf("alias: '%s' is a pipe address\n", val);
+			DEBUG(5) debugf("alias: '%s' is a pipe address\n",
+					val);
 			alias_addr = create_address_pipe(val);
 			g_free(val);
 			DEBUG(6) debugf("alias:     pipe generated: %s\n",
@@ -190,11 +197,13 @@ expand_one(GList *alias_table, address *addr, int doglob)
 			continue;
 		}
 
-		alias_addr = create_address_qualified(val, TRUE, conf.host_name);
+		alias_addr = create_address_qualified(val, TRUE,
+				conf.host_name);
 		g_free(val);
 
 		if (!addr_is_local(alias_addr)) {
-			DEBUG(5) debugf("alias: '%s' is non-local, hence completed\n",
+			DEBUG(5) debugf("alias: '%s' is non-local, "
+					"hence completed\n",
 					alias_addr->address);
 			alias_list = g_list_append(alias_list, alias_addr);
 			continue;
@@ -204,8 +213,9 @@ expand_one(GList *alias_table, address *addr, int doglob)
 		/* but first ... search in parents for loops: */
 		if (addr_isequal_parent(addr, alias_addr, conf.localpartcmp)) {
 			/* loop detected, ignore this path */
-			logwrite(LOG_ALERT, "alias: detected loop, hence ignoring '%s'\n",
-			         alias_addr->local_part);
+			logwrite(LOG_ALERT, "alias: detected loop, "
+				"hence ignoring '%s'\n",
+				alias_addr->local_part);
 			continue;
 		}
 		alias_addr->parent = addr;
@@ -240,14 +250,18 @@ alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
 
 		addr = (address *) (rcpt_node->data);
 		if (addr_is_local(addr)) {
-			DEBUG(5) debugf("alias: (orig rcpt addr) expand local '%s'\n",
-			                doglob ? addr->address : addr->local_part);
+			DEBUG(5) debugf("alias: (orig rcpt addr) "
+					"expand local '%s'\n",
+			                doglob ? addr->address :
+					addr->local_part);
 			alias_list = expand_one(alias_table, addr, doglob);
 			if (alias_list) {
-				done_list = g_list_concat(done_list, alias_list);
+				done_list = g_list_concat(done_list,
+						alias_list);
 			}
 		} else {
-			DEBUG(5) debugf("alias: (orig rcpt addr) don't expand non-local '%s'\n",
+			DEBUG(5) debugf("alias: (orig rcpt addr) don't "
+					"expand non-local '%s'\n",
 					addr->address);
 			done_list = g_list_append(done_list, addr);
 		}
@@ -259,7 +273,8 @@ alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
 	}
 
 	/* delete addresses of non_rcpt_list from done_list */
-	for (rcpt_node = g_list_first(done_list); rcpt_node; rcpt_node = rcpt_node_next) {
+	for (rcpt_node = g_list_first(done_list); rcpt_node;
+			rcpt_node = rcpt_node_next) {
 		address *addr = (address *) (rcpt_node->data);
 		GList *non_node;
 
@@ -267,7 +282,8 @@ alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
 		foreach(non_rcpt_list, non_node) {
 			address *non_addr = (address *) (non_node->data);
 			if (addr_isequal(addr, non_addr, conf.localpartcmp)) {
-				done_list = g_list_remove_link(done_list, rcpt_node);
+				done_list = g_list_remove_link(done_list,
+						rcpt_node);
 				g_list_free_1(rcpt_node);
 				/*
 				**  this address is still in the children
