@@ -276,6 +276,22 @@ If not set, no aliasing will be done.
 Default: <not set> (i.e. no aliasing is done)
 
 .TP
+\fBglobalias_file = \fIfile\fR
+
+Set this to the location of a glob-pattern alias file.
+This kind of aliasing matches glob patterns against full email addresses,
+not strings against local parts like in normal aliasing.
+You can use this to handle catch-all maildrops (``*@example.org'')
+and to split between virtual hosts on a single machine
+(e.g. ``info@foo.ex.org'' and ``info@bar.ex.org'').
+
+Glob aliasing is done before normal aliasing.
+If you have both kinds, glob and normal aliasing, then the results of the
+glob aliasing may be expanded further by the normal aliasing mechanism.
+
+Default: <not set> (i.e. no glob aliasing is done)
+
+.TP
 \fBcaseless_matching = \fIboolean\fR
 
 If this is set, aliasing and the matching for \fBlocal_addresses\fP and

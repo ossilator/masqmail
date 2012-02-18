@@ -165,6 +165,7 @@ typedef struct _masqmail_conf {
 
 	gchar *alias_file;
 	int (*localpartcmp) (const char *, const char *);
+	gchar *globalias_file;
 
 	GList *perma_routes;
 	GList *query_routes;  /* list of pairs which point to lists */
@@ -331,7 +332,8 @@ typedef struct _smtp_connection {
 
 /* alias.c*/
 gboolean addr_is_local(address *addr);
-GList *alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list);
+GList *alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
+		int doglob);
 
 /* child.c */
 int child(const char *command);
