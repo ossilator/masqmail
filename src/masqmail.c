@@ -641,6 +641,7 @@ main(int argc, char *argv[])
 	}
 
 	conf.log_dir = LOG_DIR;
+	conf.debug_level = debug_level;  /* for debuggin during read_conf() */
 	/* FIXME: fails if we run as user */
 	logopen();
 	if (!read_conf(conf_file)) {
