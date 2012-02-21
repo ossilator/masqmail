@@ -39,39 +39,42 @@ connect_hostlist(int *psockfd, gchar *host, guint port, GList *addr_list)
 {
 	GList *addr_node;
 	struct sockaddr_in saddr;
+	int saved_errno;
 
 	DEBUG(5) debugf("connect_hostlist entered\n");
 
-	for (addr_node = g_list_first(addr_list); addr_node; addr_node = g_list_next(addr_node)) {
+	for (addr_node = g_list_first(addr_list); addr_node;
+			addr_node = g_list_next(addr_node)) {
 		mxip_addr *addr = (mxip_addr *) (addr_node->data);
-
 		*psockfd = socket(PF_INET, SOCK_STREAM, 0);
 
 		memset(&saddr, 0, sizeof(saddr));
-
 		saddr.sin_family = AF_INET;
 		saddr.sin_port = htons(port);
-
 		/* clumsy, but makes compiler happy: */
 		saddr.sin_addr = *(struct in_addr *) (&(addr->ip));
-		DEBUG(5) debugf("  trying ip %s port %d\n", inet_ntoa(saddr.sin_addr), port);
-		if (connect(*psockfd, (struct sockaddr *) (&saddr), sizeof(saddr)) == 0) {
-			DEBUG(5) debugf("  connected to %s\n", inet_ntoa(saddr.sin_addr));
+
+		DEBUG(5) debugf("  trying ip %s port %d\n",
+				inet_ntoa(saddr.sin_addr), port);
+
+		if (connect(*psockfd, (struct sockaddr *) &saddr,
+				sizeof(saddr))==0) {
+			DEBUG(5) debugf("  connected to %s\n",
+					inet_ntoa(saddr.sin_addr));
 			return addr;
-		} else {
-			int saved_errno = errno;
+		}
 
-			close(*psockfd);
+		saved_errno = errno;
+		close(*psockfd);
+		logwrite(LOG_WARNING, "connection to %s failed: %s\n",
+				inet_ntoa(saddr.sin_addr), strerror(errno));
+		errno = saved_errno;
 
-			logwrite(LOG_WARNING, "connection to %s failed: %s\n", inet_ntoa(saddr.sin_addr), strerror(errno));
-
-			errno = saved_errno;
-
-			if ((saved_errno != ECONNREFUSED)
-			    && (saved_errno != ETIMEDOUT)
-			    && (saved_errno != ENETUNREACH)
-			    && (saved_errno != EHOSTUNREACH))
-				return NULL;
+		if ((saved_errno != ECONNREFUSED) &&
+				(saved_errno != ETIMEDOUT) &&
+				(saved_errno != ENETUNREACH) &&
+				(saved_errno != EHOSTUNREACH)) {
+			return NULL;
 		}
 	}
 	return NULL;
@@ -87,7 +90,8 @@ connect_hostlist(int *psockfd, gchar *host, guint port, GList *addr_list)
 **  if attempt failed for one it should not be tried again.
 */
 mxip_addr*
-connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_func_list)
+connect_resolvelist(int *psockfd, gchar *host, guint port,
+		GList *res_func_list)
 {
 	GList *res_node;
 	GList *addr_list;
@@ -95,12 +99,12 @@ connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_func_list)
 	DEBUG(5) debugf("connect_resolvelist entered\n");
 
 	h_errno = 0;
-
 	if (isdigit(*host)) {
 		mxip_addr *addr;
 
 		if ((addr_list = resolve_ip(host))) {
-			addr = connect_hostlist(psockfd, host, port, addr_list);
+			addr = connect_hostlist(psockfd, host, port,
+					addr_list);
 			g_list_free(addr_list);
 			return addr;
 		}
@@ -110,18 +114,18 @@ connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_func_list)
 		*/
 	}
 
-	if (res_func_list == NULL) {
-		logwrite(LOG_ALERT, "res_funcs == NULL !!!\n");
+	if (!res_func_list) {
+		logwrite(LOG_ALERT, "res_funcs not set!\n");
 		exit(1);
 	}
 
 	foreach(res_func_list, res_node) {
 		resolve_func res_func;
 		DEBUG(6) debugf("  foreach() body\n");
-		res_func = (resolve_func) (res_node->data);
 
-		if (res_func == NULL) {
-			logwrite(LOG_ALERT, "res_func == NULL !!!\n");
+		res_func = (resolve_func) res_node->data;
+		if (!res_func) {
+			logwrite(LOG_ALERT, "Empty res_func!\n");
 			exit(1);
 		}
 
@@ -129,16 +133,16 @@ connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_func_list)
 		if ((addr_list = res_func(NULL, host))) {
 
 			mxip_addr *addr;
-			if ((addr = connect_hostlist(psockfd, host, port, addr_list)))
+			if ((addr = connect_hostlist(psockfd, host, port,
+					addr_list))) {
 				return addr;
-
-			DEBUG(5) {
-				debugf("connect_hostlist failed: %s\n", strerror(errno));
 			}
-
+			DEBUG(5) debugf("connect_hostlist failed: %s\n",
+					strerror(errno));
 			g_list_free(addr_list);
 		} else if (!g_list_next(res_node)) {
-			logwrite(LOG_ALERT, "could not resolve %s: %s\n", host, hstrerror(h_errno));
+			logwrite(LOG_ALERT, "could not resolve %s: %s\n",
+					host, hstrerror(h_errno));
 		}
 	}
 	return NULL;
