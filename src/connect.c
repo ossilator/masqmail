@@ -19,19 +19,19 @@
 #include "masqmail.h"
 
 static GList*
-resolve_ip(GList *list, gchar *ip)
+resolve_ip(gchar *ip)
 {
 	struct in_addr ia;
-	if (inet_aton(ip, &ia)) {
-		mxip_addr mxip;
+	mxip_addr mxip;
 
-		mxip.name = g_strdup(ip);
-		mxip.pref = 0;
-		mxip.ip = (guint32) * (guint32 *) (&ia);
-		list = g_list_append(list, g_memdup(&mxip, sizeof(mxip)));
+	if (!inet_aton(ip, &ia)) {
+		/* No dots-and-numbers notation. */
+		return NULL;
 	}
-	/* logwrite(LOG_ALERT, "invalid address '%s': inet_aton() failed\n", ip); */
-	return NULL;
+	mxip.name = g_strdup(ip);
+	mxip.pref = 0;
+	mxip.ip = (guint32) * (guint32 *) (&ia);
+	return g_list_append(NULL, g_memdup(&mxip, sizeof(mxip)));
 }
 
 mxip_addr*
@@ -96,19 +96,17 @@ connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_func_list)
 
 	h_errno = 0;
 
-	if (isdigit(host[0])) {
+	if (isdigit(*host)) {
 		mxip_addr *addr;
 
-		addr_list = resolve_ip(NULL, host);
-		if (addr_list) {
+		if ((addr_list = resolve_ip(host))) {
 			addr = connect_hostlist(psockfd, host, port, addr_list);
 			g_list_free(addr_list);
 			return addr;
 		}
 		/*
-		**  previous versions complained, until someone tried
-		**  to use a hostname out there that begins with a
-		**  digit. eg. '3dwars.de'.
+		**  Probably a hostname that begins with a digit.
+		**  E.g. '3dwars.de'. Thus fall ...
 		*/
 	}
 
