@@ -145,23 +145,24 @@ parse_address_glob_list(gchar *line)
 	foreach(plain_list, node) {
 		gchar *item = (gchar *) (node->data);
 		char *at;
-		char *p;
+		char *ep;
 		address *addr = calloc(1, sizeof(address));
 
-		for (p=item+strlen(item)-1; isspace(*p) || *p=='>'; p--) {
-			*p = '\0';
-		}
-		for (p=item; isspace(*p) || *p=='<'; p++) {
+		ep = item + strlen(item) - 1;
+		if (*item == '<' && *ep == '>') {
+			*item = '\0';
+			*ep = '\0';
+			g_strstrip(item);
 		}
 
-		addr->address = strdup(p);
-		at = strrchr(p, '@');
+		addr->address = strdup(item);
+		at = strrchr(item, '@');
 		if (at) {
 			*at = '\0';
-			addr->local_part = strdup(p);
+			addr->local_part = strdup(item);
 			addr->domain = strdup(at+1);
 		} else {
-			addr->local_part = strdup(p);
+			addr->local_part = strdup(item);
 			/* No `@', thus any domain is okay. */
 			addr->domain = "*";
 		}
@@ -217,6 +218,7 @@ parse_interface(gchar *line, gint def_port)
 	if ((cp = strchr(line, ':'))) {
 		*cp = '\0';
 	}
+	g_strstrip(line);
 	iface->address = g_strdup(line);
 	iface->port = (cp) ? atoi(++cp) : def_port;
 	DEBUG(9) fprintf(stderr,"found: address:port=%s:%u\n",
@@ -283,7 +285,8 @@ read_lval(FILE *in, gchar *buf, gint size)
 
 	DEBUG(9) fprintf(stderr, "read_lval() 2\n");
 	while (1) {
-		if ((c = fgetc(in)) == EOF) {
+		c = fgetc(in);
+		if (c == EOF) {
 			fprintf(stderr, "unexpected EOF after %s\n", buf);
 			return FALSE;
 		}
@@ -297,6 +300,7 @@ read_lval(FILE *in, gchar *buf, gint size)
 		*ptr++ = c;
 	}
 	*ptr = '\0';
+	g_strstrip(buf);
 	ungetc(c, in);
 	eat_spaces(in);
 	DEBUG(9) fprintf(stderr, "lval = %s\n", buf);
@@ -352,6 +356,7 @@ read_rval(FILE *in, gchar *buf, gint size)
 		}
 		*ptr = '\0';
 	}
+	g_strstrip(buf);
 	DEBUG(9) fprintf(stderr, "rval = %s\n", buf);
 	/* eat trailing of line */
 	while ((c = fgetc(in)) != EOF && c != '\n') {
@@ -638,7 +643,7 @@ read_route(gchar *filename, gboolean is_perma)
 						(gchar *) (pair->value), TRUE);
 				g_free(pair->value);
 				pair->value = (gpointer *) addr;
-				route->map_return_path_addresses = g_list_append( route->map_return_path_addresses, pair);
+				route->map_return_path_addresses = g_list_append(route->map_return_path_addresses, pair);
 				g_free(item);
 			}
 			g_list_free(list);
