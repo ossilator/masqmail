@@ -174,7 +174,7 @@ expand_one(GList *alias_table, address *addr, int doglob)
 	
 		DEBUG(6) debugf("alias: processing '%s'\n", val);
 
-		if (val[0] == '\\') {
+		if (*val == '\\') {
 			DEBUG(5) debugf("alias: '%s' is marked as final, "
 					"hence completed\n", val);
 			alias_addr = create_address_qualified(val+1, TRUE,
@@ -186,7 +186,7 @@ expand_one(GList *alias_table, address *addr, int doglob)
 			continue;
 		}
 	
-		if (val[0] == '|') {
+		if (*val == '|') {
 			DEBUG(5) debugf("alias: '%s' is a pipe address\n",
 					val);
 			alias_addr = create_address_pipe(val);
@@ -244,9 +244,8 @@ alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
 	GList *rcpt_node_next = NULL;
 	address *addr = NULL;
 
-	for (rcpt_node=g_list_copy(rcpt_list);
-	     rcpt_node;
-	     rcpt_node=g_list_next(rcpt_node)) {
+	for (rcpt_node=g_list_copy(rcpt_list); rcpt_node;
+			rcpt_node=g_list_next(rcpt_node)) {
 
 		addr = (address *) (rcpt_node->data);
 		if (addr_is_local(addr)) {
