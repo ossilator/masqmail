@@ -66,10 +66,14 @@ sigterm_handler(int sig)
 	if (pidfile) {
 		uid_t uid = geteuid();
 		if (seteuid(0) != 0) {
-			logwrite(LOG_ALERT, "sigterm_handler: could not set euid to %d: %s\n", 0, strerror(errno));
+			logwrite(LOG_ALERT, "sigterm_handler: could not set "
+					"euid to %d: %s\n",
+					0, strerror(errno));
 		}
 		if (unlink(pidfile) != 0)
-			logwrite(LOG_WARNING, "could not delete pid file %s: %s\n", pidfile, strerror(errno));
+			logwrite(LOG_WARNING,
+					"could not delete pid file %s: %s\n",
+					pidfile, strerror(errno));
 		seteuid(uid);  /* we exit anyway after this, just to be sure */
 	}
 
@@ -111,7 +115,8 @@ write_pidfile(gchar *name)
 		pidfile = strdup(name);
 		return TRUE;
 	}
-	logwrite(LOG_WARNING, "could not write pid file: %s\n", strerror(errno));
+	logwrite(LOG_WARNING, "could not write pid file: %s\n",
+			strerror(errno));
 	return FALSE;
 }
 
@@ -124,7 +129,8 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	/* daemon */
 	if (!conf.run_as_user) {
 		if ((conf.orig_uid != 0) && (conf.orig_uid != conf.mail_uid)) {
-			fprintf(stderr, "must be root or %s for daemon.\n", DEF_MAIL_USER);
+			fprintf(stderr, "must be root or %s for daemon.\n",
+					DEF_MAIL_USER);
 			exit(1);
 		}
 	}
@@ -156,7 +162,8 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	logopen();
 
 	logwrite(LOG_NOTICE, "%s %s daemon starting\n", PACKAGE, VERSION);
-	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval, argv);
+	listen_port(do_listen ? conf.listen_addresses : NULL,
+			queue_interval, argv);
 }
 
 /* -bs or called as smtpd or in.smtpd */
@@ -198,7 +205,9 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 	pid_t pid;
 
 	if (return_path && !is_privileged_user(conf.orig_uid)) {
-		fprintf(stderr, "must be root, %s or in group %s for setting return path.\n", DEF_MAIL_USER, DEF_MAIL_GROUP);
+		fprintf(stderr, "must be root, %s or in group %s for "
+				"setting return path.\n",
+				DEF_MAIL_USER, DEF_MAIL_GROUP);
 		exit(1);
 	}
 
@@ -212,18 +221,23 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 
 	/* warn if -t option and cmdline addr args */
 	if (addr_cnt && (accept_flags & ACC_RCPT_FROM_HEAD)) {
-		logwrite(LOG_ALERT, "command line address arguments are now *added*  to the mail header\\\n");
-		logwrite(LOG_ALERT, "  recipient addresses (instead of substracted)  when -t is given.\\\n");
+		logwrite(LOG_ALERT, "command line address arguments are "
+				"now *added*  to the mail header\\\n");
+		logwrite(LOG_ALERT, "  recipient addresses (instead of "
+				"substracted)  when -t is given.\\\n");
 		logwrite(LOG_ALERT, "  this changed with version 0.3.1\n");
 	}
 
 	for (i = 0; i < addr_cnt; i++) {
 		if (addresses[i][0] == '|') {
-			logwrite(LOG_ALERT, "no pipe allowed as recipient address: %s\n", addresses[i]);
+			logwrite(LOG_ALERT, "no pipe allowed as recipient "
+					"address: %s\n", addresses[i]);
 			/* should we better ignore this one addr? */
 			exit(1);
 		}
-		msg->rcpt_list = g_list_append(msg->rcpt_list, create_address_qualified(addresses[i], TRUE, conf.host_name));
+		msg->rcpt_list = g_list_append(msg->rcpt_list,
+				create_address_qualified(addresses[i],
+				TRUE, conf.host_name));
 	}
 
 	/* -f option */
@@ -259,7 +273,8 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 	}
 
 	/* here the mail is queued and thus in our responsibility */
-	logwrite(LOG_NOTICE, "%s <= %s with %s\n", msg->uid, addr_string(msg->return_path), prot_names[PROT_LOCAL]);
+	logwrite(LOG_NOTICE, "%s <= %s with %s\n", msg->uid,
+			addr_string(msg->return_path), prot_names[PROT_LOCAL]);
 
 	if (conf.do_queue) {
 		/* we're finished as we only need to queue it */
@@ -268,7 +283,8 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 
 	/* deliver at once */
 	if ((pid = fork()) < 0) {
-		logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n", msg->uid);
+		logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n",
+				msg->uid);
 	} else if (pid == 0) {
 		conf.do_verbose = FALSE;
 		fclose(stdin);
@@ -321,8 +337,9 @@ manipulate_queue(char *cmd, char *id[])
 
 	struct passwd *pw = getpwuid(conf.orig_uid);
 	if (!pw) {
-		fprintf(stderr, "could not find a passwd entry for uid %d: %s\n",
-		        conf.orig_uid, strerror(errno));
+		fprintf(stderr, "could not find a passwd entry for "
+				"uid %d: %s\n",
+				conf.orig_uid, strerror(errno));
 		return FALSE;
 	}
 
@@ -333,7 +350,8 @@ manipulate_queue(char *cmd, char *id[])
 		fprintf(stderr, "id: %s\n", *id);
 
 		if (!msg->ident) {
-			fprintf(stderr, "message %s does not have an ident\n", *id);
+			fprintf(stderr, "message %s does not have an ident\n",
+					*id);
 			continue;
 		}
 		if (strcmp(pw->pw_name, msg->ident) != 0) {
@@ -342,7 +360,8 @@ manipulate_queue(char *cmd, char *id[])
 		}
 
 		if (msg->received_host || (msg->received_prot != PROT_LOCAL)) {
-			fprintf(stderr, "message %s was not received locally\n", *id);
+			fprintf(stderr, "message %s was not received "
+					"locally\n", *id);
 			continue;
 		}
 
@@ -366,7 +385,8 @@ run_queue(gboolean do_runq, gboolean do_runq_online, char *route_name)
 
 	if (do_runq_online) {
 		if (route_name) {
-			conf.online_query = g_strdup_printf("/bin/echo %s", route_name);
+			conf.online_query = g_strdup_printf("/bin/echo %s",
+					route_name);
 		}
 		/*
 		**  TODO: change behavior of `-qo without argument'?
@@ -398,7 +418,8 @@ void
 set_mode(enum mta_mode mode)
 {
 	if (mta_mode && mta_mode!=mode) {
-		fprintf(stderr, "operation mode was already specified (%d vs. %d)\n", mta_mode, mode);
+		fprintf(stderr, "operation mode was already specified "
+				"(%d vs. %d)\n", mta_mode, mode);
 		exit(1);
 	}
 
@@ -491,18 +512,19 @@ main(int argc, char *argv[])
 		} else if (strncmp(opt, "C", 1) == 0) {
 			conf_file = get_optarg(argv, &arg, opt+1);
 			if (!conf_file) {
-				fprintf(stderr, "-C requires a filename as argument.\n");
+				fprintf(stderr, "-C requires filename arg.\n");
 				exit(1);
 			}
 
 		} else if (strncmp(opt, "d", 1) == 0) {
 			if (getuid() != 0) {
-				fprintf(stderr, "only root may set the debug level.\n");
+				fprintf(stderr, "only root may set the "
+						"debug level.\n");
 				exit(1);
 			}
 			char *lvl = get_optarg(argv, &arg, opt+1);
 			if (!lvl) {
-				fprintf(stderr, "-d requires a number argument.\n");
+				fprintf(stderr, "-d requires number arg.\n");
 				exit(1);
 			}
 			debug_level = atoi(lvl);
@@ -511,7 +533,7 @@ main(int argc, char *argv[])
 			/* set return path */
 			gchar *address = get_optarg(argv, &arg, opt+1);
 			if (!address) {
-				fprintf(stderr, "-f requires an address argument\n");
+				fprintf(stderr, "-f requires address arg.\n");
 				exit(1);
 			}
 			f_address = g_strdup(address);
@@ -519,7 +541,7 @@ main(int argc, char *argv[])
 		} else if (strncmp(opt, "F", 1) == 0) {
 			full_sender_name = get_optarg(argv, &arg, opt+1);
 			if (!full_sender_name) {
-				fprintf(stderr, "-F requires a name argument\n");
+				fprintf(stderr, "-F requires name arg.\n");
 				exit(1);
 			}
 
@@ -550,8 +572,12 @@ main(int argc, char *argv[])
 			/* TODO: behavior might change if it is NULL */
 			route_name = get_optarg(argv, &arg, opt+2);
 			if (!route_name) {
-				fprintf(stderr, "Please do not use -qo without argument anymore; use -q instead.\n");
-				fprintf(stderr, "The behavior for -qo without argument is likely to change.\n");
+				fprintf(stderr, "Please do not use -qo "
+						"without argument anymore; "
+						"use -q instead.\n");
+				fprintf(stderr, "The behavior for -qo without "
+						"argument is likely to "
+						"change.\n");
 			}
 
 		} else if (strncmp(opt, "q", 1) == 0) {
@@ -560,10 +586,11 @@ main(int argc, char *argv[])
 
 			optarg = get_optarg(argv, &arg, opt+1);
 			if (optarg) {
-				/* not just one single queue run but regular runs */
+				/* do regular queue runs */
 				set_mode(MODE_DAEMON);
 				queue_interval = time_interval(optarg);
 			} else {
+				/* do a single queue run */
 				set_mode(MODE_RUNQUEUE);
 				do_runq = TRUE;
 			}
@@ -631,11 +658,13 @@ main(int argc, char *argv[])
 		conf.run_as_user = TRUE;
 		set_euidgid(conf.orig_uid, conf.orig_gid, NULL, NULL);
 		if (setgid(conf.orig_gid)) {
-			logwrite(LOG_ALERT, "could not set gid to %d: %s\n", conf.orig_gid, strerror(errno));
+			logwrite(LOG_ALERT, "could not set gid to %d: %s\n",
+					conf.orig_gid, strerror(errno));
 			exit(1);
 		}
 		if (setuid(conf.orig_uid)) {
-			logwrite(LOG_ALERT, "could not set uid to %d: %s\n", conf.orig_uid, strerror(errno));
+			logwrite(LOG_ALERT, "could not set uid to %d: %s\n",
+					conf.orig_uid, strerror(errno));
 			exit(1);
 		}
 	}
@@ -645,7 +674,8 @@ main(int argc, char *argv[])
 	/* FIXME: fails if we run as user */
 	logopen();
 	if (!read_conf(conf_file)) {
-		logwrite(LOG_ALERT, "SHUTTING DOWN due to problems reading config\n");
+		logwrite(LOG_ALERT, "SHUTTING DOWN due to problems reading "
+				"config\n");
 		exit(5);
 	}
 	logclose();
@@ -672,11 +702,15 @@ main(int argc, char *argv[])
 
 	if (!conf.run_as_user) {
 		if (setgid(0) != 0) {
-			fprintf(stderr, "could not set gid to 0. Is the setuid bit set? : %s\n", strerror(errno));
+			fprintf(stderr, "could not set gid to 0. "
+					"Is the setuid bit set? : %s\n",
+					strerror(errno));
 			exit(1);
 		}
 		if (setuid(0) != 0) {
-			fprintf(stderr, "could not gain root privileges. Is the setuid bit set? : %s\n", strerror(errno));
+			fprintf(stderr, "could not gain root privileges. "
+					"Is the setuid bit set? : %s\n",
+					strerror(errno));
 			exit(1);
 		}
 	}
@@ -699,10 +733,12 @@ main(int argc, char *argv[])
 	DEBUG(5) debugf("queue_interval = %d\n", queue_interval);
 
 	if (f_address) {
-		return_path = create_address_qualified(f_address, TRUE, conf.host_name);
+		return_path = create_address_qualified(f_address, TRUE,
+				conf.host_name);
 		g_free(f_address);
 		if (!return_path) {
-			fprintf(stderr, "invalid RFC821 address: %s\n", f_address);
+			fprintf(stderr, "invalid RFC821 address: %s\n",
+					f_address);
 			exit(1);
 		}
 	}
@@ -734,9 +770,12 @@ main(int argc, char *argv[])
 
 	case MODE_ACCEPT:
 		{
-			guint accept_flags = (opt_t ? ACC_RCPT_FROM_HEAD : 0)
-			                     | (opt_i ? ACC_DOT_IGNORE : ACC_NODOT_RELAX);
-			mode_accept(return_path, full_sender_name, accept_flags, &(argv[arg]), argc - arg);
+			guint accept_flags = 0;
+			accept_flags |= (opt_t ? ACC_RCPT_FROM_HEAD : 0);
+			accept_flags |= (opt_i ?
+					ACC_DOT_IGNORE : ACC_NODOT_RELAX);
+			mode_accept(return_path, full_sender_name,
+					accept_flags, argv + arg, argc - arg);
 			exit(0);
 		}
 		break;
