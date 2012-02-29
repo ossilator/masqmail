@@ -390,6 +390,12 @@ _create_address(gchar *string, gchar **end, gboolean is_rfc821)
 	gchar *addr_end;
 	gboolean ret;
 
+	if (!string) {
+		return NULL;
+	}
+	while (isspace(*string)) {
+		string++;
+	}
 	/* TODO: what about (string == NULL)? */
 	if (string && (string[0] == '\0')) {
 		address *addr = g_malloc(sizeof(address));
@@ -411,21 +417,20 @@ _create_address(gchar *string, gchar **end, gboolean is_rfc821)
 	if (!ret) {
 		return NULL;
 	}
-
-	address *addr = g_malloc(sizeof(address));
-	gchar *p = addr_end;
-
-	memset(addr, 0, sizeof(address));
-
-	if (loc_beg[0] == '|') {
+	if (*loc_beg == '|') {
 		parse_error = g_strdup("no pipe allowed for RFC 822/821 address");
 		return NULL;
 	}
 
+	address *addr = g_malloc(sizeof(address));
+	memset(addr, 0, sizeof(address));
+
+	gchar *p = addr_end;
 	while (*p && (*p != ',')) {
+		/* it seems as if we do this for the code in rewrite.c */
 		p++;
 	}
-	addr->address = g_strndup(string, p - string);
+	addr->address = g_strstrip(g_strndup(string, p - string));
 	addr->local_part = g_strndup(loc_beg, loc_end - loc_beg);
 
 #ifdef PARSE_TEST
@@ -447,6 +452,10 @@ _create_address(gchar *string, gchar **end, gboolean is_rfc821)
 	if (end) {
 		*end = p;
 	}
+
+	DEBUG(6) debugf("_create_address(): address: `%s'\n", addr->address);
+	DEBUG(6) debugf("_create_address(): local_part: `%s'\n", addr->local_part);
+	DEBUG(6) debugf("_create_address(): domain: `%s'\n", addr->domain);
 
 #ifndef PARSE_TEST
 	addr_unmark_delivered(addr);
