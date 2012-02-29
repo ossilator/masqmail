@@ -419,8 +419,8 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 			GList *rcpt_node;
 
 			for (rcpt_node = g_list_first(msgout->rcpt_list);
-			     rcpt_node;
-			     rcpt_node = g_list_next(rcpt_node)) {
+					rcpt_node;
+					rcpt_node = g_list_next(rcpt_node)) {
 				address *rcpt = (address *) (rcpt_node->data);
 				gboolean ret = FALSE;
 
@@ -431,9 +431,20 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 					addr_mark_defered(rcpt);
 				}
 				if (route->wrapper) {
-					ret = delivery_failures(msgout->msg, msgout->rcpt_list, "could not open wrapper:\n\t%s", strerror(errno));
+					ret = delivery_failures(msgout->msg,
+							msgout->rcpt_list,
+							"could not open "
+							"wrapper:\n\t%s",
+							strerror(errno));
 				} else {
-					ret = delivery_failures(msgout->msg, msgout->rcpt_list, "could not open connection to %s:%d :\n\t%s", host, port, h_errno != 0 ? hstrerror(h_errno) : strerror(errno));
+					ret = delivery_failures(msgout->msg,
+							msgout->rcpt_list,
+							"could not open "
+							"connection to %s:%d "
+							":\n\t%s", host, port,
+							h_errno != 0 ?
+							hstrerror(h_errno) :
+							strerror(errno));
 				}
 				if (ret) {
 					deliver_finish(msgout);
@@ -443,23 +454,33 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 		return ok;
 	}
 
-	set_heloname(psb, route->helo_name ? route->helo_name : conf.host_name, route->do_correct_helo);
+	set_heloname(psb, route->helo_name ? route->helo_name : conf.host_name,
+			route->do_correct_helo);
 
 #ifdef ENABLE_AUTH
 	if (route->auth_name && route->auth_login && route->auth_secret) {
-		set_auth(psb, route->auth_name, route->auth_login, route->auth_secret);
+		set_auth(psb, route->auth_name, route->auth_login,
+				route->auth_secret);
 	}
 #endif
 	if (!smtp_out_init(psb, route->instant_helo)) {
 		/* smtp_out_init() failed */
-		if ((psb->error==smtp_fail) || (psb->error==smtp_trylater) || (psb->error==smtp_syntax)) {
+		if ((psb->error==smtp_fail) || (psb->error==smtp_trylater) ||
+				(psb->error==smtp_syntax)) {
 			smtp_out_quit(psb);
 
 			foreach(msgout_list, msgout_node) {
-				msg_out *msgout = (msg_out *) (msgout_node->data);
+				msg_out *msgout =
+						(msg_out *)(msgout_node->data);
 				smtp_out_mark_rcpts(psb, msgout->rcpt_list);
 
-				if (delivery_failures(msgout->msg, msgout->rcpt_list, "while connected with %s, the server replied\n\t%s", (route->wrapper) ? "<wrapper>" : host, psb->buffer)) {
+				if (delivery_failures(msgout->msg,
+						msgout->rcpt_list,
+						"while connected with %s, "
+						"the server replied\n\t%s",
+						(route->wrapper) ?
+						"<wrapper>" : host,
+						psb->buffer)) {
 					deliver_finish(msgout);
 				}
 			}
@@ -477,16 +498,22 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 		gboolean flag, ok_msg = FALSE, ok_fail = FALSE;
 		message *msg = msgout->msg;
 
-		/* we may have to read the data at this point and remember if we did */
+		/* we may have to read the data at this point
+		** and remember if we did */
 		flag = (msg->data_list == NULL);
 		if (flag && !spool_read_data(msg)) {
-			logwrite(LOG_ALERT, "could not open data spool file %s\n", msg->uid);
+			logwrite(LOG_ALERT, "could not open data spool "
+					"file %s\n", msg->uid);
 			break;
 		}
 
-		smtp_out_msg(psb, msg, msgout->return_path, msgout->rcpt_list, msgout->hdr_list);
+		smtp_out_msg(psb, msg, msgout->return_path, msgout->rcpt_list,
+				msgout->hdr_list);
 
-		ok_fail = delivery_failures(msg, msgout->rcpt_list, "while connected with %s, the server replied\n\t%s", (route->wrapper) ? "<wrapper>" : host, psb->buffer);
+		ok_fail = delivery_failures(msg, msgout->rcpt_list,
+				"while connected with %s, the server "
+				"replied\n\t%s", (route->wrapper) ?
+				"<wrapper>" : host, psb->buffer);
 
 		if ((psb->error == smtp_eof) || (psb->error == smtp_timeout)) {
 			/* connection lost */
@@ -508,8 +535,9 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 			deliver_finish(msgout);
 		}
 	}
-	if (psb->error == smtp_ok || (psb->error == smtp_fail)
-	    || (psb->error == smtp_trylater) || (psb->error == smtp_syntax)) {
+	if (psb->error == smtp_ok || (psb->error == smtp_fail) ||
+			(psb->error == smtp_trylater) ||
+			(psb->error == smtp_syntax)) {
 		smtp_out_quit(psb);
 	}
 	destroy_smtpbase(psb);
@@ -523,10 +551,12 @@ deliver_msglist_host(connect_route *route, GList *msgout_list, gchar *host,
 
 	if (route->pipe) {
 		DEBUG(5) debugf("with pipe\n");
-		return deliver_msglist_host_pipe(route, msgout_list, host, res_list);
+		return deliver_msglist_host_pipe(route, msgout_list,
+				host, res_list);
 	} else {
 		DEBUG(5) debugf("with smtp\n");
-		return deliver_msglist_host_smtp(route, msgout_list, host, res_list);
+		return deliver_msglist_host_smtp(route, msgout_list,
+				host, res_list);
 	}
 }
 
@@ -540,10 +570,11 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 	GList *mo_ph_list;
 	GList *mo_ph_node;
 
-	DEBUG(5) debugf("deliver_route_msgout_list entered, route->name = %s\n", route->name);
+	DEBUG(5) debugf("deliver_route_msgout_list entered, route->name=%s\n",
+			route->name);
 
 	if (route->mail_host) {
-		/* this is easy... deliver everything to a smart host for relay */
+		/* easy: deliver everything to a smart host for relay */
 		return deliver_msglist_host(route, msgout_list, NULL,
 				route->resolve_list);
 	}
@@ -604,8 +635,9 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 			**  failed addresses already have been bounced;
 			**  there should be a better way to handle those.
 			*/
-			if (!addr_is_delivered(rcpt) && !addr_is_failed(rcpt)
-			    && !(rcpt->flags & ADDR_FLAG_LAST_ROUTE)) {
+			if (!addr_is_delivered(rcpt) &&
+					!addr_is_failed(rcpt) &&
+					!(rcpt->flags & ADDR_FLAG_LAST_ROUTE)){
 				rcpt_list_non_delivered = g_list_append(rcpt_list_non_delivered, rcpt);
 			}
 		}
@@ -618,8 +650,9 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 		}
 
 		/* filter by allowed envelope sender */
-		if (!route_sender_is_allowed(route, msgout->msg->return_path)) {
-			DEBUG(6) debugf("sender `%s' is not allowed for this route\n", msgout->msg->return_path);
+		if (!route_sender_is_allowed(route, msgout->msg->return_path)){
+			DEBUG(6) debugf("sender `%s' is not allowed for this "
+					"route\n", msgout->msg->return_path);
 			destroy_msg_out(msgout_cloned);
 			continue;
 		}
@@ -649,7 +682,8 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 		}
 
 		route_prepare_msgout(route, msgout_cloned);
-		msgout_list_deliver = g_list_append(msgout_list_deliver, msgout_cloned);
+		msgout_list_deliver = g_list_append(msgout_list_deliver,
+				msgout_cloned);
 	}
 
 	if (msgout_list_deliver) {
@@ -674,7 +708,8 @@ update_non_rcpt_list(msg_out *msgout)
 	foreach(msgout->rcpt_list, rcpt_node) {
 		address *rcpt = (address *) (rcpt_node->data);
 		if (addr_is_delivered(rcpt) || addr_is_failed(rcpt)) {
-			msg->non_rcpt_list = g_list_append(msg->non_rcpt_list, rcpt);
+			msg->non_rcpt_list = g_list_append(msg->non_rcpt_list,
+					rcpt);
 		}
 	}
 }
@@ -729,7 +764,8 @@ deliver_finish(msg_out *msgout)
 
 	/* one not delivered address was found */
 	if (!spool_write(msg, FALSE)) {
-		logwrite(LOG_ALERT, "could not write back spool header for %s\n", msg->uid);
+		logwrite(LOG_ALERT, "could not write back spool header "
+				"for %s\n", msg->uid);
 		return FALSE;
 	}
 
@@ -756,8 +792,10 @@ deliver_remote(GList *remote_msgout_list)
 
 		route_list = read_route_list(conf.perma_routes, TRUE);
 		foreach(route_list, route_node) {
-			connect_route *route = (connect_route *) (route_node->data);
-			if (!deliver_route_msg_list(route, remote_msgout_list)) {
+			connect_route *route =
+					(connect_route *) (route_node->data);
+			if (!deliver_route_msg_list(route,
+					remote_msgout_list)) {
 				ok = FALSE;
 			}
 		}
@@ -773,17 +811,20 @@ deliver_remote(GList *remote_msgout_list)
 
 	/* we are online! */
 	DEBUG(5) debugf("processing query_routes\n");
-	logwrite(LOG_NOTICE, "detected online configuration `%s'\n", connect_name);
+	logwrite(LOG_NOTICE, "detected online configuration `%s'\n",
+			connect_name);
 
 	rf_list = (GList *) table_find(conf.query_routes, connect_name);
 	if (!rf_list) {
-		logwrite(LOG_ALERT, "route list with name '%s' not found.\n", connect_name);
+		logwrite(LOG_ALERT, "route list with name '%s' not found.\n",
+				connect_name);
 		return FALSE;
 	}
 
 	route_list = read_route_list(rf_list, FALSE);
 	if (!route_list) {
-		logwrite(LOG_ALERT, "could not read route list '%s'\n", connect_name);
+		logwrite(LOG_ALERT, "could not read route list '%s'\n",
+				connect_name);
 		return FALSE;
 	}
 
@@ -834,18 +875,22 @@ deliver_msg_list(GList *msg_list, guint flags)
 		GList *other_rcpt_list = NULL;
 
 		if (!spool_lock(msgout->msg->uid)) {
-			DEBUG(5) debugf("spool_lock(%s) failed.\n", msgout->msg->uid);
+			DEBUG(5) debugf("spool_lock(%s) failed.\n",
+					msgout->msg->uid);
 			continue;
 		}
 		DEBUG(5) debugf("spool_lock(%s)\n", msgout->msg->uid);
 
 		rcpt_list = g_list_copy(msgout->msg->rcpt_list);
 		if (conf.log_user) {
-			address *addr = create_address_qualified(conf.log_user, TRUE, conf.host_name);
+			address *addr = create_address_qualified(conf.log_user,
+					TRUE, conf.host_name);
 			if (addr) {
 				rcpt_list = g_list_prepend(rcpt_list, addr);
 			} else {
-				logwrite(LOG_ALERT, "invalid log_user address `%s', ignoring\n", conf.log_user);
+				logwrite(LOG_ALERT, "invalid log_user "
+						"address `%s', ignoring\n",
+						conf.log_user);
 			}
 		}
 		if (globalias_table) {
@@ -865,7 +910,8 @@ deliver_msg_list(GList *msg_list, guint flags)
 			rcpt_list = aliased_rcpt_list;
 		}
 
-		/* split_rcpts(rcpt_list, NULL, &local_rcpt_list, NULL, &other_rcpt_list); */
+		/* split_rcpts(rcpt_list, NULL, &local_rcpt_list, NULL,
+		** &other_rcpt_list); */
 		local_rcpt_list = local_rcpts(rcpt_list);
 		other_rcpt_list = remote_rcpts(rcpt_list);
 		g_list_free(rcpt_list);
@@ -874,14 +920,16 @@ deliver_msg_list(GList *msg_list, guint flags)
 		if ((flags & DLVR_LOCAL) && local_rcpt_list) {
 			msg_out *local_msgout = clone_msg_out(msgout);
 			local_msgout->rcpt_list = local_rcpt_list;
-			local_msgout_list = g_list_append(local_msgout_list, local_msgout);
+			local_msgout_list = g_list_append(local_msgout_list,
+					local_msgout);
 		}
 
 		/* remote recipients, requires online delivery  */
 		if ((flags & DLVR_ONLINE) && other_rcpt_list) {
 			msg_out *remote_msgout = clone_msg_out(msgout);
 			remote_msgout->rcpt_list = other_rcpt_list;
-			remote_msgout_list = g_list_append(remote_msgout_list, remote_msgout);
+			remote_msgout_list = g_list_append(remote_msgout_list,
+					remote_msgout);
 		}
 	}
 
@@ -915,9 +963,11 @@ deliver_msg_list(GList *msg_list, guint flags)
 	foreach(msgout_list, msgout_node) {
 		msg_out *msgout = (msg_out *) (msgout_node->data);
 		if (spool_unlock(msgout->msg->uid)) {
-			DEBUG(5) debugf("spool_unlock(%s)\n", msgout->msg->uid);
+			DEBUG(5) debugf("spool_unlock(%s)\n",
+					msgout->msg->uid);
 		} else {
-			DEBUG(5) debugf("spool_unlock(%s) failed.\n", msgout->msg->uid);
+			DEBUG(5) debugf("spool_unlock(%s) failed.\n",
+					msgout->msg->uid);
 		}
 	}
 	destroy_msg_out_list(msgout_list);
