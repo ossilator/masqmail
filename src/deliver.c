@@ -895,6 +895,8 @@ deliver_msg_list(GList *msg_list, guint flags)
 		}
 		if (globalias_table) {
 			GList *globaliased_rcpt_list;
+
+			DEBUG(5) debugf("Doing globalias expansion\n");
 			globaliased_rcpt_list = alias_expand(globalias_table,
 					rcpt_list,
 					msgout->msg->non_rcpt_list, 1);
@@ -903,6 +905,8 @@ deliver_msg_list(GList *msg_list, guint flags)
 		}
 		if (alias_table) {
 			GList *aliased_rcpt_list;
+
+			DEBUG(5) debugf("Doing alias expansion\n");
 			aliased_rcpt_list = alias_expand(alias_table,
 					rcpt_list,
 					msgout->msg->non_rcpt_list, 0);
