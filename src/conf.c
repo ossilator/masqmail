@@ -221,7 +221,7 @@ parse_interface(gchar *line, gint def_port)
 	g_strstrip(line);
 	iface->address = g_strdup(line);
 	iface->port = (cp) ? atoi(++cp) : def_port;
-	DEBUG(9) fprintf(stderr,"found: address:port=%s:%u\n",
+	DEBUG(9) fprintf(stderr, "found: address:port=%s:%u\n",
 			iface->address, iface->port);
 	return iface;
 }
@@ -562,7 +562,7 @@ read_conf(gchar *filename)
 	}
 	if (!listen_addrs_tmp) {
 		conf.listen_addresses = g_list_append(NULL,
-				parse_interface("localhost", 25));
+				parse_interface(strdup("localhost"), 25));
 	} else {
 		GList *node;
 
