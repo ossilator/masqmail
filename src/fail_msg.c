@@ -34,26 +34,31 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 	if (msg->return_path->local_part[0] == '\0') {
 		GList *node;
 
-		ret_path = create_address_qualified("postmaster", TRUE, conf.host_name);
+		ret_path = create_address_qualified("postmaster", TRUE,
+				conf.host_name);
 		foreach(failed_rcpts, node) {
 			address *addr = (address *) (node->data);
 
 			if (addr_isequal_parent(addr, ret_path, strcasecmp)) {
-				logwrite(LOG_ALERT, "%s == %s: postmaster address failed\n", msg->uid, addr_string(ret_path));
+				logwrite(LOG_ALERT, "%s == %s: postmaster "
+						"address failed\n", msg->uid,
+						addr_string(ret_path));
 				return FALSE;
 			}
 		}
 	} else
 		ret_path = copy_address(msg->return_path);
 
-	DEBUG(1) debugf("sending failure notice to %s.\n", addr_string(ret_path));
+	DEBUG(1) debugf("sending failure notice to %s.\n",
+			addr_string(ret_path));
 
 	if (template) {
 		FILE *file;
 		GList *var_table = var_table_conf(var_table_msg(NULL, msg));
 		gchar *err_msg = g_strdup_vprintf(err_fmt, args);
 
-		var_table = g_list_prepend(var_table, create_pair_string("err_msg", err_msg));
+		var_table = g_list_prepend(var_table,
+				create_pair_string("err_msg", err_msg));
 		g_free(err_msg);
 
 		if ((file = fopen(template, "r"))) {
@@ -62,7 +67,11 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 			pid_t pid;
 
 			cmd = g_strdup_printf(SBINDIR "/masqmail -oi -f <> %s@%s", ret_path->local_part, ret_path->domain);
-			if ((out = peidopen(cmd, "w", environ, &pid, conf.mail_uid, conf.mail_gid))) {
+			if (!(out = peidopen(cmd, "w", environ, &pid,
+					conf.mail_uid, conf.mail_gid))) {
+				logwrite(LOG_ERR, "peopen failed: %s\n",
+						strerror(errno));
+			} else {
 				gchar fmt[256], line[256];
 				int status, ret;
 
@@ -102,20 +111,25 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 
 				fclose(out);
 				waitpid(pid, &status, 0);
-				if ((WEXITSTATUS(status) != 0) || WIFSIGNALED(status)) {
-					if (WEXITSTATUS(status) != 0)
+				if ((WEXITSTATUS(status) != 0) ||
+						WIFSIGNALED(status)) {
+					if (WEXITSTATUS(status)) {
 						logwrite(LOG_WARNING, "child returned %d\n", WEXITSTATUS(status));
-					if (WIFSIGNALED(status))
+					}
+					if (WIFSIGNALED(status)) {
 						logwrite(LOG_WARNING, "child got signal: %d\n", WTERMSIG(status));
-				} else
+					}
+				} else {
 					ok = TRUE;
-			} else {
-				logwrite(LOG_ERR, "peopen failed: %s\n", strerror(errno));
+				}
 			}
 			g_free(cmd);
 			fclose(file);
-		} else
-			logwrite(LOG_ALERT, "could not open failure message template %s: %s\n", conf.errmsg_file, strerror(errno));
+		} else {
+			logwrite(LOG_ALERT, "could not open failure message "
+					"template %s: %s\n",
+					conf.errmsg_file, strerror(errno));
+		}
 
 		destroy_table(var_table);
 	}
@@ -136,21 +150,27 @@ warn_msg_is_due(message *msg)
 	time_t now = time(NULL);
 
 	GList *node;
-	for (node = g_list_last(conf.warn_intervals); node; node = g_list_previous(node)) {
+	for (node = g_list_last(conf.warn_intervals); node;
+			node = g_list_previous(node)) {
 		gchar *str_ival = (gchar *) (node->data);
 		gint ival = time_interval(str_ival);
-		if (ival >= 0) {
+		if (ival < 0) {
+			logwrite(LOG_WARNING, "invalid time interval: %s\n",
+					str_ival);
+		} else {
 			DEBUG(5) debugf("ival = %d\n", ival);
-			DEBUG(5) debugf("now - msg->received_time = %d\n", now - msg->received_time);
+			DEBUG(5) debugf("now - msg->received_time = %d\n",
+					now - msg->received_time);
 			if ((now - msg->received_time) > ival) {
-				if (msg->warned_time != 0) {
-					if ((msg->warned_time - msg->received_time) < ival)
-						return TRUE;
-				} else
+				if (msg->warned_time == 0) {
 					return TRUE;
+				}
+				if ((msg->warned_time - msg->received_time) <
+						ival) {
+					return TRUE;
+				}
 			}
-		} else
-			logwrite(LOG_WARNING, "invalid time interval: %s\n", str_ival);
+		}
 	}
 	return FALSE;
 }
@@ -165,8 +185,9 @@ warn_msg(message *msg, gchar *template, GList *defered_rcpts, gchar *err_fmt,
 		if (fail_msg(msg, template, defered_rcpts, err_fmt, args)) {
 			msg->warned_time = now;
 			return TRUE;
-		} else
+		} else {
 			return FALSE;
+		}
 	}
 	return TRUE;
 }
