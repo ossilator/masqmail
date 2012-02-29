@@ -26,11 +26,14 @@ var_table_rcpt(GList *var_table, address *rcpt)
 {
 	gchar *tmp_str;
 
-	var_table = g_list_prepend(var_table, create_pair_string("rcpt_local", rcpt->local_part));
-	var_table = g_list_prepend(var_table, create_pair_string("rcpt_domain", rcpt->domain));
+	var_table = g_list_prepend(var_table,
+			create_pair_string("rcpt_local", rcpt->local_part));
+	var_table = g_list_prepend(var_table,
+			create_pair_string("rcpt_domain", rcpt->domain));
 
 	tmp_str = g_strdup_printf("%s@%s", rcpt->local_part, rcpt->domain);
-	var_table = g_list_prepend(var_table, create_pair_string("rcpt", tmp_str));
+	var_table = g_list_prepend(var_table,
+			create_pair_string("rcpt", tmp_str));
 	g_free(tmp_str);
 
 	return var_table;
@@ -42,14 +45,25 @@ var_table_msg(GList *var_table, message *msg)
 	address *ret_path = msg->return_path;
 	gchar *tmp_str;
 
-	var_table = g_list_prepend(var_table, create_pair_string("uid", msg->uid));
-	var_table = g_list_prepend(var_table, create_pair_string("received_host", msg->received_host ? msg->received_host : ""));
-	var_table = g_list_prepend(var_table, create_pair_string("ident", msg->ident ? msg->ident : ""));
-	var_table = g_list_prepend(var_table, create_pair_string("return_path_local", ret_path->local_part));
-	var_table = g_list_prepend(var_table, create_pair_string("return_path_domain", ret_path->domain));
+	var_table = g_list_prepend(var_table,
+			create_pair_string("uid", msg->uid));
+	var_table = g_list_prepend(var_table,
+			create_pair_string("received_host",
+			msg->received_host ? msg->received_host : ""));
+	var_table = g_list_prepend(var_table,
+			create_pair_string("ident",
+			msg->ident ? msg->ident : ""));
+	var_table = g_list_prepend(var_table,
+			create_pair_string("return_path_local",
+			ret_path->local_part));
+	var_table = g_list_prepend(var_table,
+			create_pair_string("return_path_domain",
+			ret_path->domain));
 
-	tmp_str = g_strdup_printf("%s@%s", ret_path->local_part, ret_path->domain);
-	var_table = g_list_prepend(var_table, create_pair_string("return_path", tmp_str));
+	tmp_str = g_strdup_printf("%s@%s",
+			ret_path->local_part, ret_path->domain);
+	var_table = g_list_prepend(var_table,
+			create_pair_string("return_path", tmp_str));
 	g_free(tmp_str);
 
 	return var_table;
@@ -58,9 +72,12 @@ var_table_msg(GList *var_table, message *msg)
 GList*
 var_table_conf(GList *var_table)
 {
-	var_table = g_list_prepend(var_table, create_pair_string("host_name", conf.host_name));
-	var_table = g_list_prepend(var_table, create_pair_string("package", PACKAGE));
-	var_table = g_list_prepend(var_table, create_pair_string("version", VERSION));
+	var_table = g_list_prepend(var_table,
+			create_pair_string("host_name", conf.host_name));
+	var_table = g_list_prepend(var_table,
+			create_pair_string("package", PACKAGE));
+	var_table = g_list_prepend(var_table,
+			create_pair_string("version", VERSION));
 
 	return var_table;
 }
@@ -92,7 +109,8 @@ expand(GList *var_list, gchar *format, gchar *result, gint result_len)
 				p++;
 			} else {
 				/* $var style */
-				while (*p && (isalnum(*p) || (*p == '_') || (*p == '-')) && (j < MAX_VAR)) {
+				while (*p && (isalnum(*p) || (*p=='_') ||
+						(*p=='-')) && (j < MAX_VAR)) {
 					*(vq++) = *(p++);
 					j++;
 				}
