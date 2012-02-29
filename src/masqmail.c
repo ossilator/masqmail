@@ -720,7 +720,7 @@ main(int argc, char *argv[])
 		exit(1);
 	}
 
-	DEBUG(1) debugf("masqmail %s starting\n", VERSION);
+	DEBUG(1) debugf("----STARTING---- masqmail %s\n", VERSION);
 
 	DEBUG(5) {
 		gchar **str = argv;
