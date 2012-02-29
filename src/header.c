@@ -239,8 +239,8 @@ create_header(header_id id, gchar *fmt, ...)
 		hdr->value = (*p) ? p : NULL;
 	}
 
-	DEBUG(3) debugf("create_header(): hdr: `%s'\n", hdr->header);
-	DEBUG(3) debugf("create_header(): val: `%s'\n", hdr->value);
+	DEBUG(3) debugf("create_header():  %s", hdr->header);
+	/* DEBUG(3) debugf("create_header(): val: `%s'\n", hdr->value); */
 
 	va_end(args);
 	return hdr;
@@ -311,7 +311,7 @@ get_header(gchar *line)
 	hdr->header = g_strdup(line);
 	hdr->value = hdr->header + (hdr->value - line);
 
-	DEBUG(4) debugf("header: %d = %s[...]", hdr->id, hdr->header);
+	DEBUG(4) debugf("header: %d = %s", hdr->id, hdr->header);
 	/* Note: This only outputs the first line if the header is folded */
 
 	return hdr;

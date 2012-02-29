@@ -215,7 +215,7 @@ msg_spool_read(gchar *uid)
 	DEBUG(4) debugf("msg_spool_read():\n");
 	/* header spool: */
 	ok = spool_read_header(msg);
-	DEBUG(4) debugf("  spool_read_header() returned: %d\n", ok);
+	DEBUG(4) debugf("spool_read_header() returned: %d\n", ok);
 	return msg;
 }
 
