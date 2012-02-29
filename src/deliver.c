@@ -44,10 +44,11 @@ delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
 		address *rcpt = (address *) (rcpt_node->data);
 
 		if (addr_is_defered(rcpt)) {
-			if ((now - msg->received_time) >= conf.max_defer_time) {
+			if ((now - msg->received_time) >= conf.max_defer_time){
 				addr_mark_failed(rcpt);
 			} else {
-				defered_list = g_list_prepend(defered_list, rcpt);
+				defered_list = g_list_prepend(defered_list,
+						rcpt);
 			}
 		}
 		if (addr_is_failed(rcpt)) {
@@ -55,11 +56,13 @@ delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
 		}
 	}
 	if (failed_list) {
-		ok_fail = fail_msg(msg, conf.errmsg_file, failed_list, err_fmt, args);
+		ok_fail = fail_msg(msg, conf.errmsg_file, failed_list,
+				err_fmt, args);
 		g_list_free(failed_list);
 	}
 	if (defered_list) {
-		ok_warn = warn_msg(msg, conf.warnmsg_file, defered_list, err_fmt, args);
+		ok_warn = warn_msg(msg, conf.warnmsg_file, defered_list,
+				err_fmt, args);
 		g_list_free(defered_list);
 	}
 	va_end(args);
@@ -73,14 +76,20 @@ _g_list_strcasecmp(gconstpointer a, gconstpointer b)
 }
 
 gboolean
-deliver_local_mbox(message *msg, GList *hdr_list, address *rcpt, address *env_addr)
+deliver_local_mbox(message *msg, GList *hdr_list, address *rcpt,
+		address *env_addr)
 {
 	DEBUG(1) debugf("attempting to deliver %s with mbox\n", msg->uid);
 	if (append_file(msg, hdr_list, rcpt->local_part)) {
 		if (env_addr != rcpt) {
-			logwrite(LOG_NOTICE, "%s => %s@%s <%s@%s> with mbox\n", msg->uid, rcpt->local_part, rcpt->domain, env_addr->local_part, env_addr->domain);
+			logwrite(LOG_NOTICE, "%s => %s@%s <%s@%s> with mbox\n",
+					msg->uid, rcpt->local_part,
+					rcpt->domain, env_addr->local_part,
+					env_addr->domain);
 		} else {
-			logwrite(LOG_NOTICE, "%s => <%s@%s> with mbox\n", msg->uid, rcpt->local_part, rcpt->domain);
+			logwrite(LOG_NOTICE, "%s => <%s@%s> with mbox\n",
+					msg->uid, rcpt->local_part,
+					rcpt->domain);
 		}
 		addr_mark_delivered(rcpt);
 		return TRUE;
@@ -96,17 +105,19 @@ deliver_local_mbox(message *msg, GList *hdr_list, address *rcpt, address *env_ad
 }
 
 gboolean
-deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt, address *env_addr)
+deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt,
+		address *env_addr)
 {
-	guint flags;
+	guint flags = 0;
 
 	DEBUG(1) debugf("attempting to deliver %s with pipe\n", msg->uid);
 
-	flags = (conf.pipe_fromline) ? MSGSTR_FROMLINE : 0;
+	flags |= (conf.pipe_fromline) ? MSGSTR_FROMLINE : 0;
 	flags |= (conf.pipe_fromhack) ? MSGSTR_FROMHACK : 0;
 	if (pipe_out(msg, hdr_list, rcpt, &(rcpt->local_part[1]), flags)) {
 		logwrite(LOG_NOTICE, "%s => %s <%s@%s> with pipe\n",
-		         msg->uid, rcpt->local_part, env_addr->local_part, env_addr->domain);
+				msg->uid, rcpt->local_part,
+				env_addr->local_part, env_addr->domain);
 		addr_mark_delivered(rcpt);
 		return TRUE;
 	}
@@ -121,12 +132,13 @@ deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt, address *env_ad
 }
 
 gboolean
-deliver_local_mda(message *msg, GList *hdr_list, address *rcpt, address *env_addr)
+deliver_local_mda(message *msg, GList *hdr_list, address *rcpt,
+		address *env_addr)
 {
 	gboolean ok = FALSE;
 	gchar *cmd = g_malloc(256);
 	GList *var_table = var_table_rcpt(var_table_msg(NULL, msg), rcpt);
-	guint flags;
+	guint flags = 0;
 
 	DEBUG(1) debugf("attempting to deliver %s with mda\n", msg->uid);
 
@@ -136,11 +148,11 @@ deliver_local_mda(message *msg, GList *hdr_list, address *rcpt, address *env_add
 		return FALSE;
 	}
 
-	flags = (conf.mda_fromline) ? MSGSTR_FROMLINE : 0;
+	flags |= (conf.mda_fromline) ? MSGSTR_FROMLINE : 0;
 	flags |= (conf.mda_fromhack) ? MSGSTR_FROMHACK : 0;
 	if (pipe_out(msg, hdr_list, rcpt, cmd, flags)) {
 		logwrite(LOG_NOTICE, "%s => %s@%s with mda (cmd = '%s')\n",
-		         msg->uid, rcpt->local_part, rcpt->domain, cmd);
+				msg->uid, rcpt->local_part, rcpt->domain, cmd);
 		addr_mark_delivered(rcpt);
 		ok = TRUE;
 	} else if ((errno != (1024 + EX_TEMPFAIL)) && (errno != EAGAIN)) {
@@ -166,11 +178,13 @@ deliver_local(msg_out *msgout)
 
 	flag = (msg->data_list == NULL);
 	if (flag && !spool_read_data(msg)) {
-		logwrite(LOG_ALERT, "could not open data spool file for %s\n", msg->uid);
+		logwrite(LOG_ALERT, "could not open data spool file for %s\n",
+				msg->uid);
 		return FALSE;
 	}
 
-	for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
+	for (rcpt_node = g_list_first(rcpt_list); rcpt_node;
+			rcpt_node = g_list_next(rcpt_node)) {
 		GList *hdr_list;
 		address *rcpt = (address *) (rcpt_node->data);
 		address *env_addr = addr_find_ancestor(rcpt);
@@ -183,46 +197,58 @@ deliver_local(msg_out *msgout)
 		**  copies only the nodes, so it is safe to g_list_free it
 		*/
 		hdr_list = g_list_copy(msg->hdr_list);
-		retpath_hdr = create_header(HEAD_ENVELOPE_TO, "Envelope-to: %s\n", addr_string(env_addr));
-		envto_hdr = create_header(HEAD_RETURN_PATH, "Return-path: %s\n", addr_string(ret_path));
+		retpath_hdr = create_header(HEAD_ENVELOPE_TO,
+				"Envelope-to: %s\n", addr_string(env_addr));
+		envto_hdr = create_header(HEAD_RETURN_PATH,
+				"Return-path: %s\n", addr_string(ret_path));
 
 		hdr_list = g_list_prepend(hdr_list, envto_hdr);
 		hdr_list = g_list_prepend(hdr_list, retpath_hdr);
 
-		if (rcpt->local_part[0] == '|') {
+		if (*rcpt->local_part == '|') {
 			/*
 			**  probably for expanded aliases, but why not done
 			**  like with the mda? //meillo 2010-12-06
 			*/
-			if (deliver_local_pipe(msg, hdr_list, rcpt, env_addr)) {
+			if (deliver_local_pipe(msg, hdr_list, rcpt,
+					env_addr)) {
 				ok = TRUE;
 			}
 		} else {
-			/* figure out which mailbox type should be used for this user */
+			/* figure out which mailbox type should be used
+			** for this user */
 			gchar *user = rcpt->local_part;
 			gchar *mbox_type = conf.mbox_default;
 
-			if (g_list_find_custom (conf.mbox_users, user, _g_list_strcasecmp)) {
+			if (g_list_find_custom(conf.mbox_users, user,
+					_g_list_strcasecmp)) {
 				mbox_type = "mbox";
-			} else if (g_list_find_custom (conf.mda_users, user, _g_list_strcasecmp)) {
+			} else if (g_list_find_custom (conf.mda_users, user,
+					_g_list_strcasecmp)) {
 				mbox_type = "mda";
 			}
 
-			if (strcmp(mbox_type, "mbox") == 0) {
-				if (deliver_local_mbox(msg, hdr_list, rcpt, env_addr)) {
+			if (strcmp(mbox_type, "mbox")==0) {
+				if (deliver_local_mbox(msg, hdr_list, rcpt,
+						env_addr)) {
 					ok = TRUE;
 				}
 			} else if (strcmp(mbox_type, "mda") == 0) {
 				if (conf.mda) {
-					if (deliver_local_mda(msg, hdr_list, rcpt, env_addr)) {
+					if (deliver_local_mda(msg, hdr_list,
+							rcpt, env_addr)) {
 						ok = TRUE;
 					}
 				} else {
-					logwrite(LOG_ALERT, "mbox type is mda, but no mda command given in configuration\n");
+					logwrite(LOG_ALERT, "mbox type is "
+							"mda, but no mda "
+							"command given in "
+							"configuration\n");
 				}
 
 			} else {
-				logwrite(LOG_ALERT, "unknown mbox type '%s'\n", mbox_type);
+				logwrite(LOG_ALERT, "unknown mbox type '%s'\n",
+						mbox_type);
 			}
 		}
 
@@ -231,7 +257,8 @@ deliver_local(msg_out *msgout)
 
 		g_list_free(hdr_list);
 	}
-	ok_fail = delivery_failures(msg, rcpt_list, "%s (%d)", ext_strerror(errno), errno);
+	ok_fail = delivery_failures(msg, rcpt_list, "%s (%d)",
+			ext_strerror(errno), errno);
 
 	if (flag) {
 		msg_free_data(msg);
@@ -261,12 +288,17 @@ msg_rcptlist_local(GList *rcpt_list, GList **p_local_list,
 
 		/* search for local host list: */
 		foreach(conf.local_hosts, dom_node) {
-			if (fnmatch(dom_node->data, rcpt->domain, FNM_CASEFOLD)==0) {
-				*p_local_list = g_list_append(*p_local_list, rcpt);
-				DEBUG(5) debugf("<%s@%s> is local\n", rcpt->local_part, rcpt->domain);
+			if (fnmatch(dom_node->data, rcpt->domain,
+					FNM_CASEFOLD)==0) {
+				*p_local_list = g_list_append(*p_local_list,
+						rcpt);
+				DEBUG(5) debugf("<%s@%s> is local\n",
+						rcpt->local_part,
+						rcpt->domain);
 				break;
 			} else {
-				*p_nonlocal_list = g_list_append(*p_nonlocal_list, rcpt);
+				*p_nonlocal_list = g_list_append(
+						*p_nonlocal_list, rcpt);
 			}
 		}
 	}
@@ -287,11 +319,13 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list,
 		message *msg = msgout->msg;
 		GList *rcpt_node, *rcpt_list = msgout->rcpt_list;
 
-		DEBUG(1) debugf("attempting to deliver %s with pipe\n", msg->uid);
+		DEBUG(1) debugf("attempting to deliver %s with pipe\n",
+				msg->uid);
 
 		flag = (msg->data_list == NULL);
 		if (flag && !spool_read_data(msg)) {
-			logwrite(LOG_ALERT, "could not open data spool file for %s\n", msg->uid);
+			logwrite(LOG_ALERT, "could not open data spool file "
+					"for %s\n", msg->uid);
 			continue;
 		}
 
@@ -299,10 +333,12 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list,
 		foreach(rcpt_list, rcpt_node) {
 			address *rcpt = (address *) (rcpt_node->data);
 			gchar *cmd = g_malloc(256);
-			GList *var_table = var_table_rcpt(var_table_msg(NULL, msg), rcpt);
+			GList *var_table = var_table_rcpt(var_table_msg(NULL,
+					msg), rcpt);
 
-			DEBUG(1) debugf("attempting to deliver %s to %s@%s with pipe\n",
-			                msg->uid, rcpt->local_part, rcpt->domain);
+			DEBUG(1) debugf("attempting to deliver %s to %s@%s "
+					"with pipe\n", msg->uid,
+					rcpt->local_part, rcpt->domain);
 
 			if (!expand(var_table, route->pipe, cmd, 256)) {
 				logwrite(LOG_ALERT, "could not expand string `%s'\n", route->pipe);
