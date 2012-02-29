@@ -73,17 +73,18 @@ spool_scan_rcpt(gchar *line)
 {
 	address *rcpt = NULL;
 
-	if (line[3] != '\0') {
-		if (line[4] != '|') {
-			rcpt = create_address(&(line[4]), TRUE);
-		} else {
-			rcpt = create_address_pipe(&(line[4]));
-		}
-		if (line[3] == 'X') {
-			addr_mark_delivered(rcpt);
-		} else if (line[3] == 'F') {
-			addr_mark_failed(rcpt);
-		}
+	if (!line[3]) {
+		return NULL;
+	}
+	if (line[4] == '|') {
+		rcpt = create_address_pipe(line+4);
+	} else {
+		rcpt = create_address(line+4, TRUE);
+	}
+	if (line[3] == 'X') {
+		addr_mark_delivered(rcpt);
+	} else if (line[3] == 'F') {
+		addr_mark_failed(rcpt);
 	}
 	return rcpt;
 }
@@ -147,7 +148,8 @@ spool_read_header(message *msg)
 			break;
 		} else if (strncasecmp(buf, "MF:", 3) == 0) {
 			msg->return_path = create_address(&(buf[3]), TRUE);
-			DEBUG(3) debugf("spool_read: MAIL FROM: %s", msg->return_path->address);
+			DEBUG(3) debugf("spool_read: MAIL FROM: %s\n",
+					msg->return_path->address);
 		} else if (strncasecmp(buf, "RT:", 3) == 0) {
 			address *addr;
 			addr = spool_scan_rcpt(buf);
