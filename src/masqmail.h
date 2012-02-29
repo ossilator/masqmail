@@ -54,9 +54,9 @@ typedef struct _interface {
 #define ADDR_FLAG_LAST_ROUTE 0x40
 
 typedef struct _address {
-	gchar *address;
-	gchar *local_part;
-	gchar *domain;
+	gchar *address;  /* full addr string: `markus <meillo@marmaro.de>' */
+	gchar *local_part;  /* in this example: `meillo' */
+	gchar *domain;  /* in this example: `marmaro.de' */
 	gint flags;
 	GList *children;
 	struct _address *parent;
