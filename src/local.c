@@ -31,7 +31,8 @@ message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 	GList *node;
 
 	if (flags & MSGSTR_FROMLINE) {
-		fprintf(out, "From <%s@%s> %s", msg->return_path->local_part, msg->return_path->domain, ctime(&now));
+		fprintf(out, "From <%s@%s> %s", msg->return_path->local_part,
+				msg->return_path->domain, ctime(&now));
 	}
 
 	foreach(hdr_list, node) {
@@ -66,7 +67,8 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 		hdr_list = msg->hdr_list;
 
 	if (!(pw = getpwnam(user))) {
-		logwrite(LOG_ALERT, "could not find password entry for user %s\n", user);
+		logwrite(LOG_ALERT, "could not find password entry for "
+				"user %s\n", user);
 		errno = ENOENT;  /* getpwnam does not set errno correctly */
 		return FALSE;
 	}
@@ -78,7 +80,9 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 			uid_ok = (seteuid(pw->pw_uid) == 0);
 		}
 		if (!uid_ok || !gid_ok) {
-			logwrite(LOG_ALERT, "could not set uid or gid for local delivery, uid = %d: %s\n", pw->pw_uid, strerror(errno));
+			logwrite(LOG_ALERT, "could not set uid or gid for "
+					"local delivery, uid = %d: %s\n",
+					pw->pw_uid, strerror(errno));
 			return FALSE;
 		}
 	}
@@ -87,7 +91,8 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 
 	filename = g_strdup_printf("%s/%s", conf.mail_dir, user);
 	if (!(out = fopen(filename, "a"))) {
-		logwrite(LOG_ALERT, "could not open file %s: %s\n", filename, strerror(errno));
+		logwrite(LOG_ALERT, "could not open file %s: %s\n",
+				filename, strerror(errno));
 	} else {
 #ifdef USE_LIBLOCKFILE
 		gint err;
@@ -103,7 +108,8 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 		if (fcntl(fileno(out), F_SETLK, &lock) != -1) {
 #endif
 			fchmod(fileno(out), 0600);
-			message_stream(out, msg, hdr_list, MSGSTR_FROMLINE | MSGSTR_FROMHACK);
+			message_stream(out, msg, hdr_list,
+					MSGSTR_FROMLINE | MSGSTR_FROMHACK);
 			ok = TRUE;
 
 			/* close when still user */
@@ -114,10 +120,12 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 		} else {
 			fclose(out);
 #ifdef USE_LIBLOCKFILE
-			DEBUG(3) debugf("could not lock file %s: error %d\n", filename, err);
+			DEBUG(3) debugf("could not lock file %s: error %d\n",
+					filename, err);
 		}  /* XEmacs indenting convenience... */
 #else
-			DEBUG(3) debugf("could not lock file %s: %s\n", filename, strerror(errno));
+			DEBUG(3) debugf("could not lock file %s: %s\n",
+					filename, strerror(errno));
 		}
 #endif
 	}
@@ -138,10 +146,14 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 		**  this message will not be finished, so the user will get
 		**  the message again next time a delivery is attempted...
 		*/
-		logwrite(LOG_ALERT, "could not set back uid or gid after local delivery: %s\n", strerror(errno));
-		logwrite(LOG_ALERT, "uid=%d, gid=%d, euid=%d, egid=%d, want = %d, %d\n",
-		         getuid(), getgid(), geteuid(), getegid(), saved_uid, saved_gid);
-		logwrite(LOG_ALERT, "In case of trouble, see local.c:append_file() for details.\n", strerror(errno));
+		logwrite(LOG_ALERT, "could not set back uid or gid after "
+				"local delivery: %s\n", strerror(errno));
+		logwrite(LOG_ALERT, "uid=%d, gid=%d, euid=%d, egid=%d, "
+				"want = %d, %d\n", getuid(), getgid(),
+				geteuid(), getegid(), saved_uid, saved_gid);
+		logwrite(LOG_ALERT, "In case of trouble, see "
+				"local.c:append_file() for details.\n",
+				strerror(errno));
 		exit(1);
 	}
 	return ok;
@@ -163,18 +175,27 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 
 	/* set uid and gid to the mail ids */
 	if (!conf.run_as_user) {
-		set_euidgid(conf.mail_uid, conf.mail_gid, &saved_uid, &saved_gid);
+		set_euidgid(conf.mail_uid, conf.mail_gid,
+				&saved_uid, &saved_gid);
 	}
 
 	/* set environment */
 	n = 0;
-	envp[n++] = g_strdup_printf("SENDER=%s@%s", msg->return_path->local_part, msg->return_path->domain);
-	envp[n++] = g_strdup_printf("SENDER_DOMAIN=%s", msg->return_path->domain);
-	envp[n++] = g_strdup_printf("SENDER_LOCAL=%s", msg->return_path->local_part);
-	envp[n++] = g_strdup_printf("RECEIVED_HOST=%s", msg->received_host ? msg->received_host : "");
+	envp[n++] = g_strdup_printf("SENDER=%s@%s",
+			msg->return_path->local_part,
+			msg->return_path->domain);
+	envp[n++] = g_strdup_printf("SENDER_DOMAIN=%s",
+			msg->return_path->domain);
+	envp[n++] = g_strdup_printf("SENDER_LOCAL=%s",
+			msg->return_path->local_part);
+	envp[n++] = g_strdup_printf("RECEIVED_HOST=%s",
+			msg->received_host ? msg->received_host : "");
 
-	envp[n++] = g_strdup_printf("RETURN_PATH=%s@%s", msg->return_path->local_part, msg->return_path->domain);
-	envp[n++] = g_strdup_printf("DOMAIN=%s", ancestor->domain);
+	envp[n++] = g_strdup_printf("RETURN_PATH=%s@%s",
+			msg->return_path->local_part,
+			msg->return_path->domain);
+	envp[n++] = g_strdup_printf("DOMAIN=%s",
+			ancestor->domain);
 
 	envp[n++] = g_strdup_printf("LOCAL_PART=%s", ancestor->local_part);
 	envp[n++] = g_strdup_printf("USER=%s", ancestor->local_part);
@@ -189,7 +210,8 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 
 	out = peidopen(cmd, "w", envp, &pid, conf.mail_uid, conf.mail_gid);
 	if (!out) {
-		logwrite(LOG_ALERT, "could not open pipe '%s': %s\n", cmd, strerror(errno));
+		logwrite(LOG_ALERT, "could not open pipe '%s': %s\n",
+				cmd, strerror(errno));
 	} else {
 		message_stream(out, msg, hdr_list, flags);
 
@@ -199,10 +221,12 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 
 		if (WEXITSTATUS(status) != 0) {
 			int exstat = WEXITSTATUS(status);
-			logwrite(LOG_ALERT, "process returned %d (%s)\n", exstat, ext_strerror(1024 + exstat));
+			logwrite(LOG_ALERT, "process returned %d (%s)\n",
+					exstat, ext_strerror(1024 + exstat));
 			errno = 1024 + exstat;
 		} else if (WIFSIGNALED(status)) {
-			logwrite(LOG_ALERT, "process got signal %d\n", WTERMSIG(status));
+			logwrite(LOG_ALERT, "process got signal %d\n",
+					WTERMSIG(status));
 		} else
 			ok = TRUE;
 
