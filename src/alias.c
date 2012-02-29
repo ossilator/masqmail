@@ -138,33 +138,39 @@ expand_one(GList *alias_table, address *addr, int doglob)
 	GList *alias_list = NULL;
 	GList *alias_node;
 	gchar *val;
+	char addrstr[BUFSIZ];
+
+	if (doglob) {
+		snprintf(addrstr, sizeof addrstr, "%s@%s",
+				addr->local_part, addr->domain);
+	} else {
+		snprintf(addrstr, sizeof addrstr, "%s", addr->local_part);
+	}
 
 	/* expand the local alias */
 	DEBUG(6) debugf("alias: '%s' is local and will get expanded\n",
-			doglob ? addr->address : addr->local_part);
+			addrstr);
 
 	if (doglob) {
-		val = (gchar *) table_find_func(alias_table, addr->address,
+		val = (gchar *) table_find_func(alias_table, addrstr,
 				globaliascmp);
 
 	} else if (strcasecmp(addr->local_part, "postmaster") == 0) {
 		/* postmaster must always be matched caseless
 		** see RFC 822 and RFC 5321 */
-		val = (gchar *) table_find_func(alias_table, addr->local_part,
+		val = (gchar *) table_find_func(alias_table, addrstr,
 				strcasecmp);
 	} else {
-		val = (gchar *) table_find_func(alias_table, addr->local_part,
+		val = (gchar *) table_find_func(alias_table, addrstr,
 				conf.localpartcmp);
 	}
 	if (!val) {
 		DEBUG(5) debugf("alias: '%s' is fully expanded, hence "
-				"completed\n",
-				doglob ? addr->address : addr->local_part);
+				"completed\n", addrstr);
 		return g_list_append(NULL, addr);
 	}
 
-	DEBUG(5) debugf("alias: '%s' -> '%s'\n",
-			doglob ? addr->address : addr->local_part, val);
+	DEBUG(5) debugf("alias: '%s' -> '%s'\n", addrstr, val);
 	val_list = parse_list(val);
 	alias_list = NULL;
 
@@ -215,7 +221,7 @@ expand_one(GList *alias_table, address *addr, int doglob)
 			/* loop detected, ignore this path */
 			logwrite(LOG_ALERT, "alias: detected loop, "
 				"hence ignoring '%s'\n",
-				alias_addr->local_part);
+				alias_addr->address);
 			continue;
 		}
 		alias_addr->parent = addr;
@@ -249,19 +255,16 @@ alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
 
 		addr = (address *) (rcpt_node->data);
 		if (addr_is_local(addr)) {
-			DEBUG(5) debugf("alias: (orig rcpt addr) "
-					"expand local '%s'\n",
-			                doglob ? addr->address :
-					addr->local_part);
+			DEBUG(5) debugf("alias: expand local '%s' "
+					"(orig rcpt addr)\n", addr->address);
 			alias_list = expand_one(alias_table, addr, doglob);
 			if (alias_list) {
 				done_list = g_list_concat(done_list,
 						alias_list);
 			}
 		} else {
-			DEBUG(5) debugf("alias: (orig rcpt addr) don't "
-					"expand non-local '%s'\n",
-					addr->address);
+			DEBUG(5) debugf("alias: don't expand non-local '%s' "
+					"(orig rcpt addr)\n", addr->address);
 			done_list = g_list_append(done_list, addr);
 		}
 	}
