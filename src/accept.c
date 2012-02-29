@@ -199,8 +199,7 @@ ensure_return_path(message *msg)
 
 		DEBUG(5) debugf("hdr->value = '%s'\n", hdr->value);
 
-		addr = g_strdup(hdr->value);
-		g_strchomp(addr);
+		addr = g_strstrip(g_strdup(hdr->value));
 		msg->return_path = create_address_qualified(addr,
 				FALSE, msg->received_host);
 		if (msg->return_path) {

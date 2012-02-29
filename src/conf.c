@@ -380,8 +380,8 @@ read_statement(FILE *in, gchar *lval, gint lsize, gchar *rval, gint rsize)
 	if (!read_lval(in, lval, lsize)) {
 		return FALSE;
 	}
-
-	DEBUG(9) fprintf(stderr, "  lval = %s\n", lval);
+	g_strstrip(lval);
+	DEBUG(9) fprintf(stderr, "  lval = `%s'\n", lval);
 	if ((c = fgetc(in) != '=')) {
 		fprintf(stderr, "'=' expected after %s, char was '%c'\n",
 				lval, c);
@@ -389,7 +389,8 @@ read_statement(FILE *in, gchar *lval, gint lsize, gchar *rval, gint rsize)
 	if (!read_rval(in, rval, rsize)) {
 		return FALSE;
 	}
-	DEBUG(9) fprintf(stderr, "  rval = %s\n", rval);
+	g_strstrip(rval);
+	DEBUG(9) fprintf(stderr, "  rval = `%s'\n", rval);
 	return TRUE;
 }
 
