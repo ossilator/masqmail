@@ -36,13 +36,13 @@ possibilities:
   man page to mservdetect(1).
 
 * otherwise you have to add two commands in your ip-up script:
-	echo "$6" >/var/run/masqmail/masqmail-route
-	chmod 644 /var/run/masqmail/masqmail-route
-  and you have to remove the file /var/run/masqmail/masqmail-route in
+	echo "$6" >/var/tmp/masqmail-route
+	chmod 644 /var/tmp/masqmail-route
+  and you have to remove the file /var/tmp/masqmail-route in
   your ip-down script:
-	rm /var/run/masqmail/masqmail-route
+	rm /var/tmp/masqmail-route
   Then you have to set online_query to
-	/bin/cat /var/run/masqmail/masqmail-route
+	/bin/cat /var/tmp/masqmail-route
 
 See the route documentation for more.
 
