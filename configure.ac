@@ -188,6 +188,15 @@ AC_ARG_WITH(confdir,
 AC_DEFINE_UNQUOTED(CONF_DIR, "${with_confdir}", [The configuration file location])
 AC_SUBST(with_confdir)
 
+dnl dir for pid files
+AC_ARG_WITH(piddir,
+	[  --with-piddir=DIR       directory for pid files [/var/run]],
+	,
+	with_piddir='/var/run'
+	)
+AC_DEFINE_UNQUOTED(PID_DIR, "${with_piddir}", [The pid file location])
+AC_SUBST(with_piddir)
+
 test "x$prefix" = xNONE && prefix="$ac_default_prefix"
 
 dnl well, /me/ thought that autoconf should make things _easy_ ... -- oku

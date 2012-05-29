@@ -2,9 +2,9 @@ EXTRA_DIST = examples docs man tpl devel
 
 SUBDIRS = src man
 
-install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir run_dir doc_dir rmail
+install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir pid_dir doc_dir rmail
 
-uninstall-local: rm-rmail rm-doc_dir rm-tpl_dir rm-conf_dir rm-run_dir rm-spool_dir rm-log_dir
+uninstall-local: rm-rmail rm-doc_dir rm-tpl_dir rm-conf_dir rm-pid_dir rm-spool_dir rm-log_dir
 
 
 conf_dir:
@@ -37,11 +37,11 @@ rm-doc_dir:
 	rmdir $(DESTDIR)@docdir@
 
 
-run_dir:
-	install -d -o @with_user@ -g @with_group@ $(DESTDIR)/var/run/masqmail
+pid_dir:
+	install -d $(DESTDIR)@with_piddir@
 
-rm-run_dir:
-	rm -rf $(DESTDIR)/var/run/masqmail
+rm-pid_dir:
+	rm -rf $(DESTDIR)@with_piddir@
 
 
 log_dir:
@@ -73,5 +73,5 @@ rm-rmail:
 	rm -f $(DESTDIR)@prefix@/sbin/rmail
 
 
-uid_bit: $(DESTDIR)@prefix@/sbin/masqmail
+uid_bit:
 	chmod u+s $(DESTDIR)@prefix@/sbin/masqmail

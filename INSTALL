@@ -88,14 +88,13 @@ Checking the installation
 Check that 'make install' worked correctly. The following command:
 
 	ls -ld /usr/local/sbin/masqmail /etc/masqmail /var/log/masqmail/ \
-	       /var/run/masqmail /var/spool/masqmail/ /var/spool/masqmail/*
+	       /var/spool/masqmail/ /var/spool/masqmail/*
 
 should give output similar to
 
 	-rwsr-xr-x 1 root root    399356 May 10 12:34 /usr/local/sbin/masqmail
 	drwxr-xr-x 2 root root      4096 May 10 12:34 /etc/masqmail
 	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/log/masqmail
-	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/run/masqmail
 	drwxr-xr-x 5 mail mail      4096 May 10 12:34 /var/spool/masqmail
 	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/spool/masqmail/input
 	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/spool/masqmail/lock
