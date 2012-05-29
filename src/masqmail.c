@@ -146,7 +146,7 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	}
 
 	signal(SIGTERM, sigterm_handler);
-	write_pidfile(PIDFILEDIR "/masqmail.pid");
+	write_pidfile(PID_DIR "/masqmail.pid");
 
 	conf.do_verbose = FALSE;
 
