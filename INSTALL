@@ -65,6 +65,11 @@ created if it does not exist. Default is /var/spool/masqmail/.
 sets the default configuration directory to CONFDIR, in case you
 prefer another location than /etc/masqmail/.
 
+--with-piddir=PIDDIR
+sets the default directory for the pid file of the daemon. The usual
+location is /var/run, but some GNU/Linux distributions have converted
+to /run.
+
 
 --disable-resolver
 disables resolver support. Without the resolver functions, masqmail
