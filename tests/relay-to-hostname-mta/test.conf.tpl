@@ -19,7 +19,7 @@ permanent_routes = "PWD/test.route"
 
 
 # spool files in the current directory
-spool_dir="PWD"
+spool_dir="PWD/spool"
 
 # deliver local mails into the current directory
 mail_dir="PWD"

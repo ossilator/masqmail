@@ -2,7 +2,7 @@
 # heavily based on Makefile.am written by oliver kurth
 
 all: test.conf
-	mkdir -p ./input ./lock
+	mkdir -p spool
 
 test.conf: test.conf.tpl
 	# fails if the current path contains `^'.
@@ -12,5 +12,5 @@ clean:
 	rm -f test.conf
 
 realclean: clean
-	rm -rf ./input ./lock
+	rm -rf spool
 	rm -f *.log $(LOGNAME)

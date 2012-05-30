@@ -14,7 +14,7 @@ host_name="SMTP_HOST"
 local_hosts="localhost"
 
 # spool dir is the current directory
-spool_dir="PWD"
+spool_dir="PWD/spool"
 
 # deliver local mail into the current directory
 mail_dir="PWD"
