@@ -75,6 +75,9 @@ logopen()
 		logfile = fopen(filename, "a");
 		if (!logfile) {
 			fprintf(stderr, "could not open log '%s': %s\n", filename, strerror(errno));
+			if (!conf.run_as_user) {
+				set_euidgid(saved_uid, saved_gid, NULL, NULL);
+			}
 			return FALSE;
 		}
 		g_free(filename);
