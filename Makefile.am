@@ -2,9 +2,9 @@ EXTRA_DIST = examples docs man tpl devel
 
 SUBDIRS = src man
 
-install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir pid_dir doc_dir rmail
+install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir doc_dir rmail
 
-uninstall-local: rm-rmail rm-doc_dir rm-tpl_dir rm-conf_dir rm-pid_dir rm-spool_dir rm-log_dir
+uninstall-local: rm-rmail rm-doc_dir rm-tpl_dir rm-conf_dir rm-spool_dir rm-log_dir
 
 
 conf_dir:
@@ -37,13 +37,6 @@ rm-doc_dir:
 	rmdir $(DESTDIR)@docdir@
 
 
-pid_dir:
-	install -d $(DESTDIR)@with_piddir@
-
-rm-pid_dir:
-	rm -rf $(DESTDIR)@with_piddir@
-
-
 log_dir:
 	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_logdir@
 
@@ -53,13 +46,11 @@ rm-log_dir:
 
 spool_dir:
 	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@
-	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@/lock
 	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@/input
 
 rm-spool_dir:
 	: # removal fails if the dirs are non-empty
 	: # this prevents losing spooled files
-	rmdir $(DESTDIR)@with_spooldir@/lock
 	rmdir $(DESTDIR)@with_spooldir@/input
 	rmdir $(DESTDIR)@with_spooldir@
 

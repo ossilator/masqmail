@@ -104,6 +104,43 @@ get_optarg(char *argv[], gint *argp, char *cp)
 	return NULL;
 }
 
+/*
+** Create any missing directory in pathname `dir'. (Like `mkdir -p'.)
+** The code is taken from nmh.
+*/
+gboolean
+makedir_rec(char *dir, int perms)
+{
+	char path[PATH_MAX];
+	char *cp, *c;
+	int had_an_error = 0;
+
+	c = strncpy(path, dir, sizeof(path));
+
+	while (!had_an_error && (c = strchr(c+1, '/'))) {
+		*c = '\0';
+		/* Create an outer directory. */
+		if (mkdir(path, perms) == -1 && errno != EEXIST) {
+			fprintf(stderr, "unable to create `%s': %s\n",
+					path, strerror(errno));
+			had_an_error = 1;
+		}
+		*c = '/';
+	}      
+
+	/*
+	** Create the innermost nested subdirectory of the
+	** path we're being asked to create.
+	*/
+	if (!had_an_error && mkdir(dir, perms)==-1 && errno != EEXIST) {
+		fprintf(stderr, "unable to create `%s': %s\n",
+				dir, strerror(errno));
+		had_an_error = 1;
+	}      
+
+	return (had_an_error) ? 0 : 1;
+}
+
 gboolean
 write_pidfile(gchar *name)
 {
@@ -146,6 +183,7 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	}
 
 	signal(SIGTERM, sigterm_handler);
+	makedir_rec(PID_DIR, 0755);
 	write_pidfile(PID_DIR "/masqmail.pid");
 
 	conf.do_verbose = FALSE;
@@ -655,6 +693,7 @@ main(int argc, char *argv[])
 	**  breaking security.
 	*/
 	if ((strcmp(conf_file, CONF_FILE) != 0) && (conf.orig_uid != 0)) {
+		logwrite(LOG_NOTICE, "Changing to run_as_user.\n");
 		conf.run_as_user = TRUE;
 		set_euidgid(conf.orig_uid, conf.orig_gid, NULL, NULL);
 		if (setgid(conf.orig_gid)) {
@@ -713,6 +752,18 @@ main(int argc, char *argv[])
 					strerror(errno));
 			exit(1);
 		}
+	}
+
+	if (conf.run_as_user) {
+		logwrite(LOG_NOTICE, "Using spool directory `%s' for "
+				"lock files.\n", conf.spool_dir);
+		conf.lock_dir = conf.spool_dir;
+	} else {
+		int olduid, oldgid;
+
+		set_euidgid(conf.mail_uid, conf.mail_gid, &olduid, &oldgid);
+		makedir_rec(conf.lock_dir, 0775);
+		set_euidgid(olduid, oldgid, NULL, NULL);
 	}
 
 	if (!logopen()) {

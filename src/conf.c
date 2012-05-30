@@ -405,6 +405,7 @@ read_conf(gchar *filename)
 	conf.localpartcmp = strcmp;
 	conf.max_defer_time = 86400 * 4;  /* 4 days */
 	conf.max_msg_size = 0; /* no limit on msg size */
+	conf.lock_dir = LOCK_DIR;
 	conf.spool_dir = SPOOL_DIR;
 	conf.mail_dir = "/var/mail";
 
@@ -537,9 +538,6 @@ read_conf(gchar *filename)
 	}
 	if (!conf.warnmsg_file) {
 		conf.warnmsg_file = g_strdup(DATA_DIR "/tpl/warnmsg.tpl");
-	}
-	if (!conf.lock_dir) {
-		conf.lock_dir = g_strdup_printf("%s/lock/", conf.spool_dir);
 	}
 	if (!conf.mbox_default) {
 		conf.mbox_default = g_strdup("mbox");

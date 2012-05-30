@@ -197,6 +197,15 @@ AC_ARG_WITH(piddir,
 AC_DEFINE_UNQUOTED(PID_DIR, "${with_piddir}", [The pid file location])
 AC_SUBST(with_piddir)
 
+dnl dir for lock files
+AC_ARG_WITH(lockdir,
+	[  --with-lockdir=DIR      directory for lock files [/var/lock/masqmail]],
+	,
+	with_lockdir='/var/lock/masqmail'
+	)
+AC_DEFINE_UNQUOTED(LOCK_DIR, "${with_lockdir}", [The lock file location])
+AC_SUBST(with_lockdir)
+
 test "x$prefix" = xNONE && prefix="$ac_default_prefix"
 
 dnl well, /me/ thought that autoconf should make things _easy_ ... -- oku
