@@ -97,7 +97,7 @@ Checking the installation
 Check that 'make install' worked correctly. The following command:
 
 	ls -ld /usr/local/sbin/masqmail /etc/masqmail /var/log/masqmail/ \
-	       /var/spool/masqmail/ /var/spool/masqmail/*
+	       /var/spool/masqmail/
 
 should give output similar to
 
@@ -105,7 +105,6 @@ should give output similar to
 	drwxr-xr-x 2 root root      4096 May 10 12:34 /etc/masqmail
 	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/log/masqmail
 	drwxr-xr-x 5 mail mail      4096 May 10 12:34 /var/spool/masqmail
-	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/spool/masqmail/input
 
 Important are the set-user-id bit for /usr/local/sbin/masqmail and
 the ownership of the directories.

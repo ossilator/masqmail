@@ -46,12 +46,10 @@ rm-log_dir:
 
 spool_dir:
 	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@
-	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@/input
 
 rm-spool_dir:
 	: # removal fails if the dirs are non-empty
 	: # this prevents losing spooled files
-	rmdir $(DESTDIR)@with_spooldir@/input
 	rmdir $(DESTDIR)@with_spooldir@
 
 rmail:

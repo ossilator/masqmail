@@ -54,7 +54,7 @@ read_queue(void)
 	**  Escaping the question marks prevents them from being
 	**  interpreted as trigraphs
 	*/
-	pattern = g_strdup_printf("%s/input/?????\?-??\?-?\?-H", conf.spool_dir);
+	pattern = g_strdup_printf("%s/?????\?-??\?-?\?-H", conf.spool_dir);
 	gl.gl_offs = 0;
 	glob(pattern, 0, NULL, &gl);
 
@@ -73,9 +73,9 @@ read_queue(void)
 	for (i = 0; i < gl.gl_pathc; i++) {
 		gchar *uid;
 
-		/* copy 13 chars, offset spooldir path + 7 chars for /input/ */
+		/* copy 13 chars, offset spooldir path + 1 char for / */
 		/* uid length = 6 chars + '-' + 3 chars + '-' + 2 = 13 chars */
-		uid = g_strndup(&(gl.gl_pathv[idx_arr[i]][strlen(conf.spool_dir) + 7]), 13);
+		uid = g_strndup(&(gl.gl_pathv[idx_arr[i]][strlen(conf.spool_dir) + 1]), 13);
 
 		DEBUG(5) debugf("uid: %s\n", uid);
 
@@ -196,8 +196,8 @@ queue_delete(gchar *uid)
 {
 	gboolean hdr_ok = TRUE;
 	gboolean dat_ok = TRUE;
-	gchar *hdr_name = g_strdup_printf("%s/input/%s-H", conf.spool_dir, uid);
-	gchar *dat_name = g_strdup_printf("%s/input/%s-D", conf.spool_dir, uid);
+	gchar *hdr_name = g_strdup_printf("%s/%s-H", conf.spool_dir, uid);
+	gchar *dat_name = g_strdup_printf("%s/%s-D", conf.spool_dir, uid);
 	struct stat stat_buf;
 
 	if (!spool_lock(uid)) {
