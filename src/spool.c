@@ -96,7 +96,7 @@ spool_read_data(message *msg)
 	gchar *spool_file;
 
 	DEBUG(5) debugf("spool_read_data entered\n");
-	spool_file = g_strdup_printf("%s/input/%s-D", conf.spool_dir, msg->uid);
+	spool_file = g_strdup_printf("%s/%s-D", conf.spool_dir, msg->uid);
 	DEBUG(5) debugf("reading data spool file '%s'\n", spool_file);
 	in = fopen(spool_file, "r");
 	if (!in) {
@@ -127,7 +127,7 @@ spool_read_header(message *msg)
 	gchar *spool_file;
 
 	/* header spool: */
-	spool_file = g_strdup_printf("%s/input/%s-H", conf.spool_dir, msg->uid);
+	spool_file = g_strdup_printf("%s/%s-H", conf.spool_dir, msg->uid);
 	in = fopen(spool_file, "r");
 	if (!in) {
 		logwrite(LOG_ALERT, "could not open spool header file %s: %s\n",
@@ -232,7 +232,7 @@ spool_write_header(message *msg)
 	gboolean ok = TRUE;
 
 	/* header spool: */
-	tmp_file = g_strdup_printf("%s/input/%d-H.tmp", conf.spool_dir, getpid());
+	tmp_file = g_strdup_printf("%s/%d-H.tmp", conf.spool_dir, getpid());
 	DEBUG(4) debugf("tmp_file = %s\n", tmp_file);
 
 	if ((out = fopen(tmp_file, "w"))) {
@@ -282,7 +282,7 @@ spool_write_header(message *msg)
 		}
 		fclose(out);
 		if (ok) {
-			spool_file = g_strdup_printf("%s/input/%s-H", conf.spool_dir, msg->uid);
+			spool_file = g_strdup_printf("%s/%s-H", conf.spool_dir, msg->uid);
 			DEBUG(4) debugf("spool_file = %s\n", spool_file);
 			ok = (rename(tmp_file, spool_file) != -1);
 			g_free(spool_file);
@@ -319,7 +319,7 @@ spool_write(message *msg, gboolean do_write_data)
 
 	if (ok && do_write_data) {
 		/* data spool: */
-		tmp_file = g_strdup_printf("%s/input/%d-D.tmp", conf.spool_dir, getpid());
+		tmp_file = g_strdup_printf("%s/%d-D.tmp", conf.spool_dir, getpid());
 		DEBUG(4) debugf("tmp_file = %s\n", tmp_file);
 
 		if ((out = fopen(tmp_file, "w"))) {
@@ -338,7 +338,7 @@ spool_write(message *msg, gboolean do_write_data)
 			}
 			fclose(out);
 			if (ok) {
-				spool_file = g_strdup_printf("%s/input/%s-D", conf.spool_dir, msg->uid);
+				spool_file = g_strdup_printf("%s/%s-D", conf.spool_dir, msg->uid);
 				DEBUG(4) debugf("spool_file = %s\n", spool_file);
 				ok = (rename(tmp_file, spool_file) != -1);
 				g_free(spool_file);
@@ -428,14 +428,14 @@ spool_delete_all(message *msg)
 	}
 
 	/* header spool: */
-	spool_file = g_strdup_printf("%s/input/%s-H", conf.spool_dir, msg->uid);
+	spool_file = g_strdup_printf("%s/%s-H", conf.spool_dir, msg->uid);
 	if (unlink(spool_file) != 0) {
 		logwrite(LOG_ALERT, "could not delete spool file %s: %s\n", spool_file, strerror(errno));
 	}
 	g_free(spool_file);
 
 	/* data spool: */
-	spool_file = g_strdup_printf("%s/input/%s-D", conf.spool_dir, msg->uid);
+	spool_file = g_strdup_printf("%s/%s-D", conf.spool_dir, msg->uid);
 	if (unlink(spool_file) != 0) {
 		logwrite(LOG_ALERT, "could not delete spool file %s: %s\n", spool_file, strerror(errno));
 	}

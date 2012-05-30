@@ -166,7 +166,7 @@ dnl log and spool directories
 AC_ARG_WITH(logdir,
 	[  --with-logdir=DIR       set log directory [/var/log/masqmail]],
 	,
-        with_logdir='/var/log/masqmail/'
+        with_logdir='/var/log/masqmail'
 	)
 AC_DEFINE_UNQUOTED(LOG_DIR, "${with_logdir}", [The log directory])
 AC_SUBST(with_logdir)
@@ -174,7 +174,7 @@ AC_SUBST(with_logdir)
 AC_ARG_WITH(spooldir,
 	[  --with-spooldir=DIR     set spool directory [/var/spool/masqmail]],
 	,
-	with_spooldir='/var/spool/masqmail/'
+	with_spooldir='/var/spool/masqmail'
 	)
 AC_DEFINE_UNQUOTED(SPOOL_DIR, "${with_spooldir}", [The spool directory])
 AC_SUBST(with_spooldir)
