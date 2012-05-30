@@ -66,9 +66,13 @@ sets the default configuration directory to CONFDIR, in case you
 prefer another location than /etc/masqmail/.
 
 --with-piddir=PIDDIR
-sets the default directory for the pid file of the daemon. The usual
+sets the directory for the pid file of the daemon. The default and usual
 location is /var/run, but some GNU/Linux distributions have converted
-to /run.
+to /run. It gets created on program startup if missing.
+
+--with-lockdir=LOCKDIR
+sets the default directory for lock file for spooled messages. Default
+is /var/lock/masqmail. It gets created on program startup if missing.
 
 
 --disable-resolver
@@ -102,10 +106,9 @@ should give output similar to
 	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/log/masqmail
 	drwxr-xr-x 5 mail mail      4096 May 10 12:34 /var/spool/masqmail
 	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/spool/masqmail/input
-	drwxr-xr-x 2 mail mail      4096 May 10 12:34 /var/spool/masqmail/lock
 
 Important are the set-user-id bit for /usr/local/sbin/masqmail and
-the permissions of all files.
+the ownership of the directories.
 
 
 
