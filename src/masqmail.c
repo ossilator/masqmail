@@ -114,8 +114,11 @@ makedir_rec(char *dir, int perms)
 	char path[PATH_MAX];
 	char *cp, *c;
 	int had_an_error = 0;
+	mode_t savedmask;
 
 	c = strncpy(path, dir, sizeof(path));
+
+	savedmask = umask(0);
 
 	while (!had_an_error && (c = strchr(c+1, '/'))) {
 		*c = '\0';
@@ -126,7 +129,7 @@ makedir_rec(char *dir, int perms)
 			had_an_error = 1;
 		}
 		*c = '/';
-	}      
+	}
 
 	/*
 	** Create the innermost nested subdirectory of the
@@ -136,7 +139,8 @@ makedir_rec(char *dir, int perms)
 		fprintf(stderr, "unable to create `%s': %s\n",
 				dir, strerror(errno));
 		had_an_error = 1;
-	}      
+	}
+	umask(savedmask);
 
 	return (had_an_error) ? 0 : 1;
 }
@@ -758,12 +762,15 @@ main(int argc, char *argv[])
 		logwrite(LOG_NOTICE, "Using spool directory `%s' for "
 				"lock files.\n", conf.spool_dir);
 		conf.lock_dir = conf.spool_dir;
+		makedir_rec(conf.spool_dir, 0755);
+		makedir_rec(conf.log_dir, 0755);
 	} else {
-		int olduid, oldgid;
-
-		set_euidgid(conf.mail_uid, conf.mail_gid, &olduid, &oldgid);
 		makedir_rec(conf.lock_dir, 0775);
-		set_euidgid(olduid, oldgid, NULL, NULL);
+		chown(conf.lock_dir, conf.mail_uid, conf.mail_gid);
+		makedir_rec(conf.spool_dir, 0755);
+		chown(conf.spool_dir, conf.mail_uid, conf.mail_gid);
+		makedir_rec(conf.log_dir, 0755);
+		chown(conf.log_dir, conf.mail_uid, conf.mail_gid);
 	}
 
 	if (!logopen()) {

@@ -55,15 +55,17 @@ has to exist before you 'make install'.
 
 --with-logdir=LOGDIR
 sets the directory where masqmail stores its log files. It will be
-created if it does not exist. Default is /var/log/masqmail/.
+created on program startup if it does not exist. Default is
+/var/log/masqmail.
 
 --with-spooldir=SPOOLDIR
 sets the directory where masqmail stores its spool files. It will be
-created if it does not exist. Default is /var/spool/masqmail/.
+created on program startup if it does not exist. Default is
+/var/spool/masqmail.
 
 --with-confdir=CONFDIR
 sets the default configuration directory to CONFDIR, in case you
-prefer another location than /etc/masqmail/.
+prefer another location than /etc/masqmail.
 
 --with-piddir=PIDDIR
 sets the directory for the pid file of the daemon. The default and usual
