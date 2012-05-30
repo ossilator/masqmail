@@ -2,17 +2,12 @@ EXTRA_DIST = examples docs man tpl devel
 
 SUBDIRS = src man
 
-install-data-local: log_dir spool_dir uid_bit conf_dir tpl_dir doc_dir rmail
+install-data-local: uid_bit tpl_dir doc_dir rmail conf_dir
 
-uninstall-local: rm-rmail rm-doc_dir rm-tpl_dir rm-conf_dir rm-spool_dir rm-log_dir
-
+uninstall-local: rm-rmail rm-doc_dir rm-tpl_dir rm-dirs
 
 conf_dir:
 	install -d $(DESTDIR)@with_confdir@
-
-rm-conf_dir:
-	rmdir $(DESTDIR)@with_confdir@  # removes only if empty
-
 
 tpl_dir:
 	install -d $(DESTDIR)@datadir@/masqmail/tpl
@@ -21,7 +16,6 @@ tpl_dir:
 
 rm-tpl_dir:
 	rm -rf $(DESTDIR)@datadir@/masqmail/
-
 
 doc_dir:
 	install -d $(DESTDIR)@docdir@
@@ -36,20 +30,10 @@ rm-doc_dir:
 	)
 	rmdir $(DESTDIR)@docdir@
 
-
-log_dir:
-	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_logdir@
-
-rm-log_dir:
-	rmdir $(DESTDIR)@with_logdir@  # removes only if empty
-
-
-spool_dir:
-	install -d -o @with_user@ -g @with_group@ $(DESTDIR)@with_spooldir@
-
-rm-spool_dir:
-	: # removal fails if the dirs are non-empty
-	: # this prevents losing spooled files
+rm-dirs:
+	: # removes only if empty
+	rmdir $(DESTDIR)@with_confdir@
+	rmdir $(DESTDIR)@with_logdir@
 	rmdir $(DESTDIR)@with_spooldir@
 
 rmail:
