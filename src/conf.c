@@ -91,7 +91,7 @@ parse_list_file(const gchar *fname)
 				fname, strerror(errno));
 		exit(1);
 	}
-	while (!fgets(buf, sizeof buf, fptr)) {
+	while (fgets(buf, sizeof buf, fptr)) {
 		g_strstrip(buf);
 		if (!*buf || *buf == '#') {
 			continue;
