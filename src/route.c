@@ -344,6 +344,26 @@ route_split_rcpts(connect_route *route, GList *rcpt_list, GList **p_rcpt_list, G
 	g_list_free(tmp_list);
 }
 
+gboolean
+route_from_hdr_is_allowed(connect_route *route, char *from_hdr)
+{
+	address *addr = create_address_qualified(from_hdr, FALSE,
+			conf.host_name);
+	if (route->denied_from_hdrs && g_list_find_custom(route->denied_from_hdrs, addr, _g_list_addrcmp)) {
+		return FALSE;
+	}
+	if (route->allowed_from_hdrs) {
+		if (g_list_find_custom(route->allowed_from_hdrs, addr,
+				_g_list_addrcmp)) {
+			return TRUE;
+		} else {
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+
 msg_out*
 route_prepare_msgout(connect_route *route, msg_out *msgout)
 {

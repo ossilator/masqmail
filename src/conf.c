@@ -624,6 +624,10 @@ read_route(gchar *filename, gboolean is_perma)
 			route->allowed_recipients = parse_address_glob_list(rval);
 		} else if (strcmp(lval, "denied_recipients")==0) {
 			route->denied_recipients = parse_address_glob_list(rval);
+		} else if (strcmp(lval, "allowed_from_hdrs")==0) {
+			route->allowed_from_hdrs = parse_address_glob_list(rval);
+		} else if (strcmp(lval, "denied_from_hdrs")==0) {
+			route->denied_from_hdrs = parse_address_glob_list(rval);
 
 		} else if (strcmp(lval, "set_h_from_domain")==0) {
 			route->set_h_from_domain = g_strdup(rval);

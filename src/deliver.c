@@ -667,6 +667,21 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 			continue;
 		}
 
+		/* filter by allowed from header */
+		GList *from_hdrs = NULL;
+		char *from_hdr = NULL;
+		from_hdrs = find_header(msgout->msg->hdr_list, HEAD_FROM,
+				 NULL);
+		if (from_hdrs) {
+			from_hdr = (char *) ((header *)from_hdrs->data)->value;
+			if (!route_from_hdr_is_allowed(route, from_hdr)){
+				DEBUG(6) debugf("from hdr `%s' is not allowed for this "
+						"route\n", from_hdr);
+				destroy_msg_out(msgout_cloned);
+				continue;
+			}
+		}
+
 		logwrite(LOG_NOTICE, "%s using '%s'\n", msgout->msg->uid,
 				route->name);
 
