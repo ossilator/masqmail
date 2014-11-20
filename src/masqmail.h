@@ -85,6 +85,8 @@ typedef struct _connect_route {
 	GList *denied_senders;
 	GList *allowed_recipients;
 	GList *denied_recipients;
+	GList *allowed_from_hdrs;
+	GList *denied_from_hdrs;
 
 	interface *mail_host;
 	gboolean connect_error_fail;

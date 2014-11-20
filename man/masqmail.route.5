@@ -78,6 +78,36 @@ Example: \fI*@spamblocker.example.org\fP
 (See also examples for \fIallowed_senders\fP)
 
 .TP
+\fBallowed_from_hdrs\fR = \fIlist\fR
+
+This is a semicolon `;' separated list of From header addresses.
+Messages which have one of these addresses as the From header
+are allowed to use this route
+(if not also in \fBdenied_from_hdrs\fR).
+
+Glob patterns containing `?' and `*' can be used.
+If the pattern doesn't contain an `@', it is seen as a pattern for the
+local part only.
+
+Example: \fImeillo;*@*example.org;web*@example.com\fP
+
+(``meillo'' equals ``meillo@*'', i.e. the local part.)
+
+.TP
+\fBdenied_from_hdrs\fR = \fIlist\fR
+
+This is a semicolon `;' separated list of From header addresses.
+Messages which have one of these addresses as the From header
+will not be sent using this route (even if also in
+\fBallowed_from_hdrs\fR).
+
+Glob patterns containing `?' and `*' can be used.
+If the pattern doesn't contain an `@', it is seen as a pattern for the
+local part only.
+
+Example: (see \fIallowed_from_hdrs\fP)
+
+.TP
 \fBlast_route\fR = \fIboolean\fR
 
 If this is set, a mail which would have been delivered using this route,
