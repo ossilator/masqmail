@@ -7,6 +7,15 @@ affect users directly.
 The manual pages describe newly added options. Take them for reference.
 
 
+0.3.5
+
+- Adds a glob-pattern based aliasing mechanism.
+
+- Adds route selection based on the From header.
+
+- Changes the paths for PID files and lock files. Both are configurable.
+
+
 0.3.4
 
 - Reworked the route concept to be more general and have better

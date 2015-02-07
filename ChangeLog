@@ -7,6 +7,14 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
+0.3.5  Sat, 07 Feb 2015 11:03:01 +0100
+	* Adds a glob-pattern based aliasing mechanism
+	* Adds route selection based on the From header
+	* Changes the path for PID files (/var/run/masqmail.pid),
+	  configurable with --with-piddir
+	* Changes the path for lock files (/var/lock/masqmail)
+	* Various bugfixes and cleanups
+
 0.3.4  Wed, 18 Jan 2012 09:21:54 +0100
 	* Reworked the route concept. Better names: ``online_routes'' is now
 	  known as ``query_routes'' and the ``local_net_route'' in now named
