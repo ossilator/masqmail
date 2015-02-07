@@ -54,11 +54,9 @@ PGP-signed. It should include the URL for the tarball as well as the URL
 of the website. It should contain a brief summary of visible changes, as
 well as the URL of the webpage that would show a detailed list of changes.
 
-(12) Submit a release info to freshmeat.net.
+(12) Add a version tag to the VCS.
 
-(13) Add a version tag to the VCS.
-
-(14) Change the version number in configure.ac: Increment it and add
+(13) Change the version number in configure.ac: Increment it and add
 -dev to it. Run autoconf afterwards to propagate the change.
 
 
