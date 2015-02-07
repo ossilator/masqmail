@@ -192,7 +192,8 @@ listen_port(GList *iface_list, gint qival, char *argv[])
 				}
 				size = sizeof(clientname);
 				new = accept(sock, (struct sockaddr *)
-						&clientname, &size);
+						&clientname,
+						(socklen_t *)&size);
 				if (new < 0) {
 					logwrite(LOG_ALERT, "accept: (ignoring): %s\n", strerror(errno));
 				} else {
