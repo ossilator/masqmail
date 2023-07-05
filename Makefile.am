@@ -1,4 +1,4 @@
-EXTRA_DIST = examples docs man tpl devel
+EXTRA_DIST = examples docs tpl devel
 
 SUBDIRS = src man
 
