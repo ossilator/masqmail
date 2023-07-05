@@ -230,4 +230,7 @@ AC_OUTPUT(Makefile \
 	src/base64/Makefile \
 	src/md5/Makefile \
 	man/Makefile
+	docs/Makefile
+	examples/Makefile
+	tpl/Makefile
 	)
