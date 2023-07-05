@@ -192,7 +192,7 @@ gboolean get_from_file(gchar *fname)
 	if(popb){
 	  ok = pop3_get(popb, gc->login_user, gc->login_pass,
 			gc->address, gc->return_path,
-			gc->max_count, gc->max_size);
+			gc->max_count, gc->max_size, gc->max_size_delete);
 	  pop3_in_close(popb);
 	}else{
 	  ok = FALSE;

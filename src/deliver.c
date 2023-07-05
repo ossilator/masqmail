@@ -20,6 +20,7 @@
 #include "smtp_out.h"
 #include <fnmatch.h>
 #include <sysexits.h>
+#include <netdb.h>
 
 /* collect failed/defered rcpts for failure/warning messages */
 /* returns TRUE if either there are no failures or a
@@ -418,6 +419,7 @@ gboolean deliver_msglist_host_smtp(connect_route *route, GList *msgout_list, gch
 	smtp_out_quit(psb);
       }
     }else{
+      /* smtp_out_init() failed */
       if((psb->error == smtp_fail) ||
 	 (psb->error == smtp_trylater) ||
 	 (psb->error == smtp_syntax)){
@@ -426,6 +428,7 @@ gboolean deliver_msglist_host_smtp(connect_route *route, GList *msgout_list, gch
 	foreach(msgout_list, msgout_node){
 	  msg_out *msgout = (msg_out *)(msgout_node->data);
 	  smtp_out_mark_rcpts(psb, msgout->rcpt_list);
+
 	  if(delivery_failures(msgout->msg, msgout->rcpt_list, 
 			       "while connected with %s, the server replied\n\t%s",
 			       host, psb->buffer))
@@ -434,6 +437,33 @@ gboolean deliver_msglist_host_smtp(connect_route *route, GList *msgout_list, gch
       }
     }
     destroy_smtpbase(psb);
+  }else{
+    /* smtp_out_open() failed */
+    foreach(msgout_list, msgout_node){
+      msg_out *msgout = (msg_out *)(msgout_node->data);
+      GList *rcpt_node;
+
+      for(rcpt_node = g_list_first(msgout->rcpt_list);
+	  rcpt_node;
+	  rcpt_node = g_list_next(rcpt_node)){
+	address *rcpt = (address *)(rcpt_node->data);
+
+	addr_unmark_delivered(rcpt);
+	if(route->connect_error_fail){
+	  addr_mark_failed(rcpt);
+	}else{
+	  addr_mark_defered(rcpt);
+	}
+	if(route->wrapper ?
+	   delivery_failures(msgout->msg, msgout->rcpt_list,
+			     "could not open wrapper:\n\t%s",
+			     strerror(errno)) :
+	   delivery_failures(msgout->msg, msgout->rcpt_list, 
+			     "could not open connection to %s:%d :\n\t%s",
+			     host, port, h_errno != 0 ? hstrerror(h_errno) : strerror(errno)))
+	  deliver_finish(msgout);
+      }
+    }
   }
   return ok;
 }

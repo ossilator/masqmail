@@ -47,6 +47,18 @@ order). For 'dns_a', the domain is assumed to be an A pointer. For
 </option>
 
 <option>
+<p><opt>connect_error_fail</opt> = <arg>boolean</arg></p>
+<optdesc>
+<p>If this is set, a connection error will cause a mail delivery to
+fail, ie. it will be bounced. If it is unset, it will just be defered.</p>
+<p>Default is false. The reason for this is that masqmail is designed
+for non permanent internet connections, where such errors may occur
+quite often, and a bounce would be annoying.</p>
+<p>For the default local_net route is is set to true.</p>
+</optdesc>
+</option>
+
+<option>
 <p><opt>helo_name</opt> = <arg>string</arg></p>
 <optdesc>
 <p>Set the name given with the HELO/EHLO command. If this is not

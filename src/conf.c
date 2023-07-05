@@ -637,6 +637,8 @@ connect_route *read_route(gchar *filename, gboolean is_local_net)
 	route->helo_name = g_strdup(rval);
       else if(strcmp(lval, "wrapper") == 0)
 	route->wrapper = g_strdup(rval);
+      else if(strcmp(lval, "connect_error_fail") == 0)
+	route->connect_error_fail = parse_boolean(rval);
       else if(strcmp(lval, "do_correct_helo") == 0)
 	route->do_correct_helo = parse_boolean(rval);
       else if(strcmp(lval, "do_pipelining") == 0)
@@ -929,6 +931,8 @@ get_conf *read_get_conf(gchar *filename)
 	gc->do_uidl_dele = parse_boolean(rval);
       else if(strcmp(lval, "max_size") == 0)
 	gc->max_size = atoi(rval);
+      else if(strcmp(lval, "max_size_delete") == 0)
+	gc->max_size = parse_boolean(rval);
       else if(strcmp(lval, "max_count") == 0)
 	gc->max_count = atoi(rval);
       else if(strcmp(lval, "resolve_list") == 0)
@@ -985,6 +989,7 @@ connect_route *create_local_route()
     route->expand_h_sender_address = TRUE;
     route->resolve_list =
       g_list_append(NULL, resolve_byname);
+    route->connect_error_fail = TRUE;
   }
   return route;
 }

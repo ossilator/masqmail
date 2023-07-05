@@ -2,6 +2,16 @@ Here I add changes which may be important for you. See ChangeLog for more
 details and the manual pages for a more complete description
 of added options.
 
+0.2.18
+
+- delivery warnings and failures are now also implermented if the
+connection to a server fails. Because masqmail is designed for dialup
+networks, a connection failure will merely generate a warning by default.
+If you deliver in a local network and use the default local_net route,
+this would generte a failure. You can change this behaviour by setting
+connect_error_fail
+to either true or false in the route configurations.
+
 0.2.17
 
 - delivery warnings have been finally implemented: if delivery of a mail

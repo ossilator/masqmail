@@ -66,6 +66,9 @@ mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port,
 
       logwrite(LOG_WARNING, "connection to %s failed: %s\n",
 	       inet_ntoa(saddr.sin_addr), strerror(errno));
+
+      errno = saved_errno;
+
       if((saved_errno != ECONNREFUSED) &&
 	 (saved_errno != ETIMEDOUT) &&
 	 (saved_errno != ENETUNREACH) &&
@@ -77,7 +80,7 @@ mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port,
   return NULL;
 }
 
-/* give a list of resolver functions, this function
+/* Given a list of resolver functions, this function
    resolve the host and tries to connect to the addresses
    returned. If a connection attemp is timed out or refused,
    the next address is tried.
@@ -93,6 +96,8 @@ mxip_addr *connect_resolvelist(int *psockfd, gchar *host, guint port,
   GList *addr_list;
 
   DEBUG(5) debugf("connect_resolvelist entered\n");
+
+  h_errno = 0;
 
   if(isdigit(host[0])){
     mxip_addr *addr;
@@ -122,16 +127,22 @@ mxip_addr *connect_resolvelist(int *psockfd, gchar *host, guint port,
       exit(EXIT_FAILURE);
     }
       
+    errno = 0;
     if((addr_list = res_func(NULL, host))){
 	
       mxip_addr *addr;
       if((addr = connect_hostlist(psockfd, host, port, addr_list)))
 	return addr;
+
+      DEBUG(5){
+	debugf("connect_hostlist failed: %s\n", strerror(errno));
+      }
 	
       g_list_free(addr_list);
     }else{
-      if(!g_list_next(res_node))
-	logwrite(LOG_ALERT, "could not resolve %s\n", host);
+      if(!g_list_next(res_node)){
+	logwrite(LOG_ALERT, "could not resolve %s: %s\n", host, hstrerror(h_errno));
+      }
     }
   }
   return NULL;
