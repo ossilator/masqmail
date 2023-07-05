@@ -6,6 +6,9 @@ sbin_PROGRAMS=masqmail
 bin_PROGRAMS=mservdetect
 noinst_PROGRAMS=smtpsend readtest resolvtest
 
+install-exec-hook:
+	chmod u+s $(DESTDIR)@sbindir@/masqmail
+
 masqmail_SOURCES=\
 	dotlock.h\
 	masqmail.h\
