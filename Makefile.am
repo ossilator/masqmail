@@ -2,7 +2,7 @@ EXTRA_DIST = examples docs tpl devel
 
 SUBDIRS = src man
 
-install-data-local: uid_bit tpl_dir doc_dir rmail conf_dir
+install-data-local: tpl_dir doc_dir rmail conf_dir
 
 uninstall-local: rm-rmail rm-doc_dir rm-tpl_dir rm-dirs
 
@@ -44,7 +44,3 @@ rmail:
 
 rm-rmail:
 	rm -f $(DESTDIR)@prefix@/sbin/rmail
-
-
-uid_bit:
-	chmod u+s $(DESTDIR)@prefix@/sbin/masqmail
