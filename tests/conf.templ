@@ -1,0 +1,66 @@
+# Example configuration for MasqMail
+# Copyright (C) 1999 Oliver Kurth
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+
+# this is just for testing. In real life it does not make much sense:
+run_as_user=true
+
+# set debug level (0 = no debugging, 5 = very much, 6 = too much)
+# can also be set with the -d option on the cmd line
+debug_level = 5
+
+do_queue = false
+
+# The name with which MasqMail identifies itself to others:
+host_name="blue.patchwork.net"
+
+# Hosts considered local:
+#local_hosts="localhost;blue.patchwork.net;blue"
+local_hosts="localhost"
+
+# Nets considered local, for immediate delivery attempts:
+# ALL hosts not included in either local_host or local_nets are
+# considered to be 'outside', meaning that messages to them will be queued
+local_nets="SMTP_HOST"
+
+# accept connections on these interfaces:
+listen_addresses="localhost:2525"
+
+# send messages to this port:
+# probably this will also be configurable on host basis
+remote_port=25
+
+# where MasqMail stores its spool files and other stuff:
+#spool_dir="/var/spool/masqmail"
+spool_dir="."
+
+# where local mail will be written to:
+#mail_dir="/var/spool/mail"
+mail_dir="."
+
+# use syslogd for logs?
+use_syslog=false
+
+# directory for log files if not using syslogd:
+#log_dir="/var/masqmail"
+log_dir="."
+
+# special routes:
+
+connect_route.GWDG = "src/gwdg.route"
+connect_route.Argon = "src/argon.route"
+

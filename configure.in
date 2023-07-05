@@ -1,0 +1,92 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(src/accept.c)
+
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(MasqMail, 0.0.12)
+
+AC_PREFIX_DEFAULT(/usr)
+
+dnl Checks for programs.
+
+dnl Checks for libraries.
+
+AM_PATH_GLIB
+
+AC_ISC_POSIX
+AC_PROG_CC
+AC_STDC_HEADERS
+AC_ARG_PROGRAM
+
+dnl checks necessary for libc5:
+dnl if there is res_search in libc, it is probably libc5
+dnl if not, it is probably libc6 and we need libresolv
+AC_CHECK_LIB(c, res_search, need_resolv=no, need_resolv=yes)
+if test "$need_resolv" = yes; then
+	AC_CHECK_LIB(resolv, res_search,has_resolv=yes,AC_MSG_ERROR("no libresolv"))
+	RESOLV_LIBS='-lresolv'
+else
+	RESOLV_LIBS=''
+fi
+AC_SUBST(RESOLV_LIBS)
+
+dnl if there is no getline, we define it using getdelim in src/masqmail.h
+AC_CHECK_FUNCS(getline)
+
+dnl if there is no fdatasync, we define it to fsync in src/masqmail.h
+AC_CHECK_FUNCS(fdatasync)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h sys/time.h syslog.h unistd.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_HEADER_TIME
+AC_STRUCT_TM
+
+dnl Checks for library functions.
+AC_FUNC_FNMATCH
+AC_TYPE_SIGNAL
+AC_FUNC_STRFTIME
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS(select socket strerror strstr)
+
+dnl user and group configuration
+if test "$with_user" = ''; then
+	with_user='mail'
+fi
+if test "$with_group" = ''; then
+	with_group='trusted'
+fi
+AC_DEFINE_UNQUOTED(DEF_MAIL_USER, "${with_user}")
+AC_SUBST(with_user)
+AC_DEFINE_UNQUOTED(DEF_MAIL_GROUP, "${with_group}")
+AC_SUBST(with_group)
+
+dnl liblockfile
+if test "$with_liblockfile" != ''; then
+	AC_CHECK_LIB(lockfile, maillock, has_lockfile=yes, AC_MSG_ERROR("no liblockfile"))
+	LOCKFILE_LIBS='-llockfile'
+	AC_DEFINE(USE_LIBLOCKFILE, 1)
+else
+	LOCKFILE_LIBS=''
+fi
+AC_SUBST(LOCKFILE_LIBS)
+AC_SUBST(USE_LIBLOCKFILE)
+
+dnl log and spool directories
+if test "$with_logdir" = ''; then
+	with_logdir='/var/masqmail/'
+fi
+AC_SUBST(with_spooldir)
+if test "$with_spooldir" = ''; then
+	with_spooldir='/var/spool/masqmail/'
+fi
+AC_SUBST(with_logdir)
+AC_SUBST(with_spooldir)
+
+AC_OUTPUT(Makefile \
+	tests/Makefile \
+	src/Makefile)

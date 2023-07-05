@@ -1,0 +1,75 @@
+Here I add changes which may be important for you. See ChangeLog for more
+details and the manual pages (docs/*.html) for a more complete description
+of added options.
+
+0.0.10
+- there is now alias support. Give the location of the alias file (usually /etc/aliases) with eg.
+alias_file = "/etc/aliases"
+- delivery to pipes is now possible, but only if it appears in an alias file. Example:
+pipe: |/usr/bin/command
+will expand the address pipe to "|/usr/bin/command" which invokes '/usr/bin/command'
+as the user and group masqmail is running as.
+- entries starting with '\' in alias files will not be exanded further
+
+- changed permissions for queue runs again: got to be root, mail or in group trusted.
+
+- some configuration parameters can be read from files, these are
+allowed_mail_locals, not_allowed_mail_locals, allowed_rcpt_domains, not_allowed_rcpt_domains,
+map_return_path_addresses, map_h_from_addresses, map_h_reply_to_addresses
+any entry in these list beginning with a '/' are regarded as
+filenames, the content of these will be put at that location. Entries
+in these files are separated by new lines.  Example:
+in the route file you have:
+map_h_from_addresses = "/etc/masqmail/hfrom.map"
+and hfrom.map contains:
+
+john: John Smith <jsmith@mail.academic.edu>
+cmiller: "Charlie Miller" <cmiller@foo.com>
+
+UPDATE (Jan 2000): The new home location of MasqMail is
+http://www.innominate.org/~oku/masqmail/, the new email adress of the
+author is Oliver Kurth <kurth@innominate.de>.
+
+0.0.9
+- see ChangeLog.
+
+NOTE: The home location of MasqMail at
+http://merlin.uni-sw.gwdg.de/~okurth/masqmail/ is uncertain from the
+beginning of Nov. 1999! See http://www.freshmeat.net for new
+announcements. I leave the university and begin a new job on Nov. 1st 1999
+in Berlin :-).
+
+0.0.8:
+- there is now a FAQ page. See docs/faq.html.
+- added allowed_rcpt_domains option for routes.
+- added allowed_mail_locals and not_allowed_mail_locals options for routes.
+- mailq now gives information about the time mails spent in the queue,
+the message size and the received host.
+
+0.0.7:
+-bug fix release: for statements in two	adjacent lines, the second was not recognized.
+
+0.0.6:
+- bug fix release: some MUAs (cucipop) saw the locally delivered mails
+concatenated. (cucipop is not a MUA  but a pop server, but it has to read the
+mails).
+
+0.0.5:
+- fixed a bug that caused the headers to be lost under some circumstances.
+- added expand_h_sender_domain option for routes.
+- rewrote the libresolv part in configure. Should work better now.
+
+0.0.4:
+- MM should now recognize whether libresolv should be linked.
+- added --with-logdir=LOGDIR and --with-spooldir=SPOOLDIR to set directories.
+  These will be created if not already existent.
+- added --with-user=USER, --with-group=GROUP options to set user and group id
+  for MasqMail.
+
+0.0.3:
+- MasqMail can now deliver mails that are received at online
+  time immediately to the internet. See the options detect_online,
+  mserver_iface and online_file.
+- You can define a route configuration for the local net. See option
+  local_net_route.
+

@@ -1,0 +1,214 @@
+
+
+
+
+
+
+
+
+<HTML>
+<HEAD>
+<TITLE>MasqMail - Manual
+</TITLE>
+</HEAD>
+  <BODY TEXT="#000000" LINK="#0000ff" BGCOLOR="#ffffff">
+    
+    <center>
+      <table width="80%">
+	<tr><td>
+	    <table width="100%" bgcolor="#0000aa" cellspacing=0 cellpadding=0>
+<tr>
+  <td>
+  <a href="manual.html">
+    <img width="20" src = "../images/u_arrow.gif" alt = "manual">
+  </a>
+  </td>
+<td align=center width="100%"><font size="6" color = "#ffffff">Installation</font></td>
+<td>
+  <a href="./options.html">
+    <img width="20" src = "../images/r_arrow.gif" alt = "Options">
+  </a>
+</td>
+</tr>
+</table>
+
+
+<p>You need a user and a group for masqmail to run, I suggest user
+'mail' and group 'trusted'. Say:</p>
+
+<pre>
+groupadd -g 42 trusted
+useradd -u 42 -g 42 -d / -s /bin/sh -c "Mail Transfer Agent" mail
+</pre>
+
+<p>If you use other names than <i>mail</i> and <i>trusted</i> use the options
+described below for configure. The 42 is just a suggestion, you can
+use any number you like, but preferably one &lt; 100. It does not have
+to be the same for the user 'mail' and the group 'trusted'.</p>
+
+<p>Compliling is a matter of the usual procedure:</p>
+
+In the source directory, after unpacking do:<br>
+
+<pre>
+./configure
+make
+make install
+</pre>
+
+<p>Optionally, after you have called make, you can make some tests in
+the tests directory. Read the README in that directory for
+instructions.</p>
+
+<h4>Additional options for configure:</h4>
+
+<p>
+<b>--with-user=USER</b> sets the user as which MasqMail will run. Default is
+<i>mail</i>. USER has to exist before you 'make install'.
+</p><p>
+<b>--with-group=GROUP</b> sets the group as which MasqMail will run. Default
+is <i>trusted</i>. GROUP has to exist before you 'make install'.
+</p><p>
+<b>--with-logdir=LOGDIR</b> sets the directory where MasqMail stores its log
+files. It will be created if it does not exist. Default is /var/masqmail/.
+</p><p>
+<b>--with-spooldir=SPOOLDIR</b> sets the directory where MasqMail stores its
+spool files. It will be created if it does not exist. Default is
+/var/spool/masqmail/.
+</p>
+
+<h4>After make install</h4>
+
+<p>
+You can also use these instructions to omit 'make install' if you do
+not want to use it.
+</p><p>
+Check that 'make install' worked correctly. The following command:
+</p><p><pre>
+ls -ld /usr/sbin/masqmail /var/masqmail/ /var/spool/masqmail /var/spool/masqmail/input
+</pre></p><p>
+should give output similar to
+</p><p>
+<pre>
+-rwsr-xr-x   1 root     root        86955 Oct 14 14:27 /usr/sbin/masqmail
+drwxr-xr-x   2 mail     trusted      1024 Oct 14 14:29 /var/masqmail/
+drwxr-xr-x   3 mail     trusted      1024 Oct 14 14:27 /var/spool/masqmail
+drwxr-xr-x   2 mail     trusted      1024 Oct 14 18:32 /var/spool/masqmail/input
+</pre>
+</p>
+<p>
+(important is the set-user-id bit for /usr/sbin/masqmail and the
+ownership of all items).
+</p>
+
+<p>Edit the configuration files. You can use the files from the
+examples directory as a template. Copy masqmail.conf to
+/etc/maqmail.conf, the others to the location given in
+masqmail.conf.</p>
+
+<p>If you already have an MTA (eg. sendmail) installed, move that to
+another location:</p>
+
+mv /usr/sbin/sendmail /usr/sbin/sendmail.orig<br>
+
+<p>Then make a link to the new MTA:</p>
+
+<pre>
+ln -s /usr/sbin/masqmail /usr/sbin/sendmail
+</pre>
+
+<p>Now every mailer that used to call sendmail will now call
+masqmail. You can now kill your old sendmail if it is running and
+start masqmail. Usually this is done with the startup scripts. For
+SuSE this would be (as root):</p>
+
+<pre>
+/sbin/init.d/sendmail stop
+/sbin/init.d/sendmail start
+</pre>
+
+<p>or shorter:</p>
+
+<pre>
+/sbin/init.d/sendmail restart<br>
+</pre>
+
+<p>You can also start it with:</p>
+
+<pre>
+/usr/sbin/sendmail -bd -q30m<br>
+</pre>
+
+<p>You can also let it be called from inetd (with the -bs option), but
+this is untested.</p>
+
+<h4>Configuring for online delivery</h4>
+
+<p>Now you have to set up the online configuration. The trick is to
+tell your ip-up script the connection name. You could use the IP
+number of the far side of the ppp link, but this is a pain and may
+change each time. But you can give it an additional argument via pppd
+with ipparam. Somewhere in your dial up script you have a line similar
+to:</p>
+
+<pre>
+/usr/sbin/pppd /dev/ttyS1 connect "/usr/sbin/chat -t 90 -f
+${CHATFILE}" -d -d -d user user@somewhere file ${OPTIONS}
+</pre>
+
+<p>Just add 'ipparam FastNet' in the command line for pppd if your ISP
+has the name FastNet. The ip-up script will then get 'FastNet' as a
+sixth parameter. In your ip-up script you can then call masqmail with</p>
+
+<pre>
+/usr/sbin/masqmail -qo $6
+</pre>
+
+<p>instead of 'sendmail -q', if you had that in the script
+before. Masqmail will then read the route configuration specified for
+the connection name 'FastNet' and deliver the mail destined to the
+internet. See the <a href="config.html">configuration manual</a> on how
+to write a route configuration or use one of the examples as a
+template. <em>I do not know how do configure that for an ISDN adapter,
+but I am sure you will find something similar in the man
+pages.</em></p>
+
+<p>If you want mail that is received by masqmail from your local
+net to be delivered immediately using the route configuration, you
+have two possibilities:<p>
+
+<p> 
+<ul>
+
+<li>if you are using the masqdialer system, you just have to set the
+variables <b>online_detect</b> to <i>mserver</i> and
+<b>mserver_iface</b> to the interface mserver is listening to.</li>
+
+<li>otherwise you have to add two commands in your ip-up script:<br>
+echo -n $6 &gt; /tmp/connect_route<br> chmod 644 /tmp/connect_route<br>
+and you have to remove the file <i>/tmp/connect_route</i> in your
+ip-down script:<br> rm /tmp/connect_route.<br> Then you have to set
+<b>online_detect</b> to <i>file</i> and <b>online_file</b> to
+<i>/tmp/connect_route</i>.  </li>
+
+</ul>
+</p>
+
+<p>See the route documentation for more.</p>
+	  </td></tr>
+    
+	<tr><td>
+	    <p>
+	    <hr>
+	    <address><a href = "mailto:kurth@innominate.de">Oliver Kurth</a></address>
+	    Last modified: Mon Feb 28 20:24:53 CET 2000
+	    <br>
+	    This page was created using <a href="http://www.freddyfrog.com/hacks/genpage/">Genpage</a> - Version: 1.0.6
+	  </p>
+    
+      </table>
+    </center>
+
+  </BODY>
+</HEAD>
+  
