@@ -1,6 +1,6 @@
 EXTRA_DIST = \
 examples/example.get examples/example.route examples/masqmail.conf \
-docs/README docs/install.html docs/man/m*.[0-9] \
+docs/README docs/man/m*.[0-9] \
 suse/masqmail suse/masqmail.spec suse/masqmail.spec.in \
 redhat/masqmail redhat/masqmail.spec redhat/masqmail.spec.in \
 tpl/failmsg.tpl tpl/failmsg.tpl.it tpl/failmsg.tpl.de\

@@ -1,5 +1,4 @@
 etc/masqmail
-usr/lib
 usr/sbin
 usr/bin
 var/log

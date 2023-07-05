@@ -81,6 +81,16 @@ write_db_conf (){
       exit 1
     fi
   else
+    cat >> $DEBCONFTMP << EOF
+#
+# include the locations of your route and get configurations here.
+# Examples:
+# online_routes.default = "/etc/masqmail/default.route"
+# online_gets.default = "/etc/masqmail/default.get"
+# You can have more of those, with '.default' replaced with other
+# names. See man 8 masqmail.conf.
+#
+EOF
     cp $DEBCONFTMP $WORKTMP
   fi
 

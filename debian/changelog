@@ -1,6 +1,9 @@
-masqmail (0.2.13-1) unstable; urgency=low
+masqmail (0.2.14-1) unstable; urgency=low
 
   * new upstream version, other changes see ChangeLog
+  * included examples for the route locations in masqmail.conf
+    (Closes: #166207)
+  * removed bashisms from debian/masqmail.config (== -> =)
   * remote_port option works again (Closes: #163850)
     (but it is marked as deprecated)
 
