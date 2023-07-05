@@ -217,6 +217,7 @@ interface *parse_interface(gchar *line, gint def_port)
   return iface;
 }
 
+#ifdef ENABLE_IDENT /* so far used for that only */
 static
 struct in_addr *parse_network(gchar *line, gint def_port)
 {
@@ -258,6 +259,7 @@ struct in_addr *parse_network(gchar *line, gint def_port)
   p_net_addr->s_addr = net_addr.s_addr;
   return p_net_addr;
 }
+#endif
 
 static
 gboolean eat_comments(FILE *in)
@@ -418,6 +420,8 @@ gboolean read_conf(gchar *filename)
 
   conf.alias_local_cmp = strcmp;
 
+  conf.max_defer_time = 86400*4; /* 4 days */
+
   if((in = fopen(filename, "r"))){
     gchar lval[256], rval[2048];
     while(read_statement(in, lval, 256, rval, 2048)){
@@ -469,6 +473,8 @@ gboolean read_conf(gchar *filename)
 	conf.local_nets = parse_list(rval, FALSE);
       else if(strcmp(lval, "do_save_envelope_to") == 0)
 	conf.do_save_envelope_to = parse_boolean(rval);
+      else if(strcmp(lval, "defer_all") == 0)
+	conf.defer_all = parse_boolean(rval);
       else if(strcmp(lval, "do_relay") == 0)
 	conf.do_relay = parse_boolean(rval);
       else if(strcmp(lval, "alias_file") == 0){
@@ -563,7 +569,16 @@ gboolean read_conf(gchar *filename)
 	conf.errmsg_file = g_strdup(rval);
       else if(strcmp(lval, "warnmsg_file") == 0)
 	conf.warnmsg_file = g_strdup(rval);
-      else if(strcmp(lval, "log_user") == 0)
+      else if(strcmp(lval, "warn_intervals") == 0)
+	conf.warn_intervals = parse_list(rval, FALSE);
+      else if(strcmp(lval, "max_defer_time") == 0){
+	gint dummy;
+	gint ival = time_interval(rval, &dummy);
+	if(ival < 0)
+	  fprintf(stderr, "invalid time interval for 'max_defer_time': %s\n", rval);
+	else
+	  conf.max_defer_time = ival;
+      }else if(strcmp(lval, "log_user") == 0)
 	conf.log_user = g_strdup(rval);
 
       else
@@ -572,13 +587,18 @@ gboolean read_conf(gchar *filename)
     fclose(in);
 
     if(conf.errmsg_file == NULL)
-      conf.errmsg_file = g_strdup(CONF_DIR"/tpl/failmsg.tpl");
+      conf.errmsg_file = g_strdup(DATA_DIR"/tpl/failmsg.tpl");
+    if(conf.warnmsg_file == NULL)
+      conf.warnmsg_file = g_strdup(DATA_DIR"/tpl/warnmsg.tpl");
 
     if(conf.lock_dir == NULL)
       conf.lock_dir = g_strdup_printf("%s/lock/", conf.spool_dir);
 
     if(conf.mbox_default == NULL)
       conf.mbox_default = g_strdup("mbox");
+
+    if(conf.warn_intervals == NULL)
+      conf.warn_intervals = parse_list("1h;4h;8h;1d;2d;3d", FALSE);
 
     return TRUE;
   }else
@@ -738,6 +758,9 @@ connect_route *read_route(gchar *filename, gboolean is_local_net)
       }
       else if(strcmp(lval, "pipe_fromhack") == 0){
 	route->pipe_fromhack = parse_boolean(rval);
+      }
+      else if(strcmp(lval, "last_route") == 0){
+	route->last_route = parse_boolean(rval);
       }
       else
 	logwrite(LOG_WARNING, "var '%s' not (yet) known, ignored\n", lval);

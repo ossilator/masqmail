@@ -22,6 +22,7 @@
 /* see also RFC 1341 */
 
 #include <glib.h>
+#include <string.h>
 #include "base64.h"
 
 gchar *base64_encode(guchar *buf, gint len)

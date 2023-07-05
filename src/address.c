@@ -34,8 +34,10 @@ address *create_address_qualified(gchar *path, gboolean is_rfc821,
 				  gchar *domain)
 {
   address *addr = create_address(path, is_rfc821);
-  if(addr->domain == NULL)
-    addr->domain = g_strdup(domain);
+  if(addr != NULL){
+    if(addr->domain == NULL)
+      addr->domain = g_strdup(domain);
+  }
 
   return addr;
 }

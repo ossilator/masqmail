@@ -242,7 +242,7 @@ header *get_header(gchar *line)
   hdr->value = NULL;
   p++;
 
-  while(*p == ' ' || *p == '\t') p++;
+  while(*p && (*p == ' ' || *p == '\t')) p++;
   hdr->value = p;
 
   for(i = 0; i < HEAD_NUM_IDS; i++){

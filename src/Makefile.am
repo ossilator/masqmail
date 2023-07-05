@@ -47,7 +47,8 @@ masqmail_SOURCES=\
 	smtp_in.c\
 	smtp_out.c\
 	spool.c\
-	tables.c
+	tables.c\
+	timeival.c
 
 smtpsend_SOURCES=\
 	smtpsend.c\

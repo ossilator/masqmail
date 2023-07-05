@@ -2,6 +2,21 @@ Here I add changes which may be important for you. See ChangeLog for more
 details and the manual pages for a more complete description
 of added options.
 
+0.2.17
+
+- delivery warnings have been finally implemented: if delivery of a mail
+fails temporarily, warning mail will be generated, informing the sender
+of the problem. After some time, the mail will be handled as failing
+permanently, and be bounced. New options: 'warn_intervals',
+'max_defer_time' and 'warnmsg_file'.
+
+- the message templates for failures and warnings will now be installed
+into /usr/share/masqmail/tpl/, and no longer to /etc/masqmail/tpl/. The
+default for the search path (options 'errmsg_file' and 'warnmsg_file'
+has been changed accordingly.
+
+- new option 'last_route'. See man 5 masqmail.route.
+
 0.2.12
 two new options have been added:
 - do_pipelining will be used only in broken mail setups. Actually, I

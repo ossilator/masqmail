@@ -24,4 +24,6 @@
 
 #undef CONF_DIR
 
+#undef DATA_DIR
+
 #undef SBINDIR

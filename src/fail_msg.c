@@ -22,7 +22,8 @@
 #include "peopen.h"
 #include "readsock.h"
 
-gboolean fail_msg(message *msg, GList *failed_rcpts, gchar *err_fmt, va_list args)
+gboolean fail_msg(message *msg, gchar *template,
+		  GList *failed_rcpts, gchar *err_fmt, va_list args)
 {
   gboolean ok = FALSE;
   address *ret_path = NULL;
@@ -45,7 +46,7 @@ gboolean fail_msg(message *msg, GList *failed_rcpts, gchar *err_fmt, va_list arg
 
   DEBUG(1) debugf("sending failure notice to %s.\n", addr_string(ret_path));
 
-  if(conf.errmsg_file){
+  if(template){
     FILE *file;
     GList *var_table = var_table_conf(var_table_msg(NULL, msg));
     gchar *err_msg = g_strdup_vprintf(err_fmt, args);
@@ -53,7 +54,7 @@ gboolean fail_msg(message *msg, GList *failed_rcpts, gchar *err_fmt, va_list arg
     var_table = g_list_prepend(var_table, create_pair_string("err_msg", err_msg));
     g_free(err_msg);
 
-    if((file = fopen(conf.errmsg_file, "r"))){
+    if((file = fopen(template, "r"))){
       FILE *out;
       gchar *cmd;
       pid_t pid;
@@ -78,10 +79,20 @@ gboolean fail_msg(message *msg, GList *failed_rcpts, gchar *err_fmt, va_list arg
 		fputs(hdr->header, out);
 	      }
 	    }else if(strncmp(fmt, "@msg_body", 9) == 0){
+	      /* we may have to read the data at this point
+		 and remember if we did */
+	      gboolean flag = (msg->data_list == NULL);
+	      if(flag){
+		if(!spool_read_data(msg)){
+		  logwrite(LOG_ALERT, "could not open data spool file %s\n",
+			   msg->uid);
+		}
+	      }
 	      foreach(msg->data_list, node){
 		gchar *line = (gchar *)(node->data);
 		fputs(line, out);
 	      }
+	      if(flag) msg_free_data(msg);
 	    }
 	  }else{
 	    expand(var_table, fmt, line, 256);
@@ -113,3 +124,52 @@ gboolean fail_msg(message *msg, GList *failed_rcpts, gchar *err_fmt, va_list arg
 
   return ok;
 }
+
+/*
+ival  : |--|--|----|--------|--------|
+warned: |-------W-------------W------
+result: |nnnyyyynnnnyyyyyyyyyynnnnnnn
+*/
+
+static
+gboolean warn_msg_is_due(message *msg)
+{
+  time_t now = time(NULL);
+  gint dummy;
+  
+  GList *node;
+  for(node = g_list_last(conf.warn_intervals); node; node = g_list_previous(node)){
+    gchar *str_ival = (gchar *)(node->data);
+    gint ival = time_interval(str_ival, &dummy);
+    if(ival >= 0){
+      DEBUG(5) debugf("ival = %d\n", ival);
+      DEBUG(5) debugf("now - msg->received_time = %d\n", now - msg->received_time);
+      if((now - msg->received_time) > ival){
+	if(msg->warned_time != 0){
+	  if((msg->warned_time - msg->received_time) < ival)
+	    return TRUE;
+	}else
+	  return TRUE;
+      }
+    }else
+      logwrite(LOG_WARNING, "invalid time interval: %s\n", str_ival);
+  }
+  return FALSE;
+}
+
+gboolean warn_msg(message *msg, gchar *template,
+		  GList *defered_rcpts, gchar *err_fmt, va_list args)
+{
+  time_t now = time(NULL);
+
+  if(warn_msg_is_due(msg)){
+    if(fail_msg(msg, template, defered_rcpts, err_fmt, args)){
+      msg->warned_time = now;
+      return TRUE;
+    }else
+      return FALSE;
+  }
+  return TRUE;
+}
+
+      

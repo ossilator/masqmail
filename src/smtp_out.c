@@ -423,6 +423,25 @@ void send_data(smtp_base *psb, message *msg)
   fflush(psb->out);
 }
 
+void smtp_out_mark_rcpts(smtp_base *psb, GList *rcpt_list)
+{
+  GList *rcpt_node;
+  for(rcpt_node = g_list_first(rcpt_list);
+      rcpt_node;
+      rcpt_node = g_list_next(rcpt_node)){
+    address *rcpt = (address *)(rcpt_node->data);
+
+    addr_unmark_delivered(rcpt);
+
+    if((psb->error == smtp_trylater) || (psb->error == smtp_timeout) ||
+       (psb->error == smtp_eof)){
+      addr_mark_defered(rcpt);
+    }else{
+      addr_mark_failed(rcpt);
+    }
+  }
+}
+
 void smtp_out_log_failure(smtp_base *psb, message *msg)
 {
   gchar *err_str;
@@ -592,7 +611,7 @@ gboolean smtp_out_auth_login(smtp_base *psb)
       fprintf(psb->out, "%s\r\n", reply64); fflush(psb->out);
       g_free(reply64);
       if((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
-	if (ok = check_response(psb, TRUE)) {
+	if ((ok = check_response(psb, TRUE))) {
 	  resp64 = get_response_arg(&(psb->buffer[4]));
 	  DEBUG(5) debugf("encoded response = %s\n", resp64);
 	  resp = base64_decode(resp64, &resp_size);
@@ -840,22 +859,9 @@ gint smtp_out_msg(smtp_base *psb,
     }
   }else{
     /* if something went wrong,
-       we have to unmark the rcpts prematurely marked as delivered */
-    GList *rcpt_node;
-    for(rcpt_node = g_list_first(rcpt_list);
-	rcpt_node;
-	rcpt_node = g_list_next(rcpt_node)){
-      address *rcpt = (address *)(rcpt_node->data);
-
-      addr_unmark_delivered(rcpt);
-
-      if((psb->error == smtp_trylater) || (psb->error == smtp_timeout) ||
-	 (psb->error == smtp_eof)){
-	addr_mark_defered(rcpt);
-      }else{
-	addr_mark_failed(rcpt);
-      }
-    }
+       we have to unmark the rcpts prematurely marked as delivered
+       and mark the status */
+    smtp_out_mark_rcpts(psb, rcpt_list);
 
     /* log the failure: */
     smtp_out_log_failure(psb, msg);

@@ -1,3 +1,17 @@
+0.2.17  Thu, 28 Nov 2002 14:59:24 +0100
+	* fixed errors in man page masqmail.conf.5 about online_detect
+	Thx to Juergen Daubert.
+	* fixed a segfaulting bug in accept.c on pop retrieval, if there
+	is no return_path in the mail and Sender: is empty.
+	Thx to Olaf Buddenhagen for debug information.
+	* implemented 'last_route' option
+	* moved *.tpl to /usr/share/masqmail/tpl (from /etc/masqmail/tpl)
+	* french translation of warnmsg.tpl by Rémi Denis-Courmont
+	* added delivery warn messages for deferals
+	new options: 'warn_intervals', 'warnmsg_file', 'max_defer_time'
+	* warn/fail also if remote SMTP server replies with 4xx or 5xx
+	just after EHLO/HELO (yes, that was a bug)
+	* removed a few -Wall warnings. Thanks to Juergen Daubert.
 0.2.16  Tue, 12 Nov 2002 17:27:13 +0100
 	* fixed debugging, which has been broken in 0.2.15
 0.2.15  Wed, 06 Nov 2002 12:19:55 +0100

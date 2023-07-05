@@ -227,11 +227,11 @@ If this is set, each line beginning with 'From ' is replaced with '>From ' whene
 
 \fBonline_detect = \fIstring\f1\fB\f1
 
-Defines the method MasqMail uses to detect whether there is currently an online connection. It can have the values \fBfile\f1 or \fBmserver\f1.
+Defines the method MasqMail uses to detect whether there is currently an online connection. It can have the values \fBfile\f1, \fBpipe\f1 or \fBmserver\f1.
 
 When it is set to \fBfile\f1, MasqMail first checks for the existence of \fBonline_file\f1 (see below) and if it exists, it reads it. The content of the file should be the name of the current connection as defined with \fBconnect_route.\fIname\f1\fB\f1 (without a trailing newline character).
 
-When it is set to \fBfile\f1, MasqMail calls the executable given by the \fBonline_pipe\f1 option (see below) and reads the current online status from its standard output.
+When it is set to \fBpipe\f1, MasqMail calls the executable given by the \fBonline_pipe\f1 option (see below) and reads the current online status from its standard output.
 
 When it is set to \fBmserver\f1, MasqMail connects to the masqdialer server using the value of \fBmserver_iface\f1 and asks it whether a connection exists and for the name, which should be the name of the current connection as defined with \fBconnect_route.\fIname\f1\fB\f1.
 
@@ -290,14 +290,39 @@ Replace \fIname\f1 with a name to identify an online configuration. Set this to 
 
 Set this to a template which will be used to generate delivery failure reports. Variable parts within the template begin with a dollar sign and are identical to those which can be used as arguments for the mda command, see \fBmda\f1 above. Additional information can be included with @failed_rcpts, @msg_headers and @msg_body, these must be at the beginning of a line and will be replaced with the list of the failed recipients, the message headers and the message body of the failed message.
 
-Default is /etc/masqmail/tpl/failmsg.tpl.
+Default is /usr/share/masqmail/tpl/failmsg.tpl.
+.TP
+
+\fBwarnmsg_file = \fIfile\f1\fB\f1
+
+Set this to a template which will be used to generate delivery warning reports. It uses the same mechanisms for variables as \fBerrmsg_file\f1, see above.
+
+Default is /usr/share/masqmail/tpl/warnmsg.tpl.
+.TP
+
+\fBwarn_intervals\f1 = \fIlist\f1
+
+Set this to a list of time intervals, at which delivery warnings (starting with the receiving time of the message) shall be generated.
+
+A warning will only be generated just after an attempt to deliver the mail and if that attempt failed temporarily. So a warning may be generated after a longer time, if there was no attempt before.
+
+Default is "1h;4h;8h;1d;2d;3d"
+.TP
+
+\fBmax_defer_time\f1 = \fItime\f1
+
+This is the maximum time, in which a temporarily failed mail will be kept in the spool. When this time is exceeded, it will be handled as a delivery failure, and the message will be bounced.
+
+The excedence of this time will only be noticed if the message was actually tried to be delivered. If, for example, the message can only be delivered when online, but you have not been online for that time, no bounce will be generated.
+
+Default is 4d (4 days)
 .TP
 
 \fBlog_user = \fIname\f1\fB\f1
 
 Replace \fIname\f1 with a valid local or remote mail address.
 
-If this option is not empty, then a copy of every mail, that passes trought the masqmail system will also be sent to the given mail address.
+If this option is not empty, then a copy of every mail, that passes trough the masqmail system will also be sent to the given mail address.
 
 For example you can feed your mails into a program like hypermail for archiving purpose by placing an appropriate pipe command in masqmail.alias
 .SH AUTHOR

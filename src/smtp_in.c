@@ -147,18 +147,23 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
       case SMTP_HELO:
 	psc->helo_seen = TRUE;
 
-	if(psc->prot == PROT_ESMTP){
-	  smtp_printf(out, "250-%s Nice to meet you with ESMTP\r\n",
-		      conf.host_name);
-	  /* not yet: fprintf(out, "250-SIZE\r\n"); */
-	  smtp_printf(out,
-		      "250-PIPELINING\r\n"
-		      "250 HELP\r\n");
+	if(!conf.defer_all){ /* I need this to debug delivery failures */
+	  if(psc->prot == PROT_ESMTP){
+	    smtp_printf(out, "250-%s Nice to meet you with ESMTP\r\n",
+			conf.host_name);
+	    /* not yet: fprintf(out, "250-SIZE\r\n"); */
+	    smtp_printf(out,
+			"250-PIPELINING\r\n"
+			"250 HELP\r\n");
+	  }else{
+	    smtp_printf(out, "250 %s pretty old mailer, huh?\r\n",
+			conf.host_name);
+	  }
+	  break;
 	}else{
-	  smtp_printf(out, "250 %s pretty old mailer, huh?\r\n",
+	  smtp_printf(out, "421 %s service temporarily unavailable.\r\n",
 		      conf.host_name);
 	}
-	break;
 
       case SMTP_MAIL_FROM:
 	if(psc->helo_seen && !psc->from_seen){

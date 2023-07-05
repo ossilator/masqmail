@@ -240,7 +240,25 @@ almost never correct. Default is true.</p>
 <option>
 <p><opt>expand_h_sender_domain</opt> = <arg>boolean</arg></p>
 <optdesc>
-<p>Like <opt>expand_h_sender_address</opt>, but sets the domain only. Deprecated, will be removed in a later version.</p>
+<p>Like <opt>expand_h_sender_address</opt>, but sets the domain only.
+Deprecated, will be removed in a later version.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>last_route</opt> = <arg>boolean</arg></p>
+<optdesc>
+<p>If this is set, a mail which would have been delivered using this
+route, but has failed temporarily, will not be tried to be delivered
+using the next route.</p>
+<p>If you have set up a special route with filters using the lists
+'allowed_rcpt_domains', 'allowed_return_paths', and
+'allowed_mail_locals' or their complements (not_), and the mail
+passing these rules should be delivered using this route only, you
+should set this to 'true'. Otherwise the mail would be passed to the
+next route (if any), unless that route has rules which prevent
+that.</p>
+<p>Default is false.</p>
 </optdesc>
 </option>
 

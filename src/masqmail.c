@@ -74,38 +74,7 @@ void sigterm_handler(int sig)
   raise(sig);
 }
 
-gint time_interval(gchar *str, gint *pos)
-{
-  gchar buf[16];
-  gchar *p = str, *q = buf;
-  gint factor = 1, val;
-
-  while(*p && isdigit(*p) && (q < buf+15)){
-    *(q++) = *(p++);
-    (*pos)++;
-  }
-  (*pos)++;
-  *q = 0;
-  val = atoi(buf);
-  
-  /* fall through: */
-  switch(*p){
-  case 'w':
-    factor *= 7;
-  case 'd':
-    factor *= 24;
-  case 'h':
-    factor *= 60;
-  case 'm':
-    factor *= 60;
-  case 's':
-    break;
-  default:
-    return -1;
-  }
-  return val * factor;
-}
-
+#ifdef ENABLE_IDENT /* so far used for that only */
 static
 gboolean is_in_netlist(gchar *host, GList *netlist)
 {
@@ -123,6 +92,7 @@ gboolean is_in_netlist(gchar *host, GList *netlist)
   }
   return FALSE;
 }
+#endif
 
 gchar *get_optarg(char *argv[], gint argc, gint *argp, gint *pos)
 {

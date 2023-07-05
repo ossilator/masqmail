@@ -55,6 +55,7 @@ struct _interface
 #define ADDR_FLAG_DELIVERED 0x01
 #define ADDR_FLAG_DEFERED 0x02
 #define ADDR_FLAG_FAILED 0x04
+#define ADDR_FLAG_LAST_ROUTE 0x40
 #define ADDR_FLAG_NOEXPAND 0x80
 
 typedef struct _address
@@ -88,6 +89,7 @@ struct _connect_route
   gchar *protocol;
 
   gboolean is_local_net;
+  gboolean last_route;
 
   GList *allowed_return_paths;
   GList *not_allowed_return_paths;
@@ -175,10 +177,12 @@ struct _masqmail_conf
   GList *not_local_addresses;
   GList *local_nets;
   GList *listen_addresses;
+
   guint remote_port;
 
   gboolean do_save_envelope_to;
 
+  gboolean defer_all;
   gboolean do_relay;
 
   GList *ident_trusted_nets;
@@ -215,6 +219,9 @@ struct _masqmail_conf
 
   gchar *errmsg_file;
   gchar *warnmsg_file;
+  GList *warn_intervals;
+  gint max_defer_time;
+
   gchar *log_user;
 } masqmail_conf;
 
@@ -298,6 +305,7 @@ struct _message
 
   gint data_size;
   time_t received_time;
+  time_t warned_time;
 
   gchar *full_sender_name;
 }message;
@@ -508,7 +516,10 @@ gboolean deliver_msg_list(GList *msg_list, guint flags);
 gboolean deliver(message *msg);
 
 /* fail_msg.c */
-gboolean fail_msg(message *msg, GList *failed_rcpts, gchar *err_fmt, va_list args);
+gboolean fail_msg(message *msg, gchar *template,
+		  GList *failed_rcpts, gchar *err_fmt, va_list args);
+gboolean warn_msg(message *msg, gchar *template,
+		  GList *failed_rcpts, gchar *err_fmt, va_list args);
 
 /* get.c */
 gboolean get_from_file(gchar *fname);
@@ -592,6 +603,9 @@ gpointer *table_find_case(GList *table_list, gchar *key);
 gpointer *table_find_fnmatch(GList *table_list, gchar *key);
 GList *table_read(gchar *fname, gchar delim);
 void destroy_table(GList *table);
+
+/* timeival.c */
+gint time_interval(gchar *str, gint *pos);
 
 /* permissions.c */
 gboolean is_privileged_user(uid_t uid);

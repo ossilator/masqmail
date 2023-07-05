@@ -1,3 +1,16 @@
+Template: masqmail/note_moved_tpl
+Type: note
+Description: Failure notice templates have been moved
+ The delivery faiure notices that lived in /etc/masqmail/tpl are now in
+ /usr/share/masqmail/tpl/.
+ .
+ You will notice this only if you have changed the location in
+ masqmail.conf or changed the templates.
+ .
+ Since they are no longer conffiles because of the move, you should
+ give a customized version another name, otherwise it will be
+ overwritten on the next upgrade.
+
 Template: masqmail/note_pcmcia_scripts
 Type: note
 Description: Removed executable bit in scripts in /etc/pcmcia/ip-{up,down}.d/
