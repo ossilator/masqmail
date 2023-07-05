@@ -93,7 +93,7 @@ gint time_interval(gchar *str, gint *pos)
   case 'w':
     factor *= 7;
   case 'd':
-    factor *=24;
+    factor *= 24;
   case 'h':
     factor *= 60;
   case 'm':
@@ -383,6 +383,7 @@ main(int argc, char *argv[])
   gboolean do_queue = FALSE;
 
   gboolean do_verbose = FALSE;
+  gint debug_level = -1;
 
   mta_mode mta_mode = MODE_ACCEPT;
 
@@ -416,8 +417,6 @@ main(int argc, char *argv[])
     { mta_mode = MODE_ACCEPT; opt_i = TRUE; }
   else if(strcmp(progname, "smtpd") == 0 || strcmp(progname, "in.smtpd") == 0)
     { mta_mode = MODE_SMTP; }
-
-  conf.debug_level = -1;
 
   /* parse cmd line */
   while(arg < argc){
@@ -472,7 +471,7 @@ main(int argc, char *argv[])
 	if(getuid() == 0){
 	  char *lvl = get_optarg(argv, argc, &arg, &pos);
 	  if(lvl)
-	    conf.debug_level = atoi(lvl);
+	    debug_level = atoi(lvl);
 	  else{
 	    fprintf(stderr, "-d requires a number as an argument.\n");
 	    exit(EXIT_FAILURE);
@@ -669,6 +668,8 @@ main(int argc, char *argv[])
 
   if(do_queue) conf.do_queue = TRUE;
   if(do_verbose) conf.do_verbose = TRUE;
+  if(debug_level >= 0) /* if >= 0, it was given by argument */
+    conf.debug_level = debug_level;
 
   chdir("/");
 

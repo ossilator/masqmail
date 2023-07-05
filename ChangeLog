@@ -1,4 +1,8 @@
+0.2.16  Tue, 12 Nov 2002 17:27:13 +0100
+	* fixed debugging, which has been broken in 0.2.15
 0.2.15  Wed, 06 Nov 2002 12:19:55 +0100
+	* added french translation of delivery failure message template.
+	Thanks to Rémi Denis-Courmont
 	* accept -f "" without segfaulting. Thanks to Ralf Friedl.
 	* fixed buffer overflows in conf.c. Thanks to Damian M Gryski.
 	* read conf file _after_ dropping privileges

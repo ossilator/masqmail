@@ -409,9 +409,6 @@ gboolean read_statement(FILE *in,
 gboolean read_conf(gchar *filename)
 {
   FILE *in;
-  int dbg_lvl = conf.debug_level;
-
-  conf.debug_level = dbg_lvl;
 
   conf.log_max_pri = 7;
 
@@ -424,10 +421,8 @@ gboolean read_conf(gchar *filename)
   if((in = fopen(filename, "r"))){
     gchar lval[256], rval[2048];
     while(read_statement(in, lval, 256, rval, 2048)){
-      if(strcmp(lval, "debug_level") == 0){
-	if(conf.debug_level == -1)
-	  conf.debug_level = atoi(rval);
-      }
+      if(strcmp(lval, "debug_level") == 0)
+	conf.debug_level = atoi(rval);
       else if(strcmp(lval, "run_as_user") == 0){
 	if(!conf.run_as_user) /* you should not be able
 				 to reset that flag */
@@ -461,7 +456,7 @@ gboolean read_conf(gchar *filename)
       }
       else if(strcmp(lval, "remote_port") == 0){
 	fprintf(stderr,
-		"the remote_portoption is now deprecated. Use 'mail_host' in the\n"
+		"the remote_port option is now deprecated. Use 'mail_host' in the\n"
 		"route configuration instead. See man masqmail.route\n");
 	conf.remote_port = atoi(rval);
       }else if(strcmp(lval, "local_hosts") == 0)
