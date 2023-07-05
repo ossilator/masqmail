@@ -37,10 +37,10 @@ rm-dirs:
 	rmdir $(DESTDIR)@with_spooldir@
 
 rmail:
-	[ -d "$(DESTDIR)@prefix@/sbin" ] || mkdir -p "$(DESTDIR)@prefix@/sbin"
-	sed '/^SENDMAIL/s,/usr/sbin/sendmail,@prefix@/sbin/masqmail,'\
-	    admin/rmail >$(DESTDIR)@prefix@/sbin/rmail
-	chmod 755 $(DESTDIR)@prefix@/sbin/rmail
+	[ -d "$(DESTDIR)@sbindir@" ] || mkdir -p "$(DESTDIR)@sbindir@"
+	sed '/^SENDMAIL/s,/usr/sbin/sendmail,@sbindir@/masqmail,'\
+	    admin/rmail >$(DESTDIR)@sbindir@/rmail
+	chmod 755 $(DESTDIR)@sbindir@/rmail
 
 rm-rmail:
-	rm -f $(DESTDIR)@prefix@/sbin/rmail
+	rm -f $(DESTDIR)@sbindir@/rmail
