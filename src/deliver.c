@@ -301,7 +301,12 @@ gboolean deliver_msglist_host_pipe(connect_route *route, GList *msgout_list, gch
 	  ok = TRUE;
 	}else{
 	  logwrite(LOG_ALERT, "pipe_out '%s' failed\n", route->pipe);
-	  addr_mark_failed(rcpt);
+
+	  if(route->connect_error_fail){
+	    addr_mark_failed(rcpt);
+	  }else{
+	    addr_mark_defered(rcpt);
+	  }
 	}
       }else
 	logwrite(LOG_ALERT, "could not expand string %s\n", route->pipe);

@@ -79,12 +79,16 @@ void rewrite_headers(msg_out *msgout, connect_route *route)
 	  
 	  DEBUG(5) debugf("setting From: domain to %s\n",
 			  route->set_h_from_domain);
-	  set_address_header_domain(new_hdr, route->set_h_from_domain);
-	  hdr_node->data = new_hdr;
-	  /* we need this list only to carefully free the extra headers: */
-	  DEBUG(6) debugf("header = %s\n",
-			  new_hdr->header);
-	  msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
+	  if(set_address_header_domain(new_hdr, route->set_h_from_domain)){
+	    hdr_node->data = new_hdr;
+	    /* we need this list only to carefully free the extra headers: */
+	    DEBUG(6) debugf("header = %s\n",
+			    new_hdr->header);
+	    msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
+	  }else{
+	    logwrite(LOG_ALERT, "error in set_address_header_domain(%s, %s)\n",
+		     new_hdr->value, route->set_h_from_domain);
+	  }
 	}
       }
     }

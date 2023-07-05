@@ -1,3 +1,7 @@
+0.2.20	Mon, 19 May 2003 21:14:06 +0200
+	* fixed a segfaulting bug in spool.c caused by folded headers
+	* regard connect_error_fail when failing for pipes (Debian Bug #186364)
+	* hopefully fixed uid/gid problem in peidopen.c
 0.2.19  Wed, 12 Mar 2003 21:33:53 +0100
 	* fixed a bug in addr_string (set buffer = NULL if g_free'd buffer)
 0.2.18	Fri, 06 Dec 2002 14:57:41 +0100

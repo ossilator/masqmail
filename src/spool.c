@@ -175,8 +175,10 @@ gboolean spool_read_header(message *msg)
 	hdr = get_header(&(buf[3]));
 	msg->hdr_list = g_list_append(msg->hdr_list, hdr);
       }else if((buf[0] == ' ' || buf[0] == '\t') && hdr){
+	char *tmp = hdr->header;
 	/* header continuation */
 	hdr->header = g_strconcat(hdr->header, buf, NULL);
+	hdr->value = hdr->header + (hdr->value - tmp);
       }else
 	break;
     }
