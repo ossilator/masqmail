@@ -61,6 +61,12 @@ gboolean logopen()
   if(conf.use_syslog){
     openlog(PACKAGE, LOG_PID, LOG_MAIL);
   }else{
+    uid_t saved_uid;
+    gid_t saved_gid;
+    
+    saved_gid = setegid(conf.mail_gid);
+    saved_uid = seteuid(conf.mail_uid);
+
     filename = g_strdup_printf("%s/masqmail.log", conf.log_dir);
     logfile = fopen(filename, "a");
     if(!logfile){
@@ -68,6 +74,9 @@ gboolean logopen()
       return FALSE;
     }
     g_free(filename);
+
+    seteuid(saved_uid);
+    setegid(saved_gid);
   }
 
 #ifdef ENABLE_DEBUG
@@ -115,11 +124,20 @@ void vlogwrite(int pri, const char *fmt, va_list args)
 	time_t now = time(NULL);
 	struct tm *t = localtime(&now);
 	gchar buf[24];
+	uid_t saved_uid;
+	gid_t saved_gid;
+
+	saved_gid = setegid(conf.mail_gid);
+	saved_uid = seteuid(conf.mail_uid);
+
 	strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
 	fprintf(file, "%s [%d] ", buf, getpid());
 	
 	vfprintf(file, fmt, args);
 	fflush(file);
+
+	seteuid(saved_uid);
+	setegid(saved_gid);
       }
     }
   }

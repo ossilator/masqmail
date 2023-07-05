@@ -1,7 +1,7 @@
 Template: masqmail/note_moved_tpl
 Type: note
 Description: Failure notice templates have been moved
- The delivery faiure notices that lived in /etc/masqmail/tpl are now in
+ The delivery failure notices that lived in /etc/masqmail/tpl are now in
  /usr/share/masqmail/tpl/.
  .
  You will notice this only if you have changed the location in
@@ -122,7 +122,7 @@ Description: the online detection method
 
 Template: masqmail/online_file
 Type: string
-Default: /tmp/connect_route
+Default: /var/run/masqmail-route
 Description: the name of the file to determine the online status
 
 Template: masqmail/online_pipe

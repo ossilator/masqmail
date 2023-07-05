@@ -642,7 +642,7 @@ for((node) = g_list_first(list);\
 
 #define CONF_FILE CONF_DIR"/masqmail.conf"
 
-#define PIDFILEDIR "/var/run"
+#define PIDFILEDIR "/var/run/masqmail/"
 
 #ifndef va_copy
 #ifdef __va_copy

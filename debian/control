@@ -3,11 +3,11 @@ Section: mail
 Priority: extra
 Maintainer: Oliver Kurth <oku@debian.org>
 Standards-Version: 3.5.7
-Build-Depends: debhelper (>> 3.0), liblockfile-dev, libglib1.2-dev, libident-dev
+Build-Depends: debhelper (>> 3.0), liblockfile-dev, libglib2.0-dev, libident-dev
 
 Package: masqmail
 Architecture: any
-Depends: ${shlibs:Depends}, debconf (>> 0.5), netbase
+Depends: ${shlibs:Depends}, debconf (>> 0.5) | debconf-2.0, netbase
 Replaces: mail-transport-agent
 Provides: mail-transport-agent
 Suggests: mail-reader, logrotate

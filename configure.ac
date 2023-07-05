@@ -1,12 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(src/accept.c)
 
-AC_PREREQ(2.50)
-
-AC_CONFIG_SRCDIR([configure.ac])
-
+AC_PREREQ(2.59)
+AC_INIT(masqmail, 0.2.21, oku@debian.org)
+AC_CONFIG_SRCDIR([src/masqmail.c])
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(masqmail, 0.2.20)
+AM_INIT_AUTOMAKE()
 
 AC_PREFIX_DEFAULT(/usr)
 
@@ -20,7 +18,9 @@ AC_STDC_HEADERS
 dnl AC_ARG_PROGRAM
 AC_PROG_RANLIB
 
-AM_PATH_GLIB
+PKG_CHECK_MODULES(GLIB, glib-2.0)
+AC_SUBST(GLIB_LIBS)
+AC_SUBST(GLIB_CFLAGS)
 
 dnl resolver support (default is use it)
 AC_ARG_ENABLE(resolver,
@@ -32,7 +32,7 @@ AC_ARG_ENABLE(resolver,
 	)
 
 if test "$resolver_enabled" = yes; then
-	AC_DEFINE(ENABLE_RESOLVER, 1)
+	AC_DEFINE(ENABLE_RESOLVER, 1, [If the resolver is to be used])
 dnl checks necessary for libc5:
 dnl if there is res_search in libc, it is probably libc5
 dnl if not, it is probably libc6 and we need libresolv
@@ -96,12 +96,12 @@ AC_ARG_ENABLE(debug,
 	debug_enabled='yes'
 	)
 if test "x$debug_enabled" = xyes; then
-	AC_DEFINE(ENABLE_DEBUG, 1)
+	AC_DEFINE(ENABLE_DEBUG, 1, [If debugging is enabled])
 fi
 
-AC_DEFINE_UNQUOTED(DEF_MAIL_USER, "${with_user}")
+AC_DEFINE_UNQUOTED(DEF_MAIL_USER, "${with_user}", [The mail user])
 AC_SUBST(with_user)
-AC_DEFINE_UNQUOTED(DEF_MAIL_GROUP, "${with_group}")
+AC_DEFINE_UNQUOTED(DEF_MAIL_GROUP, "${with_group}", [The mail group])
 AC_SUBST(with_group)
 
 dnl link glib statically?
@@ -126,7 +126,7 @@ AC_ARG_ENABLE(smtp_server,
 	smtp_server_enabled='yes'
 	)
 if test "x$smtp_server_enabled" = xyes; then
-	AC_DEFINE(ENABLE_SMTP_SERVER, 1)
+	AC_DEFINE(ENABLE_SMTP_SERVER, 1, [If the SMTP server is enabled])
 fi
 
 dnl pop support (default is use it)
@@ -138,7 +138,7 @@ AC_ARG_ENABLE(pop3,
 	pop3_enabled='yes'
 	)
 if test "x$pop3_enabled" = xyes; then
-	AC_DEFINE(ENABLE_POP3, 1)
+	AC_DEFINE(ENABLE_POP3, 1, [If the POP3 support is enabled])
 #	MD5_LIBS='md5/libmd5c.a'
 	need_md5='yes'
 fi
@@ -151,7 +151,7 @@ AC_ARG_ENABLE(auth,
 	fi,
 	)
 if test "x$auth_enabled" = xyes; then
-	AC_DEFINE(ENABLE_AUTH, 1)
+	AC_DEFINE(ENABLE_AUTH, 1, [If AUTH is enabled])
 	BASE64_LIBS='base64/libbase64.a'
 #	MD5_LIBS='md5/libmd5c.a'
 	need_md5='yes'
@@ -166,7 +166,7 @@ AC_ARG_ENABLE(maildir,
 	fi,
 	)
 if test "x$maildir_enabled" = xyes; then
-	AC_DEFINE(ENABLE_MAILDIR, 1)
+	AC_DEFINE(ENABLE_MAILDIR, 1, [If Maildirs are enabled])
 fi
 
 dnl libcrypto
@@ -182,7 +182,7 @@ dnl check whether we have md5 in libcrypto if md5 needed and we shall link with 
 	if test "x$with_libcrypto" = "xyes"; then
 		AC_CHECK_LIB(crypto, MD5, has_crypto='yes', AC_MSG_ERROR('no libcrypto'))
 		if test "x$has_crypto" = 'xyes'; then
-			AC_DEFINE(USE_LIB_CRYPTO, 1)
+			AC_DEFINE(USE_LIB_CRYPTO, 1, [If libcrypto is available])
 			MD5_LIBS='-lcrypto'
 		fi
 	else
@@ -201,7 +201,7 @@ AC_ARG_ENABLE(ident,
 	)
 AC_SUBST(has_ident)
 if test "x$ident_enabled" = xyes; then
-	AC_DEFINE(ENABLE_IDENT, 1)
+	AC_DEFINE(ENABLE_IDENT, 1, [If ident is enabled])
 	AC_CHECK_LIB(ident, ident_id, IDENT_LIBS='-lident', IDENT_LIBS='libident/libident.a')
 fi
 AC_SUBST(IDENT_LIBS)
@@ -214,7 +214,7 @@ AC_ARG_ENABLE(mserver,
 	fi,
 	)
 if test "x$mserver_enabled" = xyes; then
-	AC_DEFINE(ENABLE_MSERVER, 1)
+	AC_DEFINE(ENABLE_MSERVER, 1, [If mserver support is enabled])
 fi
 
 dnl liblockfile
@@ -227,7 +227,7 @@ fi
 if test "x$with_liblockfile" = xyes; then
 	AC_CHECK_LIB(lockfile, maillock, has_lockfile=yes, AC_MSG_ERROR("no liblockfile"))
 	LOCKFILE_LIBS='-llockfile'
-	AC_DEFINE(USE_LIBLOCKFILE, 1)
+	AC_DEFINE(USE_LIBLOCKFILE, 1, [If liblockfile is to be used])
 else
 	LOCKFILE_LIBS=''
 fi
@@ -255,17 +255,17 @@ AC_ARG_WITH(confdir,
 	,
 	with_confdir='/etc/masqmail'
 	)
-AC_DEFINE_UNQUOTED(CONF_DIR, "${with_confdir}")
+AC_DEFINE_UNQUOTED(CONF_DIR, "${with_confdir}", [The configuration file location])
 AC_SUBST(with_confdir)
 
 dnl well, /me/ thought that autoconf should make things _easy_ ...
 test "x$prefix" = xNONE && prefix="$ac_default_prefix"
-AC_DEFINE_UNQUOTED(DATA_DIR, "`eval echo \""$datadir"\"`/masqmail")
+AC_DEFINE_UNQUOTED(DATA_DIR, "`eval echo \""$datadir"\"`/masqmail", [The data directory])
 
 dnl gymnastics to get the correct path where masqmail should be installed
 dnl we need this to call ourselves in failmsg.c
 if test "x${exec_prefix}" != 'xNONE'; then
-	AC_DEFINE_UNQUOTED(SBINDIR, "${exec_prefix}/sbin")
+	AC_DEFINE_UNQUOTED(SBINDIR, "${exec_prefix}/sbin", [The sbin directory])
 else
 	if test "x${prefix}" != 'xNONE'; then
 		AC_DEFINE_UNQUOTED(SBINDIR, "${prefix}/sbin")
