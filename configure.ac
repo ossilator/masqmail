@@ -1,25 +1,19 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.59)
-AC_INIT(masqmail, 0.3.6-dev, meillo@marmaro.de)
+AC_PREREQ([2.71])
+AC_INIT([masqmail],[0.3.6-dev],[meillo@marmaro.de])
 AC_CONFIG_SRCDIR([src/masqmail.c])
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE()
 
 dnl Checks for programs.
 
-dnl Checks for libraries.
-
 AC_PROG_CC
-AC_ISC_POSIX
-AC_STDC_HEADERS
-dnl AC_ARG_PROGRAM
 AC_PROG_RANLIB
 
-PKG_CHECK_MODULES(GLIB, glib-2.0)
-dnl # use the next line to use glib-1.2
-dnl PKG_CHECK_MODULES(GLIB, glib)
+dnl Checks for libraries.
 
+PKG_CHECK_MODULES(GLIB, glib-2.0)
 AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
 
@@ -46,10 +40,13 @@ dnl if not, it is probably libc6 and we need libresolv
 			saved_LIBS="$LIBS"
 			LIBS="$LIBS -lresolv"
 			AC_MSG_CHECKING(for res_search in -lresolv)
-			AC_TRY_LINK([#include <resolv.h>],
-				[res_search (0, 0, 0, 0, 0);],
-				RESOLV_LIBS="-lresolv"; has_resolv=yes; AC_MSG_RESULT(yes),
-				AC_MSG_RESULT(no));
+			AC_LINK_IFELSE(
+				[AC_LANG_PROGRAM(
+					[[#include <resolv.h>]],
+					[[res_search (0, 0, 0, 0, 0);]]
+				)],
+				[RESOLV_LIBS="-lresolv"; has_resolv=yes; AC_MSG_RESULT(yes)],
+				[AC_MSG_RESULT(no)])
 			LIBS="$saved_LIBS"
 		fi
 		if test "$has_resolv" = no; then
@@ -69,19 +66,16 @@ dnl if there is no fdatasync, we define it to fsync in src/masqmail.h
 AC_CHECK_FUNCS(fdatasync)
 
 dnl Checks for header files.
-AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h sys/time.h syslog.h unistd.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
-AC_HEADER_TIME
 AC_STRUCT_TM
 
 dnl Checks for library functions.
 AC_FUNC_FNMATCH
-AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(select socket strerror strstr)
@@ -225,12 +219,14 @@ else
 	fi
 fi
 
-AC_OUTPUT(Makefile \
-	src/Makefile \
-	src/base64/Makefile \
-	src/md5/Makefile \
+AC_CONFIG_FILES([
+	Makefile
+	src/Makefile
+	src/base64/Makefile
+	src/md5/Makefile
 	man/Makefile
 	docs/Makefile
 	examples/Makefile
 	tpl/Makefile
-	)
+])
+AC_OUTPUT
