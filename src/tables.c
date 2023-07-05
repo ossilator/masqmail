@@ -37,7 +37,7 @@ table_pair *parse_table_pair(gchar *line, char delim)
 
   p = line;
   q = buf;
-  while((*p != 0) && (*p != delim))
+  while((*p != 0) && (*p != delim) && q < buf+255)
     *(q++) = *(p++);
   *q = 0;
 
