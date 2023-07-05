@@ -1,34 +1,15 @@
-EXTRA_DIST = admin examples docs tpl devel
+EXTRA_DIST = admin devel
 
-SUBDIRS = src man
+SUBDIRS = src man docs examples tpl
 
-install-data-local: tpl_dir doc_dir rmail conf_dir
+doc_DATA = ChangeLog NEWS AUTHORS COPYING README TODO INSTALL THANKS
 
-uninstall-local: rm-rmail rm-doc_dir rm-tpl_dir rm-dirs
+install-data-local: rmail conf_dir
+
+uninstall-local: rm-rmail rm-dirs
 
 conf_dir:
 	install -d $(DESTDIR)@with_confdir@
-
-tpl_dir:
-	install -d $(DESTDIR)@datadir@/masqmail/tpl
-	cp tpl/* $(DESTDIR)@datadir@/masqmail/tpl
-	chmod 644 $(DESTDIR)@datadir@/masqmail/tpl/*
-
-rm-tpl_dir:
-	rm -rf $(DESTDIR)@datadir@/masqmail/
-
-doc_dir:
-	install -d $(DESTDIR)@docdir@
-	cp -r docs $(DESTDIR)@docdir@
-	cp -r examples $(DESTDIR)@docdir@
-	cp ChangeLog NEWS AUTHORS COPYING README TODO INSTALL THANKS $(DESTDIR)@docdir@
-
-rm-doc_dir:
-	cd $(DESTDIR)@docdir@ && ( \
-	    rm -rf docs examples ; \
-	    rm -f ChangeLog NEWS AUTHORS COPYING README TODO INSTALL THANKS ; \
-	)
-	rmdir $(DESTDIR)@docdir@
 
 rm-dirs:
 	: # removes only if empty
