@@ -2,7 +2,7 @@ Source: masqmail
 Section: mail
 Priority: extra
 Maintainer: Oliver Kurth <oku@masqmail.cx>
-Standards-Version: 3.5.0
+Standards-Version: 3.5.7
 Build-Depends: debhelper (>> 3.0), liblockfile-dev, libglib1.2-dev, libident-dev
 
 Package: masqmail

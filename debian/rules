@@ -91,10 +91,10 @@ binary-arch: build install
 	rm -f debian/tmp/usr/share/doc/masqmail/INSTALL
 	##cp -r docs debian/tmp/$(DOC)/masqmail/html
 	dh_installexamples examples/* tests
-	dh_installmenu
+#	dh_installmenu
 #	dh_installemacsen
 	dh_installinit
-	dh_installcron
+#	dh_installcron
 	dh_installman debian/mailq.8 debian/mailrm.8 debian/newaliases.8 debian/sendmail.8
 #	dh_undocumented
 	dh_installchangelogs ChangeLog

@@ -1,4 +1,4 @@
-masqmail (0.2.12-1) unstable; urgency=low
+masqmail (0.2.13-1) unstable; urgency=low
 
   * new upstream version, other changes see ChangeLog
   * remote_port option works again (Closes: #163850)
