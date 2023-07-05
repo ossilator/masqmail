@@ -38,7 +38,7 @@ rm-dirs:
 
 rmail:
 	[ -d "$(DESTDIR)@prefix@/sbin" ] || mkdir -p "$(DESTDIR)@prefix@/sbin"
-	sed '/^SENDMAIL/s,/usr/sbin/sendmail,$(DESTDIR)@prefix@/sbin/masqmail,'\
+	sed '/^SENDMAIL/s,/usr/sbin/sendmail,@prefix@/sbin/masqmail,'\
 	    admin/rmail >$(DESTDIR)@prefix@/sbin/rmail
 	chmod 755 $(DESTDIR)@prefix@/sbin/rmail
 
