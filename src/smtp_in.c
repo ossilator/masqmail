@@ -64,14 +64,14 @@ gboolean get_address(gchar *line, gchar *addr)
   gchar *p = line, *q = addr;
 
   /* skip MAIL FROM: and RCPT TO: */
-  while(*p != ':') p++;
+  while(*p && (*p != ':')) p++;
   p++;
 
   /* skip spaces: */
-  while(isspace(*p)) p++;
+  while(*p && isspace(*p)) p++;
 
   /* get address: */
-  while(!isspace(*p)) *(q++) = *(p++);
+  while(*p && !isspace(*p) && (q < addr+MAX_ADDRESS-1)) *(q++) = *(p++);
   *q = 0;
 
   return TRUE;

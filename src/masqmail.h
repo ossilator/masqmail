@@ -407,6 +407,7 @@ GList *alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list);
 int child(const char *command);
 
 /* conf.c */
+void init_conf();
 gboolean read_conf(gchar *filename);
 connect_route *read_route(gchar *filename, gboolean is_local_net);
 GList *read_route_list(GList *rf_list, gboolean is_local_net);

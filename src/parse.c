@@ -364,6 +364,15 @@ address *_create_address(gchar *string, gchar **end, gboolean is_rfc821)
   gchar *dom_beg, *dom_end;
   gchar *addr_end;
 
+  if (string && (string[0] == 0)) {
+    address *addr = g_malloc(sizeof(address));
+    addr->address = g_strdup("");
+    addr->local_part = g_strdup("");
+    addr->domain = g_strdup(""); /* 'NULL' address (failure notice),
+        "" makes sure it will not be qualified with a hostname */
+    return addr;
+  }
+
   if(is_rfc821 ?
      parse_address_rfc821(string,
 			  &loc_beg, &loc_end, &dom_beg, &dom_end, &addr_end) :
