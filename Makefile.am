@@ -13,9 +13,9 @@ conf_dir:
 
 rm-dirs:
 	: # removes only if empty
-	rmdir $(DESTDIR)@with_confdir@
-	rmdir $(DESTDIR)@with_logdir@
-	rmdir $(DESTDIR)@with_spooldir@
+	-rmdir $(DESTDIR)@with_confdir@
+	-rmdir $(DESTDIR)@with_logdir@
+	-rmdir $(DESTDIR)@with_spooldir@
 
 rmail:
 	[ -d "$(DESTDIR)@sbindir@" ] || mkdir -p "$(DESTDIR)@sbindir@"
