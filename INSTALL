@@ -25,7 +25,10 @@ this makes it compatible with the official debian package:
 ./configure --with-liblockfile --with-group=mail
 you do not need the group 'trusted', use 'mail' instead.
 
-You can also build your own Debian package with dpkg-buildpackage -rfakeroot.
+You can also build your own Debian package with
+dpkg-buildpackage -rfakeroot
+You need to have fakeroot installed to do this. Or, as root, do:
+dpkg-buildpackage
 
 SuSE/Redhat:
 There are spec files for rpm creation in suse/ or redhat/. You may have to adjust these files.

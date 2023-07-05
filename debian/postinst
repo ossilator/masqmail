@@ -127,6 +127,9 @@ EOF
     echo "IPUP_RUNQUEUE=\"$RET\"" >> $DEBDEFTMP
     db_get masqmail/ipup_fetch || true
     echo "IPUP_FETCH=\"$RET\"" >> $DEBDEFTMP
+
+    db_get masqmail/ifup_ifaces || true
+    echo "IFUP_IFACES=\"$RET\"" >> $DEBDEFTMP
 }
    
 write_db_defaults () {

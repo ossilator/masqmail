@@ -103,7 +103,7 @@ Template: masqmail/use_syslog
 Type: boolean
 Default: false
 Description: use syslogd for logs?
- You can decide whether masmail should log via syslog or not. If not,
+ You can decide whether masqmail should log via syslog or not. If not,
  logs will be written to /var/log/masqmail/masqmail.log.
 
 Template: masqmail/online_detect
@@ -237,6 +237,20 @@ Description: fetch mail when you get online?
  Select 'yes' if you want masqmail to immediately fetch mail from POP3
  servers as soon as you go online. This will be done in the ip-up script
  in /etc/ppp/ip-up or in /etc/network/if-up.d/.
+
+Template: masqmail/ifup_ifaces
+Type: string
+Default: all
+Description: a list of interfaces used for masqmail online detection
+ Set this to a list of network interfaces. When any of those interfaces go
+ up, the current online status will be used for queue runs and/or fetching
+ mails. The list will be used in the /etc/ppp/ip-up and /etc/network/if-up.d/
+ scripts, when the interface goes up.
+ .
+ A reasonable choice is eg. 'ppp0' for a desktop at home, or 'ppp0 eth0' for
+ a notebook". If this is set to eg. 'ppp0', nothing happens if eth0 goes up.
+ .
+ Set to 'all' for all interfaces, or 'none' for no interfaces.
 
 Template: masqmail/you_are_not_finished
 Type: note
