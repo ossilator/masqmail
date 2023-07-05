@@ -1,0 +1,66 @@
+#!/bin/sh
+
+# Exit if package was removed but not purged.
+test -x /usr/sbin/masqmail || exit 0
+
+# defaults, do not edit here but in
+# /etc/default/masqmail
+IPUP_RUNQUEUE=true
+IPUP_FETCH=true
+
+[ -r /etc/default/masqmail ] && . /etc/default/masqmail
+
+DETECT="`awk -F'[ \t]*=[ \t]*' '/^online_detect/ \
+	{ print split($2,A,\"\\\"\") == 3 ? A[2] :  $2 }' /etc/masqmail/masqmail.conf`"
+
+if [ x"$DETECT" = x"file" ] ; then
+    ROUTEFILE="`awk -F'[ \t]*=[ \t]*' '/^online_file/ \
+	    { print split($2,A,\"\\\"\") == 3 ? A[2] :  $2 }' /etc/masqmail/masqmail.conf`"
+
+    if [ -z "$ROUTEFILE" ]; then
+	    echo "no online_file defined in /etc/masqmail/masqmail.conf"
+	    exit 1
+    fi
+fi
+
+if [ -z "$MODE" ]; then
+	case `dirname "$0"` in
+		*/if-up.d|*/ip-up.d)
+		    MODE=start;
+		    ;;
+		*/if-down.d|*/ip-down.d)
+		    MODE=stop;
+		    ;;
+	esac
+fi
+
+if [ -n "$PPP_IFACE" ]; then
+	SCHEME="$PPP_IPPARAM"
+else
+	SCHEME="${IF_MROUTE:-$IF_NAME}"
+fi
+
+case "$MODE" in
+	start)
+		if [ -n "$SCHEME" ] ; then
+		    echo -n "$SCHEME" > "$ROUTEFILE"
+		    chmod 0644 "$ROUTEFILE"
+		fi
+		if [ x"$IPUP_RUNQUEUE" = x"true" ] ; then
+		    /usr/sbin/masqmail -qo &
+		fi
+		if [ x"$IPUP_FETCH" = x"true" ] ; then
+		    /usr/sbin/masqmail -go &
+		fi
+		;;
+	stop)
+		rm -f "$ROUTEFILE"
+		;;
+	*)
+		echo "$0: unknown MODE"
+		;;
+esac
+
+exit 0
+
+

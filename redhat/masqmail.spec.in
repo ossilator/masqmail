@@ -6,7 +6,7 @@ Copyright: GPL
 Group: Networking/Daemons
 Distribution: innominate
 Packager: Iain Lea <iain@bricbrac.de>
-Source: http://www.innominate.org/~oku/masqmail/download/MasqMail-@VERSION@.tar.gz
+Source: http://www.innominate.org/~oku/masqmail/download/masqmail-@VERSION@.tar.gz
 BuildRoot: /var/tmp/masqmail-root/
 
 %description
@@ -17,7 +17,7 @@ replaces sendmail or other MTAs such as qmail or exim.
 
 %prep
 
-%setup -n MasqMail-@VERSION@
+%setup -n masqmail-@VERSION@
 
 %build
 #
@@ -45,6 +45,7 @@ mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/usr/lib
 mkdir -p $RPM_BUILD_ROOT/etc
 mkdir -p $RPM_BUILD_ROOT/etc/masqmail
+mkdir -p $RPM_BUILD_ROOT/etc/masqmail/tpl
 mkdir -p $RPM_BUILD_ROOT/var/masqmail
 
 # install
@@ -71,6 +72,7 @@ ln -fs '../../etc/rc.d/init.d/masqmail' $RPM_BUILD_ROOT/usr/sbin/rcmasqmail
 cp examples/masqmail.conf $RPM_BUILD_ROOT/etc/
 cp examples/example.route $RPM_BUILD_ROOT/etc/masqmail/
 cp examples/example.get $RPM_BUILD_ROOT/etc/masqmail/
+cp tpl/failmsg.tpl $RPM_BUILD_ROOT/etc/masqmail/tpl
 
 #cp docs/man/masqmail.8 $RPM_BUILD_ROOT/usr/man/man8/
 #cp docs/man/masqmail.conf.5 $RPM_BUILD_ROOT/usr/man/man5/
@@ -100,7 +102,7 @@ rm -rf $RPM_BUILD_ROOT
 /etc/rc.d/rc3.d/S20masqmail
 /etc/rc.d/rc3.d/K20masqmail
 /usr/sbin/rcmasqmail
-%config /etc/masqmail.conf
+%config /etc/masqmail.conf /etc/masqmail/tpl/failmsg.tpl
 //etc/masqmail/
 %doc README INSTALL COPYING NEWS
 /usr/man/man8/masqmail.8.gz

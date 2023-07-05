@@ -5,7 +5,7 @@
 
 <description>
 <p>This man page describes the syntax of the main configuration file
-of masqmail. Its usual location is <file>/etc/masqmail.conf</file></p>
+of masqmail. Its usual location is <file>/etc/masqmail/masqmail.conf</file></p>
 
 <p>The configuration consists of lines of the form</p>
 
@@ -24,7 +24,7 @@ with ';'. For some values patterns (like '*','?') can be used. The
 spaces before and after the '=' are optional.</p>
 
 <p>Most lists (exceptions: <opt>local_hosts</opt>,
-<opt>local_nets</opt> and <opt>listen_addresses</opt>) accept
+<opt>local_nets</opt>, <opt>listen_addresses</opt>, <opt>online_routes</opt> and <opt>online_gets</opt>) accept
 files. These will be recognized by a leading slash '/'. The contents
 of these files will be included at the position of the file name,
 there can be items or other files before and after the file entry. The
@@ -71,7 +71,7 @@ the logs may very soon fill your hard drive.</p>
 <p><opt>mail_dir = <arg>file</arg></opt></p>
 <optdesc>
 <p>The directory where local mail is stored,
-usually <file>/var/spool/mail</file>.</p>
+usually <file>/var/spool/mail</file> or <file>/var/mail</file>.</p>
 </optdesc>
 </option>
 
@@ -93,6 +93,10 @@ greeting banner on incoming connections and in the HELO/EHLO command
 for outgoing connections with this name, it is used in the Received:
 header and to qualify the sender of a locally originating message.</p>
 
+<p>If the string begins with a slash '/', it it assumed that it is a
+filename, and the first line of this file will be used. Usually this will
+be '/etc/mailname' to make masqmail conform to Debian policies.</p>
+
 <p>It is <em>not</em> used to find whether an address is local.
 Use <opt>local_hosts</opt> for that.</p>
 </optdesc>
@@ -102,6 +106,9 @@ Use <opt>local_hosts</opt> for that.</p>
 <p><opt>remote_port = <arg>n</arg></opt></p>
 <optdesc>
 <p>The remote port number to be used. This defaults to port 25.</p>
+<p>This option is deprecated. Use <opt>host_name</opt> in the route
+configuration instead. See <manref name="masqmail.route" section="5"
+href="masqmail.route.5.html"/>.</p>
 </optdesc>
 </option>
 
@@ -124,6 +131,38 @@ use patterns with '*', eg. "*.bar.com".</p>
 </option>
 
 <option>
+<p><opt>local_addresses = <arg>list</arg></opt></p>
+<optdesc>
+<p>A semicolon ';' separated list of fully qualified email-addresses
+which are considered local although their domain name part is not in
+the list of <opt>local_hosts</opt>. </p>
+<p>For example: There are two people working at your
+LAN: person1@yourdomain and person2@yourdomain. But there are
+other persons @yourdomain which are NOT local. So you can not put
+yourdomain to the list of local_hosts. If person1 now wants
+to write to person2@yourdomain and this mail should not leave the LAN
+then you can put</p>
+<p>local_addresses = "person1@yourdomain;person2@yourdomain"</p>
+<p>to your masqmail.conf.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>not_local_addresses = <arg>list</arg></opt></p>
+<optdesc>
+<p>A semicolon ';' separated list of fully qualified email-addresses
+which are considered not local although their domain name part is in
+the list of <opt>local_hosts</opt>. </p>
+<p>This ist the opposite of the previous case. The majority of addresses
+of a specific domain are local. But some users are not. With this
+option you can easily exclude these users.</p>
+<p>Example:</p>
+<p>local_hosts = "localhost;myhost;mydomain.net"</p>
+<p>not_local_addresses = "eric@mydomain.net"</p>
+</optdesc>
+</option>
+
+<option>
 <p><opt>listen_addresses = <arg>list</arg></opt></p>
 <optdesc>
 <p>A semicolon ';' separated list of interfaces on which connections
@@ -133,8 +172,33 @@ port 25 will be used.</p>
 <p>You can set this to "localhost:25;foo:25" if your hostname is 'foo'.</p>
 <p>Note that the names are resolved to IP addreses. If your host has
 different names which resolve to the same IP, use only one of them,
-otherwise you will get an error message and masqmail will
-terminate.</p>
+otherwise you will get an error message.
+</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>do_save_envelope_to = <arg>boolean</arg></opt></p>
+<optdesc>
+<p>If this is set to true, a possibly existing Envelope-to: header in an
+incoming mail which is received via either pop3 or smtp will be saved as
+an X-Orig-Envelope-to: header.</p>
+<p>This is useful if you retrieve mail from a pop3 server with either masqmail
+or fetchmail, and the server supports Envelope-to: headers, and you want to make use
+of those with a mail filtering tool, eg. procmail. It cannot be preserved because
+masqmail sets such a header by itself.</p>
+<p>Default is false.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>do_relay = <arg>boolean</arg></opt></p>
+<optdesc>
+<p>If this is set to false, mail with a return path that is not local and a
+destination that is also not local will not be accepted via smtp and a 550
+reply will be given. Default is true.</p>
+<p>Note that this will not protect you from spammers using open relays, but from
+users unable to set their address in their mail clients.</p>
 </optdesc>
 </option>
 
@@ -147,7 +211,7 @@ accepted. Same as calling masqmail with the <opt>-odq</opt> option.</p>
 </option>
 
 <option>
-<p><opt>connect_route.<arg>name</arg> = <arg>list</arg></opt></p>
+<p><opt>online_routes.<arg>name</arg> = <arg>list</arg></opt></p>
 <optdesc>
 
 <p>Replace <arg>name</arg> with a name to identify a connection. Set this
@@ -159,7 +223,7 @@ up.</p>
 <p>Example: Your ISP has the name <i>FastNet</i>. Then you write the
 following line in the main configuration:</p>
 
-<p><opt>connect_route.FastNet</opt> = <arg>"/etc/masqmail/fastnet.route"</arg></p>
+<p><opt>online_routes.FastNet</opt> = <arg>"/etc/masqmail/fastnet.route"</arg></p>
 
 <p><file>/etc/masqmail/fastnet.route</file> is the route configuration
 file, see <manref name="masqmail.route" section="5" href="masqmail.route.5.html"/>. As soon as a link to FastNet has been set up, you
@@ -170,9 +234,17 @@ read the specified file and send the mails.</p>
 </option>
 
 <option>
+<p><opt>connect_route.<arg>name</arg> = <arg>list</arg></opt></p>
+<optdesc>
+<p>Old name for <opt>online_routes</opt>.</p>
+</optdesc>
+</option>
+
+
+<option>
 <p><opt>local_net_route = <arg>file</arg></opt></p>
 <optdesc>
-<p>This is similar to <opt>connect_route.<arg>name</arg></opt> but for the
+<p>This is similar to <opt>online_routes.<arg>name</arg></opt> but for the
 local net. Recipient addresses that are in <b>local_nets</b> will be
 routed using this route configuration. Main purpose is to define a
 mail server with <b>mail_host</b> in your local network. In simple
@@ -215,15 +287,53 @@ set <opt>pipe_fromline</opt> above. Default is false.</p>
 </option>
 
 <option>
+<p><opt>mbox_default = <arg>string</arg></opt></p>
+<optdesc>
+<p>The default local delivery method. Can be one of mbox, mda or
+maildir (the latter only if maildir support is enabled at compile
+time). Default is mbox. You can override this for each user by using
+the <opt>mbox_users</opt>, <opt>mda_users</opt> or <opt>maildir_users</opt> options
+(see below).
+</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>mbox_users = <arg>list</arg></opt></p>
+<optdesc>
+<p>A list of users which wish delivery to an mbox style mail folder.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>mda_users = <arg>list</arg></opt></p>
+<optdesc>
+<p>A list of users which wish local delivery to an mda. You have to
+set <opt>mda</opt> (see below) as well.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>maildir_users = <arg>list</arg></opt></p>
+<optdesc>
+<p>A list of users which wish delivery to a qmail style maildir. The
+path to maildir is ~/Maildir/. The maildir will be created if it
+does not exist.</p>
+</optdesc>
+</option>
+
+<option>
 <p><opt>mda = <arg>expand string</arg></opt></p>
 <optdesc>
-<p>If you want all local delivery to be transferred to an mda (Mail
+<p>If you want local delivery to be transferred to an mda (Mail
 Delivery Agent), set this to a command. The argument will be expanded
 on delivery time, you can use variables beginning with a '$' sign,
 optionally enclosed in curly braces. Variables you can use are:</p>
-<p>uid - the unique message id. This is not necessarily identical with the Message ID as given in the Message ID: header.</p>
+<p>uid - the unique message id. This is not necessarily identical with
+the Message ID as given in the Message ID: header.</p>
 <p>received_host - the host the mail was received from</p>
-<p>ident - the ident, this is either the ident delivered by the ident protocol or the user id of the sender if the message was received locally.</p>
+<p>ident - the ident, this is either the ident delivered by the ident
+protocol or the user id of the sender if the message was received locally.</p>
 <p>return_path_local - the local part of the return path (sender).</p>
 <p>return_path_domain - the domain part of the return path (sender).</p>
 <p>return_path - the complete return path (sender).</p>
@@ -270,6 +380,10 @@ it. The content of the file should be the name of the current
 connection as defined with <opt>connect_route.<arg>name</arg></opt> (without
 a trailing newline character).</p>
 
+<p>When it is set to <opt>file</opt>, MasqMail calls the executable given by
+the <opt>online_pipe</opt> option (see below) and reads the current online
+status from its standard output.</p>
+
 <p>When it is set to <opt>mserver</opt>, MasqMail connects to the
 masqdialer server using the value of <opt>mserver_iface</opt> and asks it
 whether a connection exists and for the name, which should be the name
@@ -297,6 +411,25 @@ currently a connection. Create it in your ip-up script with eg.</p>
 </option>
 
 <option>
+<p><opt>online_pipe = <arg>file</arg></opt></p>
+<optdesc>
+<p>This is the name of the executable which will be called to determine
+the online status. This executable should just print the name oif the current
+connection to the standard output and return a zero status code. masqmail assumes
+it is offline if the script returns with a non zero status. Simple example:</p>
+
+<p>#!/bin/sh</p>
+<p></p>
+<p>[ -e /tmp/connect_route ] || exit 1</p>
+<p>cat /tmp/connect_route</p>
+<p>exit 0</p>
+
+<p>Of course, instead of the example above you could as well use <opt>file</opt> as
+the online detection method, but you can do something more sophisticated.</p>
+</optdesc>
+</option>
+
+<option>
 <p><opt>mserver_iface = <arg>interface</arg></opt></p>
 <optdesc>
 <p>The interface the masqdialer server is listening to. Usually this
@@ -317,6 +450,15 @@ files will be used to retrieve mail when called with the -g option.</p>
 </option>
 
 <option>
+<p><opt>online_gets.<arg>name</arg> = <arg>list</arg></opt></p>
+<optdesc>
+<p>Replace <arg>name</arg> with a name to identify an online
+configuration. Set this to a filename (or a list of filenames) for the get configuration. These
+files will be used to retrieve mail when called with the -go option.</p>
+</optdesc>
+</option>
+
+<option>
 <p><opt>ident_trusted_nets = <arg>list</arg></opt></p>
 <optdesc>
 <p><arg>list</arg> is a list of networks of the form a.b.c.d/e
@@ -326,12 +468,38 @@ ident is identical to his login name.</p>
 </optdesc>
 </option>
 
+<option>
+<p><opt>errmsg_file = <arg>file</arg></opt></p>
+<optdesc>
+<p>Set this to a template which will be used to generate delivery failure
+reports. Variable parts within the template begin with a dollar sign and
+are identical to those which can be used as arguments for the mda command,
+see <opt>mda</opt> above. Additional information can be included with
+@failed_rcpts, @msg_headers and @msg_body, these <b>must</b> be at the
+beginning of a line and will be replaced with the list of the failed recipients,
+the message headers and the message body of the failed message.</p>
+<p>Default is /etc/masqmail/tpl/failmsg.tpl.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>log_user = <arg>name</arg></opt></p>
+<optdesc>
+<p>Replace <arg>name</arg> with a valid local or remote mail address.</p>
+<p>If this option is not empty, then a copy of every mail,
+that passes trought the masqmail system will also be sent to the
+given mail address.</p>
+<p>For example you can feed your mails into a program like <i>hypermail</i> for
+archiving purpose by placing an appropriate pipe command in masqmail.alias</p>
+</optdesc>
+</option>
+
 </options>
 
 <section name = "Author">
 <p>masqmail was written by Oliver Kurth
-&lt;kurth@innominate.de&gt;</p><p>You will find the newest version of
-masqmail at <url href="http://www.innomininate.org/~oku/masqmail/"/> or search for it
+&lt;oku@masqmail.cx&gt;</p><p>You will find the newest version of
+masqmail at <url href="http://masqamil.cx/masqmail/"/> or search for it
 in freshmeat (<url href="http://www.freshmeat.net"/>). There is also a mailing list,
 you will find information about it at masqmails main site.</p>
 </section>
@@ -349,7 +517,7 @@ you will find information about it at masqmails main site.</p>
 
 <section name = "Comments">
 <p>This man page was written using <manref name="xml2man" section="1"
-href="http://www.innominate.org/~oku/xml2man/"/> by the same
+href="http://masqmail.cx/xml2man/"/> by the same
 author.</p>
 </section>
 

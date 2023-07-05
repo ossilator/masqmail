@@ -178,6 +178,29 @@ template. <em>I do not know how do configure that for an ISDN adapter,
 but I am sure you will find something similar in the man
 pages.</em></p>
 
+<h5>Alternative</h5>
+
+<p>Marc Herbert suggests this:</p>
+
+<p>If you use the higher-level <tt>ifup</tt> and <tt>ifdown</tt>
+scripts provided by many linux distributions, life is easier. Just add
+such lines to your <tt>/etc/network/interfaces</tt> file:</p>
+
+<pre>
+iface fastPPP inet ppp
+	noauto
+	provider fastnet
+	up /usr/sbin/masqmail -qo FastNet || true
+
+iface slowPPP inet ppp
+	noauto
+	provider slownet
+	up /usr/sbin/masqmail -qo SlowNet || true
+</pre>
+
+
+<p>see the 'interfaces' man page for details.</p>
+
 <p>If you want mail that is received by masqmail from your local
 net to be delivered immediately using the route configuration, you
 have two possibilities:<p>

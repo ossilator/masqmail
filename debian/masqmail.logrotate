@@ -1,0 +1,11 @@
+/var/log/masqmail/masqmail.log {
+	rotate 2
+	weekly
+	compress
+	delaycompress
+	missingok
+	notifempty
+	postrotate
+		/etc/init.d/masqmail reload > /dev/null
+	endscript
+}

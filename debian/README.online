@@ -1,0 +1,92 @@
+Different methods for online detection
+--------------------------------------
+
+/etc/ppp/peers/<provider>
+-------------------------
+
+The scripts /etc/ppp/ip-{up,down}.d/{1,99}masqmail make use of the variable
+$IPPARAM, which you can defibe in your /etc/ppp/peers/<provider>
+configuration with the ippparam option, eg:
+
+ippparam arcor
+
+If this is set, $IPPARAM will be written to a 'route' file. Using some
+awk magic, the scripts finds out which file you have defined for
+online detection (if online_detect=file) and writes the value of
+$IPPARAM to this file. masqmail then uses this file to determine its
+online status.
+
+
+/etc/network/interfaces
+-----------------------
+
+You can use the /etc/network/interfaces script to tell masqmail
+when a link goes up, and masqmail shall flush its queue and/or fetch mail.
+
+This is an example for a static interface:
+
+iface eth0 inet static
+        # mroute/name used by ip-up.d/masqmail BDL May02
+        name SNRC
+        address 130.130.10.233
+        netmask 255.255.255.0
+        gateway 130.130.10.254
+
+(This example is from Ben Low. Thanks, Ben :-))
+
+If you use masqmail on a notebook, you can define several interfaces,
+depending on the network you are in. Read
+/usr/share/doc/ifupdown/examples/interfaces.gz
+for examples.
+
+The scripts /etc/network/if-{up,down}.d/1masqmail make use of the NAME
+in the same way as the /etc/ppp/ip-{up,down}.d/ scripts. See above.
+
+
+guessnet and /etc/network/interfaces
+------------------------------------
+
+Another nice tool is guessnet. See /usr/share/doc/guessnet/README.gz,
+if you have guessnet installed. You can use it in combination with the
+method described above for /etc/network/interfaces.
+
+
+guessnet and the 'online_pipe' option
+-------------------------------------
+
+Alternatively you can also use guessnet directly to check the online
+status. To do this, set in
+/etc/masqmail/masqmail.conf
+
+#
+online_detect=pipe
+online_pipe="/usr/bin/guessnet < /etc/masqmail/guessnet.conf"
+#
+
+and create a file
+/etc/masqmail/guessnet.conf
+
+Example:
+192.168.0.35 00:10:5A:24:C5:B6 192.168.0.1 default
+192.168.2.1 00:80:AD:97:D5:2D 192.168.0.1 home
+
+
+masqdialer and the 'online_pipe' option
+---------------------------------------
+
+Yet another possibility for ppp dialups is masqdialer:
+
+Example:
+#
+online_detect=pipe
+online_pipe="/usr/bin/mservdetect 192.168.1.2 224"
+#
+
+This is useful if you have a gateway with masqdialer running
+and masqmail on another host behind ('behind' as seen from the internet)
+
+Note:
+The online detect method 'mserver' is deprecated, and this debian
+package comes with that option disabled. You can still recompile the
+package with the ./configure option --enable-mserver, but this may be
+removed in future version of masqmail.

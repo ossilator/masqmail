@@ -39,8 +39,8 @@ alias file has been changed.</p>
 
 <section name = "Author">
 <p>masqmail was written by Oliver Kurth
-&lt;kurth@innominate.de&gt;</p><p>You will find the newest version of
-masqmail at <url href="http://www.innomininate.org/~oku/masqmail/"/> or search for it
+&lt;oku@masqmail.cx&gt;</p><p>You will find the newest version of
+masqmail at <url href="http://masqmail.cx/masqmail/"/> or search for it
 in freshmeat (<url href="http://www.freshmeat.net"/>). There is also a mailing list,
 you will find information about it at masqmails main site.</p>
 </section>
@@ -56,7 +56,8 @@ you will find information about it at masqmails main site.</p>
 </section>
 
 <section name = "Comments">
-<p>This man page was written using <manref name="xml2man" section="1" href="http://www.innominate.org/~oku/xml2man/"/> by the same author.</p>
+<p>This man page was written using <manref name="xml2man" section="1"
+ href="http://masqmail.cx/xml2man/"/> by the same author.</p>
 </section>
 
 </manpage>

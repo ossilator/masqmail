@@ -28,6 +28,8 @@ messages will be sent to this host which will distribute them to their
 destinations. If you do not set this mails will be sent
 directly. Because the mail server is probably 'near' to you, mail
 transfer will be much faster if you use it.</p>
+<p>You can optionally give a port number following the host name
+and a colon, eg mail_host="mail.foo.com:25".</p>
 </optdesc>
 </option>
 
@@ -45,6 +47,15 @@ order). For 'dns_a', the domain is assumed to be an A pointer. For
 </option>
 
 <option>
+<p><opt>helo_name</opt> = <arg>string</arg></p>
+<optdesc>
+<p>Set the name given with the HELO/EHLO command. If this is not
+set, <opt>host_name</opt> from <file>masqmail.conf</file> will be used, if
+the <opt>do_correct_helo</opt> option (see below) is unset.</p>
+</optdesc>
+</option>
+
+<option>
 <p><opt>do_correct_helo</opt> = <arg>boolean</arg></p>
 <optdesc>
 <p>If this is set, masqmail tries to look up your host name as it
@@ -53,7 +64,18 @@ servers are so picky that they want this. Which is really
 crazy. It just does not make any sense to lie about ones own identity,
 because it can always be looked up by the server. Nobody should
 believe in the name given by HELO/EHLO anyway. If this is not
-set, <opt>host_name</opt> from <file>masqmail.conf</file> will be used.</p>
+set, <opt>host_name</opt> from <file>masqmail.conf</file> or as given with
+the <opt>helo_name</opt> (see above) will be used.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>do_pipelining</opt> = <arg>boolean</arg></p>
+<optdesc>
+<p>If this is set to false, masqmail will not use ESMTP PIPELINING, even
+if the server announces that it is able to cope with it. Default is true.</p>
+<p>You do not want to set this to false unless the mail setup on the
+remote server side is really broken. Keywords: wingate.</p>
 </optdesc>
 </option>
 
@@ -74,6 +96,30 @@ allowed.</p>
 not allowed to send mail through this connection. Local
 parts in this list will not be allowed to use this route even if they
 are part of <opt>allowed_mail_locals</opt> (see above).</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>allowed_return_paths</opt> = <arg>list</arg></p>
+<optdesc>
+<p>This is a semicolon ';' separated list of addresses. Messages which
+have one one of these addresses as the return path will be used using
+this route (if not also in <opt>not_allowed_return_paths</opt> or an item
+in <opt>not_allowed_mail_locals</opt> matches).</p>
+<p>Patterns containing '?' and '*' can be used. The special item "&lt;&gt;" matches
+the null sender address (eg. failure notices or delivery notifications).</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>not_allowed_return_paths</opt> = <arg>list</arg></p>
+<optdesc>
+<p>This is a semicolon ';' separated list of addresses. Messages which
+have one one of these addresses as the return path will <em>not</em> be used using
+this route (even if also in <opt>allowed_return_paths</opt> or an item
+in <opt>allowed_mail_locals</opt> matches).</p>
+<p>Patterns containing '?' and '*' can be used. The special item "&lt;&gt;" matches
+the null sender address (eg. failure notices or delivery notifications).</p>
 </optdesc>
 </option>
 
@@ -148,6 +194,14 @@ charlie: Charlie Miller &lt;cmiller@mx.commercial.com&gt;"</p>
 </option>
 
 <option>
+<p><opt>map_h_mail_followup_to_addresses</opt> = <arg>list</arg></p>
+<optdesc>
+<p>Same as <opt>map_h_from_addresses</opt>, but for the 'Mail-Followup-To:'
+header. Useful when replying to mailing lists.</p>
+</optdesc>
+</option>
+
+<option>
 <p><opt>map_return_path_addresses</opt> = <arg>list</arg></p>
 <optdesc>
 <p>This is similar to <opt>set_return_path_domain</opt>, but more
@@ -194,7 +248,7 @@ almost never correct. Default is true.</p>
 <p><opt>auth_name</opt> = <arg>string</arg></p>
 <optdesc>
 <p>Set the authentication type for ESMTP AUTH authentification.
-Currently only 'cram-md5' is supported.</p>
+Currently only 'cram-md5' and 'login' are supported.</p>
 </optdesc>
 </option>
 
@@ -266,8 +320,8 @@ set <opt>pipe_fromline</opt> above. Default is false.</p>
 
 <section name = "Author">
 <p>masqmail was written by Oliver Kurth
-&lt;kurth@innominate.de&gt;</p><p>You will find the newest version of
-masqmail at <url href="http://www.innomininate.org/~oku/masqmail/"/> or search for it
+&lt;oku@masqmail.cx&gt;</p><p>You will find the newest version of
+masqmail at <url href="http://masqmail.cx/masqmail/"/> or search for it
 in freshmeat (<url href="http://www.freshmeat.net"/>). There is also a mailing list,
 you will find information about it at masqmails main site.</p>
 </section>
@@ -284,7 +338,7 @@ you will find information about it at masqmails main site.</p>
 
 <section name = "Comments">
 <p>This man page was written using <manref name="xml2man" section="1"
-href="http://www.innominate.org/~oku/xml2man/"/> by the same
+href="http://masqmail.cx/xml2man/"/> by the same
 author.</p>
 </section>
 

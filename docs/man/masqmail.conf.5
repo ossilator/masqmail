@@ -3,7 +3,7 @@
 masqmail.conf \- masqmail configuration file
 .SH DESCRIPTION
 
-This man page describes the syntax of the main configuration file of masqmail. Its usual location is \fI/etc/masqmail.conf\f1
+This man page describes the syntax of the main configuration file of masqmail. Its usual location is \fI/etc/masqmail/masqmail.conf\f1
 
 The configuration consists of lines of the form
 
@@ -13,7 +13,7 @@ Where \fBval\f1 is a variable name and \fIexpression\f1 a string, which can be q
 
 Each val has a type, which can be boolean, numeric, string or list. A boolean variable can be set with one of the values 'on', 'yes', and 'true' or 'off', 'no' and 'false'. List items are separated with ';'. For some values patterns (like '*','?') can be used. The spaces before and after the '=' are optional.
 
-Most lists (exceptions: \fBlocal_hosts\f1,\fBlocal_nets\f1 and \fBlisten_addresses\f1) accept files. These will be recognized by a leading slash '/'. The contents of these files will be included at the position of the file name, there can be items or other files before and after the file entry. The format of the files is different though, within these files each entry is on another line. (And not separated by semicolons). This makes it easy to include large lists which are common in different configuration files, so they do not have to appear in every configuration file.
+Most lists (exceptions: \fBlocal_hosts\f1,\fBlocal_nets\f1, \fBlisten_addresses\f1, \fBonline_routes\f1 and \fBonline_gets\f1) accept files. These will be recognized by a leading slash '/'. The contents of these files will be included at the position of the file name, there can be items or other files before and after the file entry. The format of the files is different though, within these files each entry is on another line. (And not separated by semicolons). This makes it easy to include large lists which are common in different configuration files, so they do not have to appear in every configuration file.
 
 Blank lines and lines starting with '#' are ignored.
 
@@ -37,7 +37,7 @@ Set the debug level. Valid values are 0 to 6, increasing it further makes no dif
 
 \fBmail_dir = \fIfile\f1\fB\f1
 
-The directory where local mail is stored, usually \fI/var/spool/mail\f1.
+The directory where local mail is stored, usually \fI/var/spool/mail\f1 or \fI/var/mail\f1.
 .TP
 
 \fBspool_dir = \fIfile\f1\fB\f1
@@ -49,12 +49,16 @@ The directory where masqmail stores its spool files (and later also other stuff)
 
 This is used in different places: Masqmail identifies itself in the greeting banner on incoming connections and in the HELO/EHLO command for outgoing connections with this name, it is used in the Received: header and to qualify the sender of a locally originating message.
 
+If the string begins with a slash '/', it it assumed that it is a filename, and the first line of this file will be used. Usually this will be '/etc/mailname' to make masqmail conform to Debian policies.
+
 It is not used to find whether an address is local. Use \fBlocal_hosts\f1 for that.
 .TP
 
 \fBremote_port = \fIn\f1\fB\f1
 
 The remote port number to be used. This defaults to port 25.
+
+This option is deprecated. Use \fBhost_name\f1 in the route configuration instead. See \fBmasqmail.route (5)\f1.
 .TP
 
 \fBlocal_hosts = \fIlist\f1\fB\f1
@@ -67,13 +71,53 @@ A semicolon ';' separated list of hostnames which are considered local. Normally
 A semicolon ';' separated list of hostnames which are on the 'local' net. Delivery to these hosts is attempted immediately. You can use patterns with '*', eg. "*.bar.com".
 .TP
 
+\fBlocal_addresses = \fIlist\f1\fB\f1
+
+A semicolon ';' separated list of fully qualified email-addresses which are considered local although their domain name part is not in the list of \fBlocal_hosts\f1. 
+
+For example: There are two people working at your LAN: person1@yourdomain and person2@yourdomain. But there are other persons @yourdomain which are NOT local. So you can not put yourdomain to the list of local_hosts. If person1 now wants to write to person2@yourdomain and this mail should not leave the LAN then you can put
+
+local_addresses = "person1@yourdomain;person2@yourdomain"
+
+to your masqmail.conf.
+.TP
+
+\fBnot_local_addresses = \fIlist\f1\fB\f1
+
+A semicolon ';' separated list of fully qualified email-addresses which are considered not local although their domain name part is in the list of \fBlocal_hosts\f1. 
+
+This ist the opposite of the previous case. The majority of addresses of a specific domain are local. But some users are not. With this option you can easily exclude these users.
+
+Example:
+
+local_hosts = "localhost;myhost;mydomain.net"
+
+not_local_addresses = "eric@mydomain.net"
+.TP
+
 \fBlisten_addresses = \fIlist\f1\fB\f1
 
 A semicolon ';' separated list of interfaces on which connections will be accepted. An interface ist defined by a hostname, optionally followed by a colon ':' and a number for the port. If this is left out, port 25 will be used.
 
 You can set this to "localhost:25;foo:25" if your hostname is 'foo'.
 
-Note that the names are resolved to IP addreses. If your host has different names which resolve to the same IP, use only one of them, otherwise you will get an error message and masqmail will terminate.
+Note that the names are resolved to IP addreses. If your host has different names which resolve to the same IP, use only one of them, otherwise you will get an error message.
+.TP
+
+\fBdo_save_envelope_to = \fIboolean\f1\fB\f1
+
+If this is set to true, a possibly existing Envelope-to: header in an incoming mail which is received via either pop3 or smtp will be saved as an X-Orig-Envelope-to: header.
+
+This is useful if you retrieve mail from a pop3 server with either masqmail or fetchmail, and the server supports Envelope-to: headers, and you want to make use of those with a mail filtering tool, eg. procmail. It cannot be preserved because masqmail sets such a header by itself.
+
+Default is false.
+.TP
+
+\fBdo_relay = \fIboolean\f1\fB\f1
+
+If this is set to false, mail with a return path that is not local and a destination that is also not local will not be accepted via smtp and a 550 reply will be given. Default is true.
+
+Note that this will not protect you from spammers using open relays, but from users unable to set their address in their mail clients.
 .TP
 
 \fBdo_queue = \fIboolean\f1\fB\f1
@@ -81,20 +125,25 @@ Note that the names are resolved to IP addreses. If your host has different name
 If this is set, mail will not be delivered immediately when accepted. Same as calling masqmail with the \fB-odq\f1 option.
 .TP
 
-\fBconnect_route.\fIname\f1\fB = \fIlist\f1\fB\f1
+\fBonline_routes.\fIname\f1\fB = \fIlist\f1\fB\f1
 
 Replace \fIname\f1 with a name to identify a connection. Set this to a filename (or a list of filenames) for the special route configuration for that connection. You will use that name to call masqmail with the\fB-qo\f1 option every time a connection to your ISP is set up.
 
 Example: Your ISP has the name FastNet. Then you write the following line in the main configuration:
 
-\fBconnect_route.FastNet\f1 = \fI"/etc/masqmail/fastnet.route"\f1
+\fBonline_routes.FastNet\f1 = \fI"/etc/masqmail/fastnet.route"\f1
 
 \fI/etc/masqmail/fastnet.route\f1 is the route configuration file, see \fBmasqmail.route (5)\f1. As soon as a link to FastNet has been set up, you call masqmail \fB-qo\f1 \fIFastNet\f1. Masqmail will then read the specified file and send the mails.
 .TP
 
+\fBconnect_route.\fIname\f1\fB = \fIlist\f1\fB\f1
+
+Old name for \fBonline_routes\f1.
+.TP
+
 \fBlocal_net_route = \fIfile\f1\fB\f1
 
-This is similar to \fBconnect_route.\fIname\f1\fB\f1 but for the local net. Recipient addresses that are in local_nets will be routed using this route configuration. Main purpose is to define a mail server with mail_host in your local network. In simple environments this can be left unset. If unset, a default route configuration will be used.
+This is similar to \fBonline_routes.\fIname\f1\fB\f1 but for the local net. Recipient addresses that are in local_nets will be routed using this route configuration. Main purpose is to define a mail server with mail_host in your local network. In simple environments this can be left unset. If unset, a default route configuration will be used.
 .TP
 
 \fBalias_file = \fIfile\f1\fB\f1
@@ -117,9 +166,29 @@ If this is set, a from line will be prepended to the output stream whenever a pi
 If this is set, each line beginning with 'From ' is replaced with '>From ' whenever a pipe command is called after an alias expansion. You probably want this if you have set \fBpipe_fromline\f1 above. Default is false.
 .TP
 
+\fBmbox_default = \fIstring\f1\fB\f1
+
+The default local delivery method. Can be one of mbox, mda or maildir (the latter only if maildir support is enabled at compile time). Default is mbox. You can override this for each user by using the \fBmbox_users\f1, \fBmda_users\f1 or \fBmaildir_users\f1 options (see below).
+.TP
+
+\fBmbox_users = \fIlist\f1\fB\f1
+
+A list of users which wish delivery to an mbox style mail folder.
+.TP
+
+\fBmda_users = \fIlist\f1\fB\f1
+
+A list of users which wish local delivery to an mda. You have to set \fBmda\f1 (see below) as well.
+.TP
+
+\fBmaildir_users = \fIlist\f1\fB\f1
+
+A list of users which wish delivery to a qmail style maildir. The path to maildir is ~/Maildir/. The maildir will be created if it does not exist.
+.TP
+
 \fBmda = \fIexpand string\f1\fB\f1
 
-If you want all local delivery to be transferred to an mda (Mail Delivery Agent), set this to a command. The argument will be expanded on delivery time, you can use variables beginning with a '$' sign, optionally enclosed in curly braces. Variables you can use are:
+If you want local delivery to be transferred to an mda (Mail Delivery Agent), set this to a command. The argument will be expanded on delivery time, you can use variables beginning with a '$' sign, optionally enclosed in curly braces. Variables you can use are:
 
 uid - the unique message id. This is not necessarily identical with the Message ID as given in the Message ID: header.
 
@@ -162,6 +231,8 @@ Defines the method MasqMail uses to detect whether there is currently an online 
 
 When it is set to \fBfile\f1, MasqMail first checks for the existence of \fBonline_file\f1 (see below) and if it exists, it reads it. The content of the file should be the name of the current connection as defined with \fBconnect_route.\fIname\f1\fB\f1 (without a trailing newline character).
 
+When it is set to \fBfile\f1, MasqMail calls the executable given by the \fBonline_pipe\f1 option (see below) and reads the current online status from its standard output.
+
 When it is set to \fBmserver\f1, MasqMail connects to the masqdialer server using the value of \fBmserver_iface\f1 and asks it whether a connection exists and for the name, which should be the name of the current connection as defined with \fBconnect_route.\fIname\f1\fB\f1.
 
 No matter how MasqMail detects the online status, only messages that are accepted at online time will be delivered using the connection. The spool still has to be emptied with masqmail \fB-qo\f1\fIconnection\f1.
@@ -178,6 +249,23 @@ chmod 0644 /tmp/connect_route
 Do not forget to delete it in your ip-down script.
 .TP
 
+\fBonline_pipe = \fIfile\f1\fB\f1
+
+This is the name of the executable which will be called to determine the online status. This executable should just print the name oif the current connection to the standard output and return a zero status code. masqmail assumes it is offline if the script returns with a non zero status. Simple example:
+
+#!/bin/sh
+
+
+
+[ -e /tmp/connect_route ] || exit 1
+
+cat /tmp/connect_route
+
+exit 0
+
+Of course, instead of the example above you could as well use \fBfile\f1 as the online detection method, but you can do something more sophisticated.
+.TP
+
 \fBmserver_iface = \fIinterface\f1\fB\f1
 
 The interface the masqdialer server is listening to. Usually this will be "localhost:224" if mserver is running on the same host as masqmail. But using this option, you can also let masqmail run on another host by setting \fBmserver_iface\f1 to another hostname, eg. "foo:224".
@@ -188,14 +276,35 @@ The interface the masqdialer server is listening to. Usually this will be "local
 Replace \fIname\f1 with a name to identify a get configuration. Set this to a filename for the get configuration. These files will be used to retrieve mail when called with the -g option.
 .TP
 
+\fBonline_gets.\fIname\f1\fB = \fIlist\f1\fB\f1
+
+Replace \fIname\f1 with a name to identify an online configuration. Set this to a filename (or a list of filenames) for the get configuration. These files will be used to retrieve mail when called with the -go option.
+.TP
+
 \fBident_trusted_nets = \fIlist\f1\fB\f1
 
 \fIlist\f1 is a list of networks of the form a.b.c.d/e (eg. 192.168.1.0/24), from which the ident given by the ident protocol will be trusted, so a user can delete his mail from the queue if the ident is identical to his login name.
+.TP
+
+\fBerrmsg_file = \fIfile\f1\fB\f1
+
+Set this to a template which will be used to generate delivery failure reports. Variable parts within the template begin with a dollar sign and are identical to those which can be used as arguments for the mda command, see \fBmda\f1 above. Additional information can be included with @failed_rcpts, @msg_headers and @msg_body, these must be at the beginning of a line and will be replaced with the list of the failed recipients, the message headers and the message body of the failed message.
+
+Default is /etc/masqmail/tpl/failmsg.tpl.
+.TP
+
+\fBlog_user = \fIname\f1\fB\f1
+
+Replace \fIname\f1 with a valid local or remote mail address.
+
+If this option is not empty, then a copy of every mail, that passes trought the masqmail system will also be sent to the given mail address.
+
+For example you can feed your mails into a program like hypermail for archiving purpose by placing an appropriate pipe command in masqmail.alias
 .SH AUTHOR
 
-masqmail was written by Oliver Kurth <kurth@innominate.de>
+masqmail was written by Oliver Kurth <oku@masqmail.cx>
 
-You will find the newest version of masqmail at \fBhttp://www.innomininate.org/~oku/masqmail/\f1 or search for it in freshmeat (\fBhttp://www.freshmeat.net\f1). There is also a mailing list, you will find information about it at masqmails main site.
+You will find the newest version of masqmail at \fBhttp://masqamil.cx/masqmail/\f1 or search for it in freshmeat (\fBhttp://www.freshmeat.net\f1). There is also a mailing list, you will find information about it at masqmails main site.
 
 .SH BUGS
 

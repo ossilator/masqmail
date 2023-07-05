@@ -1,0 +1,22 @@
+.TH newaliases 8
+.SH NAME
+newaliases \- update /etc/aliases database
+.SH SYNOPSIS
+.B newaliases
+
+.SH DESCRIPTION
+newaliases is called by many applications to notify the mail transport
+agent of changes to the system mail aliases database.
+MasqMail doesn't need to be notified of changes to /etc/aliases, therefore
+this script does nothing. It is provided only for compatibility with 
+the sendmail program.
+
+.SH FILES
+/etc/aliases
+
+.SH SEE ALSO
+\fBmasqmail.aliases (5)\f1, \fBmasqmail.conf (5)\f1, \fBmasqmail.route (5)\f1, \fBmasqmail.get (5)\f1
+
+.SH AUTHOR
+This manual page was stitched together by Gregor Hoffleit
+<flight@debian.org> for the Debian project.

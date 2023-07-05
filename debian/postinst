@@ -1,0 +1,153 @@
+#!/bin/sh -e
+
+# source debconf library
+. /usr/share/debconf/confmodule
+
+CONFIGFILE=/etc/masqmail/masqmail.conf
+WORKTMP=$CONFIGFILE.tmp
+DEBCONFTMP=$CONFIGFILE.debconf
+
+DEFAULTSFILE=/etc/default/masqmail
+DEBDEFTMP=$DEFAULTSFILE.debconf
+
+create_db_conf (){
+    rm -f $WORKTMP $DEBCONFTMP
+
+    cat >> $DEBCONFTMP << EOF
+### BEGIN DEBCONF SECTION
+# Do not edit within this region if you want your changes to be preserved by
+# debconf.  Instead, make changes after the "### END DEBCONF SECTION" line.
+EOF
+
+    db_get masqmail/host_name || true
+    echo "host_name=\"$RET\"" >> $DEBCONFTMP
+    db_get masqmail/local_hosts || true
+    echo "local_hosts=\"$RET\"" >> $DEBCONFTMP
+    db_get masqmail/local_nets || true
+    echo "local_nets=\"$RET\"" >> $DEBCONFTMP
+    db_get masqmail/listen_addresses || true
+    echo "listen_addresses=\"$RET\"" >> $DEBCONFTMP
+
+    echo "spool_dir=\"/var/spool/masqmail\"" >> $DEBCONFTMP
+    echo "mail_dir=\"/var/mail\"" >> $DEBCONFTMP
+    echo "log_dir=\"/var/log/masqmail\"" >> $DEBCONFTMP
+    echo "do_queue=false" >> $DEBCONFTMP
+
+    db_get masqmail/use_syslog || true
+    echo "use_syslog=$RET" >> $DEBCONFTMP
+
+    db_get masqmail/online_detect || true
+    echo "online_detect=$RET" >> $DEBCONFTMP
+    if [ "$RET" = "file" ] ; then
+	db_get masqmail/online_file || true
+	echo "online_file=\"$RET\"" >> $DEBCONFTMP
+    else
+	db_get masqmail/online_pipe || true
+	echo "online_pipe=\"$RET\"" >> $DEBCONFTMP
+    fi
+
+    db_get masqmail/mbox_default || true
+    echo "mbox_default=$RET" >> $DEBCONFTMP
+    db_get masqmail/mda || true
+    echo "mda=\"$RET\"" >> $DEBCONFTMP
+
+    echo "alias_file=/etc/aliases" >> $DEBCONFTMP
+    db_get masqmail/alias_local_caseless || true
+    echo "alias_local_caseless=\"$RET\"" >> $DEBCONFTMP
+
+    cat >> $DEBCONFTMP << EOF
+### END DEBCONF SECTION
+EOF
+}
+
+write_db_conf (){
+
+  if [ -e $CONFIGFILE ]; then
+    # does the file have debconf markers in it?
+    if egrep -q '^### BEGIN DEBCONF SECTION' $CONFIGFILE && \
+       egrep -q '^### END DEBCONF SECTION' $CONFIGFILE; then
+      # see if the beginning of the file was left alone; sed cannot backtrack in
+      # an address range
+      if ! head -1 $CONFIGFILE | egrep -q '^### BEGIN DEBCONF SECTION'; then
+        # sick, sick, sick
+        LINES=$(sed -n '1,/^### BEGIN DEBCONF SECTION/p' < $CONFIGFILE | wc -l)
+        sed -n 1,$(( $LINES - 1 ))p < $CONFIGFILE > $WORKTMP
+      fi
+      cat $DEBCONFTMP >> $WORKTMP
+      sed -n '/^### END DEBCONF SECTION/,$p' < $CONFIGFILE | tail +2 >> $WORKTMP
+    else
+      echo "Existing $CONFIGFILE has missing or half-open debconf region;" >&2;
+      echo "not writing masqmail configuration file." >&2;
+      exit 1
+    fi
+  else
+    cp $DEBCONFTMP $WORKTMP
+  fi
+
+  mv $WORKTMP $CONFIGFILE
+
+#  rm -f $WORKTMP $DEBCONFTMP
+}
+
+create_db_defaults () {
+    cat >> $DEBDEFTMP << EOF
+#
+# better use 'dpkg-reconfigure masqmail'
+# instead of editing by hand
+#
+EOF
+
+    db_get masqmail/init_smtp_daemon || true
+    echo "INIT_SMTP_DAEMON=\"$RET\"" >> $DEBDEFTMP
+    db_get masqmail/init_queue_daemon || true
+    echo "INIT_QUEUE_DAEMON=\"$RET\"" >> $DEBDEFTMP
+    db_get masqmail/init_fetch_daemon || true
+    echo "INIT_FETCH_DAEMON=\"$RET\"" >> $DEBDEFTMP
+
+    echo "#" >> $DEBDEFTMP
+
+    db_get masqmail/queue_daemon_ival || true
+    echo "QUEUE_DAEMON_IVAL=\"$RET\"" >> $DEBDEFTMP
+    db_get masqmail/fetch_daemon_ival || true
+    echo "FETCH_DAEMON_IVAL=\"$RET\"" >> $DEBDEFTMP
+
+    echo "#" >> $DEBDEFTMP
+
+    db_get masqmail/ipup_runqueue || true
+    echo "IPUP_RUNQUEUE=\"$RET\"" >> $DEBDEFTMP
+    db_get masqmail/ipup_fetch || true
+    echo "IPUP_FETCH=\"$RET\"" >> $DEBDEFTMP
+}
+   
+write_db_defaults () {
+    mv $DEBDEFTMP $DEFAULTSFILE
+}
+
+case "$1" in
+    configure)
+
+        # Create spool and log directories
+        install -d -omail -gmail /var/log/masqmail
+        install -d -omail -gmail /var/spool/masqmail
+        install -d -omail -gmail /var/spool/masqmail/input
+        install -d -omail -gmail /var/spool/masqmail/lock
+        install -d -omail -gmail /var/spool/masqmail/popuidl
+
+	db_get masqmail/manage_config_with_debconf || true
+	if [ "$RET" = "true" ]; then
+	    db_get masqmail/move_existing_nondebconf_config || true
+	    if [ "$RET" = "true" ]; then
+		create_db_conf
+		write_db_conf
+	    fi
+	    create_db_defaults
+	    write_db_defaults
+	fi
+
+        ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+esac
+
+#DEBHELPER#

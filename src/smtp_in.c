@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@
   RFC 2197 (ESMTP PIPELINE)
   RFC 2554 (ESMTP AUTH)
 */
+
+#ifdef ENABLE_SMTP_SERVER
 
 smtp_cmd smtp_cmds[] =
 {
@@ -66,10 +68,10 @@ gboolean get_address(gchar *line, gchar *addr)
   p++;
 
   /* skip spaces: */
-  while(*p && isspace(*p)) p++;
+  while(isspace(*p)) p++;
 
   /* get address: */
-  while(*p && !isspace(*p) && (q < addr+MAX_ADDRESS-1)) *(q++) = *(p++);
+  while(!isspace(*p)) *(q++) = *(p++);
   *q = 0;
 
   return TRUE;
@@ -97,18 +99,21 @@ smtp_connection *create_base(gchar *remote_host)
 static
 void smtp_printf(FILE *out, gchar *fmt, ...)
 {
-  gchar buf[256];
-  
   va_list args;
   va_start(args, fmt);
 
-  vsnprintf(buf, 255, fmt, args);
-
   DEBUG(4){
+    gchar buf[256];
+    va_list args_copy;
+
+    va_copy(args_copy, args);
+    vsnprintf(buf, 255, fmt, args_copy);
+    va_end(args_copy);
+
     debugf(">>>%s", buf);
   }
 
-  fprintf(out, "%s", buf);  fflush(out);
+  vfprintf(out, fmt, args);  fflush(out);
 
   va_end(args);
 }
@@ -158,7 +163,7 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
       case SMTP_MAIL_FROM:
 	if(psc->helo_seen && !psc->from_seen){
 	  gchar buf[MAX_ADDRESS];
-	  address *adr;
+	  address *addr;
 
 	  msg = create_message();
 	  msg->received_host = remote_host ? g_strdup(remote_host) : NULL;
@@ -168,13 +173,13 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
 	  msg->transfer_id = (psc->next_id)++;
 
 	  get_address(buffer, buf);
-	  if((adr = remote_host ?
+	  if((addr = remote_host ?
 	     create_address(buf, TRUE) :
 	      create_address_qualified(buf, TRUE, conf.host_name))){
-	    if(adr->domain != NULL){
+	    if(addr->domain != NULL){
 	      psc->from_seen = TRUE;
-	      msg->return_path = adr;
-		smtp_printf(out, "250 OK %s is a nice guy.\r\n", adr->address);
+	      msg->return_path = addr;
+		smtp_printf(out, "250 OK %s is a nice guy.\r\n", addr->address);
 	    }else{
 	      smtp_printf(out,
 			  "501 return path must be qualified.\r\n", buf);
@@ -194,17 +199,29 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
 
 	if(psc->helo_seen && psc->from_seen){
 	  char buf[MAX_ADDRESS];
-	  address *adr;
+	  address *addr;
 
 	  get_address(buffer, buf);
-	  if((adr = remote_host ?
+	  if((addr = remote_host ?
 	      create_address(buf, TRUE) :
 	      create_address_qualified(buf, TRUE, conf.host_name))){
-	    if(adr->local_part[0] != '|'){
-	      if(adr->domain != NULL){
-		psc->rcpt_seen = TRUE;
-		msg->rcpt_list = g_list_append(msg->rcpt_list, adr);
-		smtp_printf(out, "250 OK %s is our friend.\r\n", adr->address);
+	    if(addr->local_part[0] != '|'){
+	      if(addr->domain != NULL){
+		gboolean do_relay = conf.do_relay;
+		if(!do_relay){
+		  if((do_relay = addr_is_local(msg->return_path)));
+		  if(!do_relay){
+		    do_relay = addr_is_local(addr);
+		  }
+		}
+		if(do_relay){
+		  psc->rcpt_seen = TRUE;
+		  msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
+		  smtp_printf(out, "250 OK %s is our friend.\r\n", addr->address);
+		}else{
+		  smtp_printf(out, "550 relaying to %s denied.\r\n",
+			      addr_string(addr));
+		}
 	      }else{
 		smtp_printf(out,
 			    "501 recipient address must be qualified.\r\n", buf);
@@ -229,7 +246,7 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
 
 	  smtp_printf(out, "354 okay, and do not forget the dot\r\n");
 
-	  if((err = accept_message(in, msg, 0))
+	  if((err = accept_message(in, msg, conf.do_save_envelope_to ? ACC_SAVE_ENVELOPE_TO : 0))
 	     == AERR_OK){
 	    if(spool_write(msg, TRUE)){
 	      pid_t pid;
@@ -333,3 +350,4 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
     }
   }
 }
+#endif

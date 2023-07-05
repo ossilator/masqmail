@@ -16,6 +16,8 @@ This man page describes the syntax of the route configuration files of \fBmasqma
 \fBmail_host\f1 = \fIstring\f1
 
 This is preferably the mail server of your ISP. All outgoing messages will be sent to this host which will distribute them to their destinations. If you do not set this mails will be sent directly. Because the mail server is probably 'near' to you, mail transfer will be much faster if you use it.
+
+You can optionally give a port number following the host name and a colon, eg mail_host="mail.foo.com:25".
 .TP
 
 \fBresolve_list\f1 = \fIlist\f1
@@ -25,9 +27,21 @@ Specify the method how the domain of the server is resolved. Possible values are
 The default is "dns_mx;dns_a;byname".
 .TP
 
+\fBhelo_name\f1 = \fIstring\f1
+
+Set the name given with the HELO/EHLO command. If this is not set, \fBhost_name\f1 from \fImasqmail.conf\f1 will be used, if the \fBdo_correct_helo\f1 option (see below) is unset.
+.TP
+
 \fBdo_correct_helo\f1 = \fIboolean\f1
 
-If this is set, masqmail tries to look up your host name as it appears on the internet and sends this in the HELO/EHLO command. Some servers are so picky that they want this. Which is really crazy. It just does not make any sense to lie about ones own identity, because it can always be looked up by the server. Nobody should believe in the name given by HELO/EHLO anyway. If this is not set, \fBhost_name\f1 from \fImasqmail.conf\f1 will be used.
+If this is set, masqmail tries to look up your host name as it appears on the internet and sends this in the HELO/EHLO command. Some servers are so picky that they want this. Which is really crazy. It just does not make any sense to lie about ones own identity, because it can always be looked up by the server. Nobody should believe in the name given by HELO/EHLO anyway. If this is not set, \fBhost_name\f1 from \fImasqmail.conf\f1 or as given with the \fBhelo_name\f1 (see above) will be used.
+.TP
+
+\fBdo_pipelining\f1 = \fIboolean\f1
+
+If this is set to false, masqmail will not use ESMTP PIPELINING, even if the server announces that it is able to cope with it. Default is true.
+
+You do not want to set this to false unless the mail setup on the remote server side is really broken. Keywords: wingate.
 .TP
 
 \fBallowed_mail_locals\f1 = \fIlist\f1
@@ -38,6 +52,20 @@ This is a semicolon ';' separated list of local parts which will be allowed to s
 \fBnot_allowed_mail_locals\f1 = \fIlist\f1
 
 This is a semicolon ';' separated list of local parts which will be not allowed to send mail through this connection. Local parts in this list will not be allowed to use this route even if they are part of \fBallowed_mail_locals\f1 (see above).
+.TP
+
+\fBallowed_return_paths\f1 = \fIlist\f1
+
+This is a semicolon ';' separated list of addresses. Messages which have one one of these addresses as the return path will be used using this route (if not also in \fBnot_allowed_return_paths\f1 or an item in \fBnot_allowed_mail_locals\f1 matches).
+
+Patterns containing '?' and '*' can be used. The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
+.TP
+
+\fBnot_allowed_return_paths\f1 = \fIlist\f1
+
+This is a semicolon ';' separated list of addresses. Messages which have one one of these addresses as the return path will not be used using this route (even if also in \fBallowed_return_paths\f1 or an item in \fBallowed_mail_locals\f1 matches).
+
+Patterns containing '?' and '*' can be used. The special item "<>" matches the null sender address (eg. failure notices or delivery notifications).
 .TP
 
 \fBallowed_rcpt_domains\f1 = \fIlist\f1
@@ -76,6 +104,11 @@ You can use patterns, eg. * as keys.
 Same as \fBmap_h_from_addresses\f1, but for the 'Reply-To:' header.
 .TP
 
+\fBmap_h_mail_followup_to_addresses\f1 = \fIlist\f1
+
+Same as \fBmap_h_from_addresses\f1, but for the 'Mail-Followup-To:' header. Useful when replying to mailing lists.
+.TP
+
 \fBmap_return_path_addresses\f1 = \fIlist\f1
 
 This is similar to \fBset_return_path_domain\f1, but more flexible. Set this to a list which maps local parts to a full RFC 821 compliant email address, the local parts (the keys) are separated from the addresses (the values) by colons (':'). Note that this option takes RFC 821 addresses while \fBmap_h_from_addresses\f1 takes RFC 822 addresses. The most important difference is that RFC 821 addresses have no full name.
@@ -99,7 +132,7 @@ Like \fBexpand_h_sender_address\f1, but sets the domain only. Deprecated, will b
 
 \fBauth_name\f1 = \fIstring\f1
 
-Set the authentication type for ESMTP AUTH authentification. Currently only 'cram-md5' is supported.
+Set the authentication type for ESMTP AUTH authentification. Currently only 'cram-md5' and 'login' are supported.
 .TP
 
 \fBauth_login\f1 = \fIstring\f1
@@ -143,9 +176,9 @@ If this is set, and protocol is set to 'pipe', a from line will be prepended to 
 If this is set, and protocol is set to 'pipe', each line beginning with 'From ' is replaced with '>From ' whenever a pipe command is called. You probably want this if you have set \fBpipe_fromline\f1 above. Default is false.
 .SH AUTHOR
 
-masqmail was written by Oliver Kurth <kurth@innominate.de>
+masqmail was written by Oliver Kurth <oku@masqmail.cx>
 
-You will find the newest version of masqmail at \fBhttp://www.innomininate.org/~oku/masqmail/\f1 or search for it in freshmeat (\fBhttp://www.freshmeat.net\f1). There is also a mailing list, you will find information about it at masqmails main site.
+You will find the newest version of masqmail at \fBhttp://masqmail.cx/masqmail/\f1 or search for it in freshmeat (\fBhttp://www.freshmeat.net\f1). There is also a mailing list, you will find information about it at masqmails main site.
 
 .SH BUGS
 

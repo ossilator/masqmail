@@ -12,6 +12,8 @@ int main()
 
   printf("%s\n", buf);
   printf("ret = %d, size = %d, strlen = %d\n", ret, size, strlen(buf));
+
+  return 0;
 }
 
 

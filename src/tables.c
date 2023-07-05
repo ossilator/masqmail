@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,18 @@
 */
 
 #include "masqmail.h"
+#include <fnmatch.h>
+
+table_pair *create_pair(gchar *key, gpointer value)
+{
+  table_pair *pair;
+  
+  pair = g_malloc(sizeof(table_pair));
+  pair->key = g_strdup(key);
+  pair->value = value;
+
+  return pair;
+}
 
 table_pair *create_pair_string(gchar *key, gpointer value)
 {
@@ -37,7 +49,7 @@ table_pair *parse_table_pair(gchar *line, char delim)
 
   p = line;
   q = buf;
-  while((*p != 0) && (*p != delim) && q < buf+255)
+  while((*p != 0) && (*p != delim))
     *(q++) = *(p++);
   *q = 0;
 

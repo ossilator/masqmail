@@ -53,11 +53,26 @@ order). For 'dns_a', the domain is assumed to be an A pointer. For
 </option>
 
 <option>
-<p><opt>address</opt> = <arg>string</arg></p>
+<p><opt>address</opt> = <arg>address</arg></p>
 <optdesc>
 <p>The address where the retrieved mail should be sent to. It can be
 any address, but you probably want to set this to a local address on
 your LAN.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>return_path</opt> = <arg>address</arg></p>
+<optdesc>
+<p>If set, masqmail sets the return path to this address. Bounces
+generated during further delivery will be sent to this address. If
+unset, masqmail looks for the Return-Path: header in the mail, if
+this does not exist it uses the From: address and if this fails,
+postmaster will be used.
+</p><p>
+It is in most cases not useful to set this to the same address as
+the 'address' option as this may generate multiple bounces.
+postmaster is recommended.</p>
 </optdesc>
 </option>
 
@@ -82,10 +97,30 @@ fetched, so that they will not be retrieved again. Default is false.</p>
 </option>
 
 <option>
+<p><opt>do_uidl_dele</opt> = <arg>boolean</arg></p>
+<optdesc>
+<p>If set, and <opt>do_uidl</opt> is also set, MasqMail sends a delete (DELE)
+command to the server for each message uid in the uid listing at the
+beginning of the session. This prevents mail to be left on the server if
+masqmail gets interrupted during a session before it can send the QUIT
+command to the server. Default is false.
+</p>
+</optdesc>
+</option>
+
+<option>
 <p><opt>max_size</opt> = <arg>numeric</arg></p>
 <optdesc>
 <p>If set to a value > 0, only messages smaller than this in bytes will be
 retrieved. The default is 0.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>max_count</opt> = <arg>numeric</arg></p>
+<optdesc>
+<p>If set to a value > 0, only <opt>max_count</opt> messages will be retrieved.
+The default is 0.</p>
 </optdesc>
 </option>
 
@@ -104,8 +139,8 @@ stdin and from its stdout. Purpose is to tunnel ip traffic, eg. for ssl.</p>
 
 <section name = "Author">
 <p>masqmail was written by Oliver Kurth
-&lt;kurth@innominate.de&gt;</p><p>You will find the newest version of
-masqmail at <url href="http://www.innomininate.org/~oku/masqmail/"/> or search for it
+&lt;oku@masqmail.cx&gt;</p><p>You will find the newest version of
+masqmail at <url href="http://masqmail.cx/masqmail/"/> or search for it
 in freshmeat (<url href="http://www.freshmeat.net"/>). There is also a mailing list,
 you will find information about it at masqmails main site.</p>
 </section>
@@ -122,7 +157,7 @@ you will find information about it at masqmails main site.</p>
 
 <section name = "Comments">
 <p>This man page was written using <manref name="xml2man" section="1"
-href="http://www.innominate.org/~oku/xml2man/"/> by the same
+href="http://masqmail.cx/xml2man/"/> by the same
 author.</p>
 </section>
 

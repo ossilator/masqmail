@@ -1,0 +1,12 @@
+etc/masqmail
+usr/lib
+usr/sbin
+usr/bin
+var/log
+var/spool
+etc/logrotate.d
+etc/ppp/ip-up.d
+etc/ppp/ip-down.d
+etc/network/if-up.d
+etc/network/if-down.d
+usr/share/lintian/overrides

@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -160,7 +160,7 @@ gboolean parse_address_rfc822(gchar *string,
 	  if(*p == '('){
 	    if(!(p = skip_comment(p))){
 	      parse_error =
-		g_strdup_printf("missing right bracket ')'");
+		g_strdup("missing right bracket ')'");
 	      return FALSE;
 	    }
 	  }else
@@ -250,9 +250,9 @@ gboolean parse_address_rfc822(gchar *string,
 
     if(angle_brackets != 0){
       if(angle_brackets > 0)
-	parse_error = g_strdup_printf("missing '>' at end of string");
+	parse_error = g_strdup("missing '>' at end of string");
       else
-	parse_error = g_strdup_printf("superfluous '>' at end of string");
+	parse_error = g_strdup("superfluous '>' at end of string");
       return FALSE;
     }else{
       /* we successfully parsed the address */
@@ -316,10 +316,11 @@ gboolean parse_address_rfc821(gchar *string,
 	  break;
 	}else{
 	  parse_error =
-	    g_strdup_printf("unexpected character after local part");
+	      g_strdup_printf("unexpected character after local part '%c'",*p);
 	  return FALSE;
 	}
-      }
+      } else
+         return FALSE;
     }
 
     /* trailing spaces and angle brackets */
@@ -335,9 +336,9 @@ gboolean parse_address_rfc821(gchar *string,
 
     if(angle_brackets != 0){
       if(angle_brackets > 0)
-	parse_error = g_strdup_printf("missing '>' at end of string");
+	parse_error = g_strdup("missing '>' at end of string");
       else
-	parse_error = g_strdup_printf("superfluous '>' at end of string");
+	parse_error = g_strdup("superfluous '>' at end of string");
       return FALSE;
     }else{
       /* we successfully parsed the address */
@@ -361,47 +362,51 @@ address *_create_address(gchar *string, gchar **end, gboolean is_rfc821)
 {
   gchar *loc_beg, *loc_end;
   gchar *dom_beg, *dom_end;
-  gchar *adr_end;
+  gchar *addr_end;
 
   if(is_rfc821 ?
      parse_address_rfc821(string,
-			  &loc_beg, &loc_end, &dom_beg, &dom_end, &adr_end) :
+			  &loc_beg, &loc_end, &dom_beg, &dom_end, &addr_end) :
      parse_address_rfc822(string,
-			  &loc_beg, &loc_end, &dom_beg, &dom_end, &adr_end)){
-    address *adr = g_malloc(sizeof(address));
-    gchar *p = adr_end;
+			  &loc_beg, &loc_end, &dom_beg, &dom_end, &addr_end)){
+    address *addr = g_malloc(sizeof(address));
+    gchar *p = addr_end;
+    
+
+    memset(addr, 0, sizeof(address));
 
     if(loc_beg[0] == '|'){
-      parse_error = g_strdup_printf("no pipe allowed for RFC 822/821 address");
+      parse_error = g_strdup("no pipe allowed for RFC 822/821 address");
       return NULL;
     }
 
     while(*p && (*p != ',')) p++;
-    adr->address = g_strndup(string, p - string);
+    addr->address = g_strndup(string, p - string);
 
-    adr->local_part = g_strndup(loc_beg, loc_end - loc_beg);
+    addr->local_part = g_strndup(loc_beg, loc_end - loc_beg);
 
 #ifdef PARSE_TEST
-    g_print("adr->local_part = %s\n", adr->local_part);
+    g_print("addr->local_part = %s\n", addr->local_part);
 #endif
 
     if(dom_beg != NULL){
-      adr->domain = g_strndup(dom_beg, dom_end - dom_beg);
-    }else
-      adr->domain = NULL;
+      addr->domain = g_strndup(dom_beg, dom_end - dom_beg);
+    }else{
+      if(addr->local_part[0] == 0)
+	addr->domain = g_strdup(""); /* 'NULL' address (failure notice),
+		      "" makes sure it will not be qualified with a hostname */
+      else
+	addr->domain = NULL;
+    }
 
     if(end != NULL)
       *end = p;
 
 #ifndef PARSE_TEST
-    adr_unmark_delivered(adr);
+    addr_unmark_delivered(addr);
 #endif
 
-    adr->children = NULL;
-    adr->parent = NULL;
-    adr->flags = 0;
-
-    return adr;
+    return addr;
   }
   return NULL;
 }
@@ -414,23 +419,23 @@ address *create_address_rfc821(gchar *string, gchar **end){
   return _create_address(string, end, TRUE);
 }
 
-GList *adr_list_append_rfc822(GList *adr_list, gchar *string, gchar *domain)
+GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain)
 {
   gchar *p = string;
   gchar *end;
 
   while(*p){
-    address *adr = _create_address(p, &end, FALSE);
-    if(adr){
+    address *addr = _create_address(p, &end, FALSE);
+    if(addr){
       if(domain)
-	if(adr->domain == NULL)
-	  adr->domain = g_strdup(domain);
+	if(addr->domain == NULL)
+	  addr->domain = g_strdup(domain);
 
-      adr_list = g_list_append(adr_list, adr);
+      addr_list = g_list_append(addr_list, addr);
       p = end;
     }else
       break;
     while(*p == ',' || isspace(*p)) p++;
   }
-  return adr_list;
+  return addr_list;
 }

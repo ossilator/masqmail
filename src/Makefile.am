@@ -3,20 +3,26 @@ SUBDIRS=base64 md5 libident
 CFLAGS=@CFLAGS@ @GLIB_CFLAGS@ -D_GNU_SOURCE
 
 sbin_PROGRAMS=masqmail
-noinst_PROGRAMS=smtpsend expandtest readtest
+bin_PROGRAMS=mservdetect
+noinst_PROGRAMS=smtpsend readtest
 
 masqmail_SOURCES=\
+	dotlock.h\
 	masqmail.h\
 	readsock.h\
 	smtp_out.h\
 	lookup.h\
+	mserver.h\
 	accept.c\
+	address.c\
 	alias.c\
 	child.c\
 	connect.c\
 	conf.c\
 	deliver.c\
+	dotlock.c\
 	expand.c\
+	fail_msg.c\
 	get.c\
 	header.c\
 	interface.c\
@@ -50,6 +56,7 @@ smtpsend_SOURCES=\
 	smtp_out.h\
 	lookup.h\
 	accept.c\
+	address.c\
 	child.c\
 	connect.c\
 	header.c\
@@ -57,13 +64,19 @@ smtpsend_SOURCES=\
 	lookup.c\
 	message.c\
 	parse.c\
+	peopen.c\
 	readsock.c\
 	smtp_out.c
 
-expandtest_SOURCES=\
-	expandtest.c\
-	expand.c\
-	tables.c
+mservdetect_SOURCES=\
+	masqmail.h\
+	readsock.h\
+	mserver.h\
+	mservdetect.c\
+	interface.c\
+	mserver.c\
+	readsock.c\
+	peopen.c
 
 readtest_SOURCES=\
 	readsock.c\
@@ -72,5 +85,5 @@ readtest_SOURCES=\
 
 masqmail_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@ @LOCKFILE_LIBS@ @MD5_LIBS@ @BASE64_LIBS@ @IDENT_LIBS@
 smtpsend_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@ @MD5_LIBS@ @BASE64_LIBS@
-expandtest_LDADD=@GLIB_LIBS@
+mservdetect_LDADD=@GLIB_LIBS@
 readtest_LDADD=@GLIB_LIBS@

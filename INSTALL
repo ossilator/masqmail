@@ -20,9 +20,15 @@ make
 make install
 
 Debian:
-If you compile for Debian, do the configure with at least these options, this makes it compatible with the official debian package:
-./configure --with-liblockfile --with-group=mail --with-conffile=/etc/masqmail/masqmail.conf --with-logdir=/var/log/masqmail/
+If you compile for Debian, do the configure with at least these options,
+this makes it compatible with the official debian package:
+./configure --with-liblockfile --with-group=mail
 you do not need the group 'trusted', use 'mail' instead.
+
+You can also build your own Debian package with dpkg-buildpackage -rfakeroot.
+
+SuSE/Redhat:
+There are spec files for rpm creation in suse/ or redhat/. You may have to adjust these files.
 
 
 Sorry, but after that you are not yet finished. For instruction on how
@@ -46,16 +52,48 @@ files. It will be created if it does not exist. Default is /var/masqmail/.
 spool files. It will be created if it does not exist. Default is
 /var/spool/masqmail/.
 
---with-conffile=CONFFILE sets the default configuration file to
-CONFFILE, in case you prefer another location than /etc/masqmail.conf
+--with-confdir=CONFDIR sets the default configuration directory to
+CONFDIR, in case you prefer another location than /etc/masqmail/.
 
 --enable-auth enables ESMTP AUTH support (disabled by default)
 
 --disable-pop3 disables pop3 support (enabled by default)
 
+--enable-maildir enables qmail style Maildir support (disabled by default)
+
 --enable-ident enable RFC 1413 support. If you have the libident
 dynamic library installed, this will be linked, otherwise it will be
 statically linked using the sources included in the package.
+
+--disable-resolver disable resolver support. Without the resolver functions,
+masqmail uses only gethostbyname() to resolve DNS names, and you cannot send
+mail without a smart host. Not recommended. You save 3K at most.
+
+--disable-smtp-server disable SMTP server support. You may want this if you do
+not need masqmail to listen. In this case, you cannot use masqmail as a smart
+host for other hosts on your LAN, you cannot use mail clients that send SMTP,
+you cannot even use pine. In short, use of this option is discouraged unless
+your resources are extremely limited.
+
+--enable-mserver enable online detection by connecting to the mserver
+(masqdialer system).
+
+--with-libcryto instead of using the md5 and hmac functions within the package,
+link dynamically with libcrypto. This applies only if you have pop3 or SMTP
+AUTH enabled. Makes only sense if your resources are limited and you have
+libcrypto installed. Untested.
+
+--with-glib-static link with glib statically. This makes the binary larger
+by around 30K (i386 architecture), but if masqmail is the only binary using
+glib, you save some space in total, because you do not need the shared glib
+library installed.
+
+--disable-debug disable debugging, setting it on by command line or configuration
+has no effect. Strongly discouraged, since you miss valuable information if something
+goes wrong. You save 6K.
+
+BTW, to get 3K of space, call
+strip --remove-section=.comment --remove-section=.note --strip-unneeded src/masqmail
 
 after make install:
 -------------------
@@ -73,6 +111,7 @@ should give output similar to
 drwxr-xr-x   2 mail     trusted      1024 Oct 14 14:29 /var/masqmail/
 drwxr-xr-x   3 mail     trusted      1024 Oct 14 14:27 /var/spool/masqmail
 drwxr-xr-x   2 mail     trusted      1024 Oct 14 18:32 /var/spool/masqmail/input
+drwxr-xr-x   2 mail     trusted      1024 Oct 14 18:32 /var/spool/masqmail/lock
 drwxr-xr-x   2 mail     trusted      1024 Oct 14 18:32 /var/spool/masqmail/popuidl
 
 (important is the set-user-id bit for /usr/sbin/masqmail and the

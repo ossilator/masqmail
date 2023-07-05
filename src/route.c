@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,20 +18,6 @@
 
 #include "masqmail.h"
 #include <fnmatch.h>
-
-route_file_list *find_route_file_list(GList *list, gchar *name)
-{
-  GList *node;
-  route_file_list *r_list = NULL;
-  
-  foreach(list, node){
-    r_list = (route_file_list *)(node->data);
-    
-    if(strcmp(name, r_list->name) == 0)
-      return r_list;
-  }
-  return NULL;
-}
 
 msgout_perhost *create_msgout_perhost(gchar *host)
 {
@@ -94,11 +80,11 @@ void rewrite_headers(msg_out *msgout, connect_route *route)
 	  DEBUG(5) debugf("setting From: domain to %s\n",
 			  route->set_h_from_domain);
 	  set_address_header_domain(new_hdr, route->set_h_from_domain);
-	hdr_node->data = new_hdr;
-	/* we need this list only to carefully free the extra headers: */
-	DEBUG(6) debugf("header = %s\n",
-			new_hdr->header);
-	msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
+	  hdr_node->data = new_hdr;
+	  /* we need this list only to carefully free the extra headers: */
+	  DEBUG(6) debugf("header = %s\n",
+			  new_hdr->header);
+	  msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
 	}
       }
     }
@@ -135,6 +121,24 @@ void rewrite_headers(msg_out *msgout, connect_route *route)
 	  /* we need this list only to carefully free the extra headers: */
 	  msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
 	}
+      }
+    }
+  }
+
+  /* map Mail-Followup-To addresses */
+  if(route->map_h_mail_followup_to_addresses != NULL){
+    GList *hdr_node;
+    foreach(msgout->hdr_list, hdr_node){
+      header *hdr = (header *)(hdr_node->data);
+      if(strncasecmp(hdr->header, "Mail-Followup-To", 16) == 0){
+	header *new_hdr = copy_header(hdr);
+	if(map_address_header(new_hdr, route->map_h_mail_followup_to_addresses)){
+	  hdr_node->data = new_hdr;
+	  /* we need this list only to carefully free the extra headers: */
+	  msgout->xtra_hdr_list =
+	    g_list_append(msgout->xtra_hdr_list, new_hdr);
+	}else
+	  g_free(new_hdr);
       }
     }
   }
@@ -209,6 +213,51 @@ void rcptlist_with_one_of_hostlist(GList *rcpt_list, GList *host_list,
     }
 
   }
+}
+
+void rcptlist_with_addr_is_local(GList *rcpt_list,
+				 GList **p_rcpt_list, GList **p_non_rcpt_list)
+{
+  GList *rcpt_node;
+
+  if(rcpt_list == NULL)
+    return;
+
+  foreach(rcpt_list, rcpt_node){
+    address *rcpt = (address *)(rcpt_node->data);
+    if(addr_is_local(rcpt)){
+      if(p_rcpt_list)
+	*p_rcpt_list = g_list_append(*p_rcpt_list, rcpt);
+    }else{
+      if(p_non_rcpt_list)
+	*p_non_rcpt_list = g_list_append(*p_non_rcpt_list, rcpt);
+    }
+
+  }
+}
+
+static gint _g_list_addrcmp(gconstpointer a, gconstpointer b)
+{
+  return addr_match((address *)a, (address *)b);
+}
+
+gboolean route_is_allowed_return_path(connect_route *route, address *ret_path)
+{
+  if(route->not_allowed_return_paths != NULL){
+    if(g_list_find_custom(route->not_allowed_return_paths, ret_path,
+			  _g_list_addrcmp) != NULL){
+      return FALSE;
+    }
+  }
+  if(route->allowed_return_paths != NULL){
+    if(g_list_find_custom(route->allowed_return_paths, ret_path,
+			  _g_list_addrcmp) != NULL){
+      return TRUE;
+    }else{
+      return FALSE;
+    }
+  }
+  return TRUE;
 }
 
 static gint _g_list_strcmp(gconstpointer a, gconstpointer b)

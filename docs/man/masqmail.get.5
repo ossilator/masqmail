@@ -35,9 +35,16 @@ Your login name.
 Your password.
 .TP
 
-\fBaddress\f1 = \fIstring\f1
+\fBaddress\f1 = \fIaddress\f1
 
 The address where the retrieved mail should be sent to. It can be any address, but you probably want to set this to a local address on your LAN.
+.TP
+
+\fBreturn_path\f1 = \fIaddress\f1
+
+If set, masqmail sets the return path to this address. Bounces generated during further delivery will be sent to this address. If unset, masqmail looks for the Return-Path: header in the mail, if this does not exist it uses the From: address and if this fails, postmaster will be used.
+
+It is in most cases not useful to set this to the same address as the 'address' option as this may generate multiple bounces. postmaster is recommended.
 .TP
 
 \fBdo_keep\f1 = \fIboolean\f1
@@ -50,9 +57,19 @@ If you want to keep your mail on the server after you retrieved it, set this to 
 If set, MasqMail keeps a list of unique IDs of mails already fetched, so that they will not be retrieved again. Default is false.
 .TP
 
+\fBdo_uidl_dele\f1 = \fIboolean\f1
+
+If set, and \fBdo_uidl\f1 is also set, MasqMail sends a delete (DELE) command to the server for each message uid in the uid listing at the beginning of the session. This prevents mail to be left on the server if masqmail gets interrupted during a session before it can send the QUIT command to the server. Default is false.
+.TP
+
 \fBmax_size\f1 = \fInumeric\f1
 
 If set to a value > 0, only messages smaller than this in bytes will be retrieved. The default is 0.
+.TP
+
+\fBmax_count\f1 = \fInumeric\f1
+
+If set to a value > 0, only \fBmax_count\f1 messages will be retrieved. The default is 0.
 .TP
 
 \fBwrapper\f1 = \fIcommand\f1
@@ -64,9 +81,9 @@ Example for ssl tunneling:
 wrapper="/usr/bin/openssl s_client -quiet -connect pop.gmx.net:995 2>/dev/null"
 .SH AUTHOR
 
-masqmail was written by Oliver Kurth <kurth@innominate.de>
+masqmail was written by Oliver Kurth <oku@masqmail.cx>
 
-You will find the newest version of masqmail at \fBhttp://www.innomininate.org/~oku/masqmail/\f1 or search for it in freshmeat (\fBhttp://www.freshmeat.net\f1). There is also a mailing list, you will find information about it at masqmails main site.
+You will find the newest version of masqmail at \fBhttp://masqmail.cx/masqmail/\f1 or search for it in freshmeat (\fBhttp://www.freshmeat.net\f1). There is also a mailing list, you will find information about it at masqmails main site.
 
 .SH BUGS
 

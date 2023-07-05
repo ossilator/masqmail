@@ -44,7 +44,7 @@ gboolean is_privileged_user(uid_t uid)
   return (uid == 0) || (uid == conf.mail_uid) || (is_ingroup(uid, conf.mail_gid));
 }
 
-void set_euidgid(gint uid, gint gid, gint *old_uid, gint *old_gid)
+void set_euidgid(gint uid, gint gid, uid_t *old_uid, gid_t *old_gid)
 {
   if(old_uid) *old_uid = geteuid();
   if(old_gid) *old_gid = getegid();

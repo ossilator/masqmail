@@ -1,0 +1,38 @@
+
+MasqMail for Debian
+-------------------
+
+This is the Debian package of my MasqMail MTA.
+
+masqmail is an MTA specially designed for hosts with intermittent
+internet connections, i.e. hosts (or networks) at home or notebooks. It has
+special support for changing providers. It works both for sending mail
+(replacing exim, sendmail, postfix or qmail) and receiving mail (replacing
+fetchmail, but it also works in conjunction with fetchmail).
+
+Special support for 'changing providers' means individual configurations
+depending on the current connection to the internet and rewriting of sender
+addresses.
+
+It has been compiled with the options:
+                --prefix=/usr --mandir='$${prefix}/share/man' \
+                --with-logdir=/var/log/masqmail \
+                --with-spooldir=/var/spool/masqmail \
+                --with-user=mail --with-group=mail \
+                --with-confdir=/etc/masqmail \
+                --with-liblockfile \
+                --enable-auth \
+                --enable-ident \
+                --enable-maildir
+
+i.e. with ESMTP AUTH support, with ident support and with Maildir support.
+
+You will find all information necessary to configure masqmail in the man
+pages masqmail (8), masqmail.conf (5), masqmail.route (5), masqmail.get (5)
+and masqmail.aliases (5). Its configuration files live in the directory
+/etc/masqmail/ and in /etc/aliases.
+
+For more information about masqmail see
+http://masqmail.cx/masqmail
+
+Oliver Kurth <oku@masqmail.cx> Tue, 16 Apr 2002 13:44:18 +0200

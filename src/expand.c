@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 2000 Oliver Kurth
+    Copyright (C) 2000-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,10 +20,52 @@
 
 #define MAX_VAR 50
 
+GList *var_table_rcpt(GList *var_table, address *rcpt)
+{
+    gchar *tmp_str;
+    
+    var_table = g_list_prepend(var_table, create_pair_string("rcpt_local", rcpt->local_part));
+    var_table = g_list_prepend(var_table, create_pair_string("rcpt_domain", rcpt->domain));
+    
+    tmp_str = g_strdup_printf("%s@%s", rcpt->local_part, rcpt->domain);
+    var_table = g_list_prepend(var_table, create_pair_string("rcpt", tmp_str));
+    g_free(tmp_str);
+
+    return var_table;
+}
+
+GList *var_table_msg(GList *var_table, message *msg)
+{
+    address *ret_path = msg->return_path;
+    gchar *tmp_str;
+    
+    var_table = g_list_prepend(var_table, create_pair_string("uid", msg->uid));
+    var_table = g_list_prepend(var_table, create_pair_string("received_host",
+							    msg->received_host ? msg->received_host : ""));
+    var_table = g_list_prepend(var_table, create_pair_string("ident", msg->ident ? msg->ident : ""));
+    var_table = g_list_prepend(var_table, create_pair_string("return_path_local", ret_path->local_part));
+    var_table = g_list_prepend(var_table, create_pair_string("return_path_domain", ret_path->domain));
+    
+    tmp_str = g_strdup_printf("%s@%s", ret_path->local_part, ret_path->domain);
+    var_table = g_list_prepend(var_table, create_pair_string("return_path", tmp_str));
+    g_free(tmp_str);
+
+    return var_table;
+}
+
+GList *var_table_conf(GList *var_table)
+{
+    var_table = g_list_prepend(var_table, create_pair_string("host_name", conf.host_name));
+    var_table = g_list_prepend(var_table, create_pair_string("package", PACKAGE));
+    var_table = g_list_prepend(var_table, create_pair_string("version", VERSION));
+
+    return var_table;
+}
+
 gint expand(GList *var_list, gchar *format, gchar *result, gint result_len)
 {
   gchar *p = format, *q = result;
-  gchar *var = NULL, *vq;
+  gchar *vq;
   gint i = 0;
   gboolean escape = FALSE;
 

@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999/2000 Oliver Kurth
+    Copyright (C) 1999/2000/2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,45 +18,19 @@
 
 #include "masqmail.h"
 #include "readsock.h"
+#include "mserver.h"
 
-#if 0
-static
-int read_sockline(FILE *in, gchar *buf, int buf_len, int timeout)
-{
-  gint p = 0, len;
-  gint c;
+#ifdef ENABLE_MSERVER
 
-  /*alarm(timeout);*/
-
-  while(isspace(c = getc(in))); ungetc(c, in);
-
-  while((c = getc(in)) != '\n' && (c != EOF)){
-    if(p >= buf_len-1) { alarm(0); return 0; }
-    buf[p++] = c;
-  }
-  /*alarm(0);*/
-  if(c == EOF){
-    return 0;
-  }
-  buf[p] = '\n';
-  len = p+1;
-  buf[len] = 0;
-
-  DEBUG(4) debugf("<<< %s", buf);
-
-  return len;
-}
-#endif
-
-gchar *mserver_detect_online()
+gchar *mserver_detect_online(interface *iface)
 {
   struct sockaddr_in saddr;
   gchar *ret = NULL;
 
-  if(init_sockaddr(&saddr, conf.mserver_iface)){
+  if(init_sockaddr(&saddr, iface)){
     int sock = socket(PF_INET, SOCK_STREAM, 0);
     int dup_sock;
-    if(connect(sock, &saddr, sizeof(saddr)) == 0){
+    if(connect(sock, (struct sockaddr *)(&saddr), sizeof(saddr)) == 0){
       FILE *in, *out;
       char buf[256];
 
@@ -67,10 +41,8 @@ gchar *mserver_detect_online()
       if(read_sockline(in, buf, 256, 15, READSOCKL_CHUG)){
 	if(strncmp(buf, "READY", 5) == 0){
 	  fprintf(out, "STAT\n"); fflush(out);
-	  DEBUG(5) debugf(">>> STAT\n");
 	  if(read_sockline(in, buf, 256, 15, READSOCKL_CHUG)){
 	    if(strncmp(buf, "DOWN", 4) == 0){
-	      DEBUG(1) debugf("no connection.\n");
 	      ret = NULL;
 	    }else if(strncmp(buf, "UP", 2) == 0){
 	      gchar *p = buf+3;
@@ -78,10 +50,8 @@ gchar *mserver_detect_online()
 	      if(*p){
 		*p = 0;
 		p++;
-		if((atoi(p) > 0) && *p)
+		if((atoi(p) >= 0) && *p)
 		  ret = g_strdup(buf+3);
-		else
-		  DEBUG(1) debugf("mserver connection to %s pending\n", buf+3);
 	      }else
 		logwrite(LOG_ALERT,
 			 "unexpected response from mserver after STAT cmd: %s",
@@ -104,3 +74,5 @@ gchar *mserver_detect_online()
   }
   return ret;
 }
+
+#endif

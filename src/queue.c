@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999/2000 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -156,8 +156,8 @@ void queue_list()
       if(msg->ident != NULL)
 	ident_str = g_strdup_printf(" ident=%s", msg->ident);
 
-      printf("%s <= <%s@%s>%s%s%s%s\n", msg->uid,
-	     msg->return_path->local_part, msg->return_path->domain,
+      printf("%s <= %s%s%s%s%s\n", msg->uid,
+	     addr_string(msg->return_path),
 	     size_str ? size_str : "",
 	     time_str ? time_str : "",
 	     host_str ? host_str : "",
@@ -172,9 +172,9 @@ void queue_list()
       foreach(msg->rcpt_list, rcpt_node){
 	address *rcpt = (address *)(rcpt_node->data);
       
-	printf("              %s <%s@%s>\n",
-	       adr_is_delivered(rcpt) ? "=>" : "==",
-	       rcpt->local_part, rcpt->domain);
+	printf("              %s %s\n",
+	       addr_is_delivered(rcpt) ? "=>" : (addr_is_failed(rcpt) ? "!=" : "=="),
+	       addr_string(rcpt));
       }
       g_free(msg);
     }

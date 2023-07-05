@@ -16,22 +16,33 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "masqmail.h"
+/*#include "masqmail.h"*/
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <setjmp.h>
 #include "readsock.h"
 
-volatile int _timeout_seen = 0;
+jmp_buf jmp_timeout;
 
 static
 void sig_timeout_handler(int sig)
 {
-  _timeout_seen = 1;
+  longjmp(jmp_timeout, 1);
 }
+
+static struct sigaction old_sa_alrm;
 
 static
 void alarm_on(int timeout)
 {
-  _timeout_seen = 0;
-  signal(SIGALRM, sig_timeout_handler);
+  struct sigaction sa;
+
+  sa.sa_handler = sig_timeout_handler;
+  sigemptyset(&(sa.sa_mask));
+  sa.sa_flags = 0;
+  sigaction(SIGALRM, &sa, &old_sa_alrm);
+
   if(timeout > 0)
     alarm(timeout);
 }
@@ -40,7 +51,8 @@ static
 void alarm_off()
 {
   alarm(0);
-  signal(SIGALRM, SIG_DFL);
+
+  sigaction(SIGALRM, &old_sa_alrm, NULL);
 }
 
 static
@@ -48,8 +60,8 @@ void _read_chug(FILE *in)
 {
   int c = 0;
 
-  c = getc(in);
-  while(isspace(c) && !_timeout_seen && (c != EOF)) c = getc(in);
+  c = fgetc(in);
+  while(isspace(c) && (c != EOF)) c = fgetc(in);
   ungetc(c, in);
 }
 
@@ -59,10 +71,10 @@ int _read_line(FILE *in, char *buf, int buf_len, int timeout)
   int p = 0;
   int c = 0;
 
-  c = getc(in);
-  while((c != '\n') && (c != EOF) && (p < buf_len-1) && !_timeout_seen){
+  c = fgetc(in);
+  while((c != '\n') && (c != EOF) && (p < buf_len-1)){
     buf[p++] = c;
-    c = getc(in);
+    c = fgetc(in);
   }
 
   buf[p] = 0;
@@ -73,8 +85,6 @@ int _read_line(FILE *in, char *buf, int buf_len, int timeout)
     ungetc(c, in);
     return -2;
   }
-  else if(_timeout_seen)
-    return -3;
 
   buf[p++] = c; /* \n */
   buf[p] = 0;
@@ -85,6 +95,11 @@ int _read_line(FILE *in, char *buf, int buf_len, int timeout)
 int read_sockline(FILE *in, char *buf, int buf_len, int timeout, unsigned int flags)
 {
   int p = 0;
+
+  if(setjmp(jmp_timeout) != 0){
+    alarm_off();
+    return -3;
+  }
 
   alarm_on(timeout);
 
@@ -115,6 +130,11 @@ int read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout, unsigned in
   int p = 0, size = *buf_len;
   char *buf;
 
+  if(setjmp(jmp_timeout) != 0){
+    alarm_off();
+    return -3;
+  }
+
   alarm_on(timeout);
 
   /* strip leading spaces */
@@ -122,7 +142,7 @@ int read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout, unsigned in
     _read_chug(in);
   }
 
-  if(!*pbuf) *pbuf = g_malloc(size);
+  if(!*pbuf) *pbuf = malloc(size);
   buf = *pbuf;
   
   while(1){
@@ -130,7 +150,7 @@ int read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout, unsigned in
 
     pp = _read_line(in, buf, size, timeout);
     if(pp == -2){
-      *pbuf = g_realloc(*pbuf, *buf_len + size);
+      *pbuf = realloc(*pbuf, *buf_len + size);
       buf = *pbuf + *buf_len;
       *buf_len += size;
       p += size;

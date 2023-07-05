@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999-2001 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,7 +46,14 @@ gchar *string_base62(gchar *res, guint value, gchar len)
 
 static gint _g_list_addr_isequal(gconstpointer a, gconstpointer b)
 {
-  return addr_isequal((address *)a, (address *)b);
+  address *addr1 = (address *)a;
+  address *addr2 = (address *)b;
+  int ret;
+
+  if((ret = strcasecmp(addr1->domain, addr2->domain)) == 0)
+    return strcmp(addr1->local_part, addr2->local_part);
+  else
+    return ret;
 }
 
 /* accept message from anywhere.
@@ -60,28 +67,16 @@ static gint _g_list_addr_isequal(gconstpointer a, gconstpointer b)
 accept_error accept_message_stream(FILE *in, message *msg, guint flags)
 {
   gchar *line, *line1;
-  int line_size = MAX_DATALINE+1;
+  int line_size = MAX_DATALINE;
   gboolean in_headers = TRUE;
   header *hdr = NULL;
-  prot_id prot = msg->received_prot;
-  time_t rec_time = time(NULL);
   gint line_cnt = 0, data_size = 0;
-
-  /* create unique message id */
-  msg->uid = g_malloc(14);
-
-  string_base62(msg->uid, rec_time, 6);
-  msg->uid[6] = '-';
-  string_base62(&(msg->uid[7]), getpid(), 3);
-  msg->uid[10] = '-';
-  string_base62(&(msg->uid[11]), msg->transfer_id, 2);
-  msg->uid[13] = 0;
 
   line = g_malloc(line_size);
   line[0] = 0;
 
   while(TRUE){
-    int len = read_sockline1(in, &line, &line_size-1, 5*60, READSOCKL_CVT_CRLF);
+    int len = read_sockline1(in, &line, &line_size, 5*60, READSOCKL_CVT_CRLF);
 
     line1 = line;
 
@@ -125,6 +120,12 @@ accept_error accept_message_stream(FILE *in, message *msg, guint flags)
     }
     else{
       if(in_headers){
+
+	/* some pop servers send the 'From ' line, skip it: */
+	if(msg->hdr_list == NULL)
+	  if(strncmp(line1, "From ", 5) == 0)
+	    continue;
+
 	if(line1[0] == ' ' || line1[0] == '\t'){
 	  /* continuation of 'folded' header: */
 	  if(hdr){
@@ -154,7 +155,11 @@ accept_error accept_message_stream(FILE *in, message *msg, guint flags)
     }
   }
 
-  msg->data_list = g_list_reverse(msg->data_list);
+  if(msg->data_list != NULL)
+    msg->data_list = g_list_reverse(msg->data_list);
+  else
+    /* make sure data list is not NULL: */
+    msg->data_list = g_list_append(NULL, g_strdup(""));
 
   DEBUG(4) debugf("received %d lines of data (%d bytes)\n",
 		  line_cnt, data_size);
@@ -171,8 +176,19 @@ accept_error accept_message_prepare(message *msg, guint flags)
 {
   struct passwd *passwd = NULL;
   GList *non_rcpt_list = NULL;
+  time_t rec_time = time(NULL);
 
   DEBUG(5) debugf("accept_message_prepare()\n");
+
+  /* create unique message id */
+  msg->uid = g_malloc(14);
+
+  string_base62(msg->uid, rec_time, 6);
+  msg->uid[6] = '-';
+  string_base62(&(msg->uid[7]), getpid(), 3);
+  msg->uid[10] = '-';
+  string_base62(&(msg->uid[11]), msg->transfer_id, 2);
+  msg->uid[13] = 0;
 
   /* if local, get password entry */
   if(msg->received_host == NULL){
@@ -234,7 +250,7 @@ accept_error accept_message_prepare(message *msg, guint flags)
 	  DEBUG(5) debugf("hdr->value = %s\n", hdr->value);
 	  if(hdr->value){
 	    msg->rcpt_list =
-	      adr_list_append_rfc822(msg->rcpt_list, hdr->value, conf.host_name);
+	      addr_list_append_rfc822(msg->rcpt_list, hdr->value, conf.host_name);
 	  }
 	}
 	if((flags & ACC_DEL_BCC) && (hdr->id == HEAD_BCC)){
@@ -246,6 +262,13 @@ accept_error accept_message_prepare(message *msg, guint flags)
 	  has_to_or_cc = TRUE;
 	break;
       case HEAD_ENVELOPE_TO:
+	if(flags & ACC_SAVE_ENVELOPE_TO){
+	  DEBUG(3) debugf("creating 'X-Orig-Envelope-To' header\n");
+	  msg->hdr_list =
+	    g_list_prepend(msg->hdr_list,
+			  create_header(HEAD_UNKNOWN,
+					"X-Orig-Envelope-to: %s", hdr->value));
+	}
 	DEBUG(3) debugf("removing 'Envelope-To' header\n");
 	msg->hdr_list = g_list_remove_link(msg->hdr_list, hdr_node);
 	g_list_free_1(hdr_node);
@@ -255,8 +278,8 @@ accept_error accept_message_prepare(message *msg, guint flags)
 	if(flags & ACC_MAIL_FROM_HEAD){
 	  /* usually POP3 accept */
 	  msg->return_path = create_address_qualified(hdr->value, TRUE, msg->received_host);
-	  DEBUG(3) debugf("setting return_path to %s@%s\n",
-			  msg->return_path->local_part, msg->return_path->domain);
+	  DEBUG(3) debugf("setting return_path to %s\n",
+			  addr_string(msg->return_path));
 	}
 	DEBUG(3) debugf("removing 'Return-Path' header\n");
 	msg->hdr_list = g_list_remove_link(msg->hdr_list, hdr_node);
@@ -278,21 +301,18 @@ accept_error accept_message_prepare(message *msg, guint flags)
       if(!hdr_list) hdr_list = find_header(msg->hdr_list, HEAD_FROM, NULL);
       if(hdr_list){
 	hdr = (header *)(g_list_first(hdr_list)->data);
-	if(msg->return_path = create_address_qualified(hdr->value, FALSE, msg->received_host)){
-	  DEBUG(3) debugf("setting return_path to %s@%s\n",
-			  msg->return_path->local_part, msg->return_path->domain);
+	if((msg->return_path = create_address_qualified(hdr->value, FALSE, msg->received_host))){
+	  DEBUG(3) debugf("setting return_path to %s\n", addr_string(msg->return_path));
 	  msg->hdr_list =
 	    g_list_append(msg->hdr_list,
 			  create_header(HEAD_UNKNOWN,
 					"X-Warning: return path set from %s address\n",
 					hdr->id == HEAD_SENDER ? "Sender:" : "From:"));
-	}else
-	  DEBUG(1) debugf("From: or Sender: address is invalid.\n");
+	}
       }
       if(msg->return_path == NULL){ /* no Sender: or From: or create_address_qualified failed */
 	msg->return_path = create_address_qualified("postmaster", TRUE, conf.host_name);
-	DEBUG(3) debugf("setting return_path to %s@%s\n",
-			msg->return_path->local_part, msg->return_path->domain);
+	DEBUG(3) debugf("setting return_path to %s\n", addr_string(msg->return_path));
 	msg->hdr_list =
 	  g_list_append(msg->hdr_list,
 			create_header(HEAD_UNKNOWN,
@@ -302,18 +322,16 @@ accept_error accept_message_prepare(message *msg, guint flags)
 
     if(flags & ACC_DEL_RCPTS){
       GList *rcpt_node;
-      for(rcpt_node = g_list_first(non_rcpt_list);
-	  rcpt_node;
-	  rcpt_node = g_list_next(rcpt_node)){
+      foreach(non_rcpt_list, rcpt_node){
 	address *rcpt = (address *)(rcpt_node->data);
 	GList *node;
 	if((node = g_list_find_custom(msg->rcpt_list, rcpt,
 				     _g_list_addr_isequal))){
+	  DEBUG(3) debugf("removing rcpt address %s\n", addr_string(node->data));
+
 	  msg->rcpt_list = g_list_remove_link(msg->rcpt_list, node);
-	  g_list_free_1(node);
-	  DEBUG(3) debugf("removing rcpt address %s\n",
-			  ((address *)(node->data))->address);
 	  destroy_address((address *)(node->data));
+	  g_list_free_1(node);
 	}
       }
     }
@@ -344,11 +362,9 @@ accept_error accept_message_prepare(message *msg, guint flags)
       for(node = g_list_first(msg->rcpt_list);
 	  node;
 	  node = g_list_next(node)){
-	address *rcpt = (address *)(node->data);
 	msg->hdr_list =
 	  g_list_append(msg->hdr_list,
-			create_header(HEAD_TO, "To: <%s@%s>\n",
-				      rcpt->local_part, rcpt->domain));
+			create_header(HEAD_TO, "To: %s\n", addr_string(msg->return_path)));
       }
     }
     if((flags & ACC_DEL_BCC) && !has_to_or_cc){
@@ -382,8 +398,8 @@ accept_error accept_message_prepare(message *msg, guint flags)
     DEBUG(3) debugf("adding 'Received:' header\n");
 
     if(g_list_length(msg->rcpt_list) == 1){
-      address *adr = (address *)(g_list_first(msg->rcpt_list)->data);
-      for_string = g_strdup_printf(" for %s@%s", adr->local_part, adr->domain);
+      address *addr = (address *)(g_list_first(msg->rcpt_list)->data);
+      for_string = g_strdup_printf(" for %s", addr_string(addr));
     }
 
     if(msg->received_host == NULL){

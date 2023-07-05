@@ -21,24 +21,36 @@
 #include "pop3_in.h"
 #include "readsock.h"
 
+#include <sys/wait.h>
+#include <sys/stat.h>
+
+#ifdef USE_LIB_CRYPTO
+#include <openssl/md5.h>
+#else
 #include "md5/global.h"
 #include "md5/md5.h"
+#endif
 
 #ifdef ENABLE_POP3
+
+/* experimental feature */
+#define DO_WRITE_UIDL_EARLY 1
 
 static
 gchar *MD5String (char *string)
 {
   MD5_CTX context;
   unsigned char digest[16];
-  unsigned int len = strlen (string);
   char str_digest[33];
   int i;
 
-  MD5Init (&context);
-  MD5Update (&context, string, len);
-  MD5Final (digest, &context);
-
+#ifdef USE_LIB_CRYPTO
+  MD5(string, strlen(string), digest);
+#else
+  MD5Init(&context);
+  MD5Update(&context, string, strlen(string));
+  MD5Final(digest, &context);
+#endif
   for (i = 0;  i < 16;  i++) 
     sprintf(str_digest+2*i, "%02x", digest[i]);
 
@@ -51,40 +63,40 @@ pop3_base *create_pop3base(gint sock, guint flags)
   gint dup_sock;
 
   pop3_base *popb = (pop3_base *)g_malloc(sizeof(pop3_base));
+  if(popb){
+    memset(popb, 0, sizeof(pop3_base));
 
-  popb->list_uid_old = NULL;
-  popb->drop_list = NULL;
-  popb->error = pop3_ok;
-  popb->next_id = 0;
+    popb->error = pop3_ok;
 
-  popb->buffer = (gchar *)g_malloc(POP3_BUF_LEN);
+    popb->buffer = (gchar *)g_malloc(POP3_BUF_LEN);
 
-  dup_sock = dup(sock);
-  popb->out = fdopen(sock, "w");
-  popb->in = fdopen(dup_sock, "r");
-
-  popb->timestamp = NULL;
-
-  popb->flags = flags;
-
+    dup_sock = dup(sock);
+    popb->out = fdopen(sock, "w");
+    popb->in = fdopen(dup_sock, "r");
+    
+    popb->flags = flags;
+  }
   return popb;
 }
 
 static
 void pop3_printf(FILE *out, gchar *fmt, ...)
 {
-  gchar buf[256];
-  
   va_list args;
   va_start(args, fmt);
 
-  vsnprintf(buf, 255, fmt, args);
-
   DEBUG(4){
+    gchar buf[256];
+    va_list args_copy;
+
+    va_copy(args_copy, args);
+    vsnprintf(buf, 255, fmt, args_copy);
+    va_end(args_copy);
+
     debugf(">>>%s", buf);
   }
 
-  fprintf(out, "%s", buf);  fflush(out);
+  vfprintf(out, fmt, args);  fflush(out);
 
   va_end(args);
 }
@@ -92,11 +104,17 @@ void pop3_printf(FILE *out, gchar *fmt, ...)
 static
 gboolean find_uid(pop3_base *popb, gchar *str)
 {
-  GList *node;
+  GList *node, *node_next;
 
-  foreach(popb->list_uid_old, node){
+  for(node = popb->list_uid_old; node; node=node_next){
     gchar *uid = (gchar *)(node->data);
+    node_next = node->next;
     if(strcmp(uid, str) == 0){
+#if 1
+      popb->list_uid_old = g_list_remove_link(popb->list_uid_old, node);
+      g_list_free_1(node);
+      g_free(uid);
+#endif
       return TRUE;
     }
   }
@@ -111,18 +129,47 @@ gboolean write_uidl(pop3_base *popb, gchar *user)
   gchar *filename = g_strdup_printf("%s/popuidl/%s@%s",
 				    conf.spool_dir,
 				    user, popb->remote_host);
-  FILE *fptr = fopen(filename, "wt");
+  gchar *tmpname = g_strdup_printf("%s.tmp", filename);
+  FILE *fptr = fopen(tmpname, "wt");
 
   if(fptr){
     foreach(popb->drop_list, node){
       msg_info *info = (msg_info *)(node->data);
-      if(info->is_fetched)
+      if(info->is_fetched || info->is_in_uidl)
 	fprintf(fptr, "%s\n", info->uid);
     }
     fclose(fptr);
-    ok = TRUE;
+    ok = (rename(tmpname, filename) != -1);
   }
+  
+  g_free(tmpname);
   g_free(filename);
+  return ok;
+}
+
+static
+gboolean read_uidl_fname(pop3_base *popb, gchar *filename)
+{
+  gboolean ok = FALSE;
+  FILE *fptr = fopen(filename, "rt");
+  gchar buf[256];
+
+  if(fptr){
+    popb->list_uid_old = NULL;
+    while(fgets(buf, 255, fptr)){
+      if(buf[strlen(buf)-1] == '\n'){
+	g_strchomp(buf);
+	popb->list_uid_old =
+	  g_list_append(popb->list_uid_old, g_strdup(buf));
+      }else{
+	logwrite(LOG_ALERT, "broken uid: %s\n", buf);
+	break;
+      }
+    }
+    fclose(fptr);
+    ok = TRUE;
+  }else
+    logwrite(LOG_ALERT, "opening of %s failed: %s", filename, strerror(errno));
   return ok;
 }
 
@@ -130,24 +177,32 @@ static
 gboolean read_uidl(pop3_base *popb, gchar *user)
 {
   gboolean ok = FALSE;
-  gchar buf[256];
+  struct stat statbuf;
   gchar *filename = g_strdup_printf("%s/popuidl/%s@%s",
 				    conf.spool_dir,
 				    user, popb->remote_host);
-  FILE *fptr = fopen(filename, "rt");
 
-  if(fptr){
-    popb->list_uid_old = NULL;
-    while(fgets(buf, 255, fptr)){
-      g_strchomp(buf);
-      popb->list_uid_old =
-	g_list_append(popb->list_uid_old, g_strdup(buf));
+  if(stat(filename, &statbuf) == 0){
+    ok = read_uidl_fname(popb, filename);
+    if(ok){
+      GList *drop_node;
+      foreach(popb->drop_list, drop_node){
+	msg_info *info = (msg_info *)(drop_node->data);
+	if(find_uid(popb, info->uid)){
+	  DEBUG(5) debugf("msg with uid '%s' already known\n", info->uid);
+	  info->is_in_uidl = TRUE;
+	  popb->uidl_known_cnt++;
+	}else
+	  DEBUG(5) debugf("msg with uid '%s' not known\n", info->uid);
+      }
     }
-    fclose(fptr);
+  }else{
+    logwrite(LOG_DEBUG, "no uidl file '%s' found\n", filename);
     ok = TRUE;
   }
+
   g_free(filename);
-  return ok;
+  return ok; /* return code is irrelevant, do not check... */
 }
 
 static
@@ -251,6 +306,7 @@ gboolean get_drop_listing(pop3_base *popb)
 
 	    info->uid = NULL;
 	    info->is_fetched = FALSE;
+	    info->is_in_uidl = FALSE;
 	    popb->drop_list = g_list_append(popb->drop_list, info);
 	  }else{
 	    popb->error = pop3_syntax;
@@ -372,7 +428,7 @@ pop3_base *pop3_in_open(gchar *host, gint port, GList *resolve_list, guint flags
     DEBUG(5){
       struct sockaddr_in name;
       int len;
-      getsockname(sock, &name, &len);
+      getsockname(sock, (struct sockaddr *)(&name), &len);
       debugf("socket: name.sin_addr = %s\n", inet_ntoa(name.sin_addr));
     }
     return popb;
@@ -497,7 +553,9 @@ message *pop3_in_retr(pop3_base *popb, gint number, address *rcpt)
     msg->transfer_id = (popb->next_id)++;
     msg->rcpt_list = g_list_append(NULL, copy_address(rcpt));
 
-    if((err = accept_message(popb->in, msg, ACC_MAIL_FROM_HEAD)) == AERR_OK)
+    if((err = accept_message(popb->in, msg,
+			     ACC_MAIL_FROM_HEAD|(conf.do_save_envelope_to ? ACC_SAVE_ENVELOPE_TO : 0)))
+       == AERR_OK)
       return msg;
 
     destroy_message(msg);
@@ -527,100 +585,204 @@ gboolean pop3_in_quit(pop3_base *popb)
   return TRUE;
 }
 
+/* Send a DELE command for each message in (the old) uid listing.
+   This is to prevent mail from to be kept on server, if a previous
+   transaction was interupted. */
+gboolean pop3_in_uidl_dele(pop3_base *popb)
+{
+  GList *drop_node;
+
+  foreach(popb->drop_list, drop_node){
+    msg_info *info = (msg_info *)(drop_node->data);
+    /*    if(find_uid(popb, info->uid)){*/
+    if(info->is_in_uidl){
+      if(!pop3_in_dele(popb, info->number))
+	return FALSE;
+      /* TODO: it probably makes sense to also
+	 delete this uid from the listing */
+    }
+  }
+  return TRUE;
+}
+
 gboolean pop3_get(pop3_base *popb,
-		  gchar *user, gchar *pass, address *rcpt, gint max_size)
+		  gchar *user, gchar *pass, address *rcpt, address *return_path,
+		  gint max_count, gint max_size)
 {
   gboolean ok = FALSE;
+  gint num_children = 0;
   
   DEBUG(5) debugf("rcpt = %s@%s\n", rcpt->local_part, rcpt->domain);
 
-  signal(SIGCHLD, SIG_IGN);
+  signal(SIGCHLD, SIG_DFL);
 
   if(pop3_in_init(popb)){
     if(pop3_in_login(popb, user, pass)){
       if(pop3_in_stat(popb)){
 	if(popb->msg_cnt > 0){
 
-	  logwrite(LOG_NOTICE, "%d message(s) for user %s at %s\n", popb->msg_cnt, user, popb->remote_host);
+	  logwrite(LOG_NOTICE|LOG_VERBOSE, "%d message(s) for user %s at %s\n",
+		   popb->msg_cnt, user, popb->remote_host);
 
 	  if(pop3_in_list(popb)){
-	    /*	      if(pop3_in_uidl(popb) || (!(popb->flags & POP3_FLAG_UIDL))){*/
 	    gboolean do_get = !(popb->flags & POP3_FLAG_UIDL);
 	    if(!do_get) do_get = pop3_in_uidl(popb);
 	    if(do_get){
+	      gint count = 0;
 	      GList *drop_node;
 
-	      if(popb->flags & POP3_FLAG_UIDL) read_uidl(popb, user);
+	      if(popb->flags & POP3_FLAG_UIDL){
+		read_uidl(popb, user);
+		logwrite(LOG_VERBOSE|LOG_NOTICE, "%d message(s) already in uidl.\n",
+			 popb->uidl_known_cnt);
+	      }
+	      if((popb->flags & POP3_FLAG_UIDL) && (popb->flags & POP3_FLAG_UIDL_DELE))
+		pop3_in_uidl_dele(popb);
 
 	      foreach(popb->drop_list, drop_node){
 
 		msg_info *info = (msg_info *)(drop_node->data);
-		/*		  if(!find_uid(popb, info->uid) || (!(popb->flags & POP3_FLAG_UIDL))){*/
 		gboolean do_get_this = !(popb->flags & POP3_FLAG_UIDL);
-		if(!do_get_this) do_get_this = !find_uid(popb, info->uid);
+		/*		if(!do_get_this) do_get_this = !find_uid(popb, info->uid);*/
+		if(!do_get_this) do_get_this = !(info->is_in_uidl);
 		if(do_get_this){
 
 		  if((info->size < max_size) || (max_size == 0)){
+		    message *msg;
 
-		    message *msg = pop3_in_retr(popb, info->number, rcpt);
+		    logwrite(LOG_VERBOSE|LOG_NOTICE, "receiving message %d\n", info->number);
+		    msg = pop3_in_retr(popb, info->number, rcpt);
 
 		    if(msg){
+		      if(return_path)
+			msg->return_path = copy_address(return_path);
 		      if(spool_write(msg, TRUE)){
 			pid_t pid;
-			logwrite(LOG_NOTICE, "%s <= <%s@%s> host=%s with %s\n",
-				 msg->uid, msg->return_path->local_part,
-				 msg->return_path->domain, popb->remote_host,
+			logwrite(LOG_NOTICE, "%s <= %s host=%s with %s\n",
+				 msg->uid,
+				 addr_string(msg->return_path),
+				 popb->remote_host,
 				 (popb->flags & POP3_FLAG_APOP) ?
 				 prot_names[PROT_APOP] : prot_names[PROT_POP3]
 				 );
 			info->is_fetched = TRUE;
+			count++;
+#if DO_WRITE_UIDL_EARLY
+			if(popb->flags & POP3_FLAG_UIDL) write_uidl(popb, user);
+#endif
 			if(!conf.do_queue){
+
+			  /* wait for child processes. If there are too many,
+			     we wait blocking, before we fork another one */
+			  while(num_children > 0){
+			    int status, options = WNOHANG;
+			    pid_t pid;
+
+			    if(num_children >= POP3_MAX_CHILDREN){
+			      logwrite(LOG_NOTICE, "too many children - waiting\n");
+			      options = 0;
+			    }
+			    if((pid = waitpid(0, &status, options)) > 0){
+			      num_children--;
+			      if(WEXITSTATUS(status) != EXIT_SUCCESS)
+				logwrite(LOG_WARNING,
+					 "delivery process with pid %d returned %d\n",
+					 pid, WEXITSTATUS(status));
+			      if(WIFSIGNALED(status))
+				logwrite(LOG_WARNING,
+					 "delivery process with pid %d got signal: %d\n",
+					 pid, WTERMSIG(status));
+			    }else if(pid < 0){
+			      logwrite(LOG_WARNING, "wait got error: %s\n", strerror(errno));
+			    }
+			  }
+
 			  if((pid = fork()) == 0){
 			    deliver(msg);
-			    exit(EXIT_SUCCESS);
+			    _exit(EXIT_SUCCESS);
 			  }else if(pid < 0){
-			    logwrite(LOG_ALERT, "could not fork for delivery, id = %s",
-				     msg->uid);
-			  }
+			    logwrite(LOG_ALERT|LOG_VERBOSE,
+				     "could not fork for delivery, id = %s: %s\n",
+				     msg->uid, strerror(errno));
+			  }else
+			    num_children++;
 			}else{
 			  DEBUG(1) debugf("queuing forced by configuration or option.\n");
 			}
 			if(popb->flags & POP3_FLAG_DELETE)
 			  pop3_in_dele(popb, info->number);
+
+			destroy_message(msg);
 		      }/* if(spool_write(msg, TRUE)) */
 		    }else{
-		      logwrite(LOG_ALERT, "retrieving of message %d failed: %d\n", info->number, popb->error);
+		      logwrite(LOG_ALERT,
+			       "retrieving of message %d failed: %d\n",
+			       info->number, popb->error);
 		    }
 		  }/* if((info->size > max_size) ... */
 		  else{
-		    logwrite(LOG_NOTICE, "size of message #%d (%d) exceeded max_size (%d)\n",
+		    logwrite(LOG_NOTICE|LOG_VERBOSE, "size of message #%d (%d) > max_size (%d)\n",
 			     info->number, info->size, max_size);
 		  }
 		}/* if(do_get_this) ... */
 		else{
 		  if(popb->flags & POP3_FLAG_UIDL){
-		    info->is_fetched = TRUE;
-		    logwrite(LOG_NOTICE, "message %d (uid = %s) not fetched\n", info->number, info->uid);
+		    info->is_fetched = TRUE; /* obsolete? */
+		    logwrite(LOG_VERBOSE, "message %d already known\n",
+			     info->number);
+		    DEBUG(1) debugf("message %d (uid = %s) not fetched\n",
+				    info->number, info->uid);
+#if 0
+#if DO_WRITE_UIDL_EARLY
+		    write_uidl(popb, user); /* obsolete? */
+#endif
+#endif
 		  }
 		}
+		if((max_count != 0) && (count >= max_count))
+		  break;
 	      }/* foreach() */
+#if DO_WRITE_UIDL_EARLY
+#else
 	      if(popb->flags & POP3_FLAG_UIDL) write_uidl(popb, user);
+#endif
 	    }/* if(pop3_in_uidl(popb) ... */
 	  }/* if(pop3_in_list(popb)) */
 	}/* if(popb->msg_cnt > 0) */
 	else{
-	  logwrite(LOG_NOTICE, "no messages for user %s at %s\n", user, popb->remote_host);
+	  logwrite(LOG_NOTICE|LOG_VERBOSE,
+		   "no messages for user %s at %s\n", user, popb->remote_host);
 	}
 	ok = TRUE;
       }
       pop3_in_quit(popb);
     }else{
-      logwrite(LOG_ALERT, "pop3 login failed for user %s, host = %s\n", user, popb->remote_host);
+      logwrite(LOG_ALERT|LOG_VERBOSE,
+	       "pop3 login failed for user %s, host = %s\n", user, popb->remote_host);
     }
   }
   if(!ok){
-    logwrite(LOG_ALERT, "pop3 failed, error = %d\n", popb->error);
+    logwrite(LOG_ALERT|LOG_VERBOSE, "pop3 failed, error = %d\n", popb->error);
   }
+
+  while(num_children > 0){
+    int status;
+    pid_t pid;
+    if((pid = wait(&status)) > 0){
+      num_children--;
+      if(WEXITSTATUS(status) != EXIT_SUCCESS)
+	logwrite(LOG_WARNING,
+		 "delivery process with pid %d returned %d\n",
+		 pid, WEXITSTATUS(status));
+      if(WIFSIGNALED(status))
+	logwrite(LOG_WARNING,
+		 "delivery process with pid %d got signal: %d\n",
+		 pid, WTERMSIG(status));
+    }else{
+      logwrite(LOG_WARNING, "wait got error: %s\n", strerror(errno));
+    }
+  }
+
   return ok;
 }
 
@@ -641,7 +803,8 @@ gboolean pop3_login(gchar *host, gint port, GList *resolve_list,
       if(pop3_in_login(popb, user, pass))
 	ok = TRUE;
       else
-	logwrite(LOG_ALERT, "pop3 login failed for user %s, host = %s\n", user, host);
+	logwrite(LOG_ALERT|LOG_VERBOSE,
+		 "pop3 login failed for user %s, host = %s\n", user, host);
     }
     pop3_in_close(popb);
   }

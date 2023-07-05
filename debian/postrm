@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+case "$1" in
+	purge)
+		# On a purge we also...
+		# Remove spool and config file
+		rm -rf /var/log/masqmail /var/spool/masqmail /etc/masqmail
+		rm -f /etc/default/masqmail
+		# Remove from inetd.conf
+		##update-inetd --remove masqmail
+		;;
+
+	upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+		;;
+esac
+
+#DEBHELPER#

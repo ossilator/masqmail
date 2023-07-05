@@ -1,12 +1,12 @@
-test.conf: conf.templ
-	sed s/SMTP_HOST/`hostname`/ conf.templ > test.conf
+test.conf: $(srcdir)/conf.templ
+	sed s/SMTP_HOST/`hostname`/ $(srcdir)/conf.templ > test.conf
 
-local.sh: test.templ
-	sed s/RECV_HOST/localhost/ test.templ > local.sh
+local.sh: $(srcdir)/test.templ
+	sed s/RECV_HOST/localhost/ $(srcdir)/test.templ > local.sh
 	chmod ugo+x local.sh
 
-smtpout.sh: test.templ
-	sed s/RECV_HOST/`hostname`/ test.templ > smtpout.sh
+smtpout.sh: $(srcdir)/test.templ
+	sed s/RECV_HOST/`hostname`/ $(srcdir)/test.templ > smtpout.sh
 	chmod ugo+x smtpout.sh
 
 input/:
