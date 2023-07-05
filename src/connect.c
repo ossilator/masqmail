@@ -17,6 +17,23 @@
 */
 #include "masqmail.h"
 
+static
+GList *resolve_ip(GList *list, gchar *ip)
+{
+  struct in_addr ia;
+  if(inet_aton(ip, &ia)){
+    mxip_addr mxip;
+    
+    mxip.name = g_strdup(ip);
+    mxip.pref = 0;
+    mxip.ip = (guint32) *(guint32 *)(&ia);
+    list = g_list_append(list, g_memdup(&mxip, sizeof(mxip)));
+  }else{
+    logwrite(LOG_ALERT, "invalid address '%s': inet_aton() failed\n", ip);
+    return NULL;
+  }
+}
+
 mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port,
 			  GList *addr_list)
 {
@@ -78,30 +95,43 @@ mxip_addr *connect_resolvelist(int *psockfd, gchar *host, guint port,
 
   DEBUG(5) debugf("connect_resolvelist entered\n");
 
-  if(res_func_list == NULL){
-    logwrite(LOG_ALERT, "res_funcs == NULL !!!\n");
-    exit(EXIT_FAILURE);
-  }
-
-  foreach(res_func_list, res_node){
-    resolve_func res_func;
-    DEBUG(6) debugf("connect_resolvelist 1a\n");
-    res_func = (resolve_func)(res_node->data);
+  if(isdigit(host[0])){
+    mxip_addr *addr;
     
-    if(res_func == NULL){
-      logwrite(LOG_ALERT, "res_func == NULL !!!\n");
+    addr_list = resolve_ip(NULL, host);
+    addr = connect_hostlist(psockfd, host, port, addr_list);
+    g_list_free(addr_list);
+    return addr;
+  }else{
+
+    if(res_func_list == NULL){
+      logwrite(LOG_ALERT, "res_funcs == NULL !!!\n");
       exit(EXIT_FAILURE);
     }
 
-    if(addr_list = res_func(NULL, host)){
-
-      mxip_addr *addr;
-      if(addr = connect_hostlist(psockfd, host, port, addr_list))
-	return addr;
+    foreach(res_func_list, res_node){
+      resolve_func res_func;
+      DEBUG(6) debugf("connect_resolvelist 1a\n");
+      res_func = (resolve_func)(res_node->data);
       
-      g_list_free(addr_list);
+      if(res_func == NULL){
+	logwrite(LOG_ALERT, "res_func == NULL !!!\n");
+	exit(EXIT_FAILURE);
+      }
+      
+      if((addr_list = res_func(NULL, host))){
+	
+	mxip_addr *addr;
+	if((addr = connect_hostlist(psockfd, host, port, addr_list)))
+	  return addr;
+	
+	g_list_free(addr_list);
+      }else{
+	if(!g_list_next(res_node))
+	  logwrite(LOG_ALERT, "could not resolve %s\n", host);
+      }
     }
+    return NULL;
   }
-  return NULL;
 }
 

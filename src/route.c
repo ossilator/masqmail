@@ -19,16 +19,16 @@
 #include "masqmail.h"
 #include <fnmatch.h>
 
-connect_route *find_route(GList *route_list, gchar *name)
+route_file_list *find_route_file_list(GList *list, gchar *name)
 {
-  GList *route_node;
-  connect_route *route = NULL;
+  GList *node;
+  route_file_list *r_list = NULL;
   
-  foreach(route_list, route_node){
-    route = (connect_route *)(route_node->data);
+  foreach(list, node){
+    r_list = (route_file_list *)(node->data);
     
-    if(strcmp(name, route->name) == 0)
-      return route;
+    if(strcmp(name, r_list->name) == 0)
+      return r_list;
   }
   return NULL;
 }
@@ -81,25 +81,25 @@ void rewrite_headers(msg_out *msgout, connect_route *route)
 	  g_free(new_hdr);
       }
     }
-  }
-
-  /* replace from domain */
-  if(route->set_h_from_domain != NULL){
-    GList *hdr_node;
-
-    foreach(msgout->hdr_list, hdr_node){
-      header *hdr = (header *)(hdr_node->data);
-      if(hdr->id == HEAD_FROM){
-	header *new_hdr = copy_header(hdr);
-
-	DEBUG(5) debugf("setting From: domain to %s\n",
-			route->set_h_from_domain);
-	set_address_header_domain(new_hdr, route->set_h_from_domain);
+  }else{
+    /* replace from domain */
+    if(route->set_h_from_domain != NULL){
+      GList *hdr_node;
+      
+      foreach(msgout->hdr_list, hdr_node){
+	header *hdr = (header *)(hdr_node->data);
+	if(hdr->id == HEAD_FROM){
+	  header *new_hdr = copy_header(hdr);
+	  
+	  DEBUG(5) debugf("setting From: domain to %s\n",
+			  route->set_h_from_domain);
+	  set_address_header_domain(new_hdr, route->set_h_from_domain);
 	hdr_node->data = new_hdr;
 	/* we need this list only to carefully free the extra headers: */
 	DEBUG(6) debugf("header = %s\n",
 			new_hdr->header);
 	msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
+	}
       }
     }
   }
@@ -120,21 +120,21 @@ void rewrite_headers(msg_out *msgout, connect_route *route)
 	  g_free(new_hdr);
       }
     }
-  }
-
-  /* replace Reply-to domain */
-  if(route->set_h_reply_to_domain != NULL){
-    GList *hdr_node;
-
-    foreach(msgout->hdr_list, hdr_node){
-      header *hdr = (header *)(hdr_node->data);
-      if(hdr->id == HEAD_REPLY_TO){
-	header *new_hdr = copy_header(hdr);
-
-	set_address_header_domain(new_hdr, route->set_h_reply_to_domain);
-	hdr_node->data = new_hdr;
-	/* we need this list only to carefully free the extra headers: */
-	msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
+  }else{
+    /* replace Reply-to domain */
+    if(route->set_h_reply_to_domain != NULL){
+      GList *hdr_node;
+      
+      foreach(msgout->hdr_list, hdr_node){
+	header *hdr = (header *)(hdr_node->data);
+	if(hdr->id == HEAD_REPLY_TO){
+	  header *new_hdr = copy_header(hdr);
+	  
+	  set_address_header_domain(new_hdr, route->set_h_reply_to_domain);
+	  hdr_node->data = new_hdr;
+	  /* we need this list only to carefully free the extra headers: */
+	  msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
+	}
       }
     }
   }
@@ -156,6 +156,25 @@ void rewrite_headers(msg_out *msgout, connect_route *route)
     }
   }
 
+  /* set Sender: domain to return_path->domain */
+  if(route->expand_h_sender_address){
+    GList *hdr_node;
+
+    foreach(msgout->hdr_list, hdr_node){
+      header *hdr = (header *)(hdr_node->data);
+      if(hdr->id == HEAD_SENDER){
+	header *new_hdr;
+
+	new_hdr =
+	  create_header(HEAD_SENDER, "Sender: %s@%s\n",
+			msgout->return_path->local_part, msgout->return_path->domain);
+	hdr_node->data = new_hdr;
+	/* we need this list only to carefully free the extra headers: */
+	msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
+      }
+    }
+  }
+
   if(msgout->xtra_hdr_list == NULL){
     /* nothing was changed */
     g_list_free(msgout->hdr_list);
@@ -164,45 +183,32 @@ void rewrite_headers(msg_out *msgout, connect_route *route)
   DEBUG(5) debugf("rewrite_headers() returning\n");
 }
 
-GList *rcptlist_with_one_of_hostlist(GList *rcpt_list, GList *host_list,
-				     gboolean do_include)
+void rcptlist_with_one_of_hostlist(GList *rcpt_list, GList *host_list,
+				   GList **p_rcpt_list, GList **p_non_rcpt_list)
 {
   GList *rcpt_node;
-  GList *extr_list = NULL;
-  GList *rcpt_node_next;
 
   if(rcpt_list == NULL)
-    return NULL;
-
-  /* an empty host_list matches all for an inclusive list,
-     none for an exclusive list */
-  if(host_list == NULL)
-    return rcpt_list;
+    return;
 
   foreach(rcpt_list, rcpt_node){
-    address *adr = (address *)(rcpt_node->data);
-    GList *host_node;
+    address *rcpt = (address *)(rcpt_node->data);
+    GList *host_node = NULL;
 
-    for(host_node = g_list_first(host_list);
-	host_node;
-	host_node = g_list_next(host_node)){
-
+    foreach(host_list, host_node){
       gchar *host = (gchar *)(host_node->data);
-      
-      if(fnmatch(host, adr->domain, FNM_CASEFOLD) == 0)
+      if(fnmatch(host, rcpt->domain, FNM_CASEFOLD) == 0)
 	break;
     }
-
-    if((host_node && do_include) ||  /* if found and we want an
-					'included' list */
-       !(host_node || do_include)){  /* or if not found and we want an
-				       'excl' list */
-      extr_list = g_list_append(extr_list, adr);
+    if(host_node){
+      if(p_rcpt_list)
+	*p_rcpt_list = g_list_append(*p_rcpt_list, rcpt);
+    }else{
+      if(p_non_rcpt_list)
+	*p_non_rcpt_list = g_list_append(*p_non_rcpt_list, rcpt);
     }
-  }
-  g_list_free(rcpt_list);
 
-  return extr_list;
+  }
 }
 
 static gint _g_list_strcmp(gconstpointer a, gconstpointer b)
@@ -229,43 +235,26 @@ gboolean route_is_allowed_mail_local(connect_route *route, address *ret_path)
   return TRUE;
 }
 
-GList *msg_rcptlist_route(connect_route *route, GList *rcpt_list)
-{
-  rcpt_list =
-    rcptlist_with_one_of_hostlist(rcpt_list,
-				  conf.local_hosts, FALSE);
-  rcpt_list =
-    rcptlist_with_one_of_hostlist(rcpt_list,
-				  conf.local_nets, route->is_local_net);
-  /* sort out those domains that can be sent over this connection: */
-  rcpt_list =
-    rcptlist_with_one_of_hostlist(rcpt_list,
-				  route->allowed_rcpt_domains, TRUE);
-  /* sort out those domains that cannot be sent over this connection: */
-  rcpt_list =
-    rcptlist_with_one_of_hostlist(rcpt_list,
-				  route->not_allowed_rcpt_domains, FALSE);
-  return rcpt_list;
-}
-
-/* check whether msg is valid for this route and
-   leave only valid recipients in msgout
+/* 
+   Make lists of matching/not matching rcpts.
+   Local domains are NOT regared here, these should be sorted out previously
 */
-gboolean route_strip_msgout(connect_route *route, msg_out *msgout)
+void msg_rcptlist_route(connect_route *route, GList *rcpt_list,
+			GList **p_rcpt_list, GList **p_non_rcpt_list)
 {
-  message *msg = msgout->msg;
-  GList *rcpt_list = msgout->rcpt_list;
-  if(rcpt_list == NULL)
-    rcpt_list = g_list_copy(msg->rcpt_list);
-
-  if(!route_is_allowed_mail_local(route, msg->return_path)){
-    logwrite(LOG_NOTICE, "%s == %s is not allowed to send over this route.\n",
-	     msg->uid, msg->return_path->local_part);
-    return FALSE;
+  GList *tmp_list = NULL;
+  /* sort out those domains that can be sent over this connection: */
+  if(route->allowed_rcpt_domains){
+    DEBUG(5) debugf("testing for route->allowed_rcpt_domains\n");
+    rcptlist_with_one_of_hostlist(rcpt_list, route->allowed_rcpt_domains, &tmp_list, p_non_rcpt_list);
+  }else{
+    DEBUG(5) debugf("route->allowed_rcpt_domains == NULL\n");
+    tmp_list = g_list_copy(rcpt_list);
   }
-  msgout->rcpt_list = msg_rcptlist_route(route, rcpt_list);
 
-  return (msgout->rcpt_list != NULL);
+  /* sort out those domains that cannot be sent over this connection: */
+  rcptlist_with_one_of_hostlist(tmp_list, route->not_allowed_rcpt_domains, p_non_rcpt_list, p_rcpt_list);
+  g_list_free(tmp_list);
 }
 
 msg_out *route_prepare_msgout(connect_route *route, msg_out *msgout)
@@ -280,7 +269,7 @@ msg_out *route_prepare_msgout(connect_route *route, msg_out *msgout)
       debugf("rcpts for routed delivery, route = %s, id = %s\n", route->name, msg->uid);
       foreach(rcpt_list, node){
 	address *rcpt = (address *)(node->data);
-	debugf("rcpt for ruted delivery: <%s@%s>\n",
+	debugf("rcpt for routed delivery: <%s@%s>\n",
 	       rcpt->local_part, rcpt->domain);
       }
     }
@@ -294,7 +283,7 @@ msg_out *route_prepare_msgout(connect_route *route, msg_out *msgout)
       DEBUG(5) debugf("looking up %s in map_return_path_addresses\n",
 		      msg->return_path->local_part);
       ret_path =
-	(address *)table_find(route->map_return_path_addresses,
+	(address *)table_find_fnmatch(route->map_return_path_addresses,
 			      msg->return_path->local_part);
       if(ret_path){
 	DEBUG(5) debugf("found <%s@%s>\n",
@@ -349,7 +338,6 @@ GList *route_msgout_list(connect_route *route, GList *msgout_list)
       }
       if(mo_ph_node != NULL){
 	/* there is already a rcpt for this host */
-	GList *msgout_node;
 	msg_out *msgout_last =
 	  (msg_out *)((g_list_last(mo_ph->msgout_list))->data);
 	if(msgout_last->msg == msgout->msg){

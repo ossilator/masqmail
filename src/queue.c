@@ -1,5 +1,5 @@
 /*  MasqMail
-    Copyright (C) 1999 Oliver Kurth
+    Copyright (C) 1999/2000 Oliver Kurth
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "masqmail.h"
 
+#include <sys/stat.h>
 #include <glob.h>
 
 static
@@ -41,7 +42,6 @@ GList *read_queue(gboolean do_readdata)
 {
   GList *msg_list = NULL;
   glob_t gl;
-  gchar **paths;
   gchar *pattern;
   int i, *idx_arr;
 
@@ -79,102 +79,37 @@ GList *read_queue(gboolean do_readdata)
   return msg_list;
 }
 
-void queue_run()
+gboolean queue_run()
 {
   GList *msg_list;
-  gboolean at_least_one = FALSE;
-#ifdef WITH_ALIASES
-  GList *alias_table = NULL;
-  if(conf.alias_file)
-    alias_table = table_read(conf.alias_file, ':');
-#endif
+  gboolean ok = TRUE;
 
   logwrite(LOG_NOTICE, "Starting queue run.\n");
 
   msg_list = read_queue(FALSE);
 
-
   if(msg_list != NULL){
-    GList *msgout_list = create_msg_out_list(msg_list);
-    GList *msgout_node;
-
-    foreach(msgout_list, msgout_node){
-      msg_out *msgout = (msg_out *)(msgout_node->data);
-#ifndef WITH_ALIASES
-      msgout->rcpt_list = g_list_copy(msgout->msg->rcpt_list);
-#else
-      msgout->rcpt_list = alias_expand(alias_table, msgout->msg->rcpt_list, msgout->msg->non_rcpt_list);
-#endif
-    }
-
-    /* local deliveries */
-    {
-      GList *msgout_node;
-      GList *rcpt_list;
-
-      foreach(msgout_list, msgout_node){
-	msg_out *msgout = (msg_out *)(msgout_node->data);
-	GList *rcpt_list;
-
-	rcpt_list = msg_rcptlist_local(msgout->rcpt_list);
-	if(rcpt_list != NULL){
-	  if(deliver_local(msgout, rcpt_list))
-	    at_least_one = TRUE;
-	  g_list_free(rcpt_list);
-	}
-      }
-    }
-
-    /* routed local net deliveries: */
-    {
-      GList *route_node;
-      foreach(conf.local_net_routes, route_node){
-	connect_route *route = (connect_route *)(route_node->data);
-	conf.curr_route = route;
-	if(deliver_route_msg_list(route, msgout_list))
-	  at_least_one = TRUE;
-	conf.curr_route = NULL;
-      }
-    }
-    if(at_least_one)
-      deliver_finish_list(msgout_list);
-    destroy_msg_out_list(msgout_list);
+    ok = deliver_msg_list(msg_list, DLVR_ALL);
+    destroy_msg_list(msg_list);
   }
-  destroy_msg_list(msg_list);
-
-#ifdef WITH_ALIASES
-  destroy_table(alias_table);
-#endif
   logwrite(LOG_NOTICE, "Finished queue run.\n");
+
+  return ok;
 }
 
-gboolean run_route_queue(connect_route *route)
+gboolean queue_run_online()
 {
   GList *msg_list = read_queue(FALSE);
-#ifdef WITH_ALIASES
-  GList *alias_table = NULL;
-  if(conf.alias_file)
-    alias_table = table_read(conf.alias_file, ':');
-#endif
-  if(msg_list){
-    GList *msgout_list = create_msg_out_list(msg_list);
-    GList *msgout_node;
-    foreach(msgout_list, msgout_node){
-      msg_out *msgout = (msg_out *)(msgout_node->data);
-#ifndef WITH_ALIASES
-      msgout->rcpt_list = g_list_copy(msgout->msg->rcpt_list);
-#else
-      msgout->rcpt_list = alias_expand(alias_table, msgout->msg->rcpt_list, msgout->msg->non_rcpt_list);
-#endif
-    }
-    if(deliver_route_msg_list(route, msgout_list))
-      deliver_finish_list(msgout_list);
-    destroy_msg_out_list(msgout_list);
-    destroy_msg_list(msg_list);
+  gboolean ok = TRUE;
 
-    return TRUE;
+  logwrite(LOG_NOTICE, "Starting online queue run.\n");
+  if(msg_list != NULL){
+    ok = deliver_msg_list(msg_list, DLVR_ONLINE);
+    destroy_msg_list(msg_list);
   }
-  return FALSE;
+  logwrite(LOG_NOTICE, "Finished online queue run.\n");
+
+  return ok;
 }
 
 static
@@ -204,30 +139,35 @@ void queue_list()
       gchar *size_str = NULL;
       gchar *time_str = NULL;
       gchar *host_str = NULL;
+      gchar *ident_str = NULL;
     
       if(msg->data_size >= 0)
-	size_str = g_strdup_printf("size=%d", msg->data_size);
+	size_str = g_strdup_printf(" size=%d", msg->data_size);
       if(msg->received_time > 0){
 	gchar *tmp_str;
 	time_str =
-	  g_strdup_printf("age=%s",
+	  g_strdup_printf(" age=%s",
 			  tmp_str = format_difftime(difftime(time(NULL),
 							     msg->received_time)));
 	g_free(tmp_str);
       }
       if(msg->received_host != NULL)
-	host_str = g_strdup_printf("host=%s", msg->received_host);
+	host_str = g_strdup_printf(" host=%s", msg->received_host);
+      if(msg->ident != NULL)
+	ident_str = g_strdup_printf(" ident=%s", msg->ident);
 
-      printf("%s <= <%s@%s> %s %s %s\n", msg->uid,
+      printf("%s <= <%s@%s>%s%s%s%s\n", msg->uid,
 	     msg->return_path->local_part, msg->return_path->domain,
 	     size_str ? size_str : "",
 	     time_str ? time_str : "",
-	     host_str ? host_str : ""
+	     host_str ? host_str : "",
+	     ident_str ? ident_str : ""
 	     );
 
       if(size_str) g_free(size_str);
       if(time_str) g_free(time_str);
       if(host_str) g_free(host_str);
+      if(ident_str) g_free(ident_str);
 
       foreach(msg->rcpt_list, rcpt_node){
 	address *rcpt = (address *)(rcpt_node->data);
@@ -239,6 +179,46 @@ void queue_list()
       g_free(msg);
     }
   }else
-    printf("mail queue is empty\n");
+    printf("mail queue is empty.\n");
+}  
+
+gboolean queue_delete(gchar *uid)
+{
+  gboolean hdr_ok = TRUE;
+  gboolean dat_ok = TRUE;
+  gchar *hdr_name = g_strdup_printf("%s/input/%s-H", conf.spool_dir, uid);
+  gchar *dat_name = g_strdup_printf("%s/input/%s-D", conf.spool_dir, uid);
+  struct stat stat_buf;
+
+  if(spool_lock(uid)){
+
+    if(stat(hdr_name, &stat_buf) == 0){
+      if(unlink(hdr_name) != 0){
+	fprintf(stderr, "could not unlink %s: %s\n", hdr_name, strerror(errno));
+	hdr_ok = FALSE;
+      }
+    }else{
+      fprintf(stderr, "could not stat file %s: %s\n", hdr_name, strerror(errno));
+      hdr_ok = FALSE;
+    }
+    if(stat(dat_name, &stat_buf) == 0){
+      if(unlink(dat_name) != 0){
+	fprintf(stderr, "could not unlink %s: %s\n", dat_name, strerror(errno));
+	dat_ok = FALSE;
+      }
+    }else{
+      fprintf(stderr, "could not stat file %s: %s\n", dat_name, strerror(errno));
+      dat_ok = FALSE;
+    }
+    printf("message %s deleted\n", uid);
+
+    spool_unlock(uid);
+
+  }else{
+
+    fprintf(stderr, "message %s is locked.\n", uid);
+    return FALSE;
+  }
+
+  return (dat_ok && hdr_ok);
 }
-  

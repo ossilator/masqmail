@@ -75,6 +75,10 @@ files. It will be created if it does not exist. Default is /var/masqmail/.
 <b>--with-spooldir=SPOOLDIR</b> sets the directory where MasqMail stores its
 spool files. It will be created if it does not exist. Default is
 /var/spool/masqmail/.
+</p><p>
+<b>--enable-auth</b> enables ESMTP AUTH support (disabled by default)
+</p><p>
+<b>--disable-pop3</b> disables pop3 support (enabled by default)
 </p>
 
 <h4>After make install</h4>
@@ -94,6 +98,7 @@ should give output similar to
 drwxr-xr-x   2 mail     trusted      1024 Oct 14 14:29 /var/masqmail/
 drwxr-xr-x   3 mail     trusted      1024 Oct 14 14:27 /var/spool/masqmail
 drwxr-xr-x   2 mail     trusted      1024 Oct 14 18:32 /var/spool/masqmail/input
+drwxr-xr-x   2 mail     trusted      1024 Oct 14 18:32 /var/spool/masqmail/popuidl
 </pre>
 </p>
 <p>
@@ -201,7 +206,7 @@ ip-down script:<br> rm /tmp/connect_route.<br> Then you have to set
 	    <p>
 	    <hr>
 	    <address><a href = "mailto:kurth@innominate.de">Oliver Kurth</a></address>
-	    Last modified: Mon Feb 28 20:24:53 CET 2000
+	    Last modified: Tue May 30 15:19:56 CEST 2000
 	    <br>
 	    This page was created using <a href="http://www.freddyfrog.com/hacks/genpage/">Genpage</a> - Version: 1.0.6
 	  </p>

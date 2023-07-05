@@ -3,19 +3,25 @@ general:
 - add forwarding support
 - add Mailer-Daemon error messages
 
-deliver:
-- better checking for already routed addresses in deliver()
-- messages should be finished earliaer when sending more at one time
-
 conf:
 - more configuration options
 - make conf more fool proof
 
+deliver:
+- routes should be a list, so more than one route can be used for a connection
+
+pop:
+- online daemon mode
+- multidrop support
+
 lookup:
 - optimize MX lookup
 
-protocols:
-- pop3 client (but this has time)
+queue:
+- users should be able to delete their own spool files
+
+route:
+- delivery via pipe (eg. uucp)
 
 ...and (you guessed it):
 - bug fixing

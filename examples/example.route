@@ -1,0 +1,89 @@
+# Example route file for masqmail
+
+#
+# mail properties tested for:
+#
+
+# users that can send mail over this connection:
+# this is a list of the local parts of the original return addresses, as they are
+# configured with your mail client. If not set, anybody may send.
+
+allowed_mail_locals = "okurth"
+
+# local_hosts and local_nets will be checked before this.
+# cpwright.com uses the dialup up list of dul.maps.vix.com,
+# so I cannot send any mail over this connection to that domain.
+# There are probably many others... :-( (No, this is okay. Nobody
+# wants his mailbox stuffed to the ceiling with spam...)
+# 
+# You will find this necessary only if you send mail directly
+# (if mail_host is not set below)
+
+not_allowed_rcpt_domains = "cpwright.com"
+
+#
+# settings:
+#
+
+# the mail server which relays mail for you:
+# if this is not set, mail will be sent directly.
+# If your ISP gives has a mail server, it is wiser to use it:
+
+mail_host = "mail.isp.com"
+
+# Make picky servers happy:
+# If set, we look up our own name as seen from the network
+# and send this in our HELO/EHLO message. Otherwise we send our host name,
+# which is probably different for dialup conections and may be unknown outside.
+# Some servers complain,
+# which is really crazy, since it is senseless to lie about it...
+# Unfortunately, some ISPs do not give you a name, just an ip address. In this case,
+# we have a delay until the DNS lookup fails.
+
+do_correct_helo = true
+
+# 'forge' headers:
+
+# return path and From: address are TWO different things:
+#
+# the return path is address where delivery failure messages will go
+# to, and this address will be checked by many MTAs in the outside
+# world, so it should be valid. It canNOT contain a real name:
+# 'miller@foo.com' is a valid return path, but 'Charlie Miller <miller@foo.com>' is NOT.
+#
+# The From: address is the address the recipient sees, and where
+# replies will go to (if you do not set a Reply-to header). In most
+# cases it corresponds to the return path, but this is not
+# required. It CAN have a real name, both examples for Charlie above
+# are correct, and it is more pretty to include a real name.
+#
+# The return path:
+# if we send the mail directly, we can set any valid address here,
+# use the one you prefer to get error messages to:
+# Use EITHER set_return_path_domain OR map_return_path_addresses
+#
+# this sets the return path kurth@anywhere.org to kurth@innominate.de
+#set_return_path_domain = "innominate.de"
+# this sets okurth@somewhere.else.org to kurth@innominate.de, and
+# leaves all other addresses untouched:
+map_return_path_addresses = "okurth: kurth@innominate.de"
+
+# 'From:' header:
+# Use EITHER set_h_from_domain OR map_h_from_addresses
+#set_h_from_domain = "uni-sw.gwdg.de"
+map_h_from_addresses = "okurth: Oliver Kurth <kurth@innominate.de>"
+
+# if your mail server outside uses the AUTH machanism, set the following.
+# You need to compile masqmail with AUTH support (--enable-auth option for ./configure):
+# for auth_name, only 'cram-md5' is supported.
+
+#auth_name="cram-md5"
+#auth_login="yourname"
+#auth_secret="dontTellAnyBody"
+
+# if your mail server requires smtp after POP (eg. gmx), set this.
+# It is not necessary if you fetch from the pop server just before you
+# send mail (either masqmail, fetchmail or any other pop client).
+# Set it to a get file.
+# You need to compile masqmail with pop3 support (default)
+# pop3_login = "/etc/masqmail/example.get"

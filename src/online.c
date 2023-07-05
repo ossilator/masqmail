@@ -19,6 +19,13 @@
 #include "masqmail.h"
 #include <sys/stat.h>
 
+gchar *connection_name;
+
+void set_online_name(gchar *name)
+{
+  connection_name = g_strdup(name);
+}
+
 gchar *detect_online()
 {
   if(conf.online_detect != NULL){
@@ -31,6 +38,7 @@ gchar *detect_online()
 	  if(fptr){
 	    char buf[256];
 	    fgets(buf, 256, fptr);
+	    g_strchomp(buf);
 	    fclose(fptr);
 	    return g_strdup(buf);
 	  }else{
@@ -54,9 +62,11 @@ gchar *detect_online()
     }else if(strcmp(conf.online_detect, "mserver") == 0){
       DEBUG(3) debugf("connection method 'mserver'\n");
       return mserver_detect_online();
-    }else
+    }else if(strcmp(conf.online_detect, "argument") == 0){
+      return connection_name;
+    }else{
       DEBUG(3) debugf("no connection method selected\n");
-
+    }
   }
   return NULL;
 }

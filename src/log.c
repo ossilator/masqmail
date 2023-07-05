@@ -64,14 +64,15 @@ void vlogwrite(int pri, const char *fmt, va_list args)
     vsyslog(pri, fmt, args);
   else{
     if(pri <= conf.log_max_pri){
+      FILE *file = logfile ? logfile : stderr;
       time_t now = time(NULL);
       struct tm *t = localtime(&now);
       gchar buf[24];
       strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
-      fprintf(logfile, "%s [%d] ", buf, getpid());
+      fprintf(file, "%s [%d] ", buf, getpid());
 
-      vfprintf(logfile, fmt, args);
-      fflush(logfile);
+      vfprintf(file, fmt, args);
+      fflush(file);
     }
   }
 }  
@@ -96,13 +97,16 @@ void vdebugwrite(int pri, const char *fmt, va_list args)
 
 void logwrite(int pri, const char *fmt, ...)
 {
-  va_list args;
+  va_list args, args_copy;
   va_start(args, fmt);
+  va_copy(args_copy, args);
 
   vlogwrite(pri, fmt, args);
-  if(debugfile)
-    vdebugwrite(pri, fmt, args);
+  if(debugfile){
+    vdebugwrite(pri, fmt, args_copy);
+  }
 
+  va_end(args_copy);
   va_end(args);
 }
 

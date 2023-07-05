@@ -1,0 +1,62 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE spec SYSTEM "man.dtd">
+
+<manpage name="masqmail.aliases" section="5" desc="masqmail alias file format">
+
+<description>
+<p>This man page describes the format of the masqmail alias file. Its usual location is <file>/etc/aliases</file>.</p>
+</description>
+
+<section name="File Format">
+<p>The alias file consists of lines of the form:</p>
+<pre>
+local_part: item1, item2, ...
+</pre>
+
+<p>Items can be surrounded by quotes '"'. If within the quotes other
+quotes are needed for an address they can be escaped with a leading
+backslash '\'.</p>
+
+<p>A leading '\' indicates that this address shall not be further
+expanded.</p>
+
+<p>A leading pipe symbol '|' indicates that the item shall be treated
+as a pipe command. The content of the message will then be sent to the
+standard input of a command. The command will run under the user id
+and group id masqmail is running as. If quotes are needed, the pipe
+symbol must appear <i>within</i> the quotes.</p>
+
+<p>Loops will be detected, the offending address will be ignored.</p>
+
+<p>Aliases will be expanded at <i>delivery</i> time. This means that
+if there is a message still in the queue and you change any alias
+which matches one of the recipient addresses, the change will have
+effect next time a delivery is attemped.</p>
+
+<p>There is no need to restart masqmail or run any command when the
+alias file has been changed.</p>
+</section>
+
+<section name = "Author">
+<p>masqmail was written by Oliver Kurth
+&lt;kurth@innominate.de&gt;</p><p>You will find the newest version of
+masqmail at <url href="http://www.innomininate.org/~oku/masqmail/"/> or search for it
+in freshmeat (<url href="http://www.freshmeat.net"/>). There is also a mailing list,
+you will find information about it at masqmails main site.</p>
+</section>
+
+<section name = "Bugs">
+<p>You should report them to the mailing list.</p>
+</section>
+
+<section name = "See also">
+<p>
+<manref name="masqmail.conf" section="5" href="masqmail.conf.5.html"/>, <manref name="masqmail" section="8" href="masqmail.8.html"/>, 
+</p>
+</section>
+
+<section name = "Comments">
+<p>This man page was written using <manref name="xml2man" section="1" href="http://www.innominate.org/~oku/xml2man/"/> by the same author.</p>
+</section>
+
+</manpage>

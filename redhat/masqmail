@@ -1,0 +1,48 @@
+#! /bin/sh
+# Author: Oliver Kurth <okurth@uni-sw.gwdg.de>
+#         Iain Lea <iain@bricbrac.de>
+#
+# /etc/rc.d/init.d/masqmail
+#
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+if test -z "$MASQMAIL_ARGS" ; then
+	MASQMAIL_ARGS="-bd -q30m"
+fi
+
+RETVAL=0
+
+# See how we were called.
+case "$1" in
+    start)
+	echo -n "Starting SMTP (MasqMail): "
+	daemon /usr/sbin/sendmail $MASQMAIL_ARGS
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/masqmail
+	echo
+	;;
+    stop)
+	echo -n "Shutting down SMTP (MasqMail): "
+	killproc sendmail
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/masqmail
+	echo
+	;;
+    restart|reload)
+	$0 stop
+	$0 start
+	RETVAL=$?
+	;;
+    status)
+	status sendmail
+	RETVAL=$?
+	;;
+    *)
+	echo "Usage: $0 {start|stop|status|restart|reload}"
+	exit 1
+	;;
+esac
+
+exit $RETVAL

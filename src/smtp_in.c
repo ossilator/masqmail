@@ -17,6 +17,7 @@
 */
 
 #include "masqmail.h"
+#include "readsock.h"
 
 /*
   I always forget these rfc numbers:
@@ -24,59 +25,21 @@
   RFC 1869 (ESMTP)
   RFC 1870 (ESMTP SIZE)
   RFC 2197 (ESMTP PIPELINE)
+  RFC 2554 (ESMTP AUTH)
 */
-
-static
-int volatile sigtimeout_seen = 0;
-
-static
-void sig_timeout_handler(int sig)
-{
-  sigtimeout_seen = 1;
-  logwrite(LOG_ERR, "connection timed out (terminating).");
-  exit(EXIT_FAILURE);
-}
 
 smtp_cmd smtp_cmds[] =
 {
-  SMTP_HELO, "HELO",
-  SMTP_EHLO, "EHLO",
-  SMTP_MAIL_FROM, "MAIL FROM:",
-  SMTP_RCPT_TO, "RCPT TO:",
-  SMTP_DATA, "DATA",
-  SMTP_QUIT, "QUIT",
-  SMTP_RSET, "RSET",
-  SMTP_NOOP, "NOOP",
-  SMTP_HELP, "HELP"
+  { SMTP_HELO, "HELO", },
+  { SMTP_EHLO, "EHLO", },
+  { SMTP_MAIL_FROM, "MAIL FROM:", },
+  { SMTP_RCPT_TO, "RCPT TO:", },
+  { SMTP_DATA, "DATA", },
+  { SMTP_QUIT, "QUIT", },
+  { SMTP_RSET, "RSET", },
+  { SMTP_NOOP, "NOOP", },
+  { SMTP_HELP, "HELP" },
 };
-
-static
-gint read_sockline(FILE *in, gchar *buf, gint buf_len, gint timeout)
-{
-  gint p = 0, len;
-  gint c;
-
-  sigtimeout_seen = FALSE;
-  alarm(timeout);
-
-  while(isspace(c = getc(in))); ungetc(c, in);
-
-  while((c = getc(in)) != '\n' && (c != EOF)){
-    if(p >= buf_len-1) { alarm(0); return 0; }
-    buf[p++] = c;
-  }
-  alarm(0);
-  if(c == EOF){
-    return 0;
-  }
-  buf[p] = '\n';
-  len = p+1;
-  buf[len] = 0;
-
-  DEBUG(4) debugf("<<< %s", buf);
-
-  return len;
-}
 
 static
 smtp_cmd_id get_id(const gchar *line)
@@ -134,24 +97,29 @@ smtp_connection *create_base(gchar *remote_host)
 static
 void smtp_printf(FILE *out, gchar *fmt, ...)
 {
+  gchar buf[256];
+  
   va_list args;
   va_start(args, fmt);
 
+  vsnprintf(buf, 255, fmt, args);
+
   DEBUG(4){
-    debugf(">>>\n");  vdebugf(fmt, args);
+    debugf(">>>%s", buf);
   }
 
-  vfprintf(out, fmt, args);  fflush(out);
+  fprintf(out, "%s", buf);  fflush(out);
 
   va_end(args);
 }
 
-void smtp_in(FILE *in, FILE *out, gchar *remote_host)
+void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
 {
   gchar *buffer;
   smtp_cmd_id cmd_id;
   message *msg = NULL;
   smtp_connection *psc;
+  int len;
 
   DEBUG(5) debugf("smtp_in entered, remote_host = %s\n", remote_host);
 
@@ -164,7 +132,7 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host)
     smtp_printf(out, "220 %s MasqMail %s ESMTP\r\n",
 		conf.host_name, VERSION);
     
-    while(read_sockline(in, buffer, BUF_LEN, 5*60)){
+    while((len = read_sockline(in, buffer, BUF_LEN, 5*60, READSOCKL_CHUG)) >= 0){
       cmd_id = get_id(buffer);
       
       switch(cmd_id){
@@ -195,13 +163,14 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host)
 	  msg = create_message();
 	  msg->received_host = remote_host ? g_strdup(remote_host) : NULL;
 	  msg->received_prot = psc->prot;
+	  msg->ident = ident ? g_strdup(ident) : NULL;
 	  /* get transfer id and increment for next one */
 	  msg->transfer_id = (psc->next_id)++;
 
 	  get_address(buffer, buf);
-	  if(adr = remote_host ?
+	  if((adr = remote_host ?
 	     create_address(buf, TRUE) :
-	     create_address_qualified(buf, TRUE, conf.host_name)){
+	      create_address_qualified(buf, TRUE, conf.host_name))){
 	    if(adr->domain != NULL){
 	      psc->from_seen = TRUE;
 	      msg->return_path = adr;
@@ -228,9 +197,9 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host)
 	  address *adr;
 
 	  get_address(buffer, buf);
-	  if(adr = remote_host ?
-	     create_address(buf, TRUE) :
-	     create_address_qualified(buf, TRUE, conf.host_name)){
+	  if((adr = remote_host ?
+	      create_address(buf, TRUE) :
+	      create_address_qualified(buf, TRUE, conf.host_name))){
 	    if(adr->local_part[0] != '|'){
 	      if(adr->domain != NULL){
 		psc->rcpt_seen = TRUE;
@@ -281,9 +250,9 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host)
 		if((pid = fork()) == 0){
 		  
 		  if(deliver(msg))
-		    exit(EXIT_SUCCESS);
+		    _exit(EXIT_SUCCESS);
 		  else
-		    exit(EXIT_FAILURE);
+		    _exit(EXIT_FAILURE);
 		  
 		}else if(pid < 0){
 		  logwrite(LOG_ALERT, "could not fork for delivery, id = %s",
@@ -345,8 +314,22 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host)
 	break;
       default:
 	smtp_printf(out, "501 command not recognized\r\n");
+	DEBUG(1) debugf("command not recognized, was '%s'\n", buffer);
 	break;
       }
+    }
+    switch(len){
+    case -3:
+      logwrite(LOG_NOTICE, "connection timed out\n");
+      break;
+    case -2:
+      logwrite(LOG_NOTICE, "line overflow\n");
+      break;
+    case -1:
+      logwrite(LOG_NOTICE, "received EOF\n");
+      break;
+    default:
+      break;
     }
   }
 }

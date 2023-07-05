@@ -1,0 +1,130 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE spec SYSTEM "man.dtd">
+
+<manpage name="masqmail.get" section="5" desc="masqmail get configuration file">
+
+<description> <p>This man page describes the options available for the
+masqmail get configuration.</p>
+
+</description>
+
+<options>
+
+<option>
+<p><opt>protocol</opt> = <arg>string</arg></p>
+<optdesc>
+<p>The protocol with which you retrieve your mail. Currently only
+'pop3' and 'apop' are supported. There is no default.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>server</opt> = <arg>string</arg></p>
+<optdesc>
+<p>The server you get your mail from.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>resolve_list</opt> = <arg>list</arg></p>
+<optdesc>
+<p>Specify the method how the domain of the server is resolved. Possible values are
+dns_mx, dns_a, byname. For 'dns_mx', the domain is assumed to be an MX
+pointer to a list of host names, these will be tried each in order
+(lowest preference value first, equal preference values in random
+order). For 'dns_a', the domain is assumed to be an A pointer. For
+'byname', the library function <manref name="gethostbyname" section="3"/> will be used.</p>
+<p>The default is "dns_a;byname". It does not make much sense here to use 'dns_mx'.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>user</opt> = <arg>string</arg></p>
+<optdesc>
+<p>Your login name.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>pass</opt> = <arg>string</arg></p>
+<optdesc>
+<p>Your password.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>address</opt> = <arg>string</arg></p>
+<optdesc>
+<p>The address where the retrieved mail should be sent to. It can be
+any address, but you probably want to set this to a local address on
+your LAN.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>do_keep</opt> = <arg>boolean</arg></p>
+<optdesc>
+<p>If you want to keep your mail on the server after you retrieved it,
+set this to true. It is recommended that you also set <b>do_uidl</b>,
+otherwise you will get the mail again each time you connect to the
+server. Masqmail does not check any headers before it retrieves mail,
+which may mark it as already fetched.  Note that this behaviour is
+different to that of fetchmail. The default is false.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>do_uidl</opt> = <arg>boolean</arg></p>
+<optdesc>
+<p>If set, MasqMail keeps a list of unique IDs of mails already
+fetched, so that they will not be retrieved again. Default is false.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>max_size</opt> = <arg>numeric</arg></p>
+<optdesc>
+<p>If set to a value > 0, only messages smaller than this in bytes will be
+retrieved. The default is 0.</p>
+</optdesc>
+</option>
+
+<option>
+<p><opt>wrapper</opt> = <arg>command</arg></p>
+<optdesc>
+<p>If set, instead of opening a connection to a remote server, <arg>command</arg> will
+be called and all traffic will be piped to its
+stdin and from its stdout. Purpose is to tunnel ip traffic, eg. for ssl.</p>
+<p>Example for ssl tunneling:</p>
+<p>wrapper="/usr/bin/openssl s_client -quiet -connect pop.gmx.net:995 2>/dev/null"</p>
+</optdesc>
+</option>
+
+</options>
+
+<section name = "Author">
+<p>masqmail was written by Oliver Kurth
+&lt;kurth@innominate.de&gt;</p><p>You will find the newest version of
+masqmail at <url href="http://www.innomininate.org/~oku/masqmail/"/> or search for it
+in freshmeat (<url href="http://www.freshmeat.net"/>). There is also a mailing list,
+you will find information about it at masqmails main site.</p>
+</section>
+
+<section name = "Bugs">
+<p>You should report them to the mailing list.</p>
+</section>
+
+<section name = "See also">
+<p>
+<manref name="masqmail" section="8" href="masqmail.8.html"/>, <manref name="masqmail.route" section="5" href="masqmail.route.5.html"/>, <manref name="masqmail.conf" section="5" href="masqmail.conf.5.html"/>
+</p>
+</section>
+
+<section name = "Comments">
+<p>This man page was written using <manref name="xml2man" section="1"
+href="http://www.innominate.org/~oku/xml2man/"/> by the same
+author.</p>
+</section>
+
+</manpage>
+

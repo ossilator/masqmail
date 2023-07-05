@@ -1,0 +1,10 @@
+This is from libident 0.22 (though the version string says 0.21?). I
+have not changed it, except that I replaced the Makefile with a
+Makefile.am.
+
+I also did not include the example programs and the man page in the
+masqmail source tarball.
+
+Oliver Kurth, Fri Oct  6 15:11:07 CEST 2000
+kurth@innominate.de
+

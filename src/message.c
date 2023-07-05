@@ -22,25 +22,13 @@ message *create_message()
 {
   message *msg = (message *)g_malloc(sizeof(message));
   if(msg){
-    msg->uid = NULL;
-
-    msg->received_host = NULL;
-    msg->transfer_id = 0;
-
-    msg->return_path = NULL;
-    msg->rcpt_list = NULL;
-    msg->non_rcpt_list = NULL;
-
-    msg->hdr_list = NULL;
-    msg->data_list = NULL;
-
+    memset(msg, 0, sizeof(message));
     msg->data_size = -1;
-    msg->received_time = 0;
   }
   return msg;
 }
 
-gint calc_size(message *msg, gboolean is_smtp)
+gint msg_calc_size(message *msg, gboolean is_smtp)
 {
   GList *node;
   gint l_cnt = 0, c_cnt = 0;
@@ -104,6 +92,7 @@ void destroy_message(message *msg)
   DEBUG(6) debugf("destroy_message entered\n");
 
   if(msg->uid) g_free(msg->uid);
+  if(msg->ident) g_free(msg->ident);
   if(msg->return_path) g_free(msg->return_path);
 
   if(msg->rcpt_list){
@@ -124,6 +113,9 @@ void destroy_message(message *msg)
     }
     g_list_free(msg->hdr_list);
   }
+
+  if(msg->full_sender_name)
+    g_free(msg->full_sender_name);
 
   msg_free_data(msg);
 
@@ -254,14 +246,16 @@ address *create_address_qualified(gchar *path, gboolean is_rfc821,
    but its only called for that purpose */
 address *create_address_pipe(gchar *path)
 {
-  address *adr = g_malloc(sizeof(address));
+  address *addr = g_malloc(sizeof(address));
 
-  adr->address = g_strdup(path);
-  adr->local_part = g_strdup(path);
+  if(addr){
+    memset(addr, 0, sizeof(address));
+    addr->address = g_strchomp(g_strdup(path));
+    addr->local_part = g_strdup(addr->address);
   
-  adr->domain = g_strdup("localhost"); /* quick hack */
-  adr->children = NULL;
-  adr->parent = NULL;
+    addr->domain = g_strdup("localhost"); /* quick hack */
+  }
+  return addr;
 }
 
 void destroy_address(address *adr)
@@ -293,6 +287,8 @@ address *copy_modify_address(const address *orig, gchar *l_part, gchar *dom)
 	adr->domain = g_strdup(orig->domain);
       else
 	adr->domain = g_strdup(dom);
+
+      adr->flags = 0;
       adr->children = NULL;
       adr->parent = NULL;
     }

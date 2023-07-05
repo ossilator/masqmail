@@ -17,6 +17,34 @@
 */
 
 #include "masqmail.h"
+#include "peopen.h"
+
+static
+void message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
+{
+  time_t now = time(NULL);
+  GList *node;
+  
+  if(flags & MSGSTR_FROMLINE){
+    fprintf(out, "From <%s@%s> %s", msg->return_path->local_part,
+	    msg->return_path->domain, ctime(&now));
+  }
+	  
+  foreach(hdr_list, node){
+    header *hdr = (header *)(node->data);
+    fputs(hdr->header, out);
+  }
+  putc('\n', out);
+  foreach(msg->data_list, node){
+    /* From hack: */
+    if(flags & MSGSTR_FROMHACK){
+      if(strncmp(node->data, "From ", 5) == 0)
+	putc('>', out);
+    }
+    fputs(node->data, out);
+  }
+  putc('\n', out);
+}
 
 gboolean append_file(message *msg, GList *hdr_list, gchar *user)
 {
@@ -27,7 +55,7 @@ gboolean append_file(message *msg, GList *hdr_list, gchar *user)
   if(hdr_list == NULL)
     hdr_list = msg->hdr_list;
 
-  if(pw = getpwnam(user)){
+  if((pw = getpwnam(user))){
     uid_t saved_uid = geteuid();
     gid_t saved_gid = getegid();
     gboolean uid_ok = TRUE, gid_ok = TRUE;
@@ -48,7 +76,7 @@ gboolean append_file(message *msg, GList *hdr_list, gchar *user)
       FILE *out;
 
       filename = g_strdup_printf("%s/%s", conf.mail_dir, user);
-      if(out = fopen(filename, "a")){
+      if((out = fopen(filename, "a"))){
 	
 #ifdef USE_LIBLOCKFILE
         gint err;
@@ -63,26 +91,10 @@ gboolean append_file(message *msg, GList *hdr_list, gchar *user)
 	lock.l_start = lock.l_len = 0;
 	if(fcntl(fileno(out), F_SETLK, &lock) != -1){
 #endif
-	  time_t now = time(NULL);
-	  GList *node;
-
 	  fchmod(fileno(out), 0600);
 
-	  fprintf(out, "From <%s@%s> %s", msg->return_path->local_part,
-		  msg->return_path->domain, ctime(&now));
-	  
-	  foreach(hdr_list, node){
-	    header *hdr = (header *)(node->data);
-	    fputs(hdr->header, out);
-	  }
-	  putc('\n', out);
-	  foreach(msg->data_list, node){
-	    /* From hack: */
-	    if(strncmp(node->data, "From ", 5) == 0)
-	      putc('>', out);
-	    fputs(node->data, out);
-	  }
-	  putc('\n', out);
+	  message_stream(out, msg, hdr_list, MSGSTR_FROMLINE|MSGSTR_FROMHACK);
+
 	  ok = TRUE;
 	  
 	  /* close when still user */
@@ -136,54 +148,78 @@ gboolean append_file(message *msg, GList *hdr_list, gchar *user)
 }
 
 gboolean
-pipe_out(message *msg, GList *hdr_list, gchar *pname)
+pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 {
-  gchar *cmd = &(pname[1]);
+  gchar *local = rcpt->local_part;
+  gchar *envp[40];
   FILE *out;
   uid_t saved_uid = geteuid();
   gid_t saved_gid = getegid();
   gboolean ok = FALSE;
+  gint i, n;
+  pid_t pid;
+  void (*old_signal)(int);
+  int status;
 
   /* set uid and gid to the mail ids */
   if(!conf.run_as_user){
-    seteuid(0);
-
-    if(setegid(conf.mail_gid) != 0){
-      logwrite(LOG_ALERT, "could not change gid to %d: %s\n",
-	       conf.mail_gid, strerror(errno));
-      exit(EXIT_FAILURE);
-    }
-    if(seteuid(conf.mail_uid) != 0){
-      logwrite(LOG_ALERT, "could not change uid to %d: %s\n",
-	       conf.mail_uid, strerror(errno));
-      exit(EXIT_FAILURE);
-    }
+    set_euidgid(conf.mail_uid, conf.mail_gid, &saved_uid, &saved_gid);
   }
 
-  out = popen(cmd, "w");
-  if(out != NULL){
-    GList *node;
+  /* set environment */
+  {
+    gint i = 0;
+    address *ancestor = addr_find_ancestor(rcpt);
 
-    foreach(hdr_list, node){
-      header *hdr = (header *)(node->data);
-      fputs(hdr->header, out);
-    }
-    putc('\n', out);
-    foreach(msg->data_list, node){
-      fputs(node->data, out);
-    }
-    putc('\n', out);
-    if(pclose(out) != 0)
-      logwrite(LOG_ALERT, "pclose returned error: %s\n", strerror(errno));
-    else
+    envp[i++] = g_strdup_printf("SENDER=%s@%s", msg->return_path->local_part, msg->return_path->domain);
+    envp[i++] = g_strdup_printf("SENDER_DOMAIN=%s", msg->return_path->domain);
+    envp[i++] = g_strdup_printf("SENDER_LOCAL=%s@%s", msg->return_path->local_part);
+    envp[i++] = g_strdup_printf("RECEIVED_HOST=%s", msg->received_host ? msg->received_host : "");
+
+    envp[i++] = g_strdup_printf("RETURN_PATH=%s@%s", msg->return_path->local_part, msg->return_path->domain);
+    envp[i++] = g_strdup_printf("DOMAIN=%s", ancestor->domain);
+
+    envp[i++] = g_strdup_printf("LOCAL_PART=%s", ancestor->local_part);
+    envp[i++] = g_strdup_printf("USER=%s", ancestor->local_part);
+    envp[i++] = g_strdup_printf("LOGNAME=%s", ancestor->local_part);
+
+    envp[i++] = g_strdup_printf("MESSAGE_ID=%s", msg->uid);
+    envp[i++] = g_strdup_printf("QUALIFY_DOMAIN=%s", conf.host_name);
+
+    envp[i] = NULL;
+    n = i;
+  }
+
+  old_signal = signal(SIGCHLD, SIG_DFL);
+
+  out = peidopen(cmd, "w", envp, &pid, conf.mail_uid, conf.mail_gid);
+  if(out != NULL){
+    message_stream(out, msg, hdr_list, flags);
+
+    fclose(out);
+
+    waitpid(pid, &status, 0);
+
+    if(status != 0){
+      logwrite(LOG_ALERT, "process returned %d: %s\n", status, strerror(errno));
+    }else
       ok = TRUE;
+
   }else
     logwrite(LOG_ALERT, "could not open pipe '%s': %s\n", cmd, strerror(errno));
 
-  if(!conf.run_as_user){
-    seteuid(saved_uid);
-    setegid(saved_gid);
+  signal(SIGCHLD, old_signal);
+
+  /* free environment */
+  for(i = 0; i < n; i++){
+    g_free(envp[i]);
   }
+
+  /* set uid and gid back */
+  if(!conf.run_as_user){
+    set_euidgid(saved_uid, saved_gid, NULL, NULL);
+  }
+
   return ok;
 }
     

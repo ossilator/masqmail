@@ -113,7 +113,7 @@ gboolean read_domain(gchar *p, gchar **b, gchar **e)
       p++;
     if(*p != ']'){
       parse_error =
-	g_strdup_printf("']' expected at end of literal address %s", b);
+	g_strdup_printf("']' expected at end of literal address %s", *b);
       return FALSE;
     }
     p++;
@@ -130,7 +130,6 @@ gboolean parse_address_rfc822(gchar *string,
   gint angle_brackets = 0;
 
   gchar *p = string;
-  gchar *q;
   gchar *b, *e;
 
   *local_begin = *local_end = NULL;
@@ -157,7 +156,7 @@ gboolean parse_address_rfc822(gchar *string,
 	g_print("after read_word_with_dots: %s\n", p);
 #endif
 	/* eat white spaces and comments */
-	while(*p && (isspace(*p)) || (*p == '(')){
+	while((*p && (isspace(*p))) || (*p == '(')){
 	  if(*p == '('){
 	    if(!(p = skip_comment(p))){
 	      parse_error =
@@ -272,7 +271,6 @@ gboolean parse_address_rfc821(gchar *string,
   gint angle_brackets = 0;
 
   gchar *p = string;
-  gchar *q;
   gchar *b, *e;
 
   *local_begin = *local_end = NULL;
@@ -401,6 +399,7 @@ address *_create_address(gchar *string, gchar **end, gboolean is_rfc821)
 
     adr->children = NULL;
     adr->parent = NULL;
+    adr->flags = 0;
 
     return adr;
   }
@@ -415,7 +414,7 @@ address *create_address_rfc821(gchar *string, gchar **end){
   return _create_address(string, end, TRUE);
 }
 
-GList *adr_list_append_rfc822(GList *adr_list, gchar *string)
+GList *adr_list_append_rfc822(GList *adr_list, gchar *string, gchar *domain)
 {
   gchar *p = string;
   gchar *end;
@@ -423,7 +422,10 @@ GList *adr_list_append_rfc822(GList *adr_list, gchar *string)
   while(*p){
     address *adr = _create_address(p, &end, FALSE);
     if(adr){
-      DEBUG(5) debugf("address = %s\n", adr->address);
+      if(domain)
+	if(adr->domain == NULL)
+	  adr->domain = g_strdup(domain);
+
       adr_list = g_list_append(adr_list, adr);
       p = end;
     }else

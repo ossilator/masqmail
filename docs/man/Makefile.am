@@ -1,0 +1,1 @@
+man_MANS=masqmail.8 masqmail.conf.5 masqmail.route.5 masqmail.get.5 masqmail.aliases.5

@@ -17,18 +17,7 @@
 */
 
 #include "masqmail.h"
-
-/* static */
-/* gchar *str_unquote(gchar *str) */
-/* { */
-/*   if(str[0] == '\"'){ */
-/*     gchar *p = str; p++; */
-/*     while(*p && (*p != '\"' || p[-1] == '\\')) p++; */
-/*     *p = 0; */
-/*     return str+1; */
-/*   } */
-/*   return str; */
-/* } */
+#include <fnmatch.h>
 
 static
 gboolean adr_is_local(address *adr)
@@ -38,10 +27,17 @@ gboolean adr_is_local(address *adr)
   foreach(conf.local_hosts, dom_node){
     if(adr->domain == NULL)
       return TRUE;
-    if(strcmp(dom_node->data, adr->domain) == 0)
+    if(fnmatch(dom_node->data, adr->domain, FNM_CASEFOLD) == 0)
       return TRUE;
   }
   return FALSE;
+}
+
+gboolean addr_isequal_alias(address *adr1, address *adr2)
+{
+  return
+    (conf.alias_local_cmp(adr1->local_part, adr2->local_part) == 0) &&
+    (strcasecmp(adr1->domain, adr2->domain) == 0);
 }
 
 static
@@ -60,9 +56,17 @@ GList *parse_list(gchar *line)
 	*(q++) = *(p++);
       *q = 0;
     }else{
+      gboolean escape = FALSE;
       p++;
-      while(*p && (*p != '\"' || p[-1] == '\\'))
-	*(q++) = *(p++);
+      while(*p && (*p != '\"' || escape)){
+	if((*p == '\\') && !escape)
+	  escape = TRUE;
+	else{
+	  escape = TRUE;
+	  *(q++) = *p;
+	}
+	p++;
+      }
       *q = 0;
       while(*p && (*p != ',')) p++;
     }
@@ -81,7 +85,7 @@ GList *alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list)
     address *adr = (address *)(rcpt_node->data);
     DEBUG(5) debugf("alias_expand begin: '%s@%s'\n", adr->local_part, adr->domain);
     if(adr_is_local(adr) && (adr->local_part[0] != '|') && !(adr->flags & ADDR_FLAG_NOEXPAND)){
-      gchar *val = (gchar *)table_find(alias_table, adr->local_part);
+      gchar *val = (gchar *)table_find_func(alias_table, adr->local_part, conf.alias_local_cmp);
       DEBUG(5) debugf("alias: '%s' is local\n", adr->local_part);
       if(val != NULL){
 	GList *val_list = parse_list(val);
@@ -94,9 +98,11 @@ GList *alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list)
 	  address *alias_adr;
 	  address *adr_parent = NULL;
 
-	  if(val[0] == '|')
+	  if(val[0] == '|'){
+	    DEBUG(5) debugf("alias: %s is a pipe address\n", val);
 	    alias_adr = create_address_pipe(val);
-	  else if(val[0] == '\\'){
+	  }else if(val[0] == '\\'){
+	    DEBUG(5) debugf("alias: shall not be expanded: %s\n", val);
 	    alias_adr = create_address_qualified(&(val[1]), TRUE, conf.host_name);
 	    alias_adr->flags |= ADDR_FLAG_NOEXPAND;
 	  }else{
@@ -104,7 +110,7 @@ GList *alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list)
 
 	    /* search in parents for loops: */
 	    for(adr_parent = adr; adr_parent; adr_parent = adr_parent->parent){
-	      if(addr_isequal(alias_adr, adr_parent)){
+	      if(addr_isequal_alias(alias_adr, adr_parent)){
 		logwrite(LOG_ALERT, "detected alias loop, (ignoring): %s@%s -> %s@%s\n",
 			 adr_parent->local_part, adr_parent->domain, adr->local_part, adr->domain);
 		break;

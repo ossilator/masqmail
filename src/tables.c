@@ -18,15 +18,22 @@
 
 #include "masqmail.h"
 
+table_pair *create_pair_string(gchar *key, gpointer value)
+{
+  table_pair *pair;
+  
+  pair = g_malloc(sizeof(table_pair));
+  pair->key = g_strdup(key);
+  pair->value = (gpointer)(g_strdup(value));
+
+  return pair;
+}
+
 table_pair *parse_table_pair(gchar *line, char delim)
 {
-  gchar *adr;
-  gchar *port;
   gchar buf[256];
   gchar *p, *q;
   table_pair *pair;
-
-  DEBUG(6) fprintf(stderr, "parse_table_pair: %s\n", line);
 
   p = line;
   q = buf;
@@ -47,16 +54,37 @@ table_pair *parse_table_pair(gchar *line, char delim)
   return pair;
 }
 
-gpointer *table_find(GList *table_list, gchar *key)
+gpointer *table_find_func(GList *table_list, gchar *key, int (*cmp_func)(const char *, const char *))
 {
   GList *node;
 
   foreach(table_list, node){
     table_pair *pair = (table_pair *)(node->data);
-    if(strcmp(key, pair->key) == 0)
+    if(cmp_func(pair->key, key) == 0)
       return pair->value;
   }
   return NULL;
+}
+
+gpointer *table_find(GList *table_list, gchar *key)
+{
+  return table_find_func(table_list, key, strcmp);
+}
+
+gpointer *table_find_case(GList *table_list, gchar *key)
+{
+  return table_find_func(table_list, key, strcasecmp);
+}
+
+static
+int fnmatch0(const char *pattern, const char *string)
+{
+  return fnmatch(pattern, string, 0);
+}
+
+gpointer *table_find_fnmatch(GList *table_list, gchar *key)
+{
+  return table_find_func(table_list, key, fnmatch0);
 }
 
 GList *table_read(gchar *fname, gchar delim)
@@ -64,7 +92,7 @@ GList *table_read(gchar *fname, gchar delim)
   GList *list = NULL;
   FILE *fptr;
 
-  if(fptr = fopen(fname, "rt")){
+  if((fptr = fopen(fname, "rt"))){
     gchar buf[256];
 
     while(fgets(buf, 255, fptr)){
@@ -91,6 +119,7 @@ void destroy_table(GList *table)
     table_pair *p = (table_pair *)(node->data);
     g_free(p->key);
     g_free(p->value);
+    g_free(p);
   }
   g_list_free(table);
 }

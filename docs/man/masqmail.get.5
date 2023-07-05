@@ -1,0 +1,82 @@
+.TH masqmail.get 5 User Manuals
+.SH NAME
+masqmail.get \- masqmail get configuration file
+.SH DESCRIPTION
+ 
+This man page describes the options available for the masqmail get configuration.
+
+.SH OPTIONS
+.TP
+
+\fBprotocol\f1 = \fIstring\f1
+
+The protocol with which you retrieve your mail. Currently only 'pop3' and 'apop' are supported. There is no default.
+.TP
+
+\fBserver\f1 = \fIstring\f1
+
+The server you get your mail from.
+.TP
+
+\fBresolve_list\f1 = \fIlist\f1
+
+Specify the method how the domain of the server is resolved. Possible values are dns_mx, dns_a, byname. For 'dns_mx', the domain is assumed to be an MX pointer to a list of host names, these will be tried each in order (lowest preference value first, equal preference values in random order). For 'dns_a', the domain is assumed to be an A pointer. For 'byname', the library function \fBgethostbyname (3)\f1 will be used.
+
+The default is "dns_a;byname". It does not make much sense here to use 'dns_mx'.
+.TP
+
+\fBuser\f1 = \fIstring\f1
+
+Your login name.
+.TP
+
+\fBpass\f1 = \fIstring\f1
+
+Your password.
+.TP
+
+\fBaddress\f1 = \fIstring\f1
+
+The address where the retrieved mail should be sent to. It can be any address, but you probably want to set this to a local address on your LAN.
+.TP
+
+\fBdo_keep\f1 = \fIboolean\f1
+
+If you want to keep your mail on the server after you retrieved it, set this to true. It is recommended that you also set do_uidl, otherwise you will get the mail again each time you connect to the server. Masqmail does not check any headers before it retrieves mail, which may mark it as already fetched. Note that this behaviour is different to that of fetchmail. The default is false.
+.TP
+
+\fBdo_uidl\f1 = \fIboolean\f1
+
+If set, MasqMail keeps a list of unique IDs of mails already fetched, so that they will not be retrieved again. Default is false.
+.TP
+
+\fBmax_size\f1 = \fInumeric\f1
+
+If set to a value > 0, only messages smaller than this in bytes will be retrieved. The default is 0.
+.TP
+
+\fBwrapper\f1 = \fIcommand\f1
+
+If set, instead of opening a connection to a remote server, \fIcommand\f1 will be called and all traffic will be piped to its stdin and from its stdout. Purpose is to tunnel ip traffic, eg. for ssl.
+
+Example for ssl tunneling:
+
+wrapper="/usr/bin/openssl s_client -quiet -connect pop.gmx.net:995 2>/dev/null"
+.SH AUTHOR
+
+masqmail was written by Oliver Kurth <kurth@innominate.de>
+
+You will find the newest version of masqmail at \fBhttp://www.innomininate.org/~oku/masqmail/\f1 or search for it in freshmeat (\fBhttp://www.freshmeat.net\f1). There is also a mailing list, you will find information about it at masqmails main site.
+
+.SH BUGS
+
+You should report them to the mailing list.
+
+.SH SEE ALSO
+
+\fBmasqmail (8)\f1, \fBmasqmail.route (5)\f1, \fBmasqmail.conf (5)\f1
+
+.SH COMMENTS
+
+This man page was written using \fBxml2man (1)\f1 by the same author.
+
