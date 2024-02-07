@@ -202,7 +202,7 @@ resolve_dns_a(GList *list, gchar *domain)
 			if (ret == 1) {
 				mxip.name = g_strdup(name);
 				mxip.pref = 0;
-				list = g_list_append(list, g_memdup(&mxip, sizeof(mxip)));
+				list = g_list_append(list, g_memdup2(&mxip, sizeof(mxip)));
 			}
 		}
 	}
@@ -237,7 +237,7 @@ resolve_dns_mx(GList *list, gchar *domain)
 			if (ret == 1) {
 				mxip.name = g_strdup(name);
 				mxip.ip = rand();
-				list = g_list_append(list, g_memdup(&mxip, sizeof(mxip)));
+				list = g_list_append(list, g_memdup2(&mxip, sizeof(mxip)));
 				cnt++;
 			}
 		}
@@ -288,7 +288,7 @@ resolve_byname(GList *list, gchar *domain)
 			mxip.ip = *(guint32 *) (haddr);
 			mxip.pref = 0;
 			mxip.name = g_strdup(hent->h_name);
-			list = g_list_append(list, g_memdup(&mxip, sizeof(mxip)));
+			list = g_list_append(list, g_memdup2(&mxip, sizeof(mxip)));
 		}
 	}
 	return list;

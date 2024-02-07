@@ -13,7 +13,7 @@ AC_PROG_CC
 
 dnl Checks for libraries.
 
-PKG_CHECK_MODULES(GLIB, glib-2.0)
+PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.68])
 AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
 

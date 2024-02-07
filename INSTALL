@@ -5,9 +5,8 @@ For installing on GNU/Linux distributions read docs/INSTALL.linux.
 Installation instructions
 -------------------------
 
-To compile masqmail you need glib (>= 1.2) (http://www.gtk.org). Your
-distribution probably provides it. Glib-2.0 works out of the box, for
-glib-1.2, you need to adjust configure.ac. See the comment in there.
+To compile masqmail you need glib (>= 2.68) (http://www.gtk.org). Your
+distribution probably provides it as glib-2.0.
 
 You need a user and a group for masqmail to run. If
 
