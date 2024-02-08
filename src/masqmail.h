@@ -165,6 +165,7 @@ typedef enum _prot_id {
 
 extern gchar *prot_names[];
 
+/* keep in sync with header_names array! */
 typedef enum _header_id {
 	HEAD_FROM = 0,
 	HEAD_SENDER,
@@ -180,11 +181,6 @@ typedef enum _header_id {
 	HEAD_RECEIVED,
 	HEAD_UNKNOWN
 } header_id;
-
-typedef struct _header_name {
-	gchar *header;
-	header_id id;
-} header_name;
 
 typedef struct _header {
 	header_id id;
