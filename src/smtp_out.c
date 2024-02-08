@@ -317,7 +317,7 @@ smtp_helo(smtp_base *psb, const gchar *helo)
 		return TRUE;
 	}
 
-	/* what sort of server ist THAT ?!  give up... */
+	// what sort of server is THAT?! give up ...
 	return FALSE;
 }
 

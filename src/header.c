@@ -93,7 +93,7 @@ create_header(header_id id, const gchar *fmt, ...)
 
 	/*
 	**  value shall point to the first non-whitespace char in the
-	**  value part of the header line (i.e. after the first colon)
+	**  value part of the header line (i.e., after the first colon)
 	*/
 	gchar *p = strchr(txt, ':');
 	assert( p );

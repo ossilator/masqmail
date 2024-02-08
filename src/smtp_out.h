@@ -21,7 +21,7 @@ typedef enum _smtp_error {
 	smtp_timeout,  /* connection timed out */
 	smtp_eof,  /* got unexpected EOF */
 	smtp_syntax,  /* unexpected response */
-	smtp_cancel  /* we gave up (eg. size) */
+	smtp_cancel  /* we gave up (e.g., size) */
 } smtp_error;
 
 

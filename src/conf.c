@@ -117,7 +117,7 @@ parse_list(gchar *line, gboolean read_file)
 /*
 **  Split the addrs at '@' into local_part and domain. Without an '@'
 **  everything is local_part. Create and return a list of address structs.
-**  This funktion is used for lists of addrs containing globbing chars
+**  This function is used for lists of addrs containing globbing chars
 **  (* and ?).  We don't need valid RFC821 addresses here, just patterns
 **  to match against.
 */

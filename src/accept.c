@@ -35,7 +35,7 @@ string_base62(gchar *res, guint value, gchar len)
 
 /*
 **  accept message from anywhere.
-**  A message from local is indicated by msg->recieved_host == NULL
+**  A message from local is indicated by msg->received_host == NULL
 **
 **  The -t option: With the ACC_RCPT_FROM_HEAD flag the addrs found found
 **  in To/Cc/Bcc headers are added to the recipient list.
@@ -149,7 +149,7 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 	}
 	msg->data_list = g_list_reverse(msg->data_list);
 
-	/* we have succesfully received the mail data */
+	// we have successfully received the mail data
 
 	msg->data_size = data_size;
 	msg->received_time = time(NULL);

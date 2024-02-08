@@ -17,7 +17,7 @@
 
 /*
 **  mutually exclusive modes. Note that there is no 'queue daemon' mode.
-**  It, as well as the distinction beween the two (non exclusive) daemon
+**  It, as well as the distinction between the two (non exclusive) daemon
 **  (queue and listen) modes, is handled by flags.
 */
 enum mta_mode {
@@ -250,11 +250,11 @@ mode_accept(address *return_path, const gchar *full_sender_name, guint accept_fl
 }
 
 /*
-**  if -Mrm is given
+**  if -M* is given
 **
-**  currently only the `rm' command is supported
-**  until this changes, we don't need any facility for further commands
-**  return success if at least one message had been deleted
+**  currently only the `rm' command is supported.
+**  until this changes, we don't need any facility for further commands.
+**  return success if at least one message has been deleted.
 */
 static int
 manipulate_queue(const char *cmd, const char * const id[])
@@ -547,7 +547,8 @@ main(int argc, const char * const argv[])
 	/* ignore SIGPIPE signal */
 	signal(SIGPIPE, SIG_IGN);
 
-	/* close all possibly open file descriptors, except std{in,out,err} */
+	// close all possibly open file descriptors, except std{in,out,err}.
+	// this may avoid a data leak if we accidentally write to the wrong fd.
 	{
 		int i, max_fd = sysconf(_SC_OPEN_MAX);
 
@@ -574,9 +575,9 @@ main(int argc, const char * const argv[])
 	conf.conf_file = conf_file;
 
 	/*
-	**  if we are not privileged, and the config file was changed we
-	**  implicetely set the the run_as_user flag and give up all
-	**  privileges.
+	**  if we were started by a non-root user, and a non-default
+	**  config file was specified, we automatically set the run_as_user
+	**  flag and give up all privileges.
 	**
 	**  So it is possible for a user to run his own daemon without
 	**  breaking security.
@@ -594,7 +595,7 @@ main(int argc, const char * const argv[])
 		}
 	}
 
-	conf.debug_level = debug_level;  /* for debuggin during read_conf() */
+	conf.debug_level = debug_level;  /* for debugging during read_conf() */
 	if (!read_conf()) {
 		logwrite(LOG_ERR, "SHUTTING DOWN due to problems reading config\n");
 		exit(5);

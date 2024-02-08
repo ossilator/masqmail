@@ -67,8 +67,8 @@ connect_hostlist(int *psockfd, gint port, GList *addr_list)
 
 /*
 **  Given a list of resolver functions, this function
-**  resolve the host and tries to connect to the addresses
-**  returned. If a connection attemp is timed out or refused,
+**  resolves the host and tries to connect to the addresses
+**  returned. If a connection attempt is timed out or refused,
 **  the next address is tried.
 */
 mxip_addr*
