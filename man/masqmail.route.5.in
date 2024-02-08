@@ -42,13 +42,7 @@ Messages which have one of these addresses as the return path (=
 mail from) will not
 be sent using this route (even if also in \fBallowed_senders\fR).
 
-Glob patterns containing `?' and `*' can be used.
-The special item "<>" matches the null sender address
-(eg. failure notices or delivery notifications).
-If the pattern doesn't contain an `@', it is seen as a pattern for the
-local part only.
-
-Example: (see \fIallowed_senders\fP)
+See \fIallowed_senders\fP for syntax and semantics.
 
 .TP
 \fBallowed_recipients\fR = \fIlist\fR
@@ -101,11 +95,7 @@ Messages which have one of these addresses as the From header
 will not be sent using this route (even if also in
 \fBallowed_from_hdrs\fR).
 
-Glob patterns containing `?' and `*' can be used.
-If the pattern doesn't contain an `@', it is seen as a pattern for the
-local part only.
-
-Example: (see \fIallowed_from_hdrs\fP)
+See \fIallowed_from_hdrs\fP for syntax and semantics.
 
 .TP
 \fBlast_route\fR = \fIboolean\fR
