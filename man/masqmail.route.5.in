@@ -19,16 +19,17 @@ In this case the message will be piped to the given program.
 .TP
 \fBallowed_senders\fR = \fIlist\fR
 
-This is a semicolon `;' separated list of envelope sender addresses.
-Messages which have one of these addresses as the return path (= mail
-from) are allowed to use this route
+Messages whose envelope sender (return path) address appears in this
+semicolon-separated list are allowed to use this route
 (if not also in \fBdenied_senders\fR).
+
+Overriding this address is a privileged operation, so it can be trusted.
 
 Glob patterns containing `?' and `*' can be used.
 The special item "<>" matches the null sender address
 (eg. failure notices or delivery notifications).
 If the pattern doesn't contain an `@', it is seen as a pattern for the
-local part only.
+local part only, i.e., it matches any domain.
 
 Example: \fImeillo;*@*example.org;web*@example.com\fP
 
@@ -37,9 +38,8 @@ Example: \fImeillo;*@*example.org;web*@example.com\fP
 .TP
 \fBdenied_senders\fR = \fIlist\fR
 
-This is a semicolon `;' separated list of envelope sender addresses.
-Messages which have one of these addresses as the return path (=
-mail from) will not
+Messages whose envelope sender (return path) address appears in this
+semicolon-separated list will not
 be sent using this route (even if also in \fBallowed_senders\fR).
 
 See \fIallowed_senders\fP for syntax and semantics.
@@ -47,8 +47,8 @@ See \fIallowed_senders\fP for syntax and semantics.
 .TP
 \fBallowed_recipients\fR = \fIlist\fR
 
-A list of envelope recipient addresses where mail can be sent to using
-this route.
+A semicolon-separated list of envelope recipient addresses where mail can
+be sent to using this route.
 This is for example useful if you use this route configuration when connected to another LAN via ppp.
 Glob patterns containing `?' and `*' can be used.
 
@@ -59,8 +59,8 @@ Example: \fI*@example.org;*@*foo.bar\fP
 .TP
 \fBdenied_recipients\fR = \fIlist\fR
 
-A list of envelope recipient addresses where mail will not be sent to
-using this route.
+A semicolon-separated list of envelope recipient addresses where mail will not
+be sent to using this route.
 This is for example useful if you send mail directly (\fBmail_host\fR is not set)
 and you know of hosts that will not accept mail from you because they use a dialup list
 (eg. \fBhttp://maps.vix.com/dul/\fR).
@@ -74,10 +74,11 @@ Example: \fI*@spamblocker.example.org\fP
 .TP
 \fBallowed_from_hdrs\fR = \fIlist\fR
 
-This is a semicolon `;' separated list of From header addresses.
-Messages which have one of these addresses as the From header
-are allowed to use this route
-(if not also in \fBdenied_from_hdrs\fR).
+Messages whose `From:' address appears in this semicolon-separated list are
+allowed to use this route (if not also in \fBdenied_from_hdrs\fR).
+
+The message sender can set this address arbitrarily, so it cannot be
+trusted for security-sensitive decisions.
 
 Glob patterns containing `?' and `*' can be used.
 If the pattern doesn't contain an `@', it is seen as a pattern for the
@@ -90,10 +91,8 @@ Example: \fImeillo;*@*example.org;web*@example.com\fP
 .TP
 \fBdenied_from_hdrs\fR = \fIlist\fR
 
-This is a semicolon `;' separated list of From header addresses.
-Messages which have one of these addresses as the From header
-will not be sent using this route (even if also in
-\fBallowed_from_hdrs\fR).
+Messages whose `From:' address appears in this semicolon-separated list will
+not be sent using this route (even if also in \fBallowed_from_hdrs\fR).
 
 See \fIallowed_from_hdrs\fP for syntax and semantics.
 
