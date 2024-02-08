@@ -178,10 +178,7 @@ typedef enum _header_id {
 	HEAD_RETURN_PATH,
 	HEAD_ENVELOPE_TO,
 	HEAD_RECEIVED,
-	HEAD_NUM_IDS,
-	HEAD_STATUS,
-	HEAD_UNKNOWN = HEAD_NUM_IDS,
-	HEAD_NONE = -1,
+	HEAD_UNKNOWN
 } header_id;
 
 typedef struct _header_name {
