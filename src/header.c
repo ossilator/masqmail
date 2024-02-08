@@ -6,19 +6,20 @@
 
 #include "masqmail.h"
 
-header_name header_names[] = {
-	{"From", HEAD_FROM,},
-	{"Sender", HEAD_SENDER,},
-	{"To", HEAD_TO,},
-	{"Cc", HEAD_CC,},
-	{"Bcc", HEAD_BCC,},
-	{"Date", HEAD_DATE,},
-	{"Message-Id", HEAD_MESSAGE_ID,},
-	{"Reply-To", HEAD_REPLY_TO,},
-	{"Subject", HEAD_SUBJECT,},
-	{"Return-Path", HEAD_RETURN_PATH,},
-	{"Envelope-To", HEAD_ENVELOPE_TO,},
-	{"Received", HEAD_RECEIVED},
+/* keep in sync with header_id enum! */
+static const char * const header_names[] = {
+	"From",
+	"Sender",
+	"To",
+	"Cc",
+	"Bcc",
+	"Date",
+	"Message-Id",
+	"Reply-To",
+	"Subject",
+	"Return-Path",
+	"Envelope-To",
+	"Received",
 };
 
 /* this was borrowed from exim and slightly changed */
@@ -268,7 +269,7 @@ get_header(gchar *line)
 	*/
 
 	for (i = 0; i < HEAD_UNKNOWN; i++) {
-		if (strcasecmp(header_names[i].header, buf) == 0) {
+		if (strcasecmp(header_names[i], buf) == 0) {
 			break;
 		}
 	}
