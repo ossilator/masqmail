@@ -320,7 +320,7 @@ scan_headers(message *msg, guint flags)
 		} else {
 			msg->hdr_list = g_list_append(msg->hdr_list,
 					create_header(HEAD_FROM,
-					"From: <%s@%s>\n",
+					"From: %s@%s\n",
 					msg->return_path->local_part,
 					msg->return_path->domain));
 		}
