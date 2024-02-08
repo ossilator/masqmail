@@ -18,16 +18,17 @@
 */
 
 
-smtp_cmd smtp_cmds[] = {
-	{SMTP_HELO, "HELO",},
-	{SMTP_EHLO, "EHLO",},
-	{SMTP_MAIL_FROM, "MAIL FROM:",},
-	{SMTP_RCPT_TO, "RCPT TO:",},
-	{SMTP_DATA, "DATA",},
-	{SMTP_QUIT, "QUIT",},
-	{SMTP_RSET, "RSET",},
-	{SMTP_NOOP, "NOOP",},
-	{SMTP_HELP, "HELP"},
+// keep in sync with smtp_cmd_id!
+static const char * const smtp_cmds[] = {
+	"HELO",
+	"EHLO",
+	"MAIL FROM:",
+	"RCPT TO:",
+	"DATA",
+	"QUIT",
+	"RSET",
+	"NOOP",
+	"HELP"
 };
 
 static smtp_cmd_id
@@ -35,7 +36,7 @@ get_id(const gchar *line)
 {
 	gint i;
 	for (i = 0; i < SMTP_NUM_IDS; i++) {
-		if (strncasecmp(smtp_cmds[i].cmd, line, strlen(smtp_cmds[i].cmd)) == 0) {
+		if (strncasecmp(smtp_cmds[i], line, strlen(smtp_cmds[i])) == 0) {
 			return (smtp_cmd_id) i;
 		}
 	}
@@ -371,9 +372,9 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
 
 				smtp_printf(out, "214-supported commands:\r\n");
 				for (i = 0; i < SMTP_NUM_IDS - 1; i++) {
-					smtp_printf(out, "214-%s\r\n", smtp_cmds[i].cmd);
+					smtp_printf(out, "214-%s\r\n", smtp_cmds[i]);
 				}
-				smtp_printf(out, "214 %s\r\n", smtp_cmds[i].cmd);
+				smtp_printf(out, "214 %s\r\n", smtp_cmds[i]);
 			}
 			break;
 

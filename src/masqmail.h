@@ -257,6 +257,7 @@ typedef enum _accept_error {
 #define MAX_ADDRESS 256
 #define MAX_DATALINE 4096
 
+// keep in sync with smtp_cmds!
 typedef enum _smtp_cmd_id {
 	SMTP_HELO = 0,
 	SMTP_EHLO,
@@ -271,11 +272,6 @@ typedef enum _smtp_cmd_id {
 	SMTP_EOF = -1,
 	SMTP_ERROR = -2,
 } smtp_cmd_id;
-
-typedef struct _smtp_cmd {
-	smtp_cmd_id id;
-	gchar *cmd;
-} smtp_cmd;
 
 typedef struct _smtp_connection {
 	gchar *remote_host;
