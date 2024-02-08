@@ -132,8 +132,8 @@ start masqmail. Probably with:
 
 If this doesn't work as expected, you might need to add a special init
 script for masqmail. Currently none is distributed with masqmail.
-(Hopefully this will change soon.) Please ask on the mailing list for
-help.
+(Hopefully this will change soon.) Please ask on the discussion board
+for help.
 
 You can also directly start masqmail as daemon with:
 

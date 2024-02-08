@@ -28,7 +28,5 @@ are essential, the others can also be added on request.
   send debug files. (It's good to run masqmail with `-d 5' or `-d 6' to
   generate debugging data that may help to track down the bug.
 
-Report the bug to the mailing list <masqmail@marmaro.de>. You don't
-have to be subscribed to write to the list. Please tell us if you're
-not subscribed so that we set you on CC. If you want to subscribe, send
-a mail with subject ``subscribe masqmail'' to <minimalist@marmaro.de>.
+Report the bug to the project issue tracker on
+ https://github.com/ossilator/masqmail
