@@ -427,10 +427,7 @@ _create_address(gchar *string, gchar **end, gboolean is_rfc821)
 	if (dom_beg != NULL) {
 		addr->domain = g_strndup(dom_beg, dom_end - dom_beg);
 	} else if (addr->local_part[0] == '\0') {
-		/*
-		** 'NULL' address: failure notice
-		** "": will *not* be qualified with a hostname
-		*/
+		// do not qualify explicitly empty address
 		addr->domain = g_strdup("");
 	} else {
 		addr->domain = NULL;

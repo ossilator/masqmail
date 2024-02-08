@@ -311,7 +311,7 @@ route_sender_is_allowed(connect_route *route, address *ret_path)
 
 /*
 **  Make lists of matching/not matching rcpts.
-**  Local domains are NOT regared here, these should be sorted out previously
+**  Local domains are NOT regarded here, these should be sorted out earlier.
 */
 void
 route_split_rcpts(connect_route *route, GList *rcpt_list, GList **p_rcpt_list, GList **p_non_rcpt_list)
@@ -370,8 +370,8 @@ route_prepare_msgout(connect_route *route, msg_out *msgout)
 		}
 
 		/*
-		**  rewrite return path if there is a table, use that
-		**  if an address is found and if it has a domain, use that
+		**  rewrite return path. if there is a table, use that.
+		**  if an address is found and if it has a domain, use that.
 		*/
 		if (route->map_return_path_addresses) {
 			address *ret_path = NULL;

@@ -7,12 +7,12 @@ debug_level = 5
 # deliver at once
 do_queue = false
 
-# identify with some name that is *not* the one of the our machine
+# identify with some name that is *not* the one of our machine.
 # maybe we should not define a name at all, but this may lead to
 # problems. Could be we even need a FQDN here.
 host_name="MASQMAIL-TEST"
 
-# we want to deliver through a route named `test' to a local MTA
+# we want to deliver through a route named `test' to a local MTA.
 # thus we do not define any hosts as local. All mail should go through
 # the route.
 permanent_routes = "PWD/test.route"

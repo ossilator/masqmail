@@ -325,11 +325,11 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 }
 
 /*
-**  if -Mrm is given
+**  if -M* is given
 **
-**  currently only the `rm' command is supported
-**  until this changes, we don't need any facility for further commands
-**  return success if at least one message had been deleted
+**  currently only the `rm' command is supported.
+**  until this changes, we don't need any facility for further commands.
+**  return success if at least one message has been deleted.
 */
 static int
 manipulate_queue(char *cmd, char *id[])
@@ -651,7 +651,8 @@ main(int argc, char *argv[])
 	/* ignore SIGPIPE signal */
 	signal(SIGPIPE, SIG_IGN);
 
-	/* close all possibly open file descriptors, except std{in,out,err} */
+	// close all possibly open file descriptors, except std{in,out,err}.
+	// this may avoid a data leak if we accidentally write to the wrong fd.
 	{
 		int i, max_fd = sysconf(_SC_OPEN_MAX);
 
@@ -666,9 +667,9 @@ main(int argc, char *argv[])
 	init_conf();
 
 	/*
-	**  if we are not privileged, and the config file was changed we
-	**  implicetely set the the run_as_user flag and give up all
-	**  privileges.
+	**  if we were started by a non-root user, and a non-default
+	**  config file was specified, we automatically set the run_as_user
+	**  flag and give up all privileges.
 	**
 	**  So it is possible for a user to run his own daemon without
 	**  breaking security.
@@ -690,7 +691,7 @@ main(int argc, char *argv[])
 	}
 
 	conf.log_dir = LOG_DIR;
-	conf.debug_level = debug_level;  /* for debuggin during read_conf() */
+	conf.debug_level = debug_level;  /* for debugging during read_conf() */
 	/* FIXME: fails if we run as user */
 	logopen();
 	if (!read_conf(conf_file)) {

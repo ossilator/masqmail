@@ -257,8 +257,8 @@ deliver_local(msg_out *msgout)
 }
 
 /*
-**  make a list of rcpt's of a message that are local
-**  return a new copy of the list
+**  make a list of rcpt's of a message that are local.
+**  return a new copy of the list.
 */
 void
 msg_rcptlist_local(GList *rcpt_list, GList **p_local_list,

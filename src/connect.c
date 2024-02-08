@@ -73,12 +73,12 @@ connect_hostlist(int *psockfd, gchar *host, guint port, GList *addr_list)
 
 /*
 **  Given a list of resolver functions, this function
-**  resolve the host and tries to connect to the addresses
-**  returned. If a connection attemp is timed out or refused,
+**  resolves the host and tries to connect to the addresses
+**  returned. If a connection attempt is timed out or refused,
 **  the next address is tried.
 **
-**  TODO: the resolver functions might return duplicate addresses,
-**  if attempt failed for one it should not be tried again.
+**  TODO: the resolver functions might return duplicate addresses;
+**  if an attempt failed for one it should not be tried again.
 */
 mxip_addr*
 connect_resolvelist(int *psockfd, gchar *host, guint port,
