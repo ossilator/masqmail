@@ -30,3 +30,8 @@
 .deps/
 Makefile
 Makefile.in
+*.o
+*.a
+
+# from debian packaging
+/.pc/
