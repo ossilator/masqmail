@@ -14,7 +14,7 @@ create_msgout_perhost(gchar *host)
 {
 	msgout_perhost *mo_ph = g_malloc(sizeof(msgout_perhost));
 	if (mo_ph) {
-		mo_ph->host = g_strdup(host);
+		mo_ph->host = host;
 		mo_ph->msgout_list = NULL;
 	}
 	return mo_ph;
