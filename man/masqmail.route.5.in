@@ -18,125 +18,141 @@ In this case the message will be piped to the given program.
 
 .SH ROUTE CONDITIONS
 
+A message must pass all conditions to be allowed through a route.
+Accordingly, matches from a deny list take precedence over matches
+from the corresponding allow list.
+Empty allow lists allow everything, just as empty deny lists do.
+
 .TP
 .BI "allowed_senders = " list
 
-This is a semicolon `;' separated list of envelope sender addresses.
-Messages which have one of these addresses as the return path (= mail
-from) are allowed to use this route
-(if not also in \fBdenied_senders\fR).
+Messages whose envelope sender (return path) address appears in this
+semicolon-separated list are allowed to use this route.
 
-Glob patterns containing `?' and `*' can be used.
-The special item "<>" matches the null sender address
-(eg. failure notices or delivery notifications).
-If the pattern doesn't contain an `@', it is seen as a pattern for the
-local part only.
+Glob patterns containing
+.B ?
+and
+.B *
+can be used.
+The special item
+.B <>
+matches the null sender address
+(which is used for failure notices and delivery notifications).
+If the pattern does not contain an
+.BR @ ,
+it is seen as a pattern for the local part only, i.e.,
+it matches any domain.
 
-Example: \fImeillo;*@*example.org;web*@example.com\fP
+Example: \(lqmeillo;*@*example.org;web*@example.com\(rq
 
-(``meillo'' equals ``meillo@*'', i.e. the local part.)
+(\(lqmeillo\(rq equals \(lqmeillo@*\(rq, i.e., the local part.)
+
+Note that while overriding the return path is a privileged operation on
+the command line, incoming SMTP connections can use any valid-looking
+address. Therefore, this option cannot be used for enforcing security.
 
 .TP
 .BI "denied_senders = " list
 
-This is a semicolon `;' separated list of envelope sender addresses.
-Messages which have one of these addresses as the return path (=
-mail from) will not
-be sent using this route (even if also in \fBallowed_senders\fR).
+Messages whose envelope sender (return path) address appears in this
+semicolon-separated list will not be sent using this route.
 
-Glob patterns containing `?' and `*' can be used.
-The special item "<>" matches the null sender address
-(eg. failure notices or delivery notifications).
-If the pattern doesn't contain an `@', it is seen as a pattern for the
-local part only.
-
-Example: (see \fIallowed_senders\fP)
+See
+.B allowed_senders
+for syntax and semantics.
 
 .TP
 .BI "allowed_recipients = " list
 
-A list of envelope recipient addresses where mail can be sent to using
-this route.
-This is for example useful if you use this route configuration when connected to another LAN via ppp.
-Glob patterns containing `?' and `*' can be used.
+A semicolon-separated list of envelope recipient addresses to which mail
+can be sent using this route.
+This is useful for example if you use this route configuration when
+connected to another LAN via PPP.
+Glob patterns containing
+.B ?
+and
+.B *
+can be used.
 
-Example: \fI*@example.org;*@*foo.bar\fP
-
-(See also examples for \fIallowed_senders\fP)
+Example: \(lq*@example.org;*@*foo.bar\(rq
 
 .TP
 .BI "denied_recipients = " list
 
-A list of envelope recipient addresses where mail will not be sent to
-using this route.
-This is for example useful if you send mail directly (\fBmail_host\fR is not set)
-and you know of hosts that will not accept mail from you because they use a dialup list
-(eg. \fBhttp://maps.vix.com/dul/\fR).
-\fBdenied_recipients\fR overrules \fBallowed_recipients\fR.
-Glob patterns containing `?' and `*' can be used.
+Messages whose envelope recipient address appears in this
+semicolon-separated list will not be sent using this route.
+This is useful for example if you send mail directly
+.RB ( mail_host
+is not set) and you know of hosts that will not accept mail
+from you because they use a dialup list (e.g.,
+.BR https://www.spamhaus.org/blocklists/policy-blocklist/ ).
 
-Example: \fI*@spamblocker.example.org\fP
-
-(See also examples for \fIallowed_senders\fP)
+See
+.B allowed_recipients
+for syntax and semantics.
 
 .TP
 .BI "allowed_from_hdrs = " list
 
-This is a semicolon `;' separated list of From header addresses.
-Messages which have one of these addresses as the From header
-are allowed to use this route
-(if not also in \fBdenied_from_hdrs\fR).
+Messages whose \(lqFrom:\(rq address appears in this semicolon-separated
+list are allowed to use this route.
 
-Glob patterns containing `?' and `*' can be used.
-If the pattern doesn't contain an `@', it is seen as a pattern for the
-local part only.
+Glob patterns containing
+.B ?
+and
+.B *
+can be used.
+If the pattern does not contain an
+.BR @ ,
+it is seen as a pattern for the local part only.
 
-Example: \fImeillo;*@*example.org;web*@example.com\fP
+Example: \(lqmeillo;*@*example.org;web*@example.com\(rq
 
-(``meillo'' equals ``meillo@*'', i.e. the local part.)
+(\(lqmeillo\(rq equals \(lqmeillo@*\(rq, i.e. the local part.)
+
+The message sender can set the \(lqFrom:\(rq address arbitrarily,
+so this is even less secure than the return path based options.
 
 .TP
 .BI "denied_from_hdrs = " list
 
-This is a semicolon `;' separated list of From header addresses.
-Messages which have one of these addresses as the From header
-will not be sent using this route (even if also in
-\fBallowed_from_hdrs\fR).
+Messages whose \(lqFrom:\(rq address appears in this semicolon-separated
+list will not be sent using this route.
 
-Glob patterns containing `?' and `*' can be used.
-If the pattern doesn't contain an `@', it is seen as a pattern for the
-local part only.
-
-Example: (see \fIallowed_from_hdrs\fP)
+See
+.B allowed_from_hdrs
+for syntax and semantics.
 
 .TP
 .BI "last_route = " boolean
 
 If this is set, a mail which would have been delivered using this route,
-but has failed temporarily, will not be tried to be delivered using the next route.
+but has failed temporarily, will not be tried to be delivered using
+subsequent routes.
+This should be used if a particular route is the only acceptable one for
+certain mails, and therefore a fallback to another (possibly unconditional)
+route is not desirable.
 
-If you have set up a special route with filters using the lists
-`allowed_recipients' and `allowed_senders' or their complements
-(denied_),
-and the mail passing these rules should be delivered using this route only,
-you should set this to `true'.
-Otherwise the mail would be passed to the next route (if any),
-unless that route has rules which prevent that.
-
-Default is false.
+Default is
+.BR false .
 
 .TP
 .BI "connect_error_fail = " boolean
 
 If this is set, a connection error (or if a pipe command could not be
-executed) will cause a mail delivery to fail, ie. it will be bounced.
-If it is unset, it will just be defered.
+executed) will cause a mail delivery to fail, i.e., the mail will be
+bounced immediately.
+If it is unset, the mail will be only deferred.
 
-Default is false.
-The reason for this is that masqmail is designed for non permanent internet connections,
-where such errors may occur quite often, and a bounce would be annoying.
+Default is
+.BR false .
+The reason for this is that masqmail is designed for non-permanent
+internet connections, where such errors may occur quite often,
+and bounces would be annoying.
 
-You probably want to set this to true for permanent routes.
+You probably want to set this to
+.BR true
+for permanent routes.
 
 
 .SH SMTP CONFIGURATION

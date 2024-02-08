@@ -6,22 +6,22 @@
 # for local delivery, for which routes are not relevant.
 
 #
-# mail properties tested for:
+# Conditions:
 #
 
-# users that can send mail over this connection:
-# this is a list of the envelope sender addresses, as they are
-# configured with your mail client. If not set, anybody may send.
+# Users that can send mail over this connection.
+# This is a list of the envelope sender addresses, as configured
+# in your mail client. If not set, anybody may send.
 
 allowed_senders = "okurth"
 
 # cpwright.com uses the dialup up list of dul.maps.vix.com,
 # so I cannot send any mail over this connection to that domain.
 # There are probably many others... :-( (No, this is okay. Nobody
-# wants his mailbox stuffed to the ceiling with spam...)
+# wants their mailbox stuffed to the ceiling with SPAM ...)
 # 
 # You will find this necessary only if you send mail directly
-# (if mail_host is not set below)
+# (if mail_host is not set below).
 
 denied_recipients = "*@cpwright.com"
 
