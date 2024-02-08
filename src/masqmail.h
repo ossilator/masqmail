@@ -358,7 +358,7 @@ accept_error accept_message_prepare(message *msg, guint flags);
 
 /* header.c */
 gchar *rec_timestamp();
-GList *find_header(GList *hdr_list, header_id id, gchar *hdr_str);
+header *find_header(GList *hdr_list, header_id id);
 void header_unfold(header *hdr);
 void header_fold(header *hdr, unsigned int maxlen);
 header *create_header(header_id id, gchar *fmt, ...);
