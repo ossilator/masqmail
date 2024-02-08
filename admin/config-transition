@@ -104,7 +104,7 @@ If you though rely on it, stay with masqmail-0.2.x or run an arbitrary POP clien
 "
 
 check["do_ssl"] = "route" SUBSEP "Ignored by masqmail" SUBSEP "\
-Please report to the mailing list at <masqmail@marmaro.de> that you used this option. \
+Please report to the project's discussion board that you used this option. \
 We still don't know the rationale behind this option. \
 All we have is a comment in the code saying: This option is used by sqilconf. \
 "

@@ -40,7 +40,7 @@ anyway.
 
 Is there a mailing list for MasqMail?
 -------------------------------------
-Yes, there is! See here.
+No, use the discussion board on the GitHub project page.
 
 
 After starting masmail, I get the following message: "could
@@ -92,13 +92,13 @@ gave to the route configuration (case sensitive!).
 
 I found a bug.
 --------------
-Make sure you are using the newest version, in case of doubt
-search it in freshmeat. If you do, tell me. See also the section
-bugs on the main page.
+Report it to the project's issue tracker on GitHub, but first
+make sure that you are using the newest version found on the
+GitHub project page, and search the existing issues.
 
 
 I think I found a bug, but I am not sure whether I configured
 MasqMail incorrectly.
 -------------------------------------------------------------
-Don't care. Tell me. Or write to the mailing list.
-
+You can ask on the discussion board first, but it is not a big
+deal if your bug report turns out to be a configuration issue.

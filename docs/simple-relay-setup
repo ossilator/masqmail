@@ -121,4 +121,4 @@ test, and look at the debug file: /var/log/masqmail/debug.log
 If you use a wrapper, test it manually and interactively on the
 command line.
 
-Ask on the mailing list: <masqmail@marmaro.de>
+Ask on the project's discussion board on GitHub.

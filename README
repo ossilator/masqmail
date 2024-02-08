@@ -39,16 +39,9 @@ it has no ability to check for undesired relaying or spam filtering.
 
 Masqmail's website is:
 
-	http://marmaro.de/prog/masqmail
+	https://github.com/ossilator/masqmail
 
-The email address of it's mailing list is:
-
-	<masqmail@marmaro.de>
-
-To subscribe yourself to the list, send a mail with the subject
-``subscribe masqmail'' to <minimalist@marmaro.de>. The mailing list
-archive is accessible at: http://lists.marmaro.de/masqmail/ . If you
-have any problems, contact me: markus schnalke <meillo@marmaro.de>.
+Please use the discussion board for questions.
 
 
 INSTALLATION
