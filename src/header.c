@@ -55,41 +55,18 @@ rec_timestamp()
 	return buf;
 }
 
-/*
-**  finds list of headers matching id
-**  if id == HEAD_UNKNOWN and header == NULL finds all unknown headers
-**  else finds all headers matching header
-*/
-GList*
-find_header(GList *hdr_list, header_id id, gchar *hdr_str)
+header *
+find_header(GList *hdr_list, header_id id)
 {
-	GList *found_list = NULL;
 	GList *node;
-
-	if ((id != HEAD_UNKNOWN) || !hdr_str) {
-		foreach(hdr_list, node) {
-			header *hdr = (header *) (node->data);
-			if (hdr->id == id) {
-				found_list = g_list_append(found_list, hdr);
-			}
-		}
-		return found_list;
-	}
 
 	foreach(hdr_list, node) {
 		header *hdr = (header *) (node->data);
-		gchar buf[64], *q = buf, *p = hdr->header;
-
-		while (*p != ':' && q < buf+sizeof(buf)-1 && *p) {
-			*(q++) = *(p++);
-		}
-		*q = '\0';
-
-		if (strcasecmp(buf, hdr_str) == 0) {
-			found_list = g_list_append(found_list, hdr);
+		if (hdr->id == id) {
+			return hdr;
 		}
 	}
-	return found_list;
+	return NULL;
 }
 
 void

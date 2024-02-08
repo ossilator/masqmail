@@ -179,13 +179,11 @@ ensure_return_path(message *msg)
 
 	DEBUG(3) debugf("return_path == NULL\n");
 
-	hdr_list = find_header(msg->hdr_list, HEAD_SENDER, NULL);
-	if (!hdr_list) {
-		hdr_list = find_header(msg->hdr_list, HEAD_FROM, NULL);
+	hdr = find_header(msg->hdr_list, HEAD_SENDER);
+	if (!hdr) {
+		hdr = find_header(msg->hdr_list, HEAD_FROM);
 	}
-	if (hdr_list) {
-		hdr = (header *) (g_list_first(hdr_list)->data);
-
+	if (hdr) {
 		DEBUG(5) debugf("hdr->value = '%s'\n", hdr->value);
 
 		addr = g_strstrip(g_strdup(hdr->value));
