@@ -267,7 +267,7 @@ get_header(gchar *line)
 	**  of a folded header line
 	*/
 
-	for (i = 0; i < HEAD_NUM_IDS; i++) {
+	for (i = 0; i < HEAD_UNKNOWN; i++) {
 		if (strcasecmp(header_names[i].header, buf) == 0) {
 			break;
 		}
