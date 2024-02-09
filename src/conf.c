@@ -573,7 +573,6 @@ read_route(gchar *filename, gboolean is_perma)
 	route = g_malloc0(sizeof(connect_route));
 	route->filename = g_strdup(filename);
 	route->name = route->filename;  /* quick hack */
-	route->expand_h_sender_address = TRUE;
 	route->is_perma = is_perma;
 	route->do_pipelining = TRUE;
 
@@ -660,10 +659,6 @@ read_route(gchar *filename, gboolean is_perma)
 				g_free(item);
 			}
 			g_list_free(list);
-		} else if (strcmp(lval, "expand_h_sender_domain")==0) {
-			route->expand_h_sender_domain = parse_boolean(rval);
-		} else if (strcmp(lval, "expand_h_sender_address")==0) {
-			route->expand_h_sender_address = parse_boolean(rval);
 		} else if (strcmp(lval, "resolve_list")==0) {
 			route->resolve_list = parse_resolve_list(rval);
 #ifdef ENABLE_AUTH

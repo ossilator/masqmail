@@ -358,24 +358,6 @@ map_return_path_addresses = "john: <jsmith@mail.academic.edu>; charlie: <cmiller
 
 You can use patterns, eg. * as keys.
 
-.TP
-\fBexpand_h_sender_address\fR = \fIboolean\fR
-
-This sets the domain of the sender address as given by the Sender: header
-to the same address as in the envelope return path address
-(which can be set by either \fBset_return_path_domain\fR or \fBmap_return_path_addresses\fR).
-This is for mail clients (eg. Microsoft Outlook) which use this address as the sender address.
-Though they should use the From: address, see RFC 821.
-If \fBfetchmail(1)\fR encounters an unqualified Sender: address,
-it will be expanded to the domain of the pop server, which is almost never correct.
-Default is true.
-
-.TP
-\fBexpand_h_sender_domain\fR = \fIboolean\fR
-
-Like \fBexpand_h_sender_address\fR, but sets the domain only.
-Deprecated, will be removed in a later version.
-
 
 .SH AUTHOR
 
