@@ -82,12 +82,6 @@ table_find(GList *table_list, gchar *key)
 	return table_find_func(table_list, key, strcmp);
 }
 
-gpointer*
-table_find_case(GList *table_list, gchar *key)
-{
-	return table_find_func(table_list, key, strcasecmp);
-}
-
 static int
 fnmatch0(const char *pattern, const char *string)
 {
