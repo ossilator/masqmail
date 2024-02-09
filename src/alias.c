@@ -26,31 +26,21 @@ addr_is_local(address *addr)
 			continue;
 		}
 		foreach(conf.not_local_addresses, addr_node) {
-			a = create_address(addr_node->data, A_RFC821, conf.host_name);
-			DEBUG(6) debugf("not_local_addresses: "
-					"addr_node->data=%s a->address=%s\n",
-			                addr_node->data, a->address);
+			a = addr_node->data;
 			if (addr_isequal(a, addr, conf.localpartcmp)) {
 				/* also in not_local_addresses */
-				destroy_address(a);
 				return FALSE;
 			}
-			destroy_address(a);
 		}
 		/* in local_hosts */
 		return TRUE;
 	}
 	foreach(conf.local_addresses, addr_node) {
-		a = create_address(addr_node->data, A_RFC821, conf.host_name);
-		DEBUG(6) debugf("local_addresses: addr_node->data=%s "
-				"a->address=%s\n",
-		                addr_node->data, a->address);
+		a = addr_node->data;
 		if (addr_isequal(a, addr, conf.localpartcmp)) {
 			/* in local_addresses */
-			destroy_address(a);
 			return TRUE;
 		}
-		destroy_address(a);
 	}
 	return FALSE;
 }
