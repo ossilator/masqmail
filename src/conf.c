@@ -551,17 +551,14 @@ read_conf(void)
 	}
 	destroy_ptr_list(warn_intervals_tmp);
 	if (!conf.local_hosts) {
-		char *shortname = strdup(conf.host_name);
-		char *p = strchr(shortname, '.');
+		conf.local_hosts = g_list_append(NULL, g_strdup("localhost"));
+		char *p = strchr(conf.host_name, '.');
 		if (p) {
-			*p = '\0';
+			conf.local_hosts = g_list_append(conf.local_hosts,
+					g_strndup(conf.host_name, p - conf.host_name));
 		}
-		/* don't care if shortname and conf.host_name are the same */
-		char *local_hosts_str = g_strdup_printf("localhost;%s;%s",
-				shortname, conf.host_name);
-		conf.local_hosts = parse_list(local_hosts_str, TRUE);
-		free(shortname);
-		free(local_hosts_str);
+		conf.local_hosts = g_list_append(conf.local_hosts,
+		                                 g_strdup(conf.host_name));
 	}
 	if (log_user_tmp) {
 		conf.log_user = create_recipient(log_user_tmp, conf.host_name);
