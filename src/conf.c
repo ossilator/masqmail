@@ -661,8 +661,6 @@ read_route(gchar *filename, gboolean is_perma)
 				g_free(item);
 			}
 			g_list_free(list);
-		} else if (strcmp(lval, "expand_h_sender_domain")==0) {
-			route->expand_h_sender_domain = parse_boolean(rval);
 		} else if (strcmp(lval, "expand_h_sender_address")==0) {
 			route->expand_h_sender_address = parse_boolean(rval);
 		} else if (strcmp(lval, "resolve_list")==0) {

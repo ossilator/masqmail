@@ -136,24 +136,7 @@ rewrite_headers(msg_out *msgout, connect_route *route)
 		}
 	}
 
-	/* set Sender: domain to return_path->domain */
-	if (route->expand_h_sender_domain) {
-		GList *hdr_node;
-
-		foreach(msgout->hdr_list, hdr_node) {
-			header *hdr = (header *) (hdr_node->data);
-			if (hdr->id == HEAD_SENDER) {
-				header *new_hdr = copy_header(hdr);
-
-				set_address_header_domain(new_hdr, msgout->return_path->domain);
-				hdr_node->data = new_hdr;
-				/* we need this list only to carefully free the extra headers: */
-				msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
-			}
-		}
-	}
-
-	/* set Sender: domain to return_path->domain */
+	/* set Sender: address to return_path */
 	if (route->expand_h_sender_address) {
 		GList *hdr_node;
 

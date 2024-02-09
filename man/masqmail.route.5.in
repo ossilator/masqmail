@@ -369,12 +369,6 @@ If \fBfetchmail(1)\fR encounters an unqualified Sender: address,
 it will be expanded to the domain of the pop server, which is almost never correct.
 Default is true.
 
-.TP
-\fBexpand_h_sender_domain\fR = \fIboolean\fR
-
-Like \fBexpand_h_sender_address\fR, but sets the domain only.
-Deprecated, will be removed in a later version.
-
 
 .SH AUTHOR
 
