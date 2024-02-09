@@ -100,7 +100,7 @@ parse_list(gchar *line, gboolean read_file)
 
 	DEBUG(9) fprintf(stderr, "parsing list %s, file?:%d\n",
 			line, read_file);
-	for (tok = strtok(strdup(line), ";"); tok; tok = strtok(NULL, ";")) {
+	for (tok = strtok(line, ";"); tok; tok = strtok(NULL, ";")) {
 		DEBUG(9) fprintf(stderr, "item = %s\n", tok);
 		if (read_file && *tok == '/') {
 			/* item is a filename, include its contents */
@@ -513,7 +513,8 @@ read_conf(gchar *filename)
 		conf.mbox_default = g_strdup("mbox");
 	}
 	if (!conf.warn_intervals) {
-		conf.warn_intervals = parse_list("1h;4h;8h;1d;2d;3d", TRUE);
+		static char def_ivals[] = "1h;4h;8h;1d;2d;3d";  // not const!
+		conf.warn_intervals = parse_list(def_ivals, TRUE);
 	}
 	if (!conf.local_hosts) {
 		char *shortname = strdup(conf.host_name);
