@@ -4,6 +4,9 @@ AM_CFLAGS=-Wno-pointer-sign @CFLAGS@ @GLIB_CFLAGS@ -D_GNU_SOURCE -DG_DISABLE_DEP
 
 sbin_PROGRAMS=masqmail
 bin_PROGRAMS=mservdetect
+check_PROGRAMS=tst_parse
+
+TESTS = $(check_PROGRAMS)
 
 install-exec-hook:
 	chmod u+s $(DESTDIR)@sbindir@/masqmail
@@ -67,6 +70,10 @@ mservdetect_SOURCES=\
 	readsock.h\
 	mservdetect.c\
 	readsock.c
+
+tst_parse_SOURCES=\
+	tst_parse.c
+tst_parse_LDADD=@GLIB_LIBS@
 
 masqmail_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@ @LOCKFILE_LIBS@
 mservdetect_LDADD=@GLIB_LIBS@

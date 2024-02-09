@@ -15,6 +15,9 @@
 #include <syslog.h>  // for log levels
 
 #include <config.h>
+#ifdef TEST_BUILD
+#  undef ENABLE_DEBUG
+#endif
 
 typedef struct _interface {
 	gchar *address;
