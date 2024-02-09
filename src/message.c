@@ -10,9 +10,8 @@
 message*
 create_message()
 {
-	message *msg = (message *) g_malloc(sizeof(message));
+	message *msg = (message *) g_malloc0(sizeof(message));
 	if (msg) {
-		memset(msg, 0, sizeof(message));
 		msg->data_size = -1;
 	}
 	return msg;

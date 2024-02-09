@@ -33,10 +33,9 @@ create_address_qualified(gchar *path, gboolean is_rfc821, gchar *domain)
 address*
 create_address_pipe(gchar *path)
 {
-	address *addr = g_malloc(sizeof(address));
+	address *addr = g_malloc0(sizeof(address));
 
 	if (addr) {
-		memset(addr, 0, sizeof(address));
 		addr->address = g_strstrip(g_strdup(path));
 		addr->local_part = g_strstrip(g_strdup(addr->address));
 		addr->domain = g_strdup("localhost");  /* quick hack */

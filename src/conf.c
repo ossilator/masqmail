@@ -28,7 +28,6 @@ init_conf()
 				DEF_MAIL_GROUP);
 		exit(1);
 	}
-	memset(&conf, 0, sizeof(masqmail_conf));
 	conf.orig_uid = getuid();
 	conf.orig_gid = getgid();
 	conf.mail_uid = passwd->pw_uid;
@@ -579,8 +578,7 @@ read_route(gchar *filename, gboolean is_perma)
 		return NULL;
 	}
 
-	route = g_malloc(sizeof(connect_route));
-	memset(route, 0, sizeof(connect_route));
+	route = g_malloc0(sizeof(connect_route));
 	route->filename = g_strdup(filename);
 	route->name = route->filename;  /* quick hack */
 	route->expand_h_sender_address = TRUE;
