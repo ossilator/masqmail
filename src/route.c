@@ -253,10 +253,8 @@ route_split_rcpts(connect_route *route, GList *rcpt_list, GList **p_rcpt_list, G
 }
 
 gboolean
-route_from_hdr_is_allowed(connect_route *route, char *from_hdr)
+route_from_hdr_is_allowed(connect_route *route, address *addr)
 {
-	address *addr = create_address_qualified(from_hdr, FALSE,
-			conf.host_name);
 	if (route->denied_from_hdrs && g_list_find_custom(route->denied_from_hdrs, addr, _g_list_addrcmp)) {
 		return FALSE;
 	}
