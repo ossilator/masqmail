@@ -614,7 +614,7 @@ read_route(gchar *filename)
 				address *addr = create_address(
 						(gchar *) (pair->value), TRUE);
 				g_free(pair->value);
-				pair->value = (gpointer *) addr;
+				pair->value = addr;
 				route->map_return_path_addresses = g_list_append(route->map_return_path_addresses, pair);
 				g_free(item);
 			}

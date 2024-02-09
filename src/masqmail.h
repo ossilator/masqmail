@@ -150,7 +150,7 @@ extern masqmail_conf conf;
 
 typedef struct _table_pair {
 	gchar *key;
-	gpointer *value;
+	gpointer value;
 } table_pair;
 
 
@@ -410,10 +410,10 @@ void route_split_rcpts(connect_route *route, GList *rcpt_list, GList **p_rcpt_li
 table_pair *create_pair(gchar *key, gpointer value);
 table_pair *create_pair_string(gchar *key, gpointer value);
 table_pair *parse_table_pair(gchar *line, char delim);
-gpointer *table_find_func(GList *table_list, gchar *key, int (*cmp_func) (const char *, const char *));
-gpointer *table_find(GList *table_list, gchar *key);
-gpointer *table_find_case(GList *table_list, gchar *key);
-gpointer *table_find_fnmatch(GList *table_list, gchar *key);
+gpointer table_find_func(GList *table_list, gchar *key, int (*cmp_func) (const char *, const char *));
+gpointer table_find(GList *table_list, gchar *key);
+gpointer table_find_case(GList *table_list, gchar *key);
+gpointer table_find_fnmatch(GList *table_list, gchar *key);
 GList *table_read(gchar *fname, gchar delim);
 void destroy_table(GList *table);
 

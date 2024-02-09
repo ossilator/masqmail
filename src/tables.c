@@ -28,7 +28,7 @@ create_pair_string(gchar *key, gpointer value)
 
 	pair = g_malloc(sizeof(table_pair));
 	pair->key = g_strdup(key);
-	pair->value = (gpointer) (g_strdup(value));
+	pair->value = g_strdup(value);
 
 	return pair;
 }
@@ -53,15 +53,15 @@ parse_table_pair(gchar *line, char delim)
 	if (*p) {
 		p++;
 		/* while(isspace(*p)) p++; */
-		pair->value = (gpointer *) (g_strdup(g_strstrip(p)));
+		pair->value = g_strdup(g_strstrip(p));
 	} else {
-		pair->value = (gpointer *) g_strdup("");
+		pair->value = g_strdup("");
 	}
 
 	return pair;
 }
 
-gpointer*
+gpointer
 table_find_func(GList *table_list, gchar *key,
 		int (*cmp_func) (const char *, const char *))
 {
@@ -76,13 +76,13 @@ table_find_func(GList *table_list, gchar *key,
 	return NULL;
 }
 
-gpointer*
+gpointer
 table_find(GList *table_list, gchar *key)
 {
 	return table_find_func(table_list, key, strcmp);
 }
 
-gpointer*
+gpointer
 table_find_case(GList *table_list, gchar *key)
 {
 	return table_find_func(table_list, key, strcasecmp);
@@ -94,7 +94,7 @@ fnmatch0(const char *pattern, const char *string)
 	return fnmatch(pattern, string, 0);
 }
 
-gpointer*
+gpointer
 table_find_fnmatch(GList *table_list, gchar *key)
 {
 	return table_find_func(table_list, key, fnmatch0);
