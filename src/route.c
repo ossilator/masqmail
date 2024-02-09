@@ -235,15 +235,11 @@ _g_list_addrcmp(gconstpointer pattern, gconstpointer addr)
 gboolean
 route_sender_is_allowed(connect_route *route, address *ret_path)
 {
-	if (route->denied_senders && g_list_find_custom(route->denied_senders, ret_path, _g_list_addrcmp)) {
-		return FALSE;
-	}
-	if (route->allowed_senders) {
-		if (g_list_find_custom(route->allowed_senders, ret_path, _g_list_addrcmp)) {
-			return TRUE;
-		} else {
-			return FALSE;
-		}
+	if ((route->denied_senders &&
+	     g_list_find_custom(route->denied_senders, ret_path, _g_list_addrcmp)) ||
+	    (route->allowed_senders &&
+	     !g_list_find_custom(route->allowed_senders, ret_path, _g_list_addrcmp))) {
+	     return FALSE;
 	}
 	return TRUE;
 }
@@ -278,18 +274,15 @@ route_from_hdr_is_allowed(connect_route *route, char *from_hdr)
 	if (!addr) {
 		return FALSE;
 	}
-	if (route->denied_from_hdrs && g_list_find_custom(route->denied_from_hdrs, addr, _g_list_addrcmp)) {
-		return FALSE;
+	gboolean ret = TRUE;
+	if ((route->denied_from_hdrs &&
+	     g_list_find_custom(route->denied_from_hdrs, addr, _g_list_addrcmp)) ||
+	    (route->allowed_from_hdrs &&
+	     !g_list_find_custom(route->allowed_from_hdrs, addr, _g_list_addrcmp))) {
+		ret = FALSE;
 	}
-	if (route->allowed_from_hdrs) {
-		if (g_list_find_custom(route->allowed_from_hdrs, addr,
-				_g_list_addrcmp)) {
-			return TRUE;
-		} else {
-			return FALSE;
-		}
-	}
-	return TRUE;
+	destroy_address(addr);
+	return ret;
 }
 
 
