@@ -152,13 +152,14 @@ Example: \fIlocalhost;foo;foo.example.org\fR
 .TP
 \fBlocal_addresses = \fIlist\fR
 
-A semicolon-separated list of fully qualified email-addresses which are
+A semicolon-separated list of email addresses which are
 considered local although their domain name part is not in the list of
-\fBlocal_hosts\fR. 
-This list can be seen as an addition to \fBlocal_hosts\fP.
-.IP
-Further more only the local part of the addresses will be regarded,
-seeing it as a local user.
+\fBlocal_hosts\fR.
+Addresses lacking a domain name are qualified with \fBhost_name\fR.
+
+This list can be seen as an addition to \fBlocal_hosts\fP, and
+can be used if there are only a few additional addresses to be
+considered local.
 
 Example:
 
@@ -168,22 +169,21 @@ local_hosts = "localhost;myhost"
 local_addresses = "bob@somewhere;alice@foo"
 .fi
 .RE
-.IP
-This means mail to person1@yourdomain will effectively go to
-person1@localhost, if not redirected by an alias.
+
+This will cause mail to bob@somewhere to go to bob@localhost,
+if not redirected by an alias.
 
 .TP
 \fBnot_local_addresses = \fIlist\fR
 
-A semicolon-separated list of fully qualified email-addresses which are
+A semicolon-separated list of email addresses which are
 considered not local although their domain name part is in the list of
 \fBlocal_hosts\fR. 
-This list can be seen as a substraction from \fBlocal_hosts\fP.
+Addresses lacking a domain name are qualified with \fBhost_name\fR.
 
-This is the opposite of the previous case.
-The majority of addresses of a specific domain are local.
-But some users are not.
-With this option you can easily exclude these users.
+This list can be seen as a subtraction from \fBlocal_hosts\fP, and
+can be used if the majority of addresses in a specific domain are
+to be considered local.
 
 Example:
 
@@ -193,7 +193,6 @@ local_hosts = "localhost;myhost;mydomain.net"
 not_local_addresses = "eric@mydomain.net"
 .fi
 .RE
-.IP
 
 .TP
 \fBlisten_addresses = \fIlist\fR
