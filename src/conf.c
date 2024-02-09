@@ -201,6 +201,26 @@ parse_interface(const gchar *line, gint def_port)
 	return iface;
 }
 
+static GList *
+finalize_address_list(GList *addrs, const gchar *what)
+{
+	GList *out = NULL;
+	GList *node;
+
+	foreach (addrs, node) {
+		gchar *item = node->data;
+		address *a = create_address(item, A_RFC821, conf.host_name);
+		if (!a) {
+			logwrite(LOG_ERR, "invalid address '%s' in %s: %s\n",
+			         item, what, parse_error);
+			exit(1);
+		}
+		out = g_list_append(out, a);
+	}
+	destroy_ptr_list(addrs);
+	return out;
+}
+
 static gboolean
 eat_comments(FILE *in)
 {
@@ -374,6 +394,8 @@ read_conf(void)
 	gchar lval[256], rval[2048];
 	gchar *log_user_tmp = NULL;
 	GList *listen_addrs_tmp = NULL;
+	GList *local_addrs_tmp = NULL;
+	GList *not_local_addrs_tmp = NULL;
 	GList *warn_intervals_tmp = NULL;
 
 	conf.do_relay = TRUE;
@@ -427,9 +449,9 @@ read_conf(void)
 		} else if (strcmp(lval, "local_hosts")==0) {
 			conf.local_hosts = parse_list(rval, TRUE);
 		} else if (strcmp(lval, "local_addresses")==0) {
-			conf.local_addresses = parse_list(rval, TRUE);
+			local_addrs_tmp = parse_list(rval, TRUE);
 		} else if (strcmp(lval, "not_local_addresses")==0) {
-			conf.not_local_addresses = parse_list(rval, TRUE);
+			not_local_addrs_tmp = parse_list(rval, TRUE);
 		} else if (strcmp(lval, "do_save_envelope_to")==0) {
 			conf.do_save_envelope_to = parse_boolean(rval);
 		} else if (strcmp(lval, "defer_all")==0) {
@@ -549,6 +571,10 @@ read_conf(void)
 		}
 		free(log_user_tmp);
 	}
+	conf.local_addresses = finalize_address_list(
+			local_addrs_tmp, "local_addresses");
+	conf.not_local_addresses = finalize_address_list(
+			not_local_addrs_tmp, "not_local_addresses");
 	if (!listen_addrs_tmp) {
 		conf.listen_addresses = g_list_append(NULL,
 				parse_interface("localhost", 25));
