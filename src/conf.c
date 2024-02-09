@@ -542,17 +542,14 @@ read_conf(gchar *filename)
 		conf.warn_intervals = parse_list(def_ivals, TRUE);
 	}
 	if (!conf.local_hosts) {
-		char *shortname = strdup(conf.host_name);
-		char *p = strchr(shortname, '.');
+		conf.local_hosts = g_list_append(NULL, g_strdup("localhost"));
+		char *p = strchr(conf.host_name, '.');
 		if (p) {
-			*p = '\0';
+			conf.local_hosts = g_list_append(conf.local_hosts,
+					g_strndup(conf.host_name, p - conf.host_name));
 		}
-		/* don't care if shortname and conf.host_name are the same */
-		char *local_hosts_str = g_strdup_printf("localhost;%s;%s",
-				shortname, conf.host_name);
-		conf.local_hosts = parse_list(local_hosts_str, TRUE);
-		free(shortname);
-		free(local_hosts_str);
+		conf.local_hosts = g_list_append(conf.local_hosts,
+		                                 g_strdup(conf.host_name));
 	}
 	conf.local_addresses = finalize_address_list(
 			local_addrs_tmp, "local_addresses");
