@@ -409,8 +409,7 @@ _create_address(gchar *string, gchar **end, gboolean is_rfc821)
 		return NULL;
 	}
 
-	address *addr = g_malloc(sizeof(address));
-	memset(addr, 0, sizeof(address));
+	address *addr = g_malloc0(sizeof(address));
 
 	gchar *p = addr_end;
 	while (*p && (*p != ',')) {
