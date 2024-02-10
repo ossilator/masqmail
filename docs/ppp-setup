@@ -45,7 +45,3 @@ possibilities:
 	/bin/cat /var/tmp/masqmail-route
 
 See the route documentation for more.
-
-
-written by oku
-(it was once located inside of INSTALL)

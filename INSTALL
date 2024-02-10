@@ -174,8 +174,3 @@ examples/ as basis for your own. Take the man pages masqmail.conf(5)
 and masqmail.route(5) for reference.
 
 All configuration files should go into /etc/masqmail.
-
-
-
-Written by oku.
-Improved by meillo.
