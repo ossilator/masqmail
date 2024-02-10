@@ -7,6 +7,9 @@ Have a look at the NEWS file for a summary of the changes in a less
 technical speach and with focus on compatibility.
 
 
+0.4.0	Xxx, xx Feb 2024
+	* New maintainer, new project home. See NEWS.
+	
 0.3.5  Sat, 07 Feb 2015 11:03:01 +0100
 	* Adds a glob-pattern based aliasing mechanism
 	* Adds route selection based on the From header
