@@ -5,6 +5,165 @@ See the git log for more details and technical changes that don't
 affect users directly.
 
 
+1.0.0
+=====
+
+- Hello, I'm Ossi, the new maintainer and developer of masqmail. Meillo
+  handed masqmail over to me, because he wasn't active anymore.
+
+New, Removed, and Changed Features
+----------------------------------
+
+- Removed the expand_h_sender_domain and expand_h_sender_address
+  route config options; added map_h_sender_addresses instead
+
+- Removed the set_h_from_domain, set_h_reply_to_domain, and
+  set_return_path_domain route config options; instead, the map_...
+  options now support specifying an asterisk for the replacement
+  user name to rewrite only the domain
+
+- Added map_outgoing_addresses route config option
+
+- Rewrite rules are now applied only to local addresses
+
+- When an address is rewritten, an already present display name will
+  now take precedence over one configured in the rewrite rule
+
+- The connection wrapper command is no longer run through a shell,
+  though bourne shell quoting rules still apply
+
+- Pipe aliases and the pipe, mda, and online_query commands now also
+  use bourne shell quoting rules, and are not limited to ten arguments
+  anymore
+
+- In pipe and mda commands, variables are now expanded only after the
+  command was split, so quoting them is now unnecessary
+
+- Removed deprecated support for use of the -qo option without a
+  route argument
+
+- Folded the resolve_list route option's value dns_a into dns_mx
+
+- Recursive alias expansion does not impose an order between regular
+  and glob aliases anymore
+
+- Invalid addresses resulting from alias expansion now trigger a
+  bounce for the aliased address rather than being silently dropped,
+  and valid addresses resulting from the same alias expansion do not
+  receive the mail anymore, either
+
+- Made PID file's location configurable
+
+- Missing directories are now created non-recursively, to avoid
+  ownership and permission anomalies
+
+- The documented symlinks 'sendmail', etc. to the masqmail executable
+  are now actually created at install time
+- Conversely, the masqmail executable cannot be run as rmail anymore;
+  use the separately provided script instead
+
+- Improved logging facilities:
+  - Added support for logging to stderr instead of a file (or syslog)
+  - Error output from helper programs is now forwarded to our log
+  - Log messages now include a priority even when not using syslog
+  - Removed the -v (verbose) option, as it did not do anything useful
+    anymore
+
+- Instant delivery is not asynchronous by default anymore; the -odb
+  switch re-enables the old behavior
+
+- The queue flushing mode does not report the delivery status via
+  the exit code anymore, as it was ambiguous with multiple messages
+  in the queue, and not documented anyway
+
+- The system is now assumed to use UTF-8 encoding; this is reflected
+  in particular in the translated bounce message templates
+
+- SIGHUP is not handled anymore, as it would simply re-execute the
+  binary, which is better handled by the init system (explicit
+  'restart' action instead of fake 'reload' action)
+
+- GLib >= 2.68 (released in 2021) is now required
+
+- More functionality from libresolv is now used, which puts more
+  stringent compatibility requirements on it (must be BINDv8-like,
+  such as the one from glibc)
+
+Bug Fixes and Minor Improvements
+--------------------------------
+
+- Improved robustness of the mail address parser, including plugging
+  several security holes
+
+- Improved resolution of hostnames in receiver addresses:
+  - Added support for MX records which resolve to multiple hosts
+  - Improved robustness of the DNS resource record parser, including
+    plugging a probable security hole
+  - When one resolution method succeeds, but connecting these hosts
+    fails, we do not attempt another resolution method anymore
+
+- Added -verify_return_error to the openssl wrapper examples to make
+  them actually secure
+- The examples now recommend gnutls over openssl, because the latter
+  cannot be made entirely quiet on success
+
+- More configuration errors are detected during startup now, causing
+  immediate termination
+
+- Made the priority of many log messages more appropriate
+
+- Made some log messages more helpful
+
+- Improved precision and selectiveness of delivery error reporting
+  - Bounce messages do not reveal the server config anymore
+
+- Made sure that the PID file is created in time when daemonizing
+
+- Fixed some potential crashes due to memory management errors,
+  mostly in error cases
+
+- Improved handling of disk-full situations during local delivery
+
+- Fixed excess angle-bracketing in "From " lines when delivering to
+  local mbox folders
+
+- Fixed mailbox lock file not obeying the mail_dir setting when
+  masqmail is built with liblockfile
+
+- Fixed -bs mode (SMTP via inetd):
+  - Output erroneously going to stderr instead of stdout
+  - Bogus address qualification when run with a UNIX socket on stdio
+
+- Fixed CRAM-MD5 authentication (untested)
+
+- Cleaned up the code a lot:
+  - Fixed many memory leaks, though they were short-lived or small
+  - Enabled and fixed lots of compiler warnings, some of which revealed
+    minor bugs, e.g. type mismatches between variables, parameters, and
+    format strings
+
+- Vastly extended the autotest suite; invoke it via "make check" after
+  building
+
+- Improved usefulness of run_as_user mode for testing:
+  - Fixed support for non-standard log directories
+  - Removed some unnecessary permission checks
+  - Local mailboxes do not need to correspond with existing users
+  - lock_dir can be configured independently from spool_dir now,
+    as in normal mode
+
+- Root privileges are now dropped more aggressively, which simplifies
+  the code and makes it hopefully somewhat more secure
+
+- Fixed build with --disable-auth
+
+- Improved language and formatting of documentation a lot
+
+- Default paths in man pages now reflect the build settings
+
+- The licensing info is now maintained in SPDX format
+
+
 0.3.5
 =====
 
