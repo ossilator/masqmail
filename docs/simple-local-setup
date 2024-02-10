@@ -88,7 +88,3 @@ Set the debug level in masqmail.conf, restart the daemon, redo the
 test, and look at the debug file: /var/log/masqmail/debug.log
 
 Ask on the mailing list: <masqmail@marmaro.de>
-
-
-
-meillo
