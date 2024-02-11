@@ -320,25 +320,25 @@ static void
 smtp_cmd_mailfrom(smtp_base *psb, address *return_path, guint size)
 {
 	if (psb->use_size) {
-		fprintf(psb->out, "MAIL FROM:%s SIZE=%d\r\n", addr_string(return_path), size);
+		fprintf(psb->out, "MAIL FROM:<%s> SIZE=%d\r\n", return_path->address, size);
 		fflush(psb->out);
 
-		DEBUG(4) debugf("C: MAIL FROM:%s SIZE=%d\r\n", addr_string(return_path), size);
+		DEBUG(4) debugf("C: MAIL FROM:<%s> SIZE=%d\r\n", return_path->address, size);
 
 	} else {
-		fprintf(psb->out, "MAIL FROM:%s\r\n", addr_string(return_path));
+		fprintf(psb->out, "MAIL FROM:<%s>\r\n", return_path->address);
 		fflush(psb->out);
 
-		DEBUG(4) debugf("C: MAIL FROM:%s\r\n", addr_string(return_path));
+		DEBUG(4) debugf("C: MAIL FROM:<%s>\r\n", return_path->address);
 	}
 }
 
 static void
 smtp_cmd_rcptto(smtp_base *psb, address *rcpt)
 {
-	fprintf(psb->out, "RCPT TO:%s\r\n", addr_string(rcpt));
+	fprintf(psb->out, "RCPT TO:<%s>\r\n", rcpt->address);
 	fflush(psb->out);
-	DEBUG(4) debugf("C: RCPT TO:%s\n", addr_string(rcpt));
+	DEBUG(4) debugf("C: RCPT TO:<%s>\n", rcpt->address);
 }
 
 static void
@@ -758,8 +758,8 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 							ok = FALSE;
 							break;
 						} else {
-							logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s\n",
-							         msg->uid, addr_string(rcpt), psb->remote_host, psb->buffer);
+							logwrite(LOG_NOTICE, "%s == <%s> host=%s failed: %s\n",
+							         msg->uid, rcpt->address, psb->remote_host, psb->buffer);
 							if (psb->error == smtp_trylater) {
 								addr_mark_defered(rcpt);
 							} else {
@@ -818,8 +818,8 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 										ok = FALSE;
 										break;
 									} else {
-										logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s\n", msg->uid,
-										         addr_string(rcpt), psb->remote_host, psb->buffer);
+										logwrite(LOG_NOTICE, "%s == <%s> host=%s failed: %s\n",
+										         msg->uid, rcpt->address, psb->remote_host, psb->buffer);
 										if (psb->error == smtp_trylater) {
 											addr_mark_defered(rcpt);
 										} else {
@@ -871,8 +871,8 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
 			address *rcpt = (address *) (rcpt_node->data);
 			if (addr_is_delivered(rcpt))
-				logwrite(LOG_INFO, "%s => %s host=%s\n",
-				         msg->uid, addr_string(rcpt), psb->remote_host);
+				logwrite(LOG_INFO, "%s => <%s> host=%s\n",
+				         msg->uid, rcpt->address, psb->remote_host);
 		}
 	} else {
 		/*
