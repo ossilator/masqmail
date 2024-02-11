@@ -4,6 +4,11 @@ SUBDIRS = src man docs examples tpl
 
 doc_DATA = ChangeLog NEWS AUTHORS COPYING README TODO INSTALL THANKS
 
+AM_DISTCHECK_CONFIGURE_FLAGS = \
+	--with-confdir=\$${prefix}/etc/masqmail \
+	--with-logdir=\$${prefix}/var/log/masqmail \
+	--with-spooldir=\$${prefix}/var/spool/masqmail
+
 install-data-local: rmail conf_dir
 
 uninstall-local: rm-rmail rm-dirs
