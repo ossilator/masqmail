@@ -58,7 +58,6 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 
 		if ((*line == '.') && (!(flags & ACC_DOT_IGNORE))) {
 			if (line[1] == '\n') {
-				g_free(line);
 				break;
 			}
 			line1++;
@@ -138,12 +137,14 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 		}
 
 		if (conf.max_msg_size && (data_size > conf.max_msg_size)) {
+			g_free(line);
 			DEBUG(4) debugf("accept_message_stream(): "
 					"received %d bytes (conf.max_msg_size=%d)\n",
 			                data_size, conf.max_msg_size);
 			return AERR_SIZE;
 		}
 	}
+	g_free(line);
 	DEBUG(4) debugf("received %d lines of data (%d bytes)\n",
 			line_cnt, data_size);
 
