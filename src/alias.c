@@ -6,6 +6,7 @@
 */
 
 #include "masqmail.h"
+
 #include <fnmatch.h>
 
 gboolean

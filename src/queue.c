@@ -5,10 +5,10 @@
 **  MasqMail
 */
 
-#include <sys/stat.h>
-#include <glob.h>
-
 #include "masqmail.h"
+
+#include <glob.h>
+#include <sys/stat.h>
 
 static void
 mix_arr(int *buf, int len)

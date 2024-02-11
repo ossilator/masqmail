@@ -6,13 +6,11 @@
 */
 
 
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/nameser.h>
-#include <resolv.h>
-
 #include "masqmail.h"
 
+#include <resolv.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 masqmail_conf conf;
 

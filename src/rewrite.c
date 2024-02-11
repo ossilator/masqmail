@@ -8,6 +8,8 @@
 #include "masqmail.h"
 #endif
 
+#include <fnmatch.h>
+
 gboolean
 set_address_header_domain(header *hdr, gchar *domain)
 {

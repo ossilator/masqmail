@@ -5,11 +5,10 @@
 **  MasqMail
 */
 
-#include <sys/wait.h>
-
 #include "masqmail.h"
 #include "peopen.h"
 
+#include <sys/wait.h>
 
 gchar*
 online_query()

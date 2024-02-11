@@ -5,10 +5,10 @@
 **  MasqMail
 */
 
+#include "masqmail.h"
+
 #include <pwd.h>
 #include <grp.h>
-
-#include "masqmail.h"
 
 /* is there really no function in libc for this? */
 gboolean

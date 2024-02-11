@@ -5,9 +5,9 @@
 **  MasqMail
 */
 
-#include <fnmatch.h>
 #include "masqmail.h"
 
+#include <fnmatch.h>
 
 table_pair*
 create_pair(gchar *key, gpointer value)

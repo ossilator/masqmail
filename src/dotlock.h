@@ -4,6 +4,8 @@
 **  MasqMail
 */
 
+#include <glib.h>
+
 #define MAX_LOCKAGE 300
 
 gboolean dot_lock(gchar *lock_name, gchar *hitch_name);

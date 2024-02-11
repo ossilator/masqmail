@@ -4,6 +4,8 @@
 **  MasqMail
 */
 
+#include <stdio.h>
+
 #define READSOCKL_CHUG 0x01
 #define READSOCKL_CVT_CRLF 0x02
 

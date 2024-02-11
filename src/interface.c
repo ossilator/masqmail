@@ -6,6 +6,10 @@
 
 #include "masqmail.h"
 
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 /* define if you get problems... */
 /* #define SOCKADDR_OLD 1 */
 

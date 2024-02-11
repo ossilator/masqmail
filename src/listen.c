@@ -4,10 +4,12 @@
 **  MasqMail
 */
 
+#include "masqmail.h"
+
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <sys/wait.h>
 #include <sys/types.h>
-
-#include "masqmail.h"
 
 static int volatile sighup_seen = 0;
 

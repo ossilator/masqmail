@@ -4,10 +4,10 @@
 **  MasqMail
 */
 
+#include "masqmail.h"
+
 #include <sys/stat.h>
 #include <sysexits.h>
-
-#include "masqmail.h"
 
 static char *_sysexit_strings[] = {
 	"command line usage error",

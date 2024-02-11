@@ -5,12 +5,11 @@
 **  MasqMail
 */
 
+#include "smtp_out.h"
+
 #include <fnmatch.h>
 #include <sysexits.h>
 #include <netdb.h>
-
-#include "masqmail.h"
-#include "smtp_out.h"
 
 /*
 **  collect failed/defered rcpts for failure/warning messages

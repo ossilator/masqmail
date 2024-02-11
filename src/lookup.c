@@ -5,13 +5,12 @@
 **  MasqMail
 */
 
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/nameser.h>
-#include <resolv.h>
-
 #include "masqmail.h"
 
+#include <netdb.h>
+#include <resolv.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 #ifdef ENABLE_RESOLVER
 

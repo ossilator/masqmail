@@ -3,6 +3,7 @@
 /*
 **  MasqMail
 */
+
 #include "masqmail.h"
 
 header_name header_names[] = {

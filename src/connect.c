@@ -3,7 +3,11 @@
 /*
 **  MasqMail
 */
+
 #include "masqmail.h"
+
+#include <netdb.h>
+#include <arpa/inet.h>
 
 static GList*
 resolve_ip(gchar *ip)
