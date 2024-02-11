@@ -4,9 +4,6 @@
 **  MasqMail
 */
 
-#include <ctype.h>
-#include <glib.h>
-
 #include "masqmail.h"
 
 gint

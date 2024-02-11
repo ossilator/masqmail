@@ -14,9 +14,12 @@
 **  RFC 2554 (ESMTP AUTH)
 */
 
-#include "masqmail.h"
 #include "smtp_out.h"
 #include "readsock.h"
+
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 void
 destroy_smtpbase(smtp_base *psb)

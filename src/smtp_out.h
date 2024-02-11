@@ -4,12 +4,7 @@
 **  smtp_out.h
 */
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <netdb.h>
+#include "masqmail.h"
 
 #define SMTP_BUF_LEN 1024
 #define SMTP_SIZE_ADD 1024  /* add to the size of a message */

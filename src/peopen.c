@@ -4,16 +4,12 @@
 **  The functions destroy_argv() and create_argv() were added by oku.
 */
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sysexits.h>
-
 #include "peopen.h"
-#include "masqmail.h"
+
+#include <glib.h>
+
+#include <ctype.h>
+#include <sysexits.h>
 
 /*
 ** static void

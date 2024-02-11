@@ -6,11 +6,18 @@
 **
 */
 
-#include <sys/wait.h>
-#include <sys/stat.h>
-
 #include "masqmail.h"
 #include "peopen.h"
+
+#ifdef USE_LIBLOCKFILE
+#  include <maillock.h>
+#else
+#  include <fcntl.h>
+#endif
+
+#include <pwd.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
 
 static void
 message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)

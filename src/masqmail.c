@@ -5,22 +5,12 @@
 **  MasqMail
 */
 
-#include <stdio.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <syslog.h>
-#include <signal.h>
-
-#include <glib.h>
-
 #include "masqmail.h"
+
+#include <pwd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/stat.h>
 
 /*
 **  mutually exclusive modes. Note that there is no 'queue daemon' mode.

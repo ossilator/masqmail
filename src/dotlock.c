@@ -4,18 +4,11 @@
 **  MasqMail
 */
 
-#include <glib.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <syslog.h>
-#include <errno.h>
-#include <string.h>
-#include <time.h>
-
 #include "masqmail.h"
 #include "dotlock.h"
+
+#include <fcntl.h>
+#include <sys/stat.h>
 
 gboolean
 dot_lock(gchar *lock_name, gchar *hitch_name)

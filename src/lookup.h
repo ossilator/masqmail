@@ -4,6 +4,8 @@
 **  MasqMail
 */
 
+#include <glib.h>
+
 #define MAX_DNSNAME MAXDNAME
 
 typedef struct {

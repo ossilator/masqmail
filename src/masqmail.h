@@ -4,31 +4,17 @@
 /*
 **  MasqMail
 */
-#include <config.h>
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <pwd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <time.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <syslog.h>
-#include <signal.h>
-#include <fcntl.h>
+#include "lookup.h"
 
 #include <glib.h>
 
-#include "lookup.h"
+#include <ctype.h>
+#include <stdio.h>
+#include <netinet/in.h>
+#include <syslog.h>  // for log levels
+
+#include <config.h>
 
 typedef struct _interface {
 	gchar *address;

@@ -5,10 +5,12 @@
 **  MasqMail
 */
 
-
 #include "masqmail.h"
 #include "readsock.h"
 
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 gboolean
 init_sockaddr2(struct sockaddr_in *name, gchar *addr, int port)

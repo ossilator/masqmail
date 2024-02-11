@@ -4,11 +4,11 @@
 **  MasqMail
 */
 
-#include <sys/wait.h>
-
 #include "masqmail.h"
 #include "peopen.h"
 #include "readsock.h"
+
+#include <sys/wait.h>
 
 gboolean
 fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,

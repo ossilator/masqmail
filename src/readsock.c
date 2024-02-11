@@ -4,14 +4,12 @@
 **  MasqMail
 */
 
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <setjmp.h>
-#include <unistd.h>
-#include <ctype.h>
-
 #include "readsock.h"
+
+#include <ctype.h>
+#include <signal.h>
+#include <setjmp.h>
+#include <stdlib.h>
 
 jmp_buf jmp_timeout;
 

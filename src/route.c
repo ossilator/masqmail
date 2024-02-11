@@ -5,9 +5,9 @@
 **  MasqMail
 */
 
-#include <fnmatch.h>
-
 #include "masqmail.h"
+
+#include <fnmatch.h>
 
 msgout_perhost*
 create_msgout_perhost(gchar *host)

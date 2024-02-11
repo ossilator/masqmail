@@ -8,6 +8,8 @@
 #include "masqmail.h"
 #include "readsock.h"
 
+#include <pwd.h>
+
 /* must match PROT_* in masqmail.h */
 gchar *prot_names[] = {
 	"local",

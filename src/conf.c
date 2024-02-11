@@ -5,10 +5,10 @@
 **  MasqMail
 */
 
+#include "masqmail.h"
+
 #include <pwd.h>
 #include <grp.h>
-
-#include "masqmail.h"
 
 masqmail_conf conf;
 

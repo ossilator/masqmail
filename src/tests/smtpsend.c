@@ -4,15 +4,6 @@
 **  MasqMail
 */
 
-#include <stdio.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#include <glib.h>
-
-#include "masqmail.h"
 #include "smtp_out.h"
 
 masqmail_conf conf;

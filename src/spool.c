@@ -5,10 +5,10 @@
 **  MasqMail
 */
 
-#include <sys/stat.h>
-
 #include "masqmail.h"
 #include "dotlock.h"
+
+#include <sys/stat.h>
 
 static gint
 read_line(FILE *in, gchar *buf, gint buf_len)
