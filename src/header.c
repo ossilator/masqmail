@@ -109,11 +109,15 @@ void
 destroy_header(header *hdr)
 {
 	if (hdr) {
-		if (hdr->header) {
-			g_free(hdr->header);
-		}
+		g_free(hdr->header);
 		g_free(hdr);
 	}
+}
+
+void
+destroy_header_list(GList *hdr_list)
+{
+	g_list_free_full(hdr_list, (GDestroyNotify) destroy_header);
 }
 
 header*

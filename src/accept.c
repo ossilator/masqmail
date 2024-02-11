@@ -318,9 +318,7 @@ add_received_hdr(message *msg)
 				for_string ? for_string : "", rec_timestamp());
 	}
 	msg->hdr_list = g_list_prepend(msg->hdr_list, hdr);
-	if (for_string) {
-		g_free(for_string);
-	}
+	g_free(for_string);
 }
 
 static accept_error

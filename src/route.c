@@ -20,18 +20,18 @@ create_msgout_perhost(gchar *host)
 	return mo_ph;
 }
 
+static void
+destroy_msgout_part(msg_out *mo)
+{
+	/* the rcpt_list is owned by the msgout's, but not the rcpt's themselves */
+	g_list_free(mo->rcpt_list);
+	g_free(mo);
+}
+
 void
 destroy_msgout_perhost(msgout_perhost *mo_ph)
 {
-	GList *mo_node;
-
-	foreach(mo_ph->msgout_list, mo_node) {
-		msg_out *mo = (msg_out *) (mo_node->data);
-		/* the rcpt_list is owned by the msgout's, but not the rcpt's themselves */
-		g_list_free(mo->rcpt_list);
-		g_free(mo);
-	}
-	g_list_free(mo_ph->msgout_list);
+	g_list_free_full(mo_ph->msgout_list, (GDestroyNotify) destroy_msgout_part);
 	g_free(mo_ph);
 }
 

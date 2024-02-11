@@ -309,6 +309,8 @@ msg_out *clone_msg_out(msg_out *msgout_orig);
 void destroy_msg_out(msg_out *msgout);
 void destroy_msg_out_list(GList *msgout_list);
 
+void destroy_ptr_list(GList *list);
+
 /* address.c */
 address *create_address(gchar *path, gboolean is_rfc821);
 address *create_address_qualified(gchar *path, gboolean is_rfc821, gchar *domain);
@@ -331,6 +333,7 @@ gchar *rec_timestamp(void);
 header *find_header(GList *hdr_list, header_id id);
 header *create_header(header_id id, gchar *fmt, ...) G_GNUC_PRINTF(2, 3);
 void destroy_header(header *hdr);
+void destroy_header_list(GList *hdr_list);
 header *copy_header(header *hdr);
 header *get_header(gchar *line);
 
@@ -420,6 +423,8 @@ gpointer table_find(GList *table_list, gchar *key);
 gpointer table_find_case(GList *table_list, gchar *key);
 gpointer table_find_fnmatch(GList *table_list, gchar *key);
 GList *table_read(gchar *fname, gchar delim);
+void destroy_pair_base(table_pair *p);
+void destroy_pair(table_pair *p);
 void destroy_table(GList *table);
 
 /* timeival.c */

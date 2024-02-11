@@ -124,15 +124,21 @@ table_read(gchar *fname, gchar delim)
 }
 
 void
+destroy_pair_base(table_pair *p)
+{
+	g_free(p->key);
+	g_free(p);
+}
+
+void
+destroy_pair(table_pair *p)
+{
+	g_free(p->value);
+	destroy_pair_base(p);
+}
+
+void
 destroy_table(GList *table)
 {
-	GList *node;
-
-	foreach(table, node) {
-		table_pair *p = (table_pair *) (node->data);
-		g_free(p->key);
-		g_free(p->value);
-		g_free(p);
-	}
-	g_list_free(table);
+	g_list_free_full(table, (GDestroyNotify) destroy_pair);
 }

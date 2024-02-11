@@ -535,9 +535,8 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 				mo_ph->host, route->resolve_list)) {
 			ok = TRUE;
 		}
-		destroy_msgout_perhost(mo_ph);
 	}
-	g_list_free(mo_ph_list);
+	g_list_free_full(mo_ph_list, (GDestroyNotify) destroy_msgout_perhost);
 	return ok;
 }
 
@@ -885,12 +884,8 @@ deliver_msg_list(GList *msg_list, guint flags)
 		}
 	}
 
-	if (alias_table) {
-		destroy_table(alias_table);
-	}
-	if (globalias_table) {
-		destroy_table(globalias_table);
-	}
+	destroy_table(alias_table);
+	destroy_table(globalias_table);
 
 	/* process local/remote msgout lists -> delivery */
 

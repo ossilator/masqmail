@@ -147,9 +147,8 @@ parse_address_glob_list(gchar *line)
 		DEBUG(6) debugf("parse_address_glob_list: "
 				"read pattern `%s' `%s'\n",
 		                addr->local_part, addr->domain);
-		g_free(item);
 	}
-	g_list_free(plain_list);
+	destroy_ptr_list(plain_list);
 	return list;
 }
 
@@ -179,9 +178,8 @@ parse_resolve_list(gchar *line)
 			logwrite(LOG_ERR, "unknown resolver %s\n", item);
 			exit(1);
 		}
-		g_free(item);
 	}
-	g_list_free(list);
+	destroy_ptr_list(list);
 	return res_list;
 }
 
@@ -541,9 +539,8 @@ read_conf(gchar *filename)
 					g_list_append(conf.listen_addresses,
 					parse_interface((gchar *) node->data,
 					25));
-			g_free(node->data);
 		}
-		g_list_free(listen_addrs_tmp);
+		destroy_ptr_list(listen_addrs_tmp);
 	}
 
 	return TRUE;
@@ -609,9 +606,8 @@ read_route(gchar *filename)
 				g_free(pair->value);
 				pair->value = addr;
 				route->map_return_path_addresses = g_list_append(route->map_return_path_addresses, pair);
-				g_free(item);
 			}
-			g_list_free(list);
+			destroy_ptr_list(list);
 		} else if (strcmp(lval, "map_h_from_addresses")==0) {
 			GList *list, *node;
 
@@ -620,9 +616,8 @@ read_route(gchar *filename)
 				gchar *item = (gchar *) (node->data);
 				table_pair *pair = parse_table_pair(item, ':');
 				route->map_h_from_addresses = g_list_append(route->map_h_from_addresses, pair);
-				g_free(item);
 			}
-			g_list_free(list);
+			destroy_ptr_list(list);
 		} else if (strcmp(lval, "map_h_reply_to_addresses")==0) {
 			GList *list, *node;
 
@@ -631,9 +626,8 @@ read_route(gchar *filename)
 				gchar *item = (gchar *) (node->data);
 				table_pair *pair = parse_table_pair(item, ':');
 				route->map_h_reply_to_addresses = g_list_append(route->map_h_reply_to_addresses, pair);
-				g_free(item);
 			}
-			g_list_free(list);
+			destroy_ptr_list(list);
 		} else if (strcmp(lval, "map_h_mail_followup_to_addresses")==0) {
 			GList *list, *node;
 
@@ -642,9 +636,8 @@ read_route(gchar *filename)
 				gchar *item = (gchar *) (node->data);
 				table_pair *pair = parse_table_pair(item, ':');
 				route->map_h_mail_followup_to_addresses = g_list_append(route->map_h_mail_followup_to_addresses, pair);
-				g_free(item);
 			}
-			g_list_free(list);
+			destroy_ptr_list(list);
 		} else if (strcmp(lval, "resolve_list")==0) {
 			route->resolve_list = parse_resolve_list(rval);
 #ifdef ENABLE_AUTH
@@ -706,43 +699,25 @@ _g_list_free_all(GList *list)
 void
 destroy_route(connect_route *r)
 {
-	if (r->filename) {
-		g_free(r->filename);
-	}
+	g_free(r->filename);
 	if (r->mail_host) {
 		g_free(r->mail_host->address);
 		g_free(r->mail_host);
 	}
-	if (r->wrapper) {
-		g_free(r->wrapper);
-	}
-	if (r->helo_name) {
-		g_free(r->helo_name);
-	}
+	g_free(r->wrapper);
+	g_free(r->helo_name);
 	_g_list_free_all(r->allowed_senders);
 	_g_list_free_all(r->denied_senders);
 	_g_list_free_all(r->allowed_recipients);
 	_g_list_free_all(r->denied_recipients);
-	if (r->map_h_reply_to_addresses) {
-		destroy_table(r->map_h_reply_to_addresses);
-	}
-	if (r->resolve_list) {
-		g_list_free(r->resolve_list);
-	}
+	destroy_table(r->map_h_reply_to_addresses);
+	g_list_free(r->resolve_list);
 #ifdef ENABLE_AUTH
-	if (r->auth_name) {
-		g_free(r->auth_name);
-	}
-	if (r->auth_login) {
-		g_free(r->auth_login);
-	}
-	if (r->auth_secret) {
-		g_free(r->auth_secret);
-	}
+	g_free(r->auth_name);
+	g_free(r->auth_login);
+	g_free(r->auth_secret);
 #endif
-	if (r->pipe) {
-		g_free(r->pipe);
-	}
+	g_free(r->pipe);
 	g_free(r);
 }
 
@@ -767,11 +742,5 @@ read_route_list(GList *rf_list)
 void
 destroy_route_list(GList *list)
 {
-	GList *node;
-
-	foreach(list, node) {
-		connect_route *route = (connect_route *) (node->data);
-		destroy_route(route);
-	}
-	g_list_free(list);
+	g_list_free_full(list, (GDestroyNotify) destroy_route);
 }

@@ -173,7 +173,6 @@ expand_one(GList *alias_table, address *addr, int doglob)
 					"hence completed\n", val);
 			alias_addr = create_address_qualified(val+1, TRUE,
 					conf.host_name);
-			g_free(val);
 			DEBUG(6) debugf("alias:     address generated: '%s'\n",
 			                alias_addr->address);
 			alias_list = g_list_append(alias_list, alias_addr);
@@ -184,7 +183,6 @@ expand_one(GList *alias_table, address *addr, int doglob)
 			DEBUG(5) debugf("alias: '%s' is a pipe address\n",
 					val);
 			alias_addr = create_address_pipe(val);
-			g_free(val);
 			DEBUG(6) debugf("alias:     pipe generated: %s\n",
 			                alias_addr->local_part);
 			alias_list = g_list_append(alias_list, alias_addr);
@@ -193,7 +191,6 @@ expand_one(GList *alias_table, address *addr, int doglob)
 
 		alias_addr = create_address_qualified(val, TRUE,
 				conf.host_name);
-		g_free(val);
 
 		if (!addr_is_local(alias_addr)) {
 			DEBUG(5) debugf("alias: '%s' is non-local, "
@@ -221,7 +218,7 @@ expand_one(GList *alias_table, address *addr, int doglob)
 			alias_list = g_list_concat(alias_list, alias_node);
 		}
 	}
-	g_list_free(val_list);
+	destroy_ptr_list(val_list);
 	addr->children = g_list_copy(alias_list);
 
 	return alias_list;
