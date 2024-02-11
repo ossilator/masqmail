@@ -131,15 +131,7 @@ parse_address_glob_list(gchar *line)
 	foreach(plain_list, node) {
 		gchar *item = (gchar *) (node->data);
 		char *at;
-		char *ep;
 		address *addr = calloc(1, sizeof(address));
-
-		ep = item + strlen(item) - 1;
-		if (*item == '<' && *ep == '>') {
-			*item = '\0';
-			*ep = '\0';
-			g_strstrip(item);
-		}
 
 		addr->address = strdup(item);
 		at = strrchr(item, '@');
