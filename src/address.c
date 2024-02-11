@@ -177,27 +177,6 @@ addr_find_ancestor(address *addr)
 	return addr;
 }
 
-gchar*
-addr_string(address *addr)
-{
-	static gchar *buffer = NULL;
-
-	if (buffer) {
-		g_free(buffer);
-	}
-	if (!addr) {
-		return NULL;
-	}
-	if (!*addr->local_part) {
-		buffer = g_strdup("<>");
-	} else {
-		buffer = g_strdup_printf("<%s@%s>",
-				addr->local_part ? addr->local_part : "",
-				addr->domain ? addr->domain : "");
-	}
-	return buffer;
-}
-
 GList*
 addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain)
 {

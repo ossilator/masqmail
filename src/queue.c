@@ -151,8 +151,9 @@ queue_list()
 		if (msg->ident != NULL)
 			ident_str = g_strdup_printf(" ident=%s", msg->ident);
 
-		printf("%s <= %s%s%s%s%s\n", msg->uid, addr_string(msg->return_path), size_str ? size_str : "",
-		       time_str ? time_str : "", host_str ? host_str : "", ident_str ? ident_str : "");
+		printf("%s <= <%s>%s%s%s%s\n", msg->uid, msg->return_path->address,
+		       size_str ? size_str : "", time_str ? time_str : "",
+		       host_str ? host_str : "", ident_str ? ident_str : "");
 
 		g_free(size_str);
 		g_free(time_str);
@@ -162,7 +163,10 @@ queue_list()
 		foreach(msg->rcpt_list, rcpt_node) {
 			address *rcpt = (address *) (rcpt_node->data);
 
-			printf("              %s %s\n", addr_is_delivered(rcpt) ? "=>" : (addr_is_failed(rcpt) ? "!=" : "=="), addr_string(rcpt));
+			printf("              %s <%s>\n",
+			       addr_is_delivered(rcpt)
+			          ? "=>" : (addr_is_failed(rcpt)
+			                       ? "!=" : "=="), rcpt->address);
 		}
 		destroy_message(msg);
 	}

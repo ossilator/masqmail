@@ -330,7 +330,6 @@ gboolean addr_isequal_parent(address *addr1, address *addr2, int (*cmpfunc) (con
 address *addr_find_ancestor(address *addr);
 gboolean addr_is_delivered_children(address *addr);
 gboolean addr_is_finished_children(address *addr);
-gchar *addr_string(address *addr);
 
 /* accept.c */
 accept_error accept_message(FILE *in, message *msg, guint flags);

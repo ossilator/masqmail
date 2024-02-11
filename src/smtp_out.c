@@ -324,16 +324,16 @@ static void
 smtp_cmd_mailfrom(smtp_base *psb, address *return_path, gssize size)
 {
 	if (psb->use_size) {
-		smtp_cmd(psb, "MAIL FROM:%s SIZE=%" G_GSSIZE_FORMAT, addr_string(return_path), size);
+		smtp_cmd(psb, "MAIL FROM:<%s> SIZE=%" G_GSSIZE_FORMAT, return_path->address, size);
 	} else {
-		smtp_cmd(psb, "MAIL FROM:%s", addr_string(return_path));
+		smtp_cmd(psb, "MAIL FROM:<%s>", return_path->address);
 	}
 }
 
 static void
 smtp_cmd_rcptto(smtp_base *psb, address *rcpt)
 {
-	smtp_cmd(psb, "RCPT TO:%s", addr_string(rcpt));
+	smtp_cmd(psb, "RCPT TO:<%s>", rcpt->address);
 }
 
 static void
@@ -692,8 +692,8 @@ smtp_out_rcptto_resp(smtp_base *psb, message *msg, address *rcpt, int *rcpt_acce
 	} else {
 		return FALSE;
 	}
-	logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s\n",
-	         msg->uid, addr_string(rcpt), psb->remote_host, psb->buffer);
+	logwrite(LOG_NOTICE, "%s == <%s> host=%s failed: %s\n",
+	         msg->uid, rcpt->address, psb->remote_host, psb->buffer);
 	return TRUE;
 }
 
@@ -787,8 +787,8 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 	for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
 		address *rcpt = (address *) (rcpt_node->data);
 		if (addr_is_delivered(rcpt)) {
-			logwrite(LOG_INFO, "%s => %s host=%s\n",
-			         msg->uid, addr_string(rcpt), psb->remote_host);
+			logwrite(LOG_INFO, "%s => <%s> host=%s\n",
+			         msg->uid, rcpt->address, psb->remote_host);
 		}
 	}
 	return;

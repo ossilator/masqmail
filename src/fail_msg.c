@@ -25,16 +25,15 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg)
 			address *addr = (address *) (node->data);
 
 			if (addr_isequal_parent(addr, ret_path, strcasecmp)) {
-				logwrite(LOG_ERR, "%s == %s: postmaster address failed\n",
-				         msg->uid, addr_string(ret_path));
+				logwrite(LOG_ERR, "%s == <%s>: postmaster address failed\n",
+				         msg->uid, ret_path->address);
 				return FALSE;
 			}
 		}
 	} else
 		ret_path = copy_address(msg->return_path);
 
-	DEBUG(1) debugf("sending failure notice to %s.\n",
-			addr_string(ret_path));
+	DEBUG(1) debugf("sending failure notice to <%s>.\n", ret_path->address);
 
 	if (template) {
 		FILE *file;
@@ -61,7 +60,7 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg)
 						if (strncmp(fmt, "@failed_rcpts", 13) == 0) {
 							foreach(failed_rcpts, node) {
 								address *rcpt = (address *) (node->data);
-								fprintf(out, "\t%s\n", addr_string(rcpt));
+								fprintf(out, "\t<%s>\n", rcpt->address);
 							}
 						} else if (strncmp(fmt, "@msg_headers", 12) == 0) {
 							foreach(msg->hdr_list, node) {

@@ -49,7 +49,7 @@ spool_write_rcpt(FILE *out, address *rcpt)
 			logwrite(LOG_WARNING, "please report this bug.\n");
 			rcpt->domain = g_strdup(conf.host_name);
 		}
-		fprintf(out, "RT:%c%s\n", dlvrd_char, addr_string(rcpt));
+		fprintf(out, "RT:%c<%s>\n", dlvrd_char, rcpt->address);
 	} else {
 		fprintf(out, "RT:%c%s\n", dlvrd_char, rcpt->local_part);
 	}
@@ -244,7 +244,7 @@ spool_write_header(message *msg)
 
 	if ((out = fopen(tmp_file, "w"))) {
 		fprintf(out, "%s\n", msg->uid);
-		fprintf(out, "MF:%s\n", addr_string(msg->return_path));
+		fprintf(out, "MF:<%s>\n", msg->return_path->address);
 
 		foreach(msg->rcpt_list, node) {
 			address *rcpt = (address *) (node->data);

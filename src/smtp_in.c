@@ -255,7 +255,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 					break;
 				}
 				if (!(conf.do_relay || addr_is_local(msg->return_path) || addr_is_local(addr))) {
-					smtp_printf(out, "550 relaying to %s denied.\r\n", addr_string(addr));
+					smtp_printf(out, "550 relaying to <%s> denied.\r\n", addr->address);
 					destroy_address(addr);
 					break;
 				}

@@ -179,9 +179,9 @@ deliver_local(msg_out *msgout)
 		*/
 		hdr_list = g_list_copy(msg->hdr_list);
 		retpath_hdr = create_header(HEAD_ENVELOPE_TO,
-				"Envelope-to: %s\n", addr_string(env_addr));
+				"Envelope-to: <%s>\n", env_addr->address);
 		envto_hdr = create_header(HEAD_RETURN_PATH,
-				"Return-path: %s\n", addr_string(ret_path));
+				"Return-path: <%s>\n", ret_path->address);
 
 		hdr_list = g_list_prepend(hdr_list, envto_hdr);
 		hdr_list = g_list_prepend(hdr_list, retpath_hdr);

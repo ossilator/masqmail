@@ -238,8 +238,8 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 	}
 
 	/* here the mail is queued and thus in our responsibility */
-	logwrite(LOG_INFO, "%s <= %s with %s\n", msg->uid,
-			addr_string(msg->return_path), prot_names[PROT_LOCAL]);
+	logwrite(LOG_INFO, "%s <= <%s> with %s\n", msg->uid,
+	         msg->return_path->address, prot_names[PROT_LOCAL]);
 
 	deliver(msg);
 
