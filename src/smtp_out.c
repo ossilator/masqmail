@@ -29,19 +29,13 @@ destroy_smtpbase(smtp_base *psb)
 
 	close(psb->sock);
 
-	if (psb->helo_name)
-		g_free(psb->helo_name);
-	if (psb->buffer)
-		g_free(psb->buffer);
-	if (psb->auth_names)
-		g_strfreev(psb->auth_names);
+	g_free(psb->helo_name);
+	g_free(psb->buffer);
+	g_strfreev(psb->auth_names);
 
-	if (psb->auth_name)
-		g_free(psb->auth_name);
-	if (psb->auth_login)
-		g_free(psb->auth_login);
-	if (psb->auth_secret)
-		g_free(psb->auth_secret);
+	g_free(psb->auth_name);
+	g_free(psb->auth_login);
+	g_free(psb->auth_secret);
 }
 
 gchar*

@@ -703,56 +703,31 @@ read_route(gchar *filename)
 static void
 _g_list_free_all(GList *list)
 {
-	GList *node;
-	if (!list) {
-		return;
-	}
-	foreach(list, node) {
-		g_free(node->data);
-	}
-	g_list_free(list);
+	g_list_free_full(list, g_free);
 }
 
 void
 destroy_route(connect_route *r)
 {
-	if (r->filename) {
-		g_free(r->filename);
-	}
+	g_free(r->filename);
 	if (r->mail_host) {
 		g_free(r->mail_host->address);
 		g_free(r->mail_host);
 	}
-	if (r->wrapper) {
-		g_free(r->wrapper);
-	}
-	if (r->helo_name) {
-		g_free(r->helo_name);
-	}
+	g_free(r->wrapper);
+	g_free(r->helo_name);
 	_g_list_free_all(r->allowed_senders);
 	_g_list_free_all(r->denied_senders);
 	_g_list_free_all(r->allowed_recipients);
 	_g_list_free_all(r->denied_recipients);
-	if (r->map_h_reply_to_addresses) {
-		destroy_table(r->map_h_reply_to_addresses);
-	}
-	if (r->resolve_list) {
-		g_list_free(r->resolve_list);
-	}
+	destroy_table(r->map_h_reply_to_addresses);
+	g_list_free(r->resolve_list);
 #ifdef ENABLE_AUTH
-	if (r->auth_name) {
-		g_free(r->auth_name);
-	}
-	if (r->auth_login) {
-		g_free(r->auth_login);
-	}
-	if (r->auth_secret) {
-		g_free(r->auth_secret);
-	}
+	g_free(r->auth_name);
+	g_free(r->auth_login);
+	g_free(r->auth_secret);
 #endif
-	if (r->pipe) {
-		g_free(r->pipe);
-	}
+	g_free(r->pipe);
 	g_free(r);
 }
 
@@ -777,11 +752,5 @@ read_route_list(GList *rf_list)
 void
 destroy_route_list(GList *list)
 {
-	GList *node;
-
-	foreach(list, node) {
-		connect_route *route = (connect_route *) (node->data);
-		destroy_route(route);
-	}
-	g_list_free(list);
+	g_list_free_full(list, (GDestroyNotify) destroy_route);
 }

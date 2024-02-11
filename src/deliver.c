@@ -887,12 +887,8 @@ deliver_msg_list(GList *msg_list, guint flags)
 		}
 	}
 
-	if (alias_table) {
-		destroy_table(alias_table);
-	}
-	if (globalias_table) {
-		destroy_table(globalias_table);
-	}
+	destroy_table(alias_table);
+	destroy_table(globalias_table);
 
 	/* process local/remote msgout lists -> delivery */
 

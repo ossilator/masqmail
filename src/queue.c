@@ -155,14 +155,10 @@ queue_list()
 		printf("%s <= %s%s%s%s%s\n", msg->uid, addr_string(msg->return_path), size_str ? size_str : "",
 		       time_str ? time_str : "", host_str ? host_str : "", ident_str ? ident_str : "");
 
-		if (size_str)
-			g_free(size_str);
-		if (time_str)
-			g_free(time_str);
-		if (host_str)
-			g_free(host_str);
-		if (ident_str)
-			g_free(ident_str);
+		g_free(size_str);
+		g_free(time_str);
+		g_free(host_str);
+		g_free(ident_str);
 
 		foreach(msg->rcpt_list, rcpt_node) {
 			address *rcpt = (address *) (rcpt_node->data);

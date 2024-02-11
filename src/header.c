@@ -109,9 +109,7 @@ void
 destroy_header(header *hdr)
 {
 	if (hdr) {
-		if (hdr->header) {
-			g_free(hdr->header);
-		}
+		g_free(hdr->header);
 		g_free(hdr);
 	}
 }

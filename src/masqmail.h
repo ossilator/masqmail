@@ -419,6 +419,8 @@ gpointer table_find_func(GList *table_list, gchar *key, int (*cmp_func) (const c
 gpointer table_find(GList *table_list, gchar *key);
 gpointer table_find_fnmatch(GList *table_list, gchar *key);
 GList *table_read(gchar *fname, gchar delim);
+void destroy_pair_base(table_pair *p);
+void destroy_pair(table_pair *p);
 void destroy_table(GList *table);
 
 /* timeival.c */
