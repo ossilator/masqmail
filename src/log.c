@@ -34,7 +34,7 @@ ext_strerror(int err)
 	if (err < 1024)
 		return strerror(err);
 	else if (err > 1024 + EX__BASE
-	         && (err - 1024 - EX__BASE < sizeof(_sysexit_strings) / sizeof(_sysexit_strings[0])))
+	         && (err - 1024 - EX__BASE < G_N_ELEMENTS(_sysexit_strings)))
 		return _sysexit_strings[err - 1024 - EX__BASE];
 
 	return "unknown error";
