@@ -169,7 +169,6 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 static void
 ensure_return_path(message *msg)
 {
-	GList *hdr_list;
 	header *hdr;
 	gchar *addr;
 
