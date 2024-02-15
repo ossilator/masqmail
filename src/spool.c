@@ -92,14 +92,13 @@ spool_read_data(message *msg)
 	}
 
 	char buf[MAX_DATALINE];
-	int len;
 
 	/* msg uid */
 	read_line(in, buf, MAX_DATALINE);
 
 	/* data */
 	msg->data_list = NULL;
-	while ((len = read_line(in, buf, MAX_DATALINE)) > 0) {
+	while (read_line(in, buf, MAX_DATALINE) > 0) {
 		msg->data_list = g_list_prepend(msg->data_list, g_strdup(buf));
 	}
 	msg->data_list = g_list_reverse(msg->data_list);
@@ -124,13 +123,12 @@ spool_read_header(message *msg)
 
 	header *hdr = NULL;
 	char buf[MAX_DATALINE];
-	int len;
 
 	/* msg uid */
 	read_line(in, buf, MAX_DATALINE);
 
 	/* envelope header */
-	while ((len = read_line(in, buf, MAX_DATALINE)) > 0) {
+	while (read_line(in, buf, MAX_DATALINE) > 0) {
 		if (buf[0] == '\n') {
 			break;
 		} else if (strncasecmp(buf, "MF:", 3) == 0) {
@@ -170,7 +168,7 @@ spool_read_header(message *msg)
 	}
 
 	/* mail headers */
-	while ((len = read_line(in, buf, MAX_DATALINE)) > 0) {
+	while (read_line(in, buf, MAX_DATALINE) > 0) {
 		if (strncasecmp(buf, "HD:", 3) == 0) {
 			DEBUG(6) debugf("spool_read_header(): hdr start\n");
 			hdr = get_header(&(buf[3]));
