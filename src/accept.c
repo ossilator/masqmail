@@ -166,53 +166,6 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 	return AERR_OK;
 }
 
-static void
-ensure_return_path(message *msg)
-{
-	GList *hdr_list;
-	header *hdr;
-	gchar *addr;
-
-	if (msg->return_path) {
-		return;
-	}
-
-	DEBUG(3) debugf("return_path == NULL\n");
-
-	hdr = find_header(msg->hdr_list, HEAD_SENDER);
-	if (!hdr) {
-		hdr = find_header(msg->hdr_list, HEAD_FROM);
-	}
-	if (hdr) {
-		DEBUG(5) debugf("hdr->value = '%s'\n", hdr->value);
-
-		addr = g_strstrip(g_strdup(hdr->value));
-		msg->return_path = create_address_qualified(addr,
-				FALSE, msg->received_host);
-		if (msg->return_path) {
-			DEBUG(3) debugf("setting return_path to %s\n",
-					addr_string(msg->return_path));
-			msg->hdr_list = g_list_append(msg->hdr_list,
-					create_header(HEAD_UNKNOWN,
-					"X-Warning: return path set from %s "
-					"address\n",
-					(hdr->id == HEAD_SENDER) ?
-					"Sender:" : "From:"));
-		}
-		g_free(addr);
-	}
-	if (!msg->return_path) {
-		/* no Sender: or From: or create_address_qualified failed */
-		msg->return_path = create_address_qualified("postmaster",
-				TRUE, conf.host_name);
-		DEBUG(3) debugf("setting return_path to %s\n",
-				addr_string(msg->return_path));
-		msg->hdr_list = g_list_append(msg->hdr_list,
-				create_header(HEAD_UNKNOWN,
-				"X-Warning: real return path is unknown\n"));
-	}
-}
-
 static accept_error
 scan_headers(message *msg, guint flags)
 {
@@ -277,12 +230,6 @@ scan_headers(message *msg, guint flags)
 			destroy_header(hdr);
 			break;
 		case HEAD_RETURN_PATH:
-			if (flags & ACC_MAIL_FROM_HEAD) {
-				/* usually POP3 accept */
-				msg->return_path = create_address_qualified(hdr->value, TRUE, msg->received_host);
-				DEBUG(3) debugf("setting return_path to %s\n",
-						addr_string(msg->return_path));
-			}
 			DEBUG(3) debugf("removing 'Return-Path' header\n");
 			msg->hdr_list = g_list_remove_link(msg->hdr_list,
 					hdr_node);
@@ -293,14 +240,6 @@ scan_headers(message *msg, guint flags)
 			break;  /* make compiler happy */
 		}
 	}
-
-	/*
-	**  TODO: do we still need this as we don't fetch
-	**        mail anymore?
-	**  This can happen for pop3 accept only and if no
-	**  Return-Path: header was given
-	*/
-	ensure_return_path(msg);
 
 	/* here we should have our recipients, fail if not: */
 	if (!msg->rcpt_list) {
