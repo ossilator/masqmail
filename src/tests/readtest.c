@@ -11,7 +11,7 @@ main(void)
 	/*  ret = read_sockline(stdin, buf, size, 60, READSOCKL_CHUG); */
 
 	printf("%s\n", buf);
-	printf("ret = %d, size = %d, strlen = %d\n", ret, size, strlen(buf));
+	printf("ret = %d, size = %d, strlen = %d\n", ret, size, (int) strlen(buf));
 
 	return 0;
 }
