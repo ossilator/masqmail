@@ -11,7 +11,7 @@
 typedef struct {
 	guint32 ip;
 	int pref;
-	guchar *name;
+	gchar *name;
 } mxip_addr;
 
 
