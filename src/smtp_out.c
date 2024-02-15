@@ -497,13 +497,11 @@ smtp_out_open_child(gchar *cmd)
 gboolean
 smtp_out_rset(smtp_base *psb)
 {
-	gboolean ok;
-
 	fprintf(psb->out, "RSET\r\n");
 	fflush(psb->out);
 	DEBUG(4) debugf("C: RSET\n");
 
-	if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
+	if (read_response(psb, SMTP_CMD_TIMEOUT))
 		if (check_response(psb, FALSE))
 			return TRUE;
 

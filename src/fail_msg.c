@@ -60,9 +60,8 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 						strerror(errno));
 			} else {
 				gchar fmt[256], line[256];
-				int status, ret;
 
-				while ((ret = read_sockline(file, fmt, 256, 0, 0)) > 0) {
+				while (read_sockline(file, fmt, 256, 0, 0) > 0) {
 					if (fmt[0] == '@') {
 						GList *node;
 						if (strncmp(fmt, "@failed_rcpts", 13) == 0) {
@@ -97,6 +96,7 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 				}
 
 				fclose(out);
+				int status;
 				waitpid(pid, &status, 0);
 				if ((WEXITSTATUS(status) != 0) ||
 						WIFSIGNALED(status)) {
