@@ -151,7 +151,7 @@ mode_smtp(void)
 
 	struct sockaddr_in saddr;
 	gchar *peername = NULL;
-	int dummy = sizeof(saddr);
+	socklen_t dummy = sizeof(saddr);
 
 	DEBUG(5) debugf("accepting smtp message on stdin\n");
 

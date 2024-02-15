@@ -46,7 +46,7 @@ gchar*
 set_heloname(smtp_base *psb, gchar *default_name, gboolean do_correct)
 {
 	struct sockaddr_in sname;
-	int len = sizeof(struct sockaddr_in);
+	socklen_t len = sizeof(struct sockaddr_in);
 	struct hostent *host_entry;
 
 	if (do_correct) {
@@ -465,7 +465,7 @@ smtp_out_open(gchar *host, gint port, GList *resolve_list)
 
 		DEBUG(5) {
 			struct sockaddr_in name;
-			int len = sizeof(struct sockaddr);
+			socklen_t len = sizeof(struct sockaddr);
 			getsockname(sock, (struct sockaddr *) (&name), &len);
 			debugf("socket: name.sin_addr = %s\n", inet_ntoa(name.sin_addr));
 		}
