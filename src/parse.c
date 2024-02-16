@@ -21,7 +21,7 @@
 
 static gchar specials[] = "()<>@,;:\\\".[]`";
 
-char *parse_error = NULL;
+const char *parse_error = NULL;
 
 static gchar*
 skip_comment(gchar *p)
@@ -113,7 +113,7 @@ read_domain(gchar *p, gchar **b, gchar **e)
 			p++;
 		}
 		if (*p != ']') {
-			parse_error = g_strdup_printf("']' expected at end of literal address %s", *b);
+			parse_error = "unterminated domain literal";
 			return FALSE;
 		}
 		p++;
@@ -133,12 +133,6 @@ parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end,
 
 	*local_begin = *local_end = NULL;
 	*domain_begin = *domain_end = NULL;
-
-	/* might be some memory left from previous call: */
-	if (parse_error) {
-		g_free(parse_error);
-		parse_error = NULL;
-	}
 
 	/* leading spaces and angle brackets */
 	while (*p && (isspace(*p) || (*p == '<'))) {
@@ -165,7 +159,7 @@ parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end,
 		while ((*p && (isspace(*p))) || (*p == '(')) {
 			if (*p == '(') {
 				if (!(p = skip_comment(p))) {
-					parse_error = g_strdup("missing right bracket ')'");
+					parse_error = "unterminated comment";
 					return FALSE;
 				}
 			} else {
@@ -241,7 +235,7 @@ parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end,
 			break;
 
 		} else if (strchr(specials, *p) || iscntrl(*p) || isspace(*p)) {
-			parse_error = g_strdup_printf("unexpected character: %c", *p);
+			parse_error = "unexpected character";
 #ifdef PARSE_TEST
 			g_print("unexpected character: %c", *p);
 #endif
@@ -263,10 +257,10 @@ parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end,
 	*address_end = p;
 
 	if (angle_brackets > 0) {
-		parse_error = g_strdup("missing '>' at end of string");
+		parse_error = "missing '>' at end of string";
 		return FALSE;
 	} else if (angle_brackets < 0) {
-		parse_error = g_strdup("superfluous '>' at end of string");
+		parse_error = "excess '>' at end of string";
 		return FALSE;
 	}
 
@@ -285,12 +279,6 @@ parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end,
 
 	*local_begin = *local_end = NULL;
 	*domain_begin = *domain_end = NULL;
-
-	/* might be some memory left from previous call: */
-	if (parse_error != NULL) {
-		g_free(parse_error);
-		parse_error = NULL;
-	}
 
 	/* leading spaces and angle brackets */
 	while (*p && (isspace(*p) || (*p == '<'))) {
@@ -332,7 +320,7 @@ parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end,
 			}
 			break;
 		} else {
-			parse_error = g_strdup_printf ("unexpected character after local part '%c'", *p);
+			parse_error = "unexpected character after local part";
 			return FALSE;
 		}
 	}
@@ -350,10 +338,10 @@ parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end,
 	*address_end = p;
 
 	if (angle_brackets > 0) {
-		parse_error = g_strdup("missing '>' at end of string");
+		parse_error = "missing '>' at end of string";
 		return FALSE;
 	} else if (angle_brackets < 0) {
-		parse_error = g_strdup("superfluous '>' at end of string");
+		parse_error = "excess '>' at end of string";
 		return FALSE;
 	}
 
@@ -405,7 +393,7 @@ _create_address(gchar *string, gchar **end, addr_type_t addr_type)
 		return NULL;
 	}
 	if (*loc_beg == '|') {
-		parse_error = g_strdup("no pipe allowed for RFC 822/821 address");
+		parse_error = "no pipe addresses allowed here";
 		return NULL;
 	}
 
