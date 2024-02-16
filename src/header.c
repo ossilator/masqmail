@@ -73,36 +73,38 @@ find_header(GList *hdr_list, header_id id)
 	return NULL;
 }
 
+static header*
+create_header_raw(header_id id, gchar *txt, int offset)
+{
+	header *hdr = g_malloc(sizeof(header));
+	hdr->id = id;
+	hdr->header = txt;
+	hdr->value = txt + offset;
+	return hdr;
+}
+
 header*
 create_header(header_id id, gchar *fmt, ...)
 {
-	gchar *p;
-	header *hdr;
 	va_list args;
 	va_start(args, fmt);
+	gchar *txt = g_strdup_vprintf(fmt, args);
+	va_end(args);
 
-	hdr = g_malloc(sizeof(header));
-
-	hdr->id = id;
-	hdr->header = g_strdup_vprintf(fmt, args);
+	DEBUG(3) debugf("create_header():  %s", txt);
 
 	/*
 	**  value shall point to the first non-whitespace char in the
 	**  value part of the header line (i.e. after the first colon)
 	*/
-	p = strchr(hdr->header, ':');
+	gchar *p = strchr(txt, ':');
 	assert( p );
 	p++;
 	while (*p == ' ' || *p == '\t' || *p == '\n') {
 		p++;
 	}
-	hdr->value = p;
 
-	DEBUG(3) debugf("create_header():  %s", hdr->header);
-	/* DEBUG(3) debugf("create_header(): val: `%s'\n", hdr->value); */
-
-	va_end(args);
-	return hdr;
+	return create_header_raw(id, txt, p - txt);
 }
 
 void
@@ -126,10 +128,8 @@ copy_header(header *hdr)
 	header *new_hdr = NULL;
 
 	if (hdr) {
-		new_hdr = g_malloc(sizeof(header));
-		new_hdr->id = hdr->id;
-		new_hdr->header = g_strdup(hdr->header);
-		new_hdr->value = new_hdr->header + (hdr->value - hdr->header);
+		new_hdr = create_header_raw(
+				hdr->id, g_strdup(hdr->header), hdr->value - hdr->header);
 	}
 	return new_hdr;
 }
@@ -137,8 +137,6 @@ copy_header(header *hdr)
 header*
 get_header(gchar *line)
 {
-	header *hdr;
-
 	gchar *p = strchr(line, ':');
 	if (!p) {
 		return NULL;
@@ -151,26 +149,17 @@ get_header(gchar *line)
 		}
 	}
 
-	hdr = g_malloc(sizeof(header));
-
-	hdr->value = NULL;
 	p++;
-
 	while (*p && (*p == ' ' || *p == '\t')) {
 		p++;
 	}
-	hdr->value = p;
 	/*
 	**  Note: an empty value can also mean that it's only the first part
 	**  of a folded header line
 	*/
 
-	hdr->id = (header_id) i;
-	hdr->header = g_strdup(line);
-	hdr->value = hdr->header + (hdr->value - line);
-
-	DEBUG(4) debugf("header: %u = %s", hdr->id, hdr->header);
+	DEBUG(4) debugf("header: %u = %s", i, line);
 	/* Note: This only outputs the first line if the header is folded */
 
-	return hdr;
+	return create_header_raw((header_id) i, g_strdup(line), p - line);
 }
