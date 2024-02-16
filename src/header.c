@@ -149,13 +149,10 @@ get_header(gchar *line)
 
 	hdr = g_malloc(sizeof(header));
 
-	hdr->value = NULL;
 	p++;
-
 	while (*p && (*p == ' ' || *p == '\t')) {
 		p++;
 	}
-	hdr->value = p;
 	/*
 	**  Note: an empty value can also mean that it's only the first part
 	**  of a folded header line
@@ -168,7 +165,7 @@ get_header(gchar *line)
 	}
 	hdr->id = (header_id) i;
 	hdr->header = g_strdup(line);
-	hdr->value = hdr->header + (hdr->value - line);
+	hdr->value = hdr->header + (p - line);
 
 	DEBUG(4) debugf("header: %d = %s", hdr->id, hdr->header);
 	/* Note: This only outputs the first line if the header is folded */
