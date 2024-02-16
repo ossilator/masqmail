@@ -6,6 +6,8 @@
 
 #include "masqmail.h"
 
+#include <assert.h>
+
 /* keep in sync with header_id enum! */
 static const char * const header_names[] = {
 	"From",
@@ -83,20 +85,18 @@ create_header(header_id id, gchar *fmt, ...)
 
 	hdr->id = id;
 	hdr->header = g_strdup_vprintf(fmt, args);
-	hdr->value = NULL;
 
 	/*
 	**  value shall point to the first non-whitespace char in the
 	**  value part of the header line (i.e. after the first colon)
 	*/
 	p = strchr(hdr->header, ':');
-	if (p) {
+	assert( p );
+	p++;
+	while (*p == ' ' || *p == '\t' || *p == '\n') {
 		p++;
-		while (*p == ' ' || *p == '\t' || *p == '\n') {
-			p++;
-		}
-		hdr->value = (*p) ? p : NULL;
 	}
+	hdr->value = p;
 
 	DEBUG(3) debugf("create_header():  %s", hdr->header);
 	/* DEBUG(3) debugf("create_header(): val: `%s'\n", hdr->value); */

@@ -201,7 +201,7 @@ scan_headers(message *msg, guint flags)
 				/* -t option (see comment above) */
 				DEBUG(5) debugf("hdr->value = %s\n",
 						hdr->value);
-				if (hdr->value) {
+				if (*hdr->value) {
 					msg->rcpt_list = addr_list_append_rfc822(msg->rcpt_list, hdr->value, conf.host_name);
 				}
 			}
