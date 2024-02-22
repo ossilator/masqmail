@@ -182,7 +182,7 @@ expand_one(GList *alias_table, address *addr, int doglob)
 		if (*val == '|') {
 			DEBUG(5) debugf("alias: '%s' is a pipe address\n",
 					val);
-			alias_addr = create_address_pipe(val);
+			alias_addr = create_address_pipe(g_strchomp(val));
 			DEBUG(6) debugf("alias:     pipe generated: %s\n",
 			                alias_addr->local_part);
 			alias_list = g_list_append(alias_list, alias_addr);
