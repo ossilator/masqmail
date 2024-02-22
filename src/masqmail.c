@@ -528,7 +528,7 @@ main(int argc, char *argv[])
 				fprintf(stderr, "-f requires address arg.\n");
 				exit(1);
 			}
-			f_address = g_strdup(addr);
+			f_address = addr;
 
 		} else if (strncmp(opt, "F", 1) == 0) {
 			full_sender_name = get_optarg(argv, &arg, opt+1);
@@ -730,7 +730,6 @@ main(int argc, char *argv[])
 	if (f_address) {
 		return_path = create_address_qualified(f_address, TRUE,
 				conf.host_name);
-		g_free(f_address);
 		if (!return_path) {
 			fprintf(stderr, "invalid RFC821 address: %s\n",
 					f_address);
