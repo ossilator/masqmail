@@ -273,7 +273,7 @@ read_lval(FILE *in, gchar *buf, gint size)
 		*ptr++ = c;
 	}
 	*ptr = '\0';
-	g_strstrip(buf);
+	g_strchomp(buf);
 	ungetc(c, in);
 	eat_spaces(in);
 	DEBUG(9) fprintf(stderr, "lval = %s\n", buf);
@@ -329,7 +329,7 @@ read_rval(FILE *in, gchar *buf, gint size)
 		}
 		*ptr = '\0';
 	}
-	g_strstrip(buf);
+	g_strchomp(buf);
 	DEBUG(9) fprintf(stderr, "rval = %s\n", buf);
 	/* eat trailing of line */
 	while ((c = fgetc(in)) != EOF && c != '\n') {
@@ -353,7 +353,6 @@ read_statement(FILE *in, gchar *lval, gint lsize, gchar *rval, gint rsize)
 	if (!read_lval(in, lval, lsize)) {
 		return FALSE;
 	}
-	g_strstrip(lval);
 	DEBUG(9) fprintf(stderr, "  lval = `%s'\n", lval);
 	if ((c = fgetc(in) != '=')) {
 		fprintf(stderr, "'=' expected after %s, char was '%c'\n",
@@ -362,7 +361,6 @@ read_statement(FILE *in, gchar *lval, gint lsize, gchar *rval, gint rsize)
 	if (!read_rval(in, rval, rsize)) {
 		return FALSE;
 	}
-	g_strstrip(rval);
 	DEBUG(9) fprintf(stderr, "  rval = `%s'\n", rval);
 	return TRUE;
 }
