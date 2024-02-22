@@ -30,10 +30,6 @@ create_address(gchar *path, addr_type_t addr_type)
 {
 	address *addr;
 	addr = _create_address(path, NULL, addr_type);
-
-	if (addr) {
-		addr_unmark_delivered(addr);
-	}
 	return addr;
 }
 

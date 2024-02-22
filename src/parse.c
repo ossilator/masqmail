@@ -443,10 +443,6 @@ _create_address(gchar *string, gchar **end, addr_type_t addr_type)
 	DEBUG(6) debugf("_create_address(): local_part: `%s'\n", addr->local_part);
 	DEBUG(6) debugf("_create_address(): domain: `%s'\n", addr->domain);
 
-#ifndef PARSE_TEST
-	addr_unmark_delivered(addr);
-#endif
-
 	return addr;
 }
 
