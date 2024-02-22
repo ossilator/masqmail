@@ -406,9 +406,7 @@ accept_message_prepare(message *msg, guint flags)
 
 	/* if local, get password entry and set return path if missing */
 	if (!msg->received_host) {
-		struct passwd *passwd = NULL;
-
-		passwd = g_memdup(getpwuid(geteuid()), sizeof(struct passwd));
+		struct passwd *passwd = getpwuid(geteuid());
 		msg->ident = g_strdup(passwd->pw_name);
 		if (!msg->return_path) {
 			gchar *path = g_strdup_printf("<%s@%s>",
