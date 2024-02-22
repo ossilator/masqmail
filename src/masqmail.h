@@ -318,8 +318,9 @@ void destroy_msg_out_list(GList *msgout_list);
 void destroy_ptr_list(GList *list);
 
 /* address.c */
-address *create_address(gchar *path, gboolean is_rfc821);
-address *create_address_qualified(gchar *path, gboolean is_rfc821, gchar *domain);
+typedef enum { A_RFC821, A_RFC822 } addr_type_t;
+address *create_address(gchar *path, addr_type_t addr_type);
+address *create_address_qualified(gchar *path, addr_type_t addr_type, gchar *domain);
 address *create_address_raw(gchar *local_part, gchar *domain);
 address *create_address_pipe(gchar *path);
 void destroy_address(address *addr);
@@ -352,7 +353,7 @@ void listen_port(GList *addr_list, gint qival);
 /* parse.c */
 gboolean parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
 gboolean parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
-address *_create_address(gchar *string, gchar **end, gboolean is_rfc821);
+address *_create_address(gchar *string, gchar **end, addr_type_t addr_type);
 GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain);
 
 /* connect.c */

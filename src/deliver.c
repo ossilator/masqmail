@@ -567,7 +567,7 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 			header *from_hdr = find_header(msgout->msg->hdr_list, HEAD_FROM);
 			if (from_hdr) {
 				address *addr = create_address_qualified(
-						from_hdr->value, FALSE, conf.host_name);
+						from_hdr->value, A_RFC822, conf.host_name);
 				gboolean isok = route_from_hdr_is_allowed(route, addr);
 				destroy_address(addr);
 				if (!isok) {
@@ -779,7 +779,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 		rcpt_list = g_list_copy(msgout->msg->rcpt_list);
 		if (conf.log_user) {
 			address *addr = create_address_qualified(conf.log_user,
-					TRUE, conf.host_name);
+					A_RFC821, conf.host_name);
 			if (addr) {
 				rcpt_list = g_list_prepend(rcpt_list, addr);
 			} else {

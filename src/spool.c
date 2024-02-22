@@ -66,7 +66,7 @@ spool_scan_rcpt(gchar *line)
 	if (line[4] == '|') {
 		rcpt = create_address_pipe(line+4);
 	} else {
-		rcpt = create_address(line+4, TRUE);
+		rcpt = create_address(line+4, A_RFC821);
 	}
 	if (line[3] == 'X') {
 		addr_mark_delivered(rcpt);
@@ -135,7 +135,7 @@ spool_read_header(message *msg)
 		if (buf[0] == '\n') {
 			break;
 		} else if (strncasecmp(buf, "MF:", 3) == 0) {
-			msg->return_path = create_address(&(buf[3]), TRUE);
+			msg->return_path = create_address(&(buf[3]), A_RFC821);
 			DEBUG(3) debugf("spool_read: MAIL FROM: %s\n",
 					msg->return_path->address);
 		} else if (strncasecmp(buf, "RT:", 3) == 0) {

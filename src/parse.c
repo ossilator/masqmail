@@ -367,10 +367,10 @@ parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end,
 **  after call, end contains a pointer to the end of the parsed string
 **  end may be NULL, if we are not interested.
 **
-**  parses both rfc 821 and rfc 822 addresses, depending on flag is_rfc821
+**  parses both rfc 821 and rfc 822 addresses, depending on requested type.
 */
 address*
-_create_address(gchar *string, gchar **end, gboolean is_rfc821)
+_create_address(gchar *string, gchar **end, addr_type_t addr_type)
 {
 	gchar *loc_beg, *loc_end;
 	gchar *dom_beg, *dom_end;
@@ -396,7 +396,7 @@ _create_address(gchar *string, gchar **end, gboolean is_rfc821)
 		return addr;
 	}
 
-	if (is_rfc821) {
+	if (addr_type == A_RFC821) {
 		ret = parse_address_rfc821(string, &loc_beg, &loc_end, &dom_beg, &dom_end, &addr_end);
 	} else {
 		ret = parse_address_rfc822(string, &loc_beg, &loc_end, &dom_beg, &dom_end, &addr_end);
@@ -461,7 +461,7 @@ addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain)
 		g_print("string: %s\n", p);
 #endif
 
-		address *addr = _create_address(p, &end, FALSE);
+		address *addr = _create_address(p, &end, A_RFC822);
 		if (!addr) {
 			break;
 		}

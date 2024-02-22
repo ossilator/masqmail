@@ -26,10 +26,10 @@ create_address_raw(gchar *local_part, gchar *domain)
 }
 
 address*
-create_address(gchar *path, gboolean is_rfc821)
+create_address(gchar *path, addr_type_t addr_type)
 {
 	address *addr;
-	addr = _create_address(path, NULL, is_rfc821);
+	addr = _create_address(path, NULL, addr_type);
 
 	if (addr) {
 		addr_unmark_delivered(addr);
@@ -38,9 +38,9 @@ create_address(gchar *path, gboolean is_rfc821)
 }
 
 address*
-create_address_qualified(gchar *path, gboolean is_rfc821, gchar *domain)
+create_address_qualified(gchar *path, addr_type_t addr_type, gchar *domain)
 {
-	address *addr = create_address(path, is_rfc821);
+	address *addr = create_address(path, addr_type);
 
 	if (addr && !addr->domain) {
 		addr->domain = g_strdup(domain);

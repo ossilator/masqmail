@@ -212,9 +212,9 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 				msg->transfer_id = (psc->next_id)++;
 	
 				if (remote_host) {
-					addr = create_address(buf, TRUE);
+					addr = create_address(buf, A_RFC821);
 				} else {
-					addr = create_address_qualified(buf, TRUE, conf.host_name);
+					addr = create_address_qualified(buf, A_RFC821, conf.host_name);
 				}
 				if (!addr) {
 					smtp_printf(out, "501 %s: syntax error.\r\n", buf);
@@ -248,9 +248,9 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 				}
 	
 				if (remote_host) {
-					addr = create_address(buf, TRUE);
+					addr = create_address(buf, A_RFC821);
 				} else {
-					addr = create_address_qualified(buf, TRUE, conf.host_name);
+					addr = create_address_qualified(buf, A_RFC821, conf.host_name);
 				}
 				if (!addr) {
 					smtp_printf(out, "501 %s: syntax error in address.\r\n", buf);

@@ -203,7 +203,7 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 		}
 		msg->rcpt_list = g_list_append(msg->rcpt_list,
 				create_address_qualified(addresses[i],
-				TRUE, conf.host_name));
+				A_RFC821, conf.host_name));
 	}
 
 	/* -f option */
@@ -669,7 +669,7 @@ main(int argc, char *argv[])
 	DEBUG(5) debugf("queue_interval = %d\n", queue_interval);
 
 	if (f_address) {
-		return_path = create_address_qualified(f_address, TRUE,
+		return_path = create_address_qualified(f_address, A_RFC821,
 				conf.host_name);
 		if (!return_path) {
 			fprintf(stderr, "invalid RFC821 address: %s\n",

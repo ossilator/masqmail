@@ -617,7 +617,7 @@ read_route(gchar *filename)
 				gchar *item = (gchar *) (node->data);
 				table_pair *pair = parse_table_pair(item, ':');
 				address *addr = create_address(
-						(gchar *) (pair->value), TRUE);
+						(gchar *) (pair->value), A_RFC821);
 				g_free(pair->value);
 				pair->value = addr;
 				route->map_return_path_addresses = g_list_append(route->map_return_path_addresses, pair);
