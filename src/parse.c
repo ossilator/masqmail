@@ -450,18 +450,6 @@ _create_address(gchar *string, gchar **end, gboolean is_rfc821)
 	return addr;
 }
 
-address*
-create_address_rfc822(gchar *string, gchar **end)
-{
-	return _create_address(string, end, FALSE);
-}
-
-address*
-create_address_rfc821(gchar *string, gchar **end)
-{
-	return _create_address(string, end, TRUE);
-}
-
 GList*
 addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain)
 {

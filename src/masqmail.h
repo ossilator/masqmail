@@ -347,8 +347,6 @@ void listen_port(GList *addr_list, gint qival);
 gboolean parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
 gboolean parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
 address *_create_address(gchar *string, gchar **end, gboolean is_rfc821);
-address *create_address_rfc821(gchar *string, gchar **end);
-address *create_address_rfc822(gchar *string, gchar **end);
 GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain);
 
 /* connect.c */
