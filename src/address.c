@@ -34,12 +34,9 @@ address*
 create_address_pipe(gchar *path)
 {
 	address *addr = g_malloc0(sizeof(address));
-
-	if (addr) {
-		addr->address = g_strstrip(g_strdup(path));
-		addr->local_part = g_strstrip(g_strdup(addr->address));
-		addr->domain = g_strdup("localhost");  /* quick hack */
-	}
+	addr->address = g_strstrip(g_strdup(path));
+	addr->local_part = g_strstrip(g_strdup(addr->address));
+	addr->domain = g_strdup("localhost");  /* quick hack */
 	return addr;
 }
 
@@ -60,9 +57,7 @@ copy_modify_address(const address *orig, gchar *l_part, gchar *dom)
 	if (!orig) {
 		return NULL;
 	}
-	if (!(addr = g_malloc(sizeof(address)))) {
-		return NULL;
-	}
+	addr = g_malloc(sizeof(address));
 	addr->address = g_strstrip(g_strdup(orig->address));
 	addr->local_part = g_strstrip(l_part ? g_strdup(l_part) :
 			g_strdup(orig->local_part));
