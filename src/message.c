@@ -127,9 +127,6 @@ destroy_message(message *msg)
 		g_list_free(msg->hdr_list);
 	}
 
-	if (msg->full_sender_name)
-		g_free(msg->full_sender_name);
-
 	msg_free_data(msg);
 
 	g_free(msg);
