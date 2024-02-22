@@ -269,16 +269,12 @@ typedef enum _smtp_cmd_id {
 } smtp_cmd_id;
 
 typedef struct _smtp_connection {
-	gchar *remote_host;
-
 	prot_id prot;
 	gint next_id;
 
 	gboolean helo_seen;
 	gboolean from_seen;
 	gboolean rcpt_seen;
-
-	message *msg;
 } smtp_connection;
 
 /* alias.c*/

@@ -100,21 +100,18 @@ get_address(gchar *line, gchar *addr)
 }
 
 static smtp_connection*
-create_base(gchar *remote_host)
+create_base(void)
 {
 	smtp_connection *base = g_malloc(sizeof(smtp_connection));
 	if (!base) {
 		return NULL;
 	}
 
-	base->remote_host = g_strdup(remote_host);
-
 	base->prot = PROT_SMTP;
 	base->next_id = 0;
 	base->helo_seen = 0;
 	base->from_seen = 0;
 	base->rcpt_seen = 0;
-	base->msg = NULL;
 
 	return base;
 }
@@ -154,8 +151,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
 
 	DEBUG(5) debugf("smtp_in entered, remote_host = %s\n", remote_host);
 
-	psc = create_base(remote_host);
-	psc->msg = msg;
+	psc = create_base();
 
 	buffer = (gchar *) g_malloc(BUF_LEN);
 	if (!buffer) {
