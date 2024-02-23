@@ -134,18 +134,15 @@ parse_address_glob_list(gchar *line)
 	foreach(plain_list, node) {
 		gchar *item = (gchar *) (node->data);
 		char *at;
-		address *addr = calloc(1, sizeof(address));
+		address *addr;
 
-		addr->address = strdup(item);
 		at = strrchr(item, '@');
 		if (at) {
 			*at = '\0';
-			addr->local_part = strdup(item);
-			addr->domain = strdup(at+1);
+			addr = create_address_raw(item, at + 1);
 		} else {
-			addr->local_part = strdup(item);
 			/* No `@', thus any domain is okay. */
-			addr->domain = "*";
+			addr = create_address_raw(item, "*");
 		}
 		list = g_list_append(list, addr);
 		DEBUG(6) debugf("parse_address_glob_list: "
