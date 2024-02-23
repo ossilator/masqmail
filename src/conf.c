@@ -186,18 +186,19 @@ parse_resolve_list(gchar *line)
 }
 
 static interface*
-parse_interface(gchar *line, gint def_port)
+parse_interface(const gchar *line, gint def_port)
 {
-	gchar *cp;
+	const gchar *cp;
 	interface *iface = g_malloc(sizeof(interface));
 
 	DEBUG(9) fprintf(stderr, "parse_interface: %s\n", line);
 	if ((cp = strchr(line, ':'))) {
-		*cp = '\0';
+		iface->address = g_strchomp(g_strndup(line, cp - line));
+		iface->port = atoi(++cp);
+	} else {
+		iface->address = g_strdup(line);
+		iface->port = def_port;
 	}
-	g_strchomp(line);
-	iface->address = g_strdup(line);
-	iface->port = (cp) ? atoi(++cp) : def_port;
 	DEBUG(9) fprintf(stderr, "found: address:port=%s:%d\n",
 			iface->address, iface->port);
 	return iface;
@@ -544,7 +545,7 @@ read_conf(void)
 	}
 	if (!listen_addrs_tmp) {
 		conf.listen_addresses = g_list_append(NULL,
-				parse_interface(strdup("localhost"), 25));
+				parse_interface("localhost", 25));
 	} else {
 		GList *node;
 
