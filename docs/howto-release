@@ -24,28 +24,22 @@ have the right version and date in the man pages.
 
 (5) Is everything checked in?
 
-(6) Run `make distclean', check for remaining files (just in case). `hg
-st' is helpful. Build anew: `./configure ... && make && sudo make
-install'. Check if everything went well. If so, `make distclean' again.
-
 
 Now we should be ready to release.
 
 
-(7) Run `devel/gen-release ../masqmail-0.x.y.tar.gz'. An md5sum will
-be generated automatically and a detached gpg signature will be created
-(this requires gnupg with a secret key).
+(6) Run `make dist-sign'. A tarball and a detached gpg signature will
+be created (this requires gnupg with a secret key), and a test build
+from the tarball is automatically performed.
 
-(8) Unpack the generated tarball and examine its contents (-t or
--xv). Build masqmail anew from the tarball, see (6).
-
-(9) Check the md5sum and the signature.
+(7) Check that the tarball contains everything it should.
 
 
 Let's release.
 
 
-(10) Upload the tarball, the md5sum and the signature to the website.
+*** FIXME
+(10) Upload the tarball and the signature to the website.
 
 (11) Write a release announcement to the mailing list. Preferably, the
 announcement should contain the MD5 hash generated above, and should be
@@ -56,7 +50,7 @@ well as the URL of the webpage that would show a detailed list of changes.
 (12) Add a version tag to the VCS.
 
 (13) Change the version number in configure.ac: Increment it and add
--dev to it. Run autoconf afterwards to propagate the change.
+-dev to it.
 
 
 Done.

@@ -19,3 +19,6 @@ out_man = \
 man_MANS = $(fix_man) $(out_man)
 
 EXTRA_DIST = $(fix_man) $(in_man)
+
+update-dates:
+	@top_srcdir@/devel/update-manpage-date @VERSION@ $(EXTRA_DIST)

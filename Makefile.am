@@ -30,3 +30,6 @@ rmail:
 
 rm-rmail:
 	rm -f $(DESTDIR)@sbindir@/rmail
+
+dist-sign: distcheck
+	gpg -b -a $(PACKAGE)-$(VERSION).tar.gz
