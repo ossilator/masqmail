@@ -7,6 +7,7 @@
 
 #include "masqmail.h"
 
+#include <ctype.h>
 #include <fnmatch.h>
 
 table_pair*
@@ -42,12 +43,11 @@ parse_table_pair(gchar *line, char delim)
 	*q = '\0';
 
 	pair = g_malloc(sizeof(table_pair));
-	pair->key = g_strdup(g_strstrip(buf));
+	pair->key = g_strdup(g_strchomp(buf));
 
 	if (*p) {
-		p++;
-		/* while(isspace(*p)) p++; */
-		pair->value = g_strdup(g_strstrip(p));
+		while (isspace(*++p)) {}
+		pair->value = g_strdup(p);
 	} else {
 		pair->value = g_strdup("");
 	}
