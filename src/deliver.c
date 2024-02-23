@@ -68,14 +68,11 @@ deliver_local_mbox(message *msg, GList *hdr_list, address *rcpt,
 	DEBUG(1) debugf("attempting to deliver %s with mbox\n", msg->uid);
 	if (append_file(msg, hdr_list, rcpt->local_part)) {
 		if (env_addr != rcpt) {
-			logwrite(LOG_INFO, "%s => %s@%s <%s@%s> with mbox\n",
-					msg->uid, rcpt->local_part,
-					rcpt->domain, env_addr->local_part,
-					env_addr->domain);
+			logwrite(LOG_INFO, "%s => %s <%s> with mbox\n",
+			         msg->uid, rcpt->address, env_addr->address);
 		} else {
-			logwrite(LOG_INFO, "%s => <%s@%s> with mbox\n",
-					msg->uid, rcpt->local_part,
-					rcpt->domain);
+			logwrite(LOG_INFO, "%s => <%s> with mbox\n",
+			         msg->uid, rcpt->address);
 		}
 		addr_mark_delivered(rcpt);
 		return TRUE;
@@ -101,9 +98,8 @@ deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt,
 	flags |= (conf.pipe_fromline) ? MSGSTR_FROMLINE : 0;
 	flags |= (conf.pipe_fromhack) ? MSGSTR_FROMHACK : 0;
 	if (pipe_out(msg, hdr_list, rcpt, &(rcpt->local_part[1]), flags)) {
-		logwrite(LOG_INFO, "%s => %s <%s@%s> with pipe\n",
-				msg->uid, rcpt->local_part,
-				env_addr->local_part, env_addr->domain);
+		logwrite(LOG_INFO, "%s => %s <%s> with pipe\n",
+		         msg->uid, rcpt->local_part, env_addr->address);
 		addr_mark_delivered(rcpt);
 		return TRUE;
 	}
@@ -135,8 +131,8 @@ deliver_local_mda(message *msg, GList *hdr_list, address *rcpt)
 	flags |= (conf.mda_fromline) ? MSGSTR_FROMLINE : 0;
 	flags |= (conf.mda_fromhack) ? MSGSTR_FROMHACK : 0;
 	if (pipe_out(msg, hdr_list, rcpt, cmd, flags)) {
-		logwrite(LOG_INFO, "%s => %s@%s with mda (cmd = '%s')\n",
-				msg->uid, rcpt->local_part, rcpt->domain, cmd);
+		logwrite(LOG_INFO, "%s => %s with mda (cmd = '%s')\n",
+		         msg->uid, rcpt->address, cmd);
 		addr_mark_delivered(rcpt);
 		ok = TRUE;
 	} else if (errno != EAGAIN) {
@@ -278,9 +274,8 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 			GList *var_table = var_table_rcpt(var_table_msg(NULL,
 					msg), rcpt);
 
-			DEBUG(1) debugf("attempting to deliver %s to %s@%s "
-					"with pipe\n", msg->uid,
-					rcpt->local_part, rcpt->domain);
+			DEBUG(1) debugf("attempting to deliver %s to %s "
+			                "with pipe\n", msg->uid, rcpt->address);
 
 			if (!expand(var_table, route->pipe, cmd, 256)) {
 				logwrite(LOG_ERR, "could not expand string `%s'\n", route->pipe);
@@ -289,8 +284,8 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 
 			if (pipe_out(msg, msg->hdr_list, rcpt, cmd, (route->pipe_fromline ? MSGSTR_FROMLINE : 0)
 			    | (route->pipe_fromhack ? MSGSTR_FROMHACK : 0))) {
-				logwrite(LOG_INFO, "%s => %s@%s with pipe (cmd = '%s')\n",
-					 msg->uid, rcpt->local_part, rcpt->domain, cmd);
+				logwrite(LOG_INFO, "%s => %s with pipe (cmd = '%s')\n",
+				         msg->uid, rcpt->address, cmd);
 				addr_mark_delivered(rcpt);
 				ok = TRUE;
 			} else {

@@ -302,13 +302,12 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 			smtp_printf(out, "250 OK id=%s\r\n", msg->uid);
 
 			if (remote_host != NULL) {
-				logwrite(LOG_INFO, "%s <= <%s@%s> host=%s with %s\n", msg->uid,
-				         msg->return_path->local_part, msg->return_path->domain,
+				logwrite(LOG_INFO, "%s <= <%s> host=%s with %s\n",
+				         msg->uid, msg->return_path->address,
 				         remote_host, prot_names[psc->prot]);
 			} else {
-				logwrite(LOG_INFO, "%s <= <%s@%s> with %s\n", msg->uid,
-				         msg->return_path->local_part, msg->return_path->domain,
-				         prot_names[psc->prot]);
+				logwrite(LOG_INFO, "%s <= <%s> with %s\n", msg->uid,
+				         msg->return_path->address, prot_names[psc->prot]);
 			}
 
 			deliver(msg);

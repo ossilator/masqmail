@@ -229,8 +229,7 @@ route_prepare_msgout(connect_route *route, msg_out *msgout)
 			debugf("rcpts for routed delivery, route = %s, id = %s\n", route->name, msg->uid);
 			foreach(rcpt_list, node) {
 				address *rcpt = (address *) (node->data);
-				debugf("  rcpt for routed delivery: <%s@%s>\n",
-				       rcpt->local_part, rcpt->domain);
+				debugf("  rcpt for routed delivery: <%s>\n", rcpt->address);
 			}
 		}
 
@@ -243,7 +242,7 @@ route_prepare_msgout(connect_route *route, msg_out *msgout)
 			DEBUG(5) debugf("looking up %s in map_return_path_addresses\n", msg->return_path->local_part);
 			ret_path = (address *) table_find_fnmatch(route->map_return_path_addresses, msg->return_path->local_part);
 			if (ret_path) {
-				DEBUG(5) debugf("found <%s@%s>\n", ret_path->local_part, ret_path->domain);
+				DEBUG(5) debugf("found <%s>\n", ret_path->address);
 				if (ret_path->domain == NULL)
 					ret_path->domain = msg->return_path->domain;
 				msgout->return_path = copy_address(ret_path);

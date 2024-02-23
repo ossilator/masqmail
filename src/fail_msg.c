@@ -48,8 +48,8 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg)
 			gchar *cmd;
 			pid_t pid;
 
-			cmd = g_strdup_printf("%s -C %s -oi -f <> %s@%s",
-			                      conf.exe_file, conf.conf_file, ret_path->local_part, ret_path->domain);
+			cmd = g_strdup_printf("%s -C %s -oi -f <> %s",
+			                      conf.exe_file, conf.conf_file, ret_path->address);
 			if (!(out = peopen(cmd, "w", environ, &pid))) {
 				logerrno(LOG_ERR, "peopen failed");
 			} else {

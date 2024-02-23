@@ -248,17 +248,12 @@ scan_headers(message *msg, guint flags)
 		DEBUG(3) debugf("adding 'From:' header\n");
 		if (msg->full_sender_name) {
 			msg->hdr_list = g_list_append(msg->hdr_list,
-					create_header(HEAD_FROM,
-					"From: \"%s\" <%s@%s>\n",
-					msg->full_sender_name,
-					msg->return_path->local_part,
-					msg->return_path->domain));
+					create_header(HEAD_FROM, "From: \"%s\" <%s>\n",
+							msg->full_sender_name, msg->return_path->address));
 		} else {
 			msg->hdr_list = g_list_append(msg->hdr_list,
-					create_header(HEAD_FROM,
-					"From: %s@%s\n",
-					msg->return_path->local_part,
-					msg->return_path->domain));
+					create_header(HEAD_FROM, "From: %s\n",
+							msg->return_path->address));
 		}
 	}
 	if (!has_to_or_cc) {
