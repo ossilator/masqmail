@@ -101,6 +101,10 @@ parse_list(gchar *line, gboolean read_file)
 	DEBUG(9) fprintf(stderr, "parsing list %s, file?:%d\n",
 			line, read_file);
 	for (tok = strtok(line, ";"); tok; tok = strtok(NULL, ";")) {
+		g_strstrip(tok);
+		if (!*tok) {
+			continue;
+		}
 		DEBUG(9) fprintf(stderr, "item = %s\n", tok);
 		if (read_file && *tok == '/') {
 			/* item is a filename, include its contents */
@@ -191,7 +195,7 @@ parse_interface(gchar *line, gint def_port)
 	if ((cp = strchr(line, ':'))) {
 		*cp = '\0';
 	}
-	g_strstrip(line);
+	g_strchomp(line);
 	iface->address = g_strdup(line);
 	iface->port = (cp) ? atoi(++cp) : def_port;
 	DEBUG(9) fprintf(stderr, "found: address:port=%s:%d\n",
