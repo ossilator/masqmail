@@ -27,8 +27,7 @@ message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 	GList *node;
 
 	if (flags & MSGSTR_FROMLINE) {
-		fprintf(out, "From %s@%s %s", msg->return_path->local_part,
-				msg->return_path->domain, ctime(&now));
+		fprintf(out, "From %s %s", msg->return_path->address, ctime(&now));
 	}
 
 	foreach(hdr_list, node) {
@@ -144,9 +143,8 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 
 	/* set environment */
 	n = 0;
-	envp[n++] = g_strdup_printf("SENDER=%s@%s",
-			msg->return_path->local_part,
-			msg->return_path->domain);
+	envp[n++] = g_strdup_printf("SENDER=%s",
+			msg->return_path->address);
 	envp[n++] = g_strdup_printf("SENDER_DOMAIN=%s",
 			msg->return_path->domain);
 	envp[n++] = g_strdup_printf("SENDER_LOCAL=%s",
@@ -154,9 +152,8 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 	envp[n++] = g_strdup_printf("RECEIVED_HOST=%s",
 			msg->received_host ? msg->received_host : "");
 
-	envp[n++] = g_strdup_printf("RETURN_PATH=%s@%s",
-			msg->return_path->local_part,
-			msg->return_path->domain);
+	envp[n++] = g_strdup_printf("RETURN_PATH=%s",
+			msg->return_path->address);
 	envp[n++] = g_strdup_printf("DOMAIN=%s",
 			ancestor->domain);
 

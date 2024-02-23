@@ -124,14 +124,9 @@ expand_one(GList *alias_table, address *addr, int doglob)
 	GList *alias_list = NULL;
 	GList *alias_node;
 	gchar *val;
-	char addrstr[BUFSIZ];
+	char *addrstr;
 
-	if (doglob) {
-		snprintf(addrstr, sizeof addrstr, "%s@%s",
-				addr->local_part, addr->domain);
-	} else {
-		snprintf(addrstr, sizeof addrstr, "%s", addr->local_part);
-	}
+	addrstr = doglob ? addr->address : addr->local_part;
 
 	/* expand the local alias */
 	DEBUG(6) debugf("alias: '%s' is local and will get expanded\n",
