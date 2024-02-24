@@ -33,6 +33,27 @@ debugf(const char *fmt, ...)
 	va_end(args);
 }
 
+static gint
+smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg)
+{
+	DEBUG(5) debugf("smtp_deliver entered\n");
+
+	smtp_base *psb = smtp_out_open(host, port, resolve_list);
+	if (!psb) {
+		return -1;
+	}
+	set_heloname(psb, msg->return_path->domain, TRUE);
+	if (!smtp_out_init(psb, FALSE)) {
+		goto out;
+	}
+	smtp_out_msg(psb, msg, msg->return_path, NULL, NULL);
+  out:
+	smtp_out_quit(psb);
+	smtp_error err = psb->error;
+	destroy_smtpbase(psb);
+	return err;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -79,7 +100,7 @@ main(int argc, char *argv[])
 		}
 
 		if ((ret = accept_message(stdin, msg, ACC_DOT_IGNORE)) == AERR_OK) {
-			if ((ret = smtp_deliver(server_name, server_port, resolve_list, msg, NULL, NULL)) == smtp_ok) {
+			if ((ret = smtp_deliver(server_name, server_port, resolve_list, msg)) == smtp_ok) {
 				exit(0);
 			}
 			fprintf(stderr, "deliver failed: %d\n", ret);
