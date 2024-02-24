@@ -34,7 +34,7 @@ create_address_raw(gchar *local_part, gchar *domain)
 **  parses both rfc 821 and rfc 822 addresses, depending on requested type.
 */
 static address*
-_create_address(gchar *string, gchar **end, addr_type_t addr_type)
+_create_address(gchar *string, gchar **end, addr_type_t addr_type, gchar *def_domain)
 {
 	gchar *loc_beg, *loc_end;
 	gchar *dom_beg, *dom_end;
@@ -78,7 +78,7 @@ _create_address(gchar *string, gchar **end, addr_type_t addr_type)
 		// do not qualify explicitly empty address
 		addr->domain = g_strdup("");
 	} else {
-		addr->domain = NULL;
+		addr->domain = g_strdup(def_domain);
 	}
 
 	if (end) {
@@ -95,12 +95,7 @@ _create_address(gchar *string, gchar **end, addr_type_t addr_type)
 address*
 create_address(gchar *path, addr_type_t addr_type, gchar *domain)
 {
-	address *addr = _create_address(path, NULL, addr_type);
-
-	if (addr && !addr->domain && domain) {
-		addr->domain = g_strdup(domain);
-	}
-	return addr;
+	return _create_address(path, NULL, addr_type, domain);
 }
 
 /* nothing special about pipes here, but its only called for that purpose */
@@ -226,19 +221,13 @@ addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain)
 		g_print("string: %s\n", p);
 #endif
 
-		address *addr = _create_address(p, &end, A_RFC822);
+		address *addr = _create_address(p, &end, A_RFC822, domain);
 		if (!addr) {
 			break;
 		}
 
 #ifdef PARSE_TEST
 		g_print("addr: %s (%s<@>%s)", addr->address, addr->local_part, addr->domain);
-#endif
-		if (domain && !addr->domain) {
-			addr->domain = g_strdup(domain);
-		}
-#ifdef PARSE_TEST
-		g_print(" (%s<@>%s)\n", addr->local_part, addr->domain);
 #endif
 
 		addr_list = g_list_append(addr_list, addr);
