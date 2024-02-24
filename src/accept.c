@@ -82,11 +82,6 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 			g_free(line);
 			return AERR_EOF;
 
-		} else if (len == -2) {
-			/* should not happen any more */
-			g_free(line);
-			return AERR_OVERFLOW;
-
 		} else if (len == -3) {
 			g_free(line);
 			return AERR_TIMEOUT;
