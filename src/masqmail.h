@@ -313,8 +313,7 @@ void destroy_msg_out_list(GList *msgout_list);
 
 /* address.c */
 typedef enum { A_RFC821, A_RFC822 } addr_type_t;
-address *create_address(gchar *path, addr_type_t addr_type);
-address *create_address_qualified(gchar *path, addr_type_t addr_type, gchar *domain);
+address *create_address(gchar *path, addr_type_t addr_type, gchar *domain);
 address *create_address_raw(gchar *local_part, gchar *domain);
 address *create_address_pipe(gchar *path);
 void destroy_address(address *addr);

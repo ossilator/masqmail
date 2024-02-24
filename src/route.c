@@ -214,8 +214,7 @@ route_filter_rcpts(connect_route *route, GList *rcpt_list)
 gboolean
 route_from_hdr_is_allowed(connect_route *route, char *from_hdr)
 {
-	address *addr = create_address_qualified(from_hdr, A_RFC822,
-			conf.host_name);
+	address *addr = create_address(from_hdr, A_RFC822, conf.host_name);
 	if (!addr) {
 		return FALSE;
 	}
