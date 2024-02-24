@@ -104,7 +104,7 @@ logclose()
 #endif
 }
 
-void
+static void
 vlogwrite(int pri, const char *fmt, va_list args)
 {
 	if (conf.use_syslog) {
@@ -124,7 +124,7 @@ vlogwrite(int pri, const char *fmt, va_list args)
 }
 
 #ifdef ENABLE_DEBUG
-void
+static void
 vdebugwrite(int pri, const char *fmt, va_list args)
 {
 	time_t now = time(NULL);

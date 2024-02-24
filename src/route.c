@@ -9,7 +9,7 @@
 
 #include <fnmatch.h>
 
-msgout_perhost*
+static msgout_perhost*
 create_msgout_perhost(gchar *host)
 {
 	msgout_perhost *mo_ph = g_malloc(sizeof(msgout_perhost));
@@ -35,7 +35,7 @@ destroy_msgout_perhost(msgout_perhost *mo_ph)
 	g_free(mo_ph);
 }
 
-void
+static void
 rewrite_headers(msg_out *msgout, connect_route *route)
 {
 	msgout->hdr_list = g_list_copy(msgout->msg->hdr_list);
@@ -107,7 +107,7 @@ rewrite_headers(msg_out *msgout, connect_route *route)
 **  - those not matching the patterns
 **  If patterns is NULL: only splitting between local and others is done.
 */
-void
+static void
 split_rcpts(GList *rcpt_list, GList *patterns, GList **rl_local,
 		GList **rl_matching, GList **rl_others)
 {

@@ -28,10 +28,10 @@ enum mta_mode {
 	MODE_VERSION,  /* show version */
 	MODE_BI,  /* fake ;-) */
 };
-enum mta_mode mta_mode = MODE_NONE;
+static enum mta_mode mta_mode = MODE_NONE;
 
-char *pidfile = NULL;
-volatile int sigterm_in_progress = 0;
+static char *pidfile = NULL;
+static volatile int sigterm_in_progress = 0;
 
 static void
 sigterm_handler(int sig)
@@ -65,7 +65,7 @@ sigterm_handler(int sig)
 **    e.g.  `-d 6'     `-d6'
 **             ^          ^
 */
-gchar*
+static gchar*
 get_optarg(char *argv[], gint *argp, char *cp)
 {
 	if (*cp) {
@@ -122,7 +122,7 @@ makedir_rec(char *dir, int perms)
 	return (had_an_error) ? 0 : 1;
 }
 
-gboolean
+static gboolean
 write_pidfile(gchar *name)
 {
 	FILE *fptr;
@@ -418,7 +418,7 @@ mode_version(void)
 	printf("%s %s%s%s\n", PACKAGE, VERSION, with_resolver, with_auth);
 }
 
-void
+static void
 set_mode(enum mta_mode mode)
 {
 	if (mta_mode && mta_mode!=mode) {

@@ -25,7 +25,7 @@ resolve_ip(gchar *ip)
 	return g_list_append(NULL, g_memdup2(&mxip, sizeof(mxip)));
 }
 
-mxip_addr*
+static mxip_addr*
 connect_hostlist(int *psockfd, gchar *host, guint port, GList *addr_list)
 {
 	GList *addr_node;

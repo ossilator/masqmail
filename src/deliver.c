@@ -11,12 +11,14 @@
 #include <sysexits.h>
 #include <netdb.h>
 
+static gboolean deliver_finish(msg_out *msgout);
+
 /*
 **  collect failed/defered rcpts for failure/warning messages
 **  returns TRUE if either there are no failures or a failure message has
 **  been successfully sent
 */
-gboolean
+static gboolean
 delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
 {
 	gboolean ok_fail = TRUE, ok_warn = TRUE;
@@ -61,7 +63,7 @@ _g_list_strcasecmp(gconstpointer a, gconstpointer b)
 	return (gint) strcasecmp(a, b);
 }
 
-gboolean
+static gboolean
 deliver_local_mbox(message *msg, GList *hdr_list, address *rcpt,
 		address *env_addr)
 {
@@ -90,7 +92,7 @@ deliver_local_mbox(message *msg, GList *hdr_list, address *rcpt,
 	return FALSE;
 }
 
-gboolean
+static gboolean
 deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt,
 		address *env_addr)
 {
@@ -117,7 +119,7 @@ deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt,
 	return FALSE;
 }
 
-gboolean
+static gboolean
 deliver_local_mda(message *msg, GList *hdr_list, address *rcpt,
 		address *env_addr)
 {
@@ -152,7 +154,7 @@ deliver_local_mda(message *msg, GList *hdr_list, address *rcpt,
 	return ok;
 }
 
-gboolean
+static gboolean
 deliver_local(msg_out *msgout)
 {
 	message *msg = msgout->msg;
@@ -256,7 +258,7 @@ deliver_local(msg_out *msgout)
 	return ok;
 }
 
-gboolean
+static gboolean
 deliver_msglist_host_pipe(connect_route *route, GList *msgout_list,
 		gchar *host, GList *res_list)
 {
@@ -334,7 +336,7 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list,
 **  delivered to at least one rcpt.
 **  Returns TRUE if at least one msg was delivered to at least one rcpt.
 */
-gboolean
+static gboolean
 deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 		gchar *host, GList *res_list)
 {
@@ -492,7 +494,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 	return ok;
 }
 
-gboolean
+static gboolean
 deliver_msglist_host(connect_route *route, GList *msgout_list, gchar *host,
 		GList *res_list)
 {
@@ -511,7 +513,7 @@ deliver_msglist_host(connect_route *route, GList *msgout_list, gchar *host,
 /*
 ** delivers messages in msgout_list using route
 */
-gboolean
+static gboolean
 deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 {
 	gboolean ok = FALSE;
@@ -558,7 +560,7 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 ** delivers messages in msg_list using route by calling
 ** deliver_route_msgout_list()
 */
-gboolean
+static gboolean
 deliver_route_msg_list(connect_route *route, GList *msgout_list)
 {
 	GList *msgout_list_deliver = NULL;
@@ -658,7 +660,7 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 **  copy pointers of delivered addresses to the msg's non_rcpt_list,
 **  to make sure that they will not be delivered again.
 */
-void
+static void
 update_non_rcpt_list(msg_out *msgout)
 {
 	GList *rcpt_node;
@@ -681,7 +683,7 @@ update_non_rcpt_list(msg_out *msgout)
 **
 **  returns TRUE if all went well.
 */
-gboolean
+static gboolean
 deliver_finish(msg_out *msgout)
 {
 	GList *rcpt_node;
@@ -732,7 +734,7 @@ deliver_finish(msg_out *msgout)
 	return TRUE;
 }
 
-int
+static int
 deliver_remote(GList *remote_msgout_list)
 {
 	int ok = TRUE;

@@ -24,8 +24,8 @@ static unsigned char *resp_pos;
 static int num_answers;
 static char name[MAX_DNSNAME];
 
-unsigned short rr_type;
-unsigned short rr_dlen;
+static unsigned short rr_type;
+static unsigned short rr_dlen;
 
 static unsigned short
 getshort(unsigned char *c)

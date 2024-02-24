@@ -555,7 +555,7 @@ read_conf(gchar *filename)
 	return TRUE;
 }
 
-connect_route*
+static connect_route*
 read_route(gchar *filename, gboolean is_perma)
 {
 	FILE *in;

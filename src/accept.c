@@ -39,7 +39,7 @@ string_base62(gchar *res, guint value, gchar len)
 **  The -t option: With the ACC_RCPT_FROM_HEAD flag the addrs found found
 **  in To/Cc/Bcc headers are added to the recipient list.
 */
-accept_error
+static accept_error
 accept_message_stream(FILE *in, message *msg, guint flags)
 {
 	gchar *line, *line1;
@@ -322,7 +322,7 @@ add_received_hdr(message *msg)
 	}
 }
 
-accept_error
+static accept_error
 accept_message_prepare(message *msg, guint flags)
 {
 	DEBUG(5) debugf("accept_message_prepare()\n");

@@ -424,7 +424,7 @@ smtp_out_mark_rcpts(smtp_base *psb, GList *rcpt_list)
 	}
 }
 
-void
+static void
 smtp_out_log_failure(smtp_base *psb, message *msg)
 {
 	gchar *err_str;
@@ -615,7 +615,7 @@ smtp_out_auth_login(smtp_base *psb)
 	return ok;
 }
 
-gboolean
+static gboolean
 smtp_out_auth(smtp_base *psb)
 {
 	gboolean ok = FALSE;

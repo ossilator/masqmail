@@ -11,7 +11,7 @@
 #include <setjmp.h>
 #include <stdlib.h>
 
-jmp_buf jmp_timeout;
+static jmp_buf jmp_timeout;
 
 static void
 sig_timeout_handler(int sig)

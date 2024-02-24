@@ -288,7 +288,6 @@ int child(const char *command);
 /* conf.c */
 void init_conf();
 gboolean read_conf(gchar *filename);
-connect_route *read_route(gchar *filename, gboolean is_perma);
 GList *read_route_list(GList *rf_list, gboolean is_perma);
 void destroy_route(connect_route *r);
 void destroy_route_list(GList *list);
@@ -327,7 +326,6 @@ gchar *addr_string(address *addr);
 
 /* accept.c */
 accept_error accept_message(FILE *in, message *msg, guint flags);
-accept_error accept_message_prepare(message *msg, guint flags);
 
 /* header.c */
 gchar *rec_timestamp();
@@ -350,15 +348,9 @@ address *_create_address(gchar *string, gchar **end, gboolean is_rfc821);
 GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain);
 
 /* connect.c */
-mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port, GList *addr_list);
 mxip_addr *connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_funcs);
 
 /* deliver.c */
-gboolean deliver_local(msg_out *msgout);
-gboolean deliver_msglist_host(connect_route *route, GList *msg_list, gchar *host, GList *res_list);
-gboolean deliver_route_msgout_list(connect_route *route, GList *msgout_list);
-gboolean deliver_route_msg_list(connect_route *route, GList *msgout_list);
-gboolean deliver_finish(msg_out *msgout);
 gboolean deliver_msg_list(GList *msg_list, guint flags);
 gboolean deliver(message *msg);
 
@@ -367,7 +359,6 @@ gboolean fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err
 gboolean warn_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt, va_list args);
 
 /* interface.c */
-gboolean init_sockaddr(struct sockaddr_in *name, interface *iface);
 int make_server_socket(interface *iface);
 
 /* local.c */
@@ -378,7 +369,6 @@ gboolean pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guin
 gchar *ext_strerror(int err);
 gboolean logopen(void);
 void logclose(void);
-void vlogwrite(int pri, const char *fmt, va_list args);
 void logwrite(int pri, const char *fmt, ...);
 void debugf(const char *fmt, ...);
 void vdebugf(const char *fmt, va_list args);
@@ -392,7 +382,6 @@ gboolean spool_unlock(gchar *uid);
 gboolean spool_delete_all(message *msg);
 
 /* queue.c */
-GList *read_queue(void);
 gboolean queue_run(void);
 gboolean queue_run_online(void);
 void queue_list(void);
@@ -402,7 +391,6 @@ gboolean queue_delete(gchar *uid);
 gchar *online_query();
 
 /* permissions.c */
-gboolean is_ingroup(uid_t uid, gid_t gid);
 void set_euidgid(gint uid, gint gid, uid_t *old_uid, gid_t *old_gid);
 void set_identity(uid_t old_uid, gchar *task_name);
 
@@ -410,10 +398,7 @@ void set_identity(uid_t old_uid, gchar *task_name);
 gboolean map_address_header(header *hdr, GList *table);
 
 /* route.c */
-msgout_perhost *create_msgout_perhost(gchar *host);
 void destroy_msgout_perhost(msgout_perhost *mo_ph);
-void rewrite_headers(msg_out *msgout, connect_route *route);
-void split_rcpts(GList *rcpt_list, GList *localnets, GList **rl_local, GList **rl_localnet, GList **rl_others);
 GList *local_rcpts(GList *rcpt_list);
 GList *remote_rcpts(GList *rcpt_list);
 msg_out *route_prepare_msgout(connect_route *route, msg_out *msgout);

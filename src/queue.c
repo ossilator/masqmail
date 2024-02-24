@@ -29,7 +29,7 @@ mix_arr(int *buf, int len)
 	}
 }
 
-GList*
+static GList*
 read_queue(void)
 {
 	GList *msg_list = NULL;

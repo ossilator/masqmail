@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-gboolean
+static gboolean
 init_sockaddr(struct sockaddr_in *name, interface *iface)
 {
 	struct hostent *he;
