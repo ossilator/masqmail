@@ -332,8 +332,6 @@ accept_error accept_message_prepare(message *msg, guint flags);
 /* header.c */
 gchar *rec_timestamp();
 header *find_header(GList *hdr_list, header_id id);
-void header_unfold(header *hdr);
-void header_fold(header *hdr, unsigned int maxlen);
 header *create_header(header_id id, gchar *fmt, ...);
 void destroy_header(header *hdr);
 header *copy_header(header *hdr);
