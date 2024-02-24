@@ -244,9 +244,6 @@ typedef enum _accept_error {
 	AERR_OK = 0,
 	AERR_TIMEOUT,
 	AERR_EOF,
-	AERR_OVERFLOW,
-	AERR_SYNTAX,
-	AERR_NOSPOOL,
 	AERR_NORCPT,
 	AERR_SIZE,  /* max msg size exeeded (SMTP SIZE) */
 	AERR_UNKNOWN
