@@ -355,7 +355,6 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident);
 void listen_port(GList *addr_list, gint qival);
 
 /* parse.c */
-gboolean split_address(const gchar *path, gchar **local_part, gchar **domain, gboolean is_rfc821);
 gboolean parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
 gboolean parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
 address *_create_address(gchar *string, gchar **end, gboolean is_rfc821);
@@ -432,7 +431,6 @@ void rewrite_headers(msg_out *msgout, connect_route *route);
 void split_rcpts(GList *rcpt_list, GList *localnets, GList **rl_local, GList **rl_localnet, GList **rl_others);
 GList *local_rcpts(GList *rcpt_list);
 GList *remote_rcpts(GList *rcpt_list);
-gboolean route_strip_msgout(connect_route *route, msg_out *msgout);
 msg_out *route_prepare_msgout(connect_route *route, msg_out *msgout);
 GList *route_msgout_list(connect_route *route, GList *msgout_list);
 gboolean route_sender_is_allowed(connect_route *route, address *ret_path);
