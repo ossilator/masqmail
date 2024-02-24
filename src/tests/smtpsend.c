@@ -118,7 +118,7 @@ main(int argc, char *argv[])
 
 		while (optind < argc) {
 			msg->rcpt_list = g_list_append(msg->rcpt_list,
-					create_address_qualified(argv[optind++], A_RFC821, conf.host_name));
+					create_address(argv[optind++], A_RFC821, conf.host_name));
 		}
 
 		if ((ret = accept_message(stdin, msg, ACC_DOT_IGNORE)) == AERR_OK) {

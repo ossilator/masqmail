@@ -26,8 +26,7 @@ addr_is_local(address *addr)
 			continue;
 		}
 		foreach(conf.not_local_addresses, addr_node) {
-			a = create_address_qualified(addr_node->data, A_RFC821,
-					conf.host_name);
+			a = create_address(addr_node->data, A_RFC821, conf.host_name);
 			DEBUG(6) debugf("not_local_addresses: "
 					"addr_node->data=%s a->address=%s\n",
 			                addr_node->data, a->address);
@@ -42,8 +41,7 @@ addr_is_local(address *addr)
 		return TRUE;
 	}
 	foreach(conf.local_addresses, addr_node) {
-		a = create_address_qualified(addr_node->data, A_RFC821,
-				conf.host_name);
+		a = create_address(addr_node->data, A_RFC821, conf.host_name);
 		DEBUG(6) debugf("local_addresses: addr_node->data=%s "
 				"a->address=%s\n",
 		                addr_node->data, a->address);
@@ -171,8 +169,7 @@ expand_one(GList *alias_table, address *addr, int doglob)
 		if (*val == '\\') {
 			DEBUG(5) debugf("alias: '%s' is marked as final, "
 					"hence completed\n", val);
-			alias_addr = create_address_qualified(val+1, A_RFC821,
-					conf.host_name);
+			alias_addr = create_address(val+1, A_RFC821, conf.host_name);
 			DEBUG(6) debugf("alias:     address generated: '%s'\n",
 			                alias_addr->address);
 			alias_list = g_list_append(alias_list, alias_addr);
@@ -189,8 +186,7 @@ expand_one(GList *alias_table, address *addr, int doglob)
 			continue;
 		}
 
-		alias_addr = create_address_qualified(val, A_RFC821,
-				conf.host_name);
+		alias_addr = create_address(val, A_RFC821, conf.host_name);
 
 		if (!addr_is_local(alias_addr)) {
 			DEBUG(5) debugf("alias: '%s' is non-local, "

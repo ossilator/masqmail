@@ -26,19 +26,11 @@ create_address_raw(gchar *local_part, gchar *domain)
 }
 
 address*
-create_address(gchar *path, addr_type_t addr_type)
+create_address(gchar *path, addr_type_t addr_type, gchar *domain)
 {
-	address *addr;
-	addr = _create_address(path, NULL, addr_type);
-	return addr;
-}
+	address *addr = _create_address(path, NULL, addr_type);
 
-address*
-create_address_qualified(gchar *path, addr_type_t addr_type, gchar *domain)
-{
-	address *addr = create_address(path, addr_type);
-
-	if (addr && !addr->domain) {
+	if (addr && !addr->domain && domain) {
 		addr->domain = g_strdup(domain);
 	}
 	return addr;
