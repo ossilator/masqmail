@@ -382,7 +382,6 @@ void vlogwrite(int pri, const char *fmt, va_list args);
 void logwrite(int pri, const char *fmt, ...);
 void debugf(const char *fmt, ...);
 void vdebugf(const char *fmt, va_list args);
-void maillog(const char *fmt, ...);
 
 /* spool.c */
 gboolean spool_read_data(message *msg);

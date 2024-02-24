@@ -182,14 +182,3 @@ vdebugf(const char *fmt, va_list args)
 	vdebugwrite(LOG_DEBUG, fmt, args);
 }
 #endif
-
-void
-maillog(const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-
-	vlogwrite(LOG_NOTICE, fmt, args);
-
-	va_end(args);
-}
