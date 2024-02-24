@@ -265,8 +265,7 @@ typedef enum _smtp_cmd_id {
 	SMTP_NOOP,
 	SMTP_HELP,
 	SMTP_NUM_IDS,
-	SMTP_EOF = -1,
-	SMTP_ERROR = -2,
+	SMTP_ERROR = -1,
 } smtp_cmd_id;
 
 typedef struct _smtp_connection {
