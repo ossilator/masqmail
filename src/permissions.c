@@ -11,7 +11,7 @@
 #include <grp.h>
 
 /* is there really no function in libc for this? */
-gboolean
+static gboolean
 is_ingroup(uid_t uid, gid_t gid)
 {
 	struct group *grent = getgrgid(gid);

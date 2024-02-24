@@ -31,7 +31,7 @@ sigchld_handler(int sig)
 	signal(SIGCHLD, sigchld_handler);
 }
 
-void
+static void
 accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 {
 	pid_t pid;

@@ -106,7 +106,7 @@ spool_read_data(message *msg)
 	return TRUE;
 }
 
-gboolean
+static gboolean
 spool_read_header(message *msg)
 {
 	FILE *in;

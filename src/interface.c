@@ -13,7 +13,7 @@
 /* define if you get problems... */
 /* #define SOCKADDR_OLD 1 */
 
-gboolean
+static gboolean
 init_sockaddr(struct sockaddr_in *name, interface *iface)
 {
 	struct hostent *he;

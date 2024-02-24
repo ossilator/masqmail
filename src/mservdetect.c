@@ -12,7 +12,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-gboolean
+static gboolean
 init_sockaddr2(struct sockaddr_in *name, gchar *addr, int port)
 {
 	struct hostent *he;
@@ -35,7 +35,7 @@ init_sockaddr2(struct sockaddr_in *name, gchar *addr, int port)
 }
 
 
-gchar*
+static gchar*
 mserver_detect_online(gchar *addr, int port)
 {
 	struct sockaddr_in saddr;
