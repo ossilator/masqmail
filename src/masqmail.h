@@ -354,7 +354,6 @@ mxip_addr *connect_hostlist(int *psockfd, gchar *host, guint port, GList *addr_l
 mxip_addr *connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_funcs);
 
 /* deliver.c */
-void msg_rcptlist_local(GList *rcpt_list, GList **, GList **);
 gboolean deliver_local(msg_out *msgout);
 gboolean deliver_msglist_host(connect_route *route, GList *msg_list, gchar *host, GList *res_list);
 gboolean deliver_route_msgout_list(connect_route *route, GList *msgout_list);

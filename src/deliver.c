@@ -256,40 +256,6 @@ deliver_local(msg_out *msgout)
 	return ok;
 }
 
-/*
-**  make a list of rcpt's of a message that are local
-**  return a new copy of the list
-*/
-void
-msg_rcptlist_local(GList *rcpt_list, GList **p_local_list,
-		GList **p_nonlocal_list)
-{
-	GList *rcpt_node;
-
-	foreach(rcpt_list, rcpt_node) {
-		address *rcpt = (address *) (rcpt_node->data);
-		GList *dom_node;
-
-		DEBUG(5) debugf("checking address %s\n", rcpt->address);
-
-		/* search for local host list: */
-		foreach(conf.local_hosts, dom_node) {
-			if (fnmatch(dom_node->data, rcpt->domain,
-					FNM_CASEFOLD)==0) {
-				*p_local_list = g_list_append(*p_local_list,
-						rcpt);
-				DEBUG(5) debugf("<%s@%s> is local\n",
-						rcpt->local_part,
-						rcpt->domain);
-				break;
-			} else {
-				*p_nonlocal_list = g_list_append(
-						*p_nonlocal_list, rcpt);
-			}
-		}
-	}
-}
-
 gboolean
 deliver_msglist_host_pipe(connect_route *route, GList *msgout_list,
 		gchar *host, GList *res_list)
