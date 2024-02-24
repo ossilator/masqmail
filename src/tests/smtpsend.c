@@ -104,11 +104,12 @@ main(int argc, char *argv[])
 				exit(0);
 			}
 			fprintf(stderr, "deliver failed: %d\n", ret);
+			exit(1);
 		}
 		fprintf(stderr, "accept failed: %d\n", ret);
-		exit(ret);
+		exit(1);
 	} else {
 		fprintf(stderr, "no recipients given.\n");
-		exit(-1);
+		exit(3);
 	}
 }
