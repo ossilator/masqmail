@@ -270,10 +270,6 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
 					smtp_printf(out, "501 %s: syntax error in address.\r\n", buf);
 					break;
 				}
-				if (addr->local_part[0] == '|') {
-					smtp_printf(out, "501 %s: no pipe allowed for SMTP connections\r\n", buf);
-					break;
-				}
 				if (!addr->domain) {
 					/* TODO: ``postmaster'' may be unqualified */
 					smtp_printf(out, "501 recipient address must be qualified.\r\n", buf);
