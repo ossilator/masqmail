@@ -899,33 +899,3 @@ smtp_out_quit(smtp_base *psb)
 
 	return TRUE;
 }
-
-gint
-smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg,
-		address *return_path, GList *rcpt_list)
-{
-	smtp_base *psb;
-	smtp_error err;
-
-	DEBUG(5) debugf("smtp_deliver entered\n");
-
-	if (return_path == NULL)
-		return_path = msg->return_path;
-
-	if ((psb = smtp_out_open(host, port, resolve_list))) {
-		set_heloname(psb, return_path->domain, TRUE);
-		/* initiate connection, send message and quit: */
-		if (smtp_out_init(psb, FALSE)) {
-			smtp_out_msg(psb, msg, return_path, rcpt_list, NULL);
-			if (psb->error == smtp_ok || (psb->error == smtp_fail) || (psb->error == smtp_trylater)
-			    || (psb->error == smtp_syntax) || (psb->error == smtp_cancel))
-				smtp_out_quit(psb);
-		}
-
-		err = psb->error;
-		destroy_smtpbase(psb);
-
-		return err;
-	}
-	return -1;
-}

@@ -33,6 +33,32 @@ debugf(const char *fmt, ...)
 	va_end(args);
 }
 
+static gint
+smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg)
+{
+	smtp_base *psb;
+	smtp_error err;
+
+	DEBUG(5) debugf("smtp_deliver entered\n");
+
+	if ((psb = smtp_out_open(host, port, resolve_list))) {
+		set_heloname(psb, msg->return_path->domain, TRUE);
+		/* initiate connection, send message and quit: */
+		if (smtp_out_init(psb, FALSE)) {
+			smtp_out_msg(psb, msg, msg->return_path, NULL, NULL);
+			if (psb->error == smtp_ok || (psb->error == smtp_fail) || (psb->error == smtp_trylater)
+			    || (psb->error == smtp_syntax) || (psb->error == smtp_cancel))
+				smtp_out_quit(psb);
+		}
+
+		err = psb->error;
+		destroy_smtpbase(psb);
+
+		return err;
+	}
+	return -1;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -79,7 +105,7 @@ main(int argc, char *argv[])
 		}
 
 		if ((ret = accept_message(stdin, msg, ACC_DOT_IGNORE)) == AERR_OK) {
-			if ((ret = smtp_deliver(server_name, server_port, resolve_list, msg, NULL, NULL)) == smtp_ok) {
+			if ((ret = smtp_deliver(server_name, server_port, resolve_list, msg)) == smtp_ok) {
 				exit(0);
 			}
 			fprintf(stderr, "deliver failed: %d\n", ret);
