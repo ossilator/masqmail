@@ -34,6 +34,7 @@ skip_comment(const gchar *p)
 	p++;  // skip opening '('
 	for (;;) {
 		if (!*p) {
+			parse_error = "unterminated comment";
 			return NULL;
 		}
 		if (*p == ')') {
@@ -45,6 +46,26 @@ skip_comment(const gchar *p)
 			p++;
 		}
 	}
+}
+
+static const gchar*
+skip_cfws(const gchar *p)
+{
+	// eat white spaces and comments
+	for (;;) {
+		if (*p == '(') {
+			p = skip_comment(p);
+			if (!p) {
+				return NULL;
+			}
+		} else if (isspace(*p)) {
+			p++;
+		} else {
+			break;
+		}
+	}
+	// we now have a non-space char that is not the beginning of a comment
+	return p;
 }
 
 static gboolean
@@ -162,21 +183,9 @@ parse_address_rfc822(const gchar *string,
 #ifdef PARSE_TEST
 		g_print("after read_word_with_dots: %s\n", p);
 #endif
-		/* eat white spaces and comments */
-		while ((*p && (isspace(*p))) || (*p == '(')) {
-			if (*p == '(') {
-				if (!(p = skip_comment(p))) {
-					parse_error = "unterminated comment";
-					return FALSE;
-				}
-			} else {
-				p++;
-			}
+		if (!(p = skip_cfws(p))) {
+			return FALSE;
 		}
-		/*
-		**  we now have a non-space char that is not
-		**  the beginning of a comment
-		*/
 
 		if (*p == '@' || (*p == ',' && address_end)) {
 			/* the last word was the local_part of an addr-spec */
