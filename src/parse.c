@@ -74,11 +74,6 @@ read_word(const gchar *p, const gchar **b, const gchar **e)
 #ifdef PARSE_TEST
 	g_print("read_word: %s\n", p);
 #endif
-	/* eat leading spaces */
-	while (*p && isspace(*p)) {
-		p++;
-	}
-
 	*b = p;
 	/*  b = &p; */
 	if (*p == '\"') {
