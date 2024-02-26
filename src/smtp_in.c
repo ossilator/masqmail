@@ -213,7 +213,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 	
 				addr = create_address(buf, A_RFC821, remote_host ? NULL : conf.host_name);
 				if (!addr) {
-					smtp_printf(out, "501 %s: syntax error.\r\n", buf);
+					smtp_printf(out, "501 %s: %s\r\n", buf, parse_error);
 				} else if (!addr->domain) {
 					smtp_printf(out, "501 return path must be qualified.\r\n");
 					destroy_address(addr);
@@ -245,7 +245,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 	
 				addr = create_address(buf, A_RFC821, remote_host ? NULL : conf.host_name);
 				if (!addr) {
-					smtp_printf(out, "501 %s: syntax error in address.\r\n", buf);
+					smtp_printf(out, "501 %s: %s\r\n", buf, parse_error);
 					break;
 				}
 				if (!addr->domain) {

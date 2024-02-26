@@ -350,6 +350,7 @@ void smtp_in(FILE *in, FILE *out, gchar *remote_host);
 void listen_port(GList *addr_list, gint qival);
 
 /* parse.c */
+extern const char *parse_error;
 gboolean parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
 gboolean parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
 address *_create_address(gchar *string, gchar **end, addr_type_t addr_type);

@@ -670,8 +670,8 @@ main(int argc, char *argv[])
 	if (f_address) {
 		return_path = create_address(f_address, A_RFC821, conf.host_name);
 		if (!return_path) {
-			fprintf(stderr, "invalid RFC821 address: %s\n",
-					f_address);
+			fprintf(stderr, "invalid return address '%s': %s\n",
+			        f_address, parse_error);
 			exit(1);
 		}
 	}
