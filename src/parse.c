@@ -43,6 +43,13 @@ skip_comment(const gchar *p)
 		if (*p == '(') {
 			p = skip_comment(p);
 		} else {
+			if (*p == '\\') {
+				p++;
+				if (!*p) {
+					parse_error = "unterminated backslash escape inside comment";
+					return NULL;
+				}
+			}
 			p++;
 		}
 	}
@@ -82,6 +89,13 @@ read_qstring(const gchar *p)
 		}
 		if (*p == '"') {
 			return p + 1;
+		}
+		if (*p == '\\') {
+			p++;
+			if (!*p) {
+				parse_error = "unterminated backslash escape inside quoted string";
+				return NULL;
+			}
 		}
 	}
 }
@@ -144,6 +158,13 @@ read_domain(const gchar *p)
 			}
 			if (*p == ']') {
 				break;
+			}
+			if (*p == '\\') {
+				p++;
+				if (!*p) {
+					parse_error = "unterminated backslash escape inside domain literal";
+					return FALSE;
+				}
 			}
 		}
 		p++;
