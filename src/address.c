@@ -58,36 +58,24 @@ _create_address(gchar *string, gchar **end, addr_type_t addr_type, gchar *def_do
 		return NULL;
 	}
 
-	address *addr = g_malloc0(sizeof(address));
-
-	gchar *p = addr_end;
-	while (*p && (*p != ',')) {
-		/* it seems as if we do this for the code in rewrite.c */
-		p++;
-	}
-	addr->address = g_strstrip(g_strndup(string, p - string));
-	addr->local_part = g_strndup(loc_beg, loc_end - loc_beg);
-
-#ifdef PARSE_TEST
-	g_print("addr->local_part = %s\n", addr->local_part);
-#endif
-
+	gchar *local_part = g_strndup(loc_beg, loc_end - loc_beg);
+	gchar *domain;
 	if (dom_beg != NULL) {
-		addr->domain = g_strndup(dom_beg, dom_end - dom_beg);
-	} else if (addr->local_part[0] == '\0') {
+		domain = g_strndup(dom_beg, dom_end - dom_beg);
+	} else if (local_part[0] == '\0') {
 		// do not qualify explicitly empty address
-		addr->domain = g_strdup("");
+		domain = g_strdup("");
 	} else {
-		addr->domain = g_strdup(def_domain);
+		domain = g_strdup(def_domain);
 	}
+	address *addr = create_address_rawest(local_part, domain);
 
 	if (end) {
-		*end = p;
+		*end = addr_end;
 	}
 
-	DEBUG(6) debugf("_create_address(): address: `%s'\n", addr->address);
-	DEBUG(6) debugf("_create_address(): local_part: `%s'\n", addr->local_part);
-	DEBUG(6) debugf("_create_address(): domain: `%s'\n", addr->domain);
+	DEBUG(6) debugf("_create_address(): '%s' @ '%s'\n",
+	                addr->local_part, addr->domain);
 
 	return addr;
 }
@@ -121,19 +109,11 @@ destroy_address(address *addr)
 address*
 copy_modify_address(const address *orig, gchar *l_part, gchar *dom)
 {
-	address *addr = NULL;
-
 	if (!orig) {
 		return NULL;
 	}
-	addr = g_malloc(sizeof(address));
-	addr->address = g_strdup(orig->address);
-	addr->local_part = g_strdup(l_part ? l_part : orig->local_part);
-	addr->domain = g_strdup(dom ? dom : orig->domain);
-	addr->flags = 0;
-	addr->children = NULL;
-	addr->parent = NULL;
-	return addr;
+	return create_address_raw(l_part ? l_part : orig->local_part,
+	                          dom ? dom : orig->domain);
 }
 
 gboolean
@@ -245,7 +225,7 @@ addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain)
 		}
 
 #ifdef PARSE_TEST
-		g_print("addr: %s (%s<@>%s)", addr->address, addr->local_part, addr->domain);
+		g_print("addr: %s", addr->address);
 #endif
 
 		addr_list = g_list_append(addr_list, addr);
