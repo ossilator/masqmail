@@ -69,23 +69,34 @@ skip_cfws(const gchar *p)
 }
 
 static const gchar *
-read_word(const gchar *p)
+read_qstring(const gchar *p)
 {
-#ifdef PARSE_TEST
-	g_print("read_word: %s\n", p);
-#endif
-	if (*p == '\"') {
-		/* quoted-string */
+	p++;
+	while (*p && (*p != '\"')) {
 		p++;
-		while (*p && (*p != '\"')) {
-			p++;
+	}
+	p++;
+	return p;
+}
+
+static const gchar *
+read_atom(const gchar *p)
+{
+	while (*p && !strchr(specials, *p) && !iscntrl(*p) && !isspace(*p)) {
+		p++;
+	}
+	return p;
+}
+
+static const gchar *
+read_dot_atom(const gchar *p)
+{
+	while (TRUE) {
+		p = read_atom(p);
+		if (*p != '.') {
+			break;
 		}
 		p++;
-	} else {
-		/* atom */
-		while (*p && !strchr(specials, *p) && !iscntrl(*p) && !isspace(*p)) {
-			p++;
-		}
 	}
 	return p;
 }
@@ -96,16 +107,11 @@ read_word_with_dots(const gchar *p)
 #ifdef PARSE_TEST
 	g_print("read_word_with_dots: %s\n", p);
 #endif
-	while (TRUE) {
-		if (!(p = read_word(p))) {
-			break;
-		}
-		if (*p != '.') {
-			break;
-		}
-		p++;
+	if (*p == '"') {
+		return read_qstring(p);
+	} else {
+		return read_dot_atom(p);
 	}
-	return p;
 }
 
 static const gchar *

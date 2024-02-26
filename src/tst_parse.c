@@ -20,6 +20,7 @@ static const rfc821_addr_test rfc821_addrs[] = {
 	{ "a.user", "a.user", NULL, NULL, FALSE },
 	{ "user garbage", NULL, NULL, "excess characters at end of string", FALSE },
 	{ "\"a user\"", "\"a user\"", NULL, NULL, FALSE },
+	{ "\"a\".user", NULL, NULL, "unexpected character after local part", FALSE },
 	{ "user@example.com", "user", "example.com", NULL, FALSE },
 	{ "\"one@two\"@example.com", "\"one@two\"", "example.com", NULL, FALSE },
 	{ "user @ example.com", NULL, NULL, "excess characters at end of string", FALSE },
@@ -65,6 +66,7 @@ static const rfc822_addr_test rfc822_addrs[] = {
 	{ "\"gärbage\", another", NULL, NULL, -1, "unexpected 8-bit character", TRUE },
 	{ "g\\\x80rbage, another", NULL, NULL, -1, "unexpected 8-bit character", TRUE },
 	{ "\"a user\"", "\"a user\"", NULL, -1, NULL, FALSE },
+	{ "\"a\".user", NULL, NULL, -1, "unexpected character", FALSE },
 	// ... with domain
 	{ "user@example.com", "user", "example.com", -1, NULL, FALSE },
 	{ "a.user@example.com", "a.user", "example.com", -1, NULL, FALSE },
