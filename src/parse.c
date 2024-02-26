@@ -71,12 +71,16 @@ skip_cfws(const gchar *p)
 static const gchar *
 read_qstring(const gchar *p)
 {
-	p++;
-	while (*p && (*p != '\"')) {
+	while (TRUE) {
 		p++;
+		if (!*p) {
+			parse_error = "unterminated quoted string";
+			return NULL;
+		}
+		if (*p == '"') {
+			return p + 1;
+		}
 	}
-	p++;
-	return p;
 }
 
 static const gchar *
