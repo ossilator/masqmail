@@ -329,11 +329,12 @@ parse_address_rfc821(const gchar *string,
 			break;
 		} else if (*p == '@') {
 			p++;
-			if (read_domain(p, &b, &e)) {
-				p = e;
-				*domain_begin = b;
-				*domain_end = e;
+			if (!read_domain(p, &b, &e)) {
+				return FALSE;
 			}
+			p = e;
+			*domain_begin = b;
+			*domain_end = e;
 			break;
 		} else {
 			parse_error = "unexpected character after local part";
