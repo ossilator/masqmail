@@ -67,6 +67,7 @@ static const rfc822_addr_test rfc822_addrs[] = {
 	{ "g\\\x80rbage, another", NULL, NULL, -1, "unexpected 8-bit character", TRUE },
 	{ "\"a user\"", "\"a user\"", NULL, -1, NULL, FALSE },
 	{ "\"a\".user", NULL, NULL, -1, "unexpected character", FALSE },
+	{ "\"a\0fail", NULL, NULL, -1, "unterminated quoted string", FALSE },
 	// ... with domain
 	{ "user@example.com", "user", "example.com", -1, NULL, FALSE },
 	{ "a.user@example.com", "a.user", "example.com", -1, NULL, FALSE },
