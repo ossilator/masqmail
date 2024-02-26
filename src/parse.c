@@ -172,7 +172,7 @@ parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end,
 		**  the beginning of a comment
 		*/
 
-		if (*p == '@' || *p == ',') {
+		if (*p == '@' || (*p == ',' && address_end)) {
 			/* the last word was the local_part of an addr-spec */
 			*local_begin = b;
 			*local_end = e;
@@ -255,14 +255,16 @@ parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end,
 		p++;
 	}
 
-	*address_end = p;
-
 	if (angle_brackets > 0) {
 		parse_error = "missing '>' at end of string";
 		return FALSE;
 	} else if (angle_brackets < 0) {
 		parse_error = "excess '>' at end of string";
 		return FALSE;
+	}
+
+	if (address_end) {
+		*address_end = p;
 	}
 
 	/* we successfully parsed the address */
@@ -337,13 +339,19 @@ parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end,
 		}
 		p++;
 	}
-	*address_end = p;
 
 	if (angle_brackets > 0) {
 		parse_error = "missing '>' at end of string";
 		return FALSE;
 	} else if (angle_brackets < 0) {
 		parse_error = "excess '>' at end of string";
+		return FALSE;
+	}
+
+	if (address_end) {
+		*address_end = p;
+	} else if (*p) {
+		parse_error = "excess characters at end of string";
 		return FALSE;
 	}
 
