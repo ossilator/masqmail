@@ -45,7 +45,6 @@ _create_address(gchar *string, gchar **end, addr_type_t addr_type, gchar *def_do
 {
 	gchar *loc_beg, *loc_end;
 	gchar *dom_beg, *dom_end;
-	gchar *addr_end;
 	gboolean ret;
 
 	if (!string) {
@@ -53,9 +52,9 @@ _create_address(gchar *string, gchar **end, addr_type_t addr_type, gchar *def_do
 	}
 
 	if (addr_type == A_RFC821) {
-		ret = parse_address_rfc821(string, &loc_beg, &loc_end, &dom_beg, &dom_end, &addr_end);
+		ret = parse_address_rfc821(string, &loc_beg, &loc_end, &dom_beg, &dom_end, end);
 	} else {
-		ret = parse_address_rfc822(string, &loc_beg, &loc_end, &dom_beg, &dom_end, &addr_end);
+		ret = parse_address_rfc822(string, &loc_beg, &loc_end, &dom_beg, &dom_end, end);
 	}
 	if (!ret) {
 		return NULL;
@@ -76,10 +75,6 @@ _create_address(gchar *string, gchar **end, addr_type_t addr_type, gchar *def_do
 		domain = g_strdup(def_domain);
 	}
 	address *addr = create_address_rawest(local_part, domain);
-
-	if (end) {
-		*end = addr_end;
-	}
 
 	DEBUG(6) debugf("_create_address(): '%s' @ '%s'\n",
 	                addr->local_part, addr->domain);
