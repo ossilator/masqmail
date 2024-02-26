@@ -106,21 +106,36 @@ read_atom(const gchar *p)
 	return p;
 }
 
+typedef enum { NO_DOTS, ANY_DOTS, BAD_DOTS } has_dots_t;
+
 static const gchar *
-read_dot_atom(const gchar *p)
+read_dot_atom(const gchar *p, has_dots_t *had_dots_out)
 {
+	has_dots_t had_dots = NO_DOTS;
 	while (TRUE) {
+		const gchar *pp = p;
 		p = read_atom(p);
 		if (*p != '.') {
+			if (p == pp && had_dots == ANY_DOTS) {
+				had_dots = BAD_DOTS;
+			}
 			break;
 		}
+		if (p == pp) {
+			had_dots = BAD_DOTS;
+		} else if (had_dots != BAD_DOTS) {
+			had_dots = ANY_DOTS;
+		}
 		p++;
+	}
+	if (had_dots > *had_dots_out) {
+		*had_dots_out = had_dots;
 	}
 	return p;
 }
 
 static const gchar *
-read_word_with_dots(const gchar *p)
+read_word_with_dots(const gchar *p, has_dots_t *had_dots)
 {
 #ifdef PARSE_TEST
 	g_print("read_word_with_dots: %s\n", p);
@@ -128,7 +143,7 @@ read_word_with_dots(const gchar *p)
 	if (*p == '"') {
 		return read_qstring(p);
 	} else {
-		return read_dot_atom(p);
+		return read_dot_atom(p, had_dots);
 	}
 }
 
@@ -175,6 +190,7 @@ parse_address_rfc822(const gchar *string,
                      const gchar **domain_begin, const gchar **domain_end,
                      const gchar **address_end)
 {
+	has_dots_t had_dots = NO_DOTS;
 	gint angle_brackets = 0;
 
 	const gchar *p = string;
@@ -200,6 +216,10 @@ parse_address_rfc822(const gchar *string,
 #endif
 					return FALSE;
 				}
+				if (had_dots == BAD_DOTS) {
+					parse_error = "invalid periods in local part";
+					return FALSE;
+				}
 				// unqualified, something like `To: alice, bob' with -t
 				*local_begin = b;
 				*local_end = e;
@@ -214,6 +234,10 @@ parse_address_rfc822(const gchar *string,
 			b = e = pb = NULL;
 			p++;
 		} else if (*p == '<') {
+			if (had_dots != NO_DOTS) {
+				parse_error = "unquoted periods in display name";
+				return FALSE;
+			}
 			angle_brackets++;
 			b = e = pb = NULL;
 			p++;
@@ -237,6 +261,10 @@ parse_address_rfc822(const gchar *string,
 				parse_error = "excess '@'";
 				return FALSE;
 			}
+			if (had_dots == BAD_DOTS) {
+				parse_error = "invalid periods in local part";
+				return FALSE;
+			}
 			*local_begin = b;
 			*local_end = e;
 #ifdef PARSE_TEST
@@ -256,7 +284,7 @@ parse_address_rfc822(const gchar *string,
 		} else {
 			pb = b;
 			b = p;
-			if (!(p = read_word_with_dots(p))) {
+			if (!(p = read_word_with_dots(p, &had_dots))) {
 				return FALSE;
 			}
 			e = p;
@@ -296,6 +324,7 @@ parse_address_rfc821(const gchar *string,
                      const gchar **domain_begin, const gchar **domain_end,
                      const gchar **address_end)
 {
+	has_dots_t had_dots = NO_DOTS;
 	gint angle_brackets = 0;
 
 	const gchar *p = string;
@@ -313,7 +342,11 @@ parse_address_rfc821(const gchar *string,
 
 	while (*p) {
 		*local_begin = p;
-		if (!(p = read_word_with_dots(p))) {
+		if (!(p = read_word_with_dots(p, &had_dots))) {
+			return FALSE;
+		}
+		if (had_dots == BAD_DOTS) {
+			parse_error = "invalid periods in local part";
 			return FALSE;
 		}
 		*local_end = p;
