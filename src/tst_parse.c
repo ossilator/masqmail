@@ -72,8 +72,11 @@ static const rfc822_addr_test rfc822_addrs[] = {
 	// ... with comments
 	{ "(left) user (right) (rightmost)", "user", NULL, -1, NULL, FALSE },
 	{ "(left)user(right)", "user", NULL, -1, NULL, FALSE },
+	{ "((cmt)) user", "user", NULL, -1, NULL, FALSE },
 	{ "( (cmt) ) user", "user", NULL, -1, NULL, FALSE },
+	{ "((cmt1)(cmt2)) user", "user", NULL, -1, NULL, FALSE },
 	{ "(cmt1, (cmt2)) user", "user", NULL, -1, NULL, FALSE },
+	{ "user (, another\0fail", NULL, NULL, -1, "unterminated comment", FALSE },
 	{ "user (cmt) ), another", NULL, NULL, -1, "unexpected character", FALSE },
 
 	// angle-addr

@@ -31,16 +31,20 @@ skip_comment(const gchar *p)
 	g_print("skip_comment: %s\n", p);
 #endif
 
-	p++;
-	while (*p && *p != ')') {
-		p++;
+	p++;  // skip opening '('
+	for (;;) {
+		if (!*p) {
+			return NULL;
+		}
+		if (*p == ')') {
+			return p + 1;
+		}
 		if (*p == '(') {
 			p = skip_comment(p);
+		} else {
+			p++;
 		}
 	}
-	p++;
-
-	return p;
 }
 
 static gboolean
