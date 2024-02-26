@@ -143,6 +143,7 @@ parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end,
 	}
 
 	if (!*p) {
+		parse_error = "missing address";
 		return FALSE;
 	}
 
@@ -289,6 +290,7 @@ parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end,
 	}
 
 	if (!*p) {
+		parse_error = "missing address";
 		return FALSE;
 	}
 
