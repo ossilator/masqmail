@@ -178,110 +178,97 @@ parse_address_rfc822(const gchar *string,
 	gint angle_brackets = 0;
 
 	const gchar *p = string;
-	const gchar *b, *e;
+	const gchar *b = NULL, *e = NULL, *pb = NULL;
 
 	*local_begin = *local_end = NULL;
 	*domain_begin = *domain_end = NULL;
 
-	/* leading spaces and angle brackets */
-	while (*p && (isspace(*p) || (*p == '<'))) {
-		if (*p == '<') {
-			angle_brackets++;
-		}
-		p++;
-	}
-
-	while (*p) {
-		b = p;
-		if (!(p = read_word_with_dots(p))) {
-			return FALSE;
-		}
-		e = p;
-#ifdef PARSE_TEST
-		g_print("after read_word_with_dots: %s\n", p);
-#endif
+	while (TRUE) {
 		if (!(p = skip_cfws(p))) {
 			return FALSE;
 		}
 
-		if (*p == '@' || (*p == ',' && address_end)) {
+		if (*p == '>' || (*p == ',' && address_end) || !*p) {
+			if (b) {
+				if (pb || *local_begin) {
+					// adjacent words are fine only in the display-name phrase,
+					// but the context precludes that we are in that.
+					// words after we had an address are of course bogus, too.
+					parse_error = "excess word";
+#ifdef PARSE_TEST
+					g_print("excess word: %.*s", (int)(e - b), b);
+#endif
+					return FALSE;
+				}
+				// unqualified, something like `To: alice, bob' with -t
+				*local_begin = b;
+				*local_end = e;
+#ifdef PARSE_TEST
+				g_print("found local part: %s\n", *local_begin);
+#endif
+			}
+			if (!*p || *p == ',') {
+				break;
+			}
+			angle_brackets--;
+			b = e = pb = NULL;
+			p++;
+		} else if (*p == '<') {
+			angle_brackets++;
+			b = e = pb = NULL;
+			p++;
+		} else if (*p == '@') {
+			p++;
+
+			if (!b) {
+				// this might be a legacy source route, but we just reject these.
+				parse_error = "missing local part";
+				return FALSE;
+			}
+			if (pb) {
+				parse_error = "excess word";
+#ifdef PARSE_TEST
+				g_print("excess word: %.*s", (int)(e - b), b);
+#endif
+				return FALSE;
+			}
 			/* the last word was the local_part of an addr-spec */
+			if (*local_begin) {
+				parse_error = "excess '@'";
+				return FALSE;
+			}
 			*local_begin = b;
 			*local_end = e;
 #ifdef PARSE_TEST
 			g_print("found local part: %s\n", *local_begin);
 #endif
-			if (*p == '@') {
-				p++;	/* skip @ */
-				/* now the domain */
-				*domain_begin = p;
-				if (!(p = read_domain(p))) {
-					return FALSE;
-				}
-				*domain_end = p;
-			} else {
-				/* unqualified? */
-				/* something like `To: alice, bob' with -t */
-				*domain_begin = *domain_end = NULL;
-			}
-			break;
 
-		} else if (*p == '<') {
-			/* addr-spec follows */
-			while (isspace(*p) || (*p == '<')) {
-				if (*p == '<') {
-					angle_brackets++;
-				}
-				p++;
+			if (!(p = skip_cfws(p))) {
+				return FALSE;
 			}
-			*local_begin = p;
+			// now the domain
+			*domain_begin = p;
+			if (!(p = read_domain(p))) {
+				return FALSE;
+			}
+			*domain_end = p;
+			b = e = pb = NULL;
+		} else {
+			pb = b;
+			b = p;
 			if (!(p = read_word_with_dots(p))) {
 				return FALSE;
 			}
-			*local_end = p;
+			e = p;
+			if (e == b) {
+				parse_error = "unexpected character";
 #ifdef PARSE_TEST
-			g_print("found local part: %s\n", *local_begin);
+				g_print("unexpected character: %c", *p);
 #endif
-			if (*p == '@') {
-				p++;
-				*domain_begin = p;
-				if (!(p = read_domain(p))) {
-					return FALSE;
-				}
-				*domain_end = p;
-			} else {
-				/* may be unqualified address */
-				*domain_begin = *domain_end = NULL;
+				return FALSE;
 			}
-			break;
-
-		} else if (!*p || *p == '>') {
-			*local_begin = b;
-			*local_end = e;
-#ifdef PARSE_TEST
-			g_print("found local part: %s\n", *local_begin);
-#endif
-			*domain_begin = *domain_end = NULL;
-			break;
-
-		} else if (strchr(specials, *p) || iscntrl(*p) || isspace(*p)) {
-			parse_error = "unexpected character";
-#ifdef PARSE_TEST
-			g_print("unexpected character: %c", *p);
-#endif
-			return FALSE;
+			p = e;
 		}
-	}
-
-	/* trailing spaces and angle brackets */
-#ifdef PARSE_TEST
-	g_print("down counting trailing '>'\n");
-#endif
-	while (*p && (isspace(*p) || (*p == '>'))) {
-		if (*p == '>') {
-			angle_brackets--;
-		}
-		p++;
 	}
 
 	if (angle_brackets > 0) {
