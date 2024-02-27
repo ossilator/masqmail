@@ -64,18 +64,20 @@ static const rfc822_addr_test rfc822_addrs[] = {
 	{ "  user ", "user", NULL, -1, NULL, FALSE },
 	{ "user, another", "user", NULL, 4, NULL, FALSE },
 	{ "user , another", "user", NULL, 5, NULL, FALSE },
+	{ "user garbage, another", NULL, NULL, -1, "excess word", FALSE },
 	{ "a.user", "a.user", NULL, -1, NULL, FALSE },
 	{ "gärbage, another", NULL, NULL, -1, "unexpected 8-bit character", TRUE },
 	{ "\"gärbage\", another", NULL, NULL, -1, "unexpected 8-bit character", TRUE },
 	{ "g\\\x80rbage, another", NULL, NULL, -1, "unexpected 8-bit character", TRUE },
 	{ "\"a user\"", "\"a user\"", NULL, -1, NULL, FALSE },
-	{ "\"a\".user", NULL, NULL, -1, "unexpected character", FALSE },
+	{ "\"a\".user", NULL, NULL, -1, "excess word", FALSE },
 	{ "\"a\0fail", NULL, NULL, -1, "unterminated quoted string", FALSE },
 	{ "\"a\\\0fail", NULL, NULL, -1,
 			"unterminated backslash escape inside quoted string", FALSE },
 	{ "\"one \\\"(, two\"", "\"one \\\"(, two\"", NULL, -1, NULL, FALSE },
 	// ... with domain
 	{ "user@example.com", "user", "example.com", -1, NULL, FALSE },
+	{ "user @ example.com", "user", "example.com", -1, NULL, FALSE },
 	{ "a.user@example.com", "a.user", "example.com", -1, NULL, FALSE },
 	{ "\"one@two\"@example.com", "\"one@two\"", "example.com", -1, NULL, FALSE },
 	{ "user@[to_tal * nonsense, blah], another",
@@ -83,8 +85,11 @@ static const rfc822_addr_test rfc822_addrs[] = {
 	{ "user@[do\\]main], another", "user", "[do\\]main]", 15, NULL, FALSE },
 	{ "user@[do\\\0fail", NULL, NULL, -1,
 			"unterminated backslash escape inside domain literal", FALSE },
+	{ "user@example.com garbage, another", NULL, NULL, -1, "excess word", FALSE },
 	{ "user[@example.com, another", NULL, NULL, -1, "unexpected character", FALSE },
 	// ... with comments
+	{ "(cmt)", NULL, NULL, -1, "missing address", FALSE },
+	{ " (cmt) ", NULL, NULL, -1, "missing address", FALSE },
 	{ "(left) user (right) (rightmost)", "user", NULL, -1, NULL, FALSE },
 	{ "(left)user(right)", "user", NULL, -1, NULL, FALSE },
 	{ "((cmt)) user", "user", NULL, -1, NULL, FALSE },
@@ -96,8 +101,16 @@ static const rfc822_addr_test rfc822_addrs[] = {
 			"unterminated backslash escape inside comment", FALSE },
 	{ "user (, another\0fail", NULL, NULL, -1, "unterminated comment", FALSE },
 	{ "user (cmt) ), another", NULL, NULL, -1, "unexpected character", FALSE },
+	{ "user (cmt) garbage, another", NULL, NULL, -1, "excess word", FALSE },
+	{ "a.(cmt)user, another", NULL, NULL, -1, "excess word", FALSE },
+	{ "(cmt1)user(cmt2)@(cmt3)example.com(cmt4)",
+			"user", "example.com", -1, NULL, FALSE },
+	{ " (cmt1) user (cmt2) @ (cmt3) example.com (cmt4) ",
+			"user", "example.com", -1, NULL, FALSE },
 
 	// angle-addr
+	{ "<>", "", NULL, -1, "missing address", FALSE },
+	{ "< >", "", NULL, -1, "missing address", FALSE },
 	{ "<user>", "user", NULL, -1, NULL, FALSE },
 	{ "  < user > ", "user", NULL, -1, NULL, FALSE },
 	{ "<user>, another", "user", NULL, 6, NULL, FALSE },
@@ -108,12 +121,31 @@ static const rfc822_addr_test rfc822_addrs[] = {
 	{ "user>, another", NULL, NULL, -1, "excess '>' at end of string", FALSE },
 	// ... with domain
 	{ "<user@example.com>", "user", "example.com", -1, NULL, FALSE },
+	{ "< user @ example.com >", "user", "example.com", -1, NULL, FALSE },
 	{ "<@dom1,@dom2:user@example.com>", "user", "example.com", -1, NULL, TRUE },
 			// source routes must be ignored
+	// ... with comments
+	{ "(cmt1)<(cmt2)user(cmt3)>(cmt4)", "user", NULL, -1, NULL, FALSE },
+	{ " (cmt1) < (cmt2) user (cmt3) > (cmt4)", "user", NULL, -1, NULL, FALSE },
+	{ "(cmt1)<(cmt2)user(cmt3)@(cmt4)example.com(cmt5)>(cmt6)",
+			"user", "example.com", -1, NULL, FALSE },
+	{ " (cmt1) < (cmt2) user (cmt3) @ (cmt4) example.com (cmt5) > (cmt6)",
+			"user", "example.com", -1, NULL, FALSE },
 
 	// display-name plus angle-addr
 	{ "Real Name <user@example.com>", "user", "example.com", -1, NULL, FALSE },
+	{ "Real Name <user@example.com> garbage, another",
+			"user", "example.com", -1, "excess word", FALSE },
 	{ "\"Real Name\" <user@example.com>", "user", "example.com", -1, NULL, FALSE },
+	{ "Real\"Fun\"Name <user@example.com>", "user", "example.com", -1, NULL, FALSE },
+	{ "\"Real \\\" Name\" <user@example.com>", "user", "example.com", -1, NULL, FALSE },
+	{ "John \"Name, @Real\" Doe <user@example.com>",
+			"user", "example.com", -1, NULL, FALSE },
+	// ... with comments
+	{ "(cmt1)Real(cmt2)Name(cmt3)<user@example.com>(cmt4)",
+			"user", "example.com", -1, NULL, FALSE },
+	{ " (cmt1) Real (cmt2) Name (cmt3) <user@example.com> (cmt4)",
+			"user", "example.com", -1, NULL, FALSE },
 };
 
 static int
