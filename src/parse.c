@@ -129,13 +129,19 @@ read_domain(const gchar *p)
 			p++;
 		}
 	} else {
-		p++;
-		while (isalpha(*p) || (*p == '.')) {
+		for (;;) {
 			p++;
-		}
-		if (*p != ']') {
-			parse_error = "unterminated domain literal";
-			return NULL;
+			if (!*p) {
+				parse_error = "unterminated domain literal";
+				return NULL;
+			}
+			if (*p == '[') {
+				parse_error = "'[' not allowed inside domain literal";
+				return NULL;
+			}
+			if (*p == ']') {
+				break;
+			}
 		}
 		p++;
 	}
