@@ -191,12 +191,7 @@ parse_address_rfc822(const gchar *string,
 		p++;
 	}
 
-	if (!*p) {
-		parse_error = "missing address";
-		return FALSE;
-	}
-
-	while (TRUE) {
+	while (*p) {
 		b = p;
 		if (!(p = read_word_with_dots(p))) {
 			return FALSE;
@@ -295,6 +290,9 @@ parse_address_rfc822(const gchar *string,
 	} else if (angle_brackets < 0) {
 		parse_error = "excess '>' at end of string";
 		return FALSE;
+	} else if (!*local_begin) {
+		parse_error = "missing address";
+		return FALSE;
 	}
 
 	if (address_end) {
@@ -326,12 +324,7 @@ parse_address_rfc821(const gchar *string,
 		p++;
 	}
 
-	if (!*p) {
-		parse_error = "missing address";
-		return FALSE;
-	}
-
-	while (TRUE) {
+	while (*p) {
 		*local_begin = p;
 		if (!(p = read_word_with_dots(p))) {
 			return FALSE;
@@ -374,6 +367,9 @@ parse_address_rfc821(const gchar *string,
 		return FALSE;
 	} else if (angle_brackets < 0) {
 		parse_error = "excess '>' at end of string";
+		return FALSE;
+	} else if (!*local_begin) {
+		parse_error = "missing address";
 		return FALSE;
 	}
 
