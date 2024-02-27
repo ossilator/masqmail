@@ -35,6 +35,7 @@ static const rfc821_addr_test rfc821_addrs[] = {
 	{ "<gärbage>", NULL, NULL, "unexpected 8-bit character", TRUE },
 	{ " garbage <user>", NULL, NULL, "excess characters at end of string", FALSE },
 	{ "<user@example.com>", "user", "example.com", NULL, FALSE },
+	{ "<user@[to_tal * nonsense]>", "user", "[to_tal * nonsense]", NULL, FALSE },
 	{ "<user@[fail", NULL, NULL, "unterminated domain literal", FALSE },
 	{ "<\"one@two\"@example.com>", "\"one@two\"", "example.com", NULL, FALSE },
 	{ "<@dom1,@dom2:user@example.com>", "user", "example.com", NULL, TRUE },
@@ -72,6 +73,8 @@ static const rfc822_addr_test rfc822_addrs[] = {
 	{ "user@example.com", "user", "example.com", -1, NULL, FALSE },
 	{ "a.user@example.com", "a.user", "example.com", -1, NULL, FALSE },
 	{ "\"one@two\"@example.com", "\"one@two\"", "example.com", -1, NULL, FALSE },
+	{ "user@[to_tal * nonsense, blah], another",
+			"user", "[to_tal * nonsense, blah]", 30, NULL, FALSE },
 	{ "user[@example.com, another", NULL, NULL, -1, "unexpected character", FALSE },
 	// ... with comments
 	{ "(left) user (right) (rightmost)", "user", NULL, -1, NULL, FALSE },
