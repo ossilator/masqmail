@@ -185,6 +185,7 @@ expand_one(GList *alias_table, int doglob, recipient *addr,
 			/* loop detected, ignore this path */
 			logwrite(LOG_ERR, "alias: detected loop, hence ignoring '%s'\n",
 			         alias_addr->address->address);
+			destroy_recipient(alias_addr);
 			continue;
 		}
 
@@ -200,8 +201,10 @@ expand_one(GList *alias_table, int doglob, recipient *addr,
 	  append:
 		if (!is_non_recipient(alias_addr, non_rcpt_list)) {
 			*alias_list = g_list_append(*alias_list, alias_addr);
+			alias_addr->ref_count++;
 		}
 	  xlink:
+		// this also "claims" the initial refcount of the object
 		addr->children = g_list_append(addr->children, alias_addr);
 		alias_addr->parent = addr;
 	}
@@ -221,6 +224,7 @@ alias_expand(GList *alias_table, int doglob, GList *non_rcpt_list, GList **rcpt_
 		recipient *addr = rcpt_node->data;
 		if (!expand_one(alias_table, doglob, addr, non_rcpt_list, &done_list)) {
 			done_list = g_list_append(done_list, addr);
+			addr->ref_count++;
 		}
 	}
 

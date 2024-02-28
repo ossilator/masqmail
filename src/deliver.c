@@ -646,6 +646,7 @@ update_non_rcpt_list(msg_out *msgout)
 		if (addr_is_finished(rcpt)) {
 			msg->non_rcpt_list = g_list_append(msg->non_rcpt_list,
 					rcpt);
+			rcpt->ref_count++;
 		}
 	}
 }
@@ -815,7 +816,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 		}
 		DEBUG(5) debugf("spool_lock(%s)\n", msgout->msg->uid);
 
-		rcpt_list = g_list_copy(msgout->msg->rcpt_list);
+		rcpt_list = copy_recipient_list(msgout->msg->rcpt_list);
 		if (conf.log_user) {
 			recipient *addr = create_recipient_raw(conf.log_user, conf.host_name);
 			rcpt_list = g_list_prepend(rcpt_list, addr);
