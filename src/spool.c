@@ -294,7 +294,7 @@ spool_write(message *msg, gboolean do_write_data)
 	gboolean ok = TRUE;
 	uid_t saved_uid, saved_gid;
 	/* user can read/write, group can read, others cannot do anything: */
-	mode_t saved_mode = saved_mode = umask(026);
+	mode_t saved_mode = umask(026);
 
 	/* set uid and gid to the mail ids */
 	if (!conf.run_as_user) {
