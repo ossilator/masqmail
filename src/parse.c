@@ -370,21 +370,6 @@ _create_address(gchar *string, gchar **end, addr_type_t addr_type)
 	if (!string) {
 		return NULL;
 	}
-	while (isspace(*string)) {
-		string++;
-	}
-	/* TODO: what about (string == NULL)? */
-	if (string && (string[0] == '\0')) {
-		address *addr = g_malloc(sizeof(address));
-		addr->address = g_strdup("");
-		addr->local_part = g_strdup("");
-		/*
-		** 'NULL' address: failure notice
-		** "": will *not* be qualified with a hostname
-		*/
-		addr->domain = g_strdup("");
-		return addr;
-	}
 
 	if (addr_type == A_RFC821) {
 		ret = parse_address_rfc821(string, &loc_beg, &loc_end, &dom_beg, &dom_end, &addr_end);
