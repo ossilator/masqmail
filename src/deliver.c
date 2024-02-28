@@ -809,10 +809,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 			rcpt_list = aliased_rcpt_list;
 		}
 
-		/* split_rcpts(rcpt_list, NULL, &local_rcpt_list, NULL,
-		** &other_rcpt_list); */
-		local_rcpt_list = local_rcpts(rcpt_list);
-		other_rcpt_list = remote_rcpts(rcpt_list);
+		split_rcpts(rcpt_list, &local_rcpt_list, &other_rcpt_list);
 		g_list_free(rcpt_list);
 
 		/* local recipients */
