@@ -325,7 +325,6 @@ parse_address_rfc821(const gchar *string,
 #endif
 		if (!(*p) || isspace(*p) || (*p == '>')) {
 			/* unqualified ? */
-			domain_begin = domain_end = NULL;
 			break;
 		} else if (*p == '@') {
 			p++;
