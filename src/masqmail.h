@@ -319,6 +319,7 @@ address *create_address_pipe(gchar *path);
 void destroy_address(address *addr);
 address *copy_modify_address(const address *orig, gchar *l_part, gchar *dom);
 #define copy_address(addr) copy_modify_address(addr, NULL, NULL)
+GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain);
 gboolean addr_isequal(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
 gboolean addr_isequal_parent(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
 address *addr_find_ancestor(address *addr);
@@ -347,8 +348,6 @@ void listen_port(GList *addr_list, gint qival);
 extern const char *parse_error;
 gboolean parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
 gboolean parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
-address *_create_address(gchar *string, gchar **end, addr_type_t addr_type);
-GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain);
 
 /* connect.c */
 mxip_addr *connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_funcs, gchar **err_msg);
