@@ -234,7 +234,7 @@ alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
 	GList *rcpt_node_next = NULL;
 	address *addr = NULL;
 
-	for (rcpt_node=g_list_copy(rcpt_list); rcpt_node;
+	for (rcpt_node = rcpt_list; rcpt_node;
 			rcpt_node=g_list_next(rcpt_node)) {
 
 		addr = (address *) (rcpt_node->data);
