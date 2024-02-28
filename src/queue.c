@@ -67,6 +67,10 @@ read_queue(void)
 
 		g_free(uid);
 	}
+
+	globfree(&gl);
+	g_free(idx_arr);
+
 	return msg_list;
 }
 
