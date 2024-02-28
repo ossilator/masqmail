@@ -591,10 +591,7 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 		}
 
 		/* filter by allowed envelope rcpts */
-		GList *rcpt_list_allowed = NULL;
-		GList *rcpt_list_notallowed = NULL;
-		route_split_rcpts(route, msgout_cloned->rcpt_list,
-				&rcpt_list_allowed, &rcpt_list_notallowed);
+		GList *rcpt_list_allowed = route_filter_rcpts(route, msgout_cloned->rcpt_list);
 		if (!rcpt_list_allowed) {
 			destroy_msg_out(msgout_cloned);
 			continue;

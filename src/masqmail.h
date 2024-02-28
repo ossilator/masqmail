@@ -411,7 +411,7 @@ msg_out *route_prepare_msgout(connect_route *route, msg_out *msgout);
 GList *route_msgout_list(GList *msgout_list);
 gboolean route_sender_is_allowed(connect_route *route, address *ret_path);
 gboolean route_from_hdr_is_allowed(connect_route *route, char *from_hdr);
-void route_split_rcpts(connect_route *route, GList *rcpt_list, GList **p_rcpt_list, GList **p_non_rcpt_list);
+GList *route_filter_rcpts(connect_route *route, GList *rcpt_list);
 
 /* tables.c */
 table_pair *create_pair_base(gchar *key, gpointer value);
