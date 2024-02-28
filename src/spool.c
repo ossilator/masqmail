@@ -293,7 +293,7 @@ spool_write(message *msg, gboolean do_write_data)
 	FILE *out;
 	gboolean ok = TRUE;
 	/* user can read/write, group can read, others cannot do anything: */
-	mode_t saved_mode = saved_mode = umask(026);
+	mode_t saved_mode = umask(026);
 
 	/* header spool: */
 	ok = spool_write_header(msg);
