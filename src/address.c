@@ -6,6 +6,7 @@
 
 #include "masqmail.h"
 
+#include <fnmatch.h>
 #include <stdlib.h>
 
 static address*
@@ -173,6 +174,54 @@ addr_isequal(address *addr1, address *addr2,
 {
 	return (cmpfunc(addr1->local_part, addr2->local_part)==0) &&
 			(strcasecmp(addr1->domain, addr2->domain)==0);
+}
+
+static gboolean
+domain_is_local(const gchar *domain)
+{
+	if (!domain[0]) {
+		return TRUE;
+	}
+
+	GList *dom_node;
+	foreach (conf.local_hosts, dom_node) {
+		// Note: FNM_CASEFOLD is a GNU extension
+		if (!fnmatch(dom_node->data, domain, FNM_CASEFOLD)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+gboolean
+addr_is_local(address *addr)
+{
+	GList *addr_node;
+	address *a;
+
+	if (!addr->domain[0]) {
+		return TRUE;
+	}
+	if (domain_is_local(addr->domain)) {
+		// in local_hosts
+
+		foreach (conf.not_local_addresses, addr_node) {
+			a = addr_node->data;
+			if (addr_isequal(a, addr, conf.localpartcmp)) {
+				// also in not_local_addresses
+				return FALSE;
+			}
+		}
+		return TRUE;
+	}
+	foreach (conf.local_addresses, addr_node) {
+		a = addr_node->data;
+		if (addr_isequal(a, addr, conf.localpartcmp)) {
+			// in local_addresses
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 /* searches in ancestors of addr1 */
