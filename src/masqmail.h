@@ -73,9 +73,6 @@ typedef struct _connect_route {
 	gchar *auth_secret;
 	gchar *wrapper;
 
-	gchar *set_h_from_domain;
-	gchar *set_h_reply_to_domain;
-	gchar *set_return_path_domain;
 	GList *map_h_from_addresses;
 	GList *map_h_reply_to_addresses;
 	GList *map_h_mail_followup_to_addresses;
@@ -441,7 +438,6 @@ void acquire_root(void);
 void drop_root(void);
 
 /* rewrite.c */
-gboolean set_address_header_domain(header *hdr, gchar *domain);
 gboolean map_address_header(header *hdr, GList *table);
 
 /* route.c */
