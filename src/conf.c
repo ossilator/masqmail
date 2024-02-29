@@ -605,12 +605,6 @@ read_route(gchar *filename, gboolean is_perma)
 		} else if (strcmp(lval, "denied_from_hdrs")==0) {
 			route->denied_from_hdrs = parse_address_glob_list(rval);
 
-		} else if (strcmp(lval, "set_h_from_domain")==0) {
-			route->set_h_from_domain = g_strdup(rval);
-		} else if (strcmp(lval, "set_h_reply_to_domain")==0) {
-			route->set_h_reply_to_domain = g_strdup(rval);
-		} else if (strcmp(lval, "set_return_path_domain")==0) {
-			route->set_return_path_domain = g_strdup(rval);
 		} else if (strcmp(lval, "map_return_path_addresses")==0) {
 			GList *node, *list;
 
@@ -701,20 +695,6 @@ read_route(gchar *filename, gboolean is_perma)
 	}
 	fclose(in);
 
-	/* warn user about mis-configurations: */
-	if (route->map_h_from_addresses && route->set_h_from_domain) {
-		logwrite(LOG_WARNING, "'map_h_from_addresses' overrides "
-				"'set_h_from_domain'\n");
-		g_free(route->set_h_from_domain);
-		route->set_h_from_domain = NULL;
-	}
-	if (route->map_h_reply_to_addresses && route->set_h_reply_to_domain) {
-		logwrite(LOG_WARNING, "'map_h_reply_to_addresses' overrides "
-				"'set_h_reply_to_domain'\n");
-		g_free(route->set_h_reply_to_domain);
-		route->set_h_reply_to_domain = NULL;
-	}
-
 	return route;
 }
 
@@ -751,15 +731,6 @@ destroy_route(connect_route *r)
 	_g_list_free_all(r->denied_senders);
 	_g_list_free_all(r->allowed_recipients);
 	_g_list_free_all(r->denied_recipients);
-	if (r->set_h_from_domain) {
-		g_free(r->set_h_from_domain);
-	}
-	if (r->set_h_reply_to_domain) {
-		g_free(r->set_h_reply_to_domain);
-	}
-	if (r->set_return_path_domain) {
-		g_free(r->set_return_path_domain);
-	}
 	if (r->map_h_reply_to_addresses) {
 		destroy_table(r->map_h_reply_to_addresses);
 	}

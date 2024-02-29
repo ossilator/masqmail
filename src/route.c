@@ -38,10 +38,6 @@ destroy_msgout_perhost(msgout_perhost *mo_ph)
 void
 rewrite_headers(msg_out *msgout, connect_route *route)
 {
-	/*
-	**  if set_h_from_domain is set, replace domain in all
-	**  From: headers.
-	*/
 	msgout->hdr_list = g_list_copy(msgout->msg->hdr_list);
 
 	/* map from addresses */
@@ -57,29 +53,6 @@ rewrite_headers(msg_out *msgout, connect_route *route)
 					msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
 				} else
 					g_free(new_hdr);
-			}
-		}
-	} else {
-		/* replace from domain */
-		if (route->set_h_from_domain != NULL) {
-			GList *hdr_node;
-
-			foreach(msgout->hdr_list, hdr_node) {
-				header *hdr = (header *) (hdr_node->data);
-				if (hdr->id == HEAD_FROM) {
-					header *new_hdr = copy_header(hdr);
-
-					DEBUG(5) debugf("setting From: domain to %s\n", route->set_h_from_domain);
-					if (set_address_header_domain(new_hdr, route->set_h_from_domain)) {
-						hdr_node->data = new_hdr;
-						/* we need this list only to carefully free the extra headers: */
-						DEBUG(6) debugf("header = %s\n", new_hdr->header);
-						msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
-					} else {
-						logwrite(LOG_ALERT, "error in set_address_header_domain(%s, %s)\n",
-						         new_hdr->value, route->set_h_from_domain);
-					}
-				}
 			}
 		}
 	}
@@ -98,23 +71,6 @@ rewrite_headers(msg_out *msgout, connect_route *route)
 					msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
 				} else
 					g_free(new_hdr);
-			}
-		}
-	} else {
-		/* replace Reply-to domain */
-		if (route->set_h_reply_to_domain != NULL) {
-			GList *hdr_node;
-
-			foreach(msgout->hdr_list, hdr_node) {
-				header *hdr = (header *) (hdr_node->data);
-				if (hdr->id == HEAD_REPLY_TO) {
-					header *new_hdr = copy_header(hdr);
-
-					set_address_header_domain(new_hdr, route-> set_h_reply_to_domain);
-					hdr_node->data = new_hdr;
-					/* we need this list only to carefully free the extra headers: */
-					msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
-				}
 			}
 		}
 	}
@@ -345,15 +301,9 @@ route_prepare_msgout(connect_route *route, msg_out *msgout)
 			if (ret_path) {
 				DEBUG(5) debugf("found <%s@%s>\n", ret_path->local_part, ret_path->domain);
 				if (ret_path->domain == NULL)
-					ret_path->domain = route->set_return_path_domain
-					                   ? route->set_return_path_domain
-					                   : msg->return_path->domain;
+					ret_path->domain = msg->return_path->domain;
 				msgout->return_path = copy_address(ret_path);
 			}
-		}
-		if (msgout->return_path == NULL) {
-			DEBUG(5) debugf("setting return path to %s\n", route->set_return_path_domain);
-			msgout->return_path = copy_modify_address(msg->return_path, NULL, route->set_return_path_domain);
 		}
 		rewrite_headers(msgout, route);
 

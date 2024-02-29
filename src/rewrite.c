@@ -8,54 +8,6 @@
 #include "masqmail.h"
 #endif
 
-#include <fnmatch.h>
-
-gboolean
-set_address_header_domain(header *hdr, gchar *domain)
-{
-	gchar *p = hdr->value;
-	gchar *new_hdr = g_strndup(hdr->header, hdr->value - hdr->header);
-	gint tmp;
-	gchar *loc_beg, *loc_end;
-	gchar *dom_beg, *dom_end;
-	gchar *addr_end;
-	gchar *rewr_string;
-	gchar *left, *right;
-
-	while (*p) {
-		if (!parse_address_rfc822(p, &loc_beg, &loc_end, &dom_beg, &dom_end, &addr_end)) {
-			return FALSE;
-		}
-
-		if (dom_beg) {
-			left = g_strndup(p, dom_beg - p);
-			right = g_strndup(dom_end, addr_end - dom_end);
-
-			rewr_string = g_strconcat(left, domain, right, NULL);
-		} else {
-			left = g_strndup(p, loc_end - p);
-			right = g_strndup(loc_end, addr_end - loc_end);
-
-			rewr_string = g_strconcat(left, "@", domain, right, NULL);
-		}
-		g_free(left);
-		g_free(right);
-
-		p = addr_end;
-		if (*p == ',') {
-			p++;
-		}
-		new_hdr = g_strconcat(new_hdr, rewr_string, *p != '\0' ? "," : NULL, NULL);
-	}
-
-	tmp = (hdr->value - hdr->header);
-	g_free(hdr->header);
-	hdr->header = new_hdr;
-	hdr->value = hdr->header + tmp;
-
-	return TRUE;
-}
-
 gboolean
 map_address_header(header *hdr, GList *table)
 {

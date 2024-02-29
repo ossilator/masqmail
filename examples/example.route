@@ -61,17 +61,9 @@ do_correct_helo = true
 # The return path:
 # if we send the mail directly, we can set any valid address here,
 # use the one you prefer to get error messages to:
-# Use EITHER set_return_path_domain OR map_return_path_addresses
-#
-# this sets the return path kurth@anywhere.org to kurth@innominate.de
-#set_return_path_domain = "innominate.de"
-# this sets okurth@somewhere.else.org to kurth@innominate.de, and
-# leaves all other addresses untouched:
 map_return_path_addresses = "okurth: kurth@innominate.de"
 
 # 'From:' header:
-# Use EITHER set_h_from_domain OR map_h_from_addresses
-#set_h_from_domain = "uni-sw.gwdg.de"
 map_h_from_addresses = "okurth: Oliver Kurth <kurth@innominate.de>"
 
 # if your mail server outside uses the AUTH machanism, set the following.

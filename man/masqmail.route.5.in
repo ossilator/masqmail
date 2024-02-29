@@ -293,35 +293,9 @@ Default is false.
 .SH ADDRESS REWRITE RULES
 
 .TP
-\fBset_h_from_domain\fR = \fIstring\fR
-
-Replace the domain part in `From:' headers with this value.
-This may be useful if you use a private, outside unknown address on your local LAN
-and want this to be replaced by the domain of the address of your email address on the internet.
-Note that this is different to \fBset_return_path_domain\fR, see below.
-
-.TP
-\fBset_h_reply_to_domain\fR = \fIstring\fR
-
-Same as \fBset_h_from_domain\fP, but for the `Reply-To' header.
-
-.TP
-\fBset_return_path_domain\fR = \fIstring\fR
-
-Sets the domain part of the envelope from address.
-Some hosts check whether this is the same as the net the connection is coming from.
-If not, they reject the mail because they suspect spamming.
-It should be a valid address, because some mail servers also check that.
-You can also use this to set it to your usual address on the internet
-and put a local address only known on your LAN in the configuration of your mailer.
-Only the domain part will be changed, the local part remains unchanged.
-Use \fBmap_return_path_addresses\fR for rewriting local parts.
-
-.TP
 \fBmap_h_from_addresses\fR = \fIlist\fR
 
 Address rewrite rules for \(lqFrom:\(rq headers.
-This is similar to \fBset_h_from_domain\fR, but more flexible.
 This is a semicolon-separated list of colon-separated key-value pairs.
 The keys may contain glob patterns and are matched against the local
 parts of email addresses.
@@ -353,7 +327,6 @@ Useful when replying to mailing lists.
 \fBmap_return_path_addresses\fR = \fIlist\fR
 
 Rewrite rules for return-path (envelope from) addresses.
-This is similar to \fBset_return_path_domain\fR, but more flexible.
 The syntax is the same as for the header rewrite rules above, except
 that the values are RFC 821 email addresses.
 Unlike RFC 822 addresses, these cannot include angle brackets and a
