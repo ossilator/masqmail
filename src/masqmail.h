@@ -434,7 +434,7 @@ void acquire_root(void);
 void drop_root(void);
 
 /* rewrite.c */
-gboolean map_address_header(header *hdr, GList *table);
+void rewrite_headers(msg_out *msgout, const connect_route *route);
 void rewrite_return_path(msg_out *msgout, const connect_route *route);
 
 /* route.c */

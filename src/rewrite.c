@@ -27,7 +27,7 @@ map_address(const gchar *loc_beg, const gchar *loc_end,
 	return ret;
 }
 
-gboolean
+static gboolean
 map_address_header(header *hdr, GList *table)
 {
 	const gchar *op = hdr->header;
@@ -78,6 +78,48 @@ map_address_header(header *hdr, GList *table)
 	}
 
 	return did_change;
+}
+
+void
+rewrite_headers(msg_out *msgout, const connect_route *route)
+{
+	msgout->hdr_list = g_list_copy(msgout->msg->hdr_list);
+
+	GList *hdr_node;
+	foreach (msgout->hdr_list, hdr_node) {
+		header *hdr = hdr_node->data;
+		GList *table;
+		if (hdr->id == HEAD_FROM) {
+			table = route->map_h_from_addresses;
+		} else if (hdr->id == HEAD_REPLY_TO) {
+			table = route->map_h_reply_to_addresses;
+		} else if (hdr->id == HEAD_UNKNOWN &&
+		           !strncasecmp(hdr->header, "Mail-Followup-To", 16)) {
+			table = route->map_h_mail_followup_to_addresses;
+		} else {
+			continue;
+		}
+		if (!table) {
+			DEBUG(5) debugf("no rewrite rules for header '%.*s'\n",
+			                (int)(hdr->value - hdr->header), hdr->header);
+			continue;
+		}
+		header *new_hdr = copy_header(hdr);
+		if (!map_address_header(new_hdr, table)) {
+			g_free(new_hdr);
+			continue;
+		}
+		hdr_node->data = new_hdr;
+		// we need this list only to carefully free the extra headers:
+		msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
+	}
+
+	if (msgout->xtra_hdr_list == NULL) {
+		// nothing was changed
+		g_list_free(msgout->hdr_list);
+		msgout->hdr_list = NULL;
+	}
+	DEBUG(5) debugf("rewrite_headers() returning\n");
 }
 
 void
