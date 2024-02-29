@@ -27,7 +27,7 @@ map_address(const gchar *loc_beg, const gchar *loc_end,
 	return ret;
 }
 
-static gboolean
+static header *
 map_address_header(header *hdr, GList *table)
 {
 	const gchar *op = hdr->header;
@@ -68,14 +68,17 @@ map_address_header(header *hdr, GList *table)
 
 		p = op = addr_end;
 	}
-	if (did_change) {
-		g_free(hdr->header);
-		hdr->header = new_hdr;
-	} else {
+
+	if (!did_change) {
 		g_free(new_hdr);
+		return NULL;
 	}
 
-	return did_change;
+	header *out = g_malloc(sizeof(header));
+	out->id = hdr->id;
+	out->header = new_hdr;
+	out->value = new_hdr + (hdr->value - hdr->header);
+	return out;
 }
 
 void
@@ -111,9 +114,8 @@ rewrite_headers(msg_out *msgout, const connect_route *route)
 			                (int)(hdr->value - hdr->header), hdr->header);
 			continue;
 		}
-		new_hdr = copy_header(hdr);
-		if (!map_address_header(new_hdr, table)) {
-			g_free(new_hdr);
+		new_hdr = map_address_header(hdr, table);
+		if (!new_hdr) {
 			continue;
 		}
 	  replace:
