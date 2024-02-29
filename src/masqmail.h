@@ -359,9 +359,9 @@ accept_error accept_message(FILE *in, message *msg, guint flags);
 gchar *rec_timestamp(void);
 header *find_header(GList *hdr_list, header_id id);
 header *create_header(header_id id, gchar *fmt, ...) G_GNUC_PRINTF(2, 3);
+header *create_header_raw(header_id id, gchar *txt, int offset);
 void destroy_header(header *hdr);
 void destroy_header_list(GList *hdr_list);
-header *copy_header(header *hdr);
 header *get_header(gchar *line);
 
 /* smtp_in.c */

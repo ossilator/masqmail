@@ -73,7 +73,7 @@ find_header(GList *hdr_list, header_id id)
 	return NULL;
 }
 
-static header*
+header*
 create_header_raw(header_id id, gchar *txt, int offset)
 {
 	header *hdr = g_malloc(sizeof(header));
@@ -120,18 +120,6 @@ void
 destroy_header_list(GList *hdr_list)
 {
 	g_list_free_full(hdr_list, (GDestroyNotify) destroy_header);
-}
-
-header*
-copy_header(header *hdr)
-{
-	header *new_hdr = NULL;
-
-	if (hdr) {
-		new_hdr = create_header_raw(
-				hdr->id, g_strdup(hdr->header), hdr->value - hdr->header);
-	}
-	return new_hdr;
 }
 
 header*
