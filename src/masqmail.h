@@ -296,7 +296,6 @@ typedef struct _smtp_connection {
 } smtp_connection;
 
 /* alias.c*/
-gboolean addr_is_local(address *addr);
 void alias_expand(GList *alias_table, int doglob, GList *non_rcpt_list, GList **rcpt_list);
 
 /* child.c */
@@ -335,6 +334,7 @@ void destroy_address(address *addr);
 address *copy_modify_address(const address *orig, const gchar *l_part, const gchar *dom);
 #define copy_address(addr) copy_modify_address(addr, NULL, NULL)
 gboolean addr_isequal(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
+gboolean addr_is_local(address *addr);
 
 recipient *create_recipient(const gchar *path, const gchar *domain);
 recipient *create_recipient_raw(const gchar *local_part, const gchar *domain);

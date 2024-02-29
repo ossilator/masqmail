@@ -9,42 +9,6 @@
 
 #include <fnmatch.h>
 
-gboolean
-addr_is_local(address *addr)
-{
-	GList *dom_node;
-	GList *addr_node;
-	address *a;
-
-	if (!addr->domain[0]) {
-		return TRUE;
-	}
-	foreach(conf.local_hosts, dom_node) {
-		/* Note: FNM_CASEFOLD is a GNU extension */
-		if (fnmatch(dom_node->data, addr->domain, FNM_CASEFOLD)!=0) {
-			/* no match, try next */
-			continue;
-		}
-		foreach(conf.not_local_addresses, addr_node) {
-			a = addr_node->data;
-			if (addr_isequal(a, addr, conf.localpartcmp)) {
-				/* also in not_local_addresses */
-				return FALSE;
-			}
-		}
-		/* in local_hosts */
-		return TRUE;
-	}
-	foreach(conf.local_addresses, addr_node) {
-		a = addr_node->data;
-		if (addr_isequal(a, addr, conf.localpartcmp)) {
-			/* in local_addresses */
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
 static GList*
 parse_list(gchar *line)
 {
