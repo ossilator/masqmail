@@ -254,24 +254,6 @@ Main purpose is to define a mail server with mail_host in your local network,
 or if masqmail should send mail directly to the target host.
 If you have only a single host, you can leave it unset.
 
-A setting `\fBlocal_nets\fR = \fI"*home.net"\fR' in versions <= 0.3.3
-is in newer versions configured as:
-`\fBpermanent_routes\fR = \fI"/etc/masqmail/homenet.route"\fR'
-and the route file `homenet.route' containing:
-
-.RS 8
-.nf
-allowed_recipients = "*@*home.net"
-connect_error_fail = true
-resolve_list = byname
-.fi
-.RE
-.IP
-
-This is just as it had been with \fBlocal_net_route\fP,
-with the exception that the filtering for appropriate addresses
-is only in the route file and not with \fBlocal_nets\fR.
-
 .TP
 \fBquery_routes.\fIname\fR = \fIlist\fR
 
