@@ -41,6 +41,8 @@ BACKOFF=".1 .2 .4 .8 1.6 3.2"
 
 run_masqmail()
 {
+	eval $TEST_WRAPPER_PREPARE
+	$(eval echo $TEST_WRAPPER) \
 	"$MASQMAIL" -C "$@"
 }
 
@@ -61,6 +63,7 @@ make_config()
 	local cfg=$dir/masqmail.conf
 	eval ${CURR}_DIR=\$dir
 	eval ${CURR}_CONFIG=\$cfg
+	eval $TEST_WRAPPER_CONFIG
 	mkdir -p "$dir"
 	cat > "$cfg" <<EOF
 # because we are running a non-installed executable
