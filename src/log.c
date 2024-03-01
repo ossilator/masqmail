@@ -97,7 +97,7 @@ vlogwrite(int pri, const char *fmt, va_list args)
 		vsyslog(pri, fmt, args);
 		return;
 	}
-	FILE *file = logfile ? logfile : stderr;
+	FILE *file = logfile ? logfile : pri <= LOG_WARNING ? stderr : stdout;
 	time_t now = time(NULL);
 	struct tm *t = localtime(&now);
 	gchar buf[24];
