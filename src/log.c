@@ -6,6 +6,7 @@
 
 #include "masqmail.h"
 
+#include <assert.h>
 #include <sys/stat.h>
 #include <sysexits.h>
 
@@ -90,6 +91,18 @@ logclose()
 #endif
 }
 
+static_assert(LOG_DEBUG == 7, "LOG_DEBUG has unexpected value");
+static const char * const log_strings[] = {
+	"panic",
+	"alert",
+	"critical",
+	"error",
+	"warning",
+	"notice",
+	"info",
+	"debug",
+};
+
 void
 vlogwrite(int pri, const char *fmt, va_list args)
 {
@@ -103,7 +116,7 @@ vlogwrite(int pri, const char *fmt, va_list args)
 	gchar buf[24];
 
 	strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
-	fprintf(file, "%s [%d] ", buf, getpid());
+	fprintf(file, "%s [%d] %s: ", buf, getpid(), log_strings[pri]);
 
 	vfprintf(file, fmt, args);
 	fflush(file);
@@ -118,7 +131,7 @@ vdebugwrite(int pri, const char *fmt, va_list args)
 	struct tm *t = localtime(&now);
 	gchar buf[24];
 	strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
-	fprintf(file, "%s [%d] ", buf, getpid());
+	fprintf(file, "%s [%d] %s: ", buf, getpid(), log_strings[pri]);
 	vfprintf(file, fmt, args);
 	fflush(file);
 }
