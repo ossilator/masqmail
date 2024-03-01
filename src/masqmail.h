@@ -119,8 +119,6 @@ typedef struct _masqmail_conf {
 
 	gboolean do_queue;
 
-	gboolean do_verbose;
-
 	gchar *mbox_default;
 	GList *mbox_users;
 	GList *mda_users;
@@ -482,8 +480,6 @@ for((node) = g_list_first(list);\
 /* hopefully the compiler optmizes this away... */
 #define DEBUG(level) if(0)
 #endif
-
-#define LOG_VERBOSE 0x100
 
 #ifndef HAVE_GETLINE
 #define getline(buf, size, file) getdelim(buf, size, '\n', file)

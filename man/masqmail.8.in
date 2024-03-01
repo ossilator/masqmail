@@ -356,15 +356,6 @@ For masqmail the most simple approach had been taken.
 As the behavior of \-t together with command line address arguments
 differs among MTAs, one better not steps into this corner case.
 
-.TP
-\fB\-v\fR
-
-``Verbose''
-Log also to stdout.
-Currently, some log messages are marked as `write to stdout' and additionally,
-all messages with priority `LOG_ALERT' and `LOG_WARNING' will be written to stdout
-if this option is given. It is disabled in daemon mode.
-
 
 .SH ENVIRONMENT FOR PIPES AND MDAS
 

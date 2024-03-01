@@ -107,18 +107,6 @@ logclose()
 void
 vlogwrite(int pri, const char *fmt, va_list args)
 {
-	if ((conf.do_verbose && (pri & LOG_VERBOSE)) || (pri == LOG_ALERT) || (pri == LOG_WARNING)) {
-		va_list args_copy;
-		va_copy(args_copy, args);
-		vfprintf(stdout, fmt, args_copy);
-		va_end(args_copy);
-		fflush(stdout);  /* in case output ends not with newline */
-	}
-
-	pri &= ~LOG_VERBOSE;
-	if (!pri) {
-		return;
-	}
 	if (conf.use_syslog) {
 		vsyslog(pri, fmt, args);
 		return;
