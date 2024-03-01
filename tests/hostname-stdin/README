@@ -1,5 +1,4 @@
 Test hostname-stdin
 -------------------
 
-Sends three mails, using different options, to <you@hostname>. The
-mails are passed on stdin.
+Sends a mail to <you@hostname>. The mail is passed on stdin.

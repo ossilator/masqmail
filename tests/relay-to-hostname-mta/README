@@ -1,8 +1,8 @@
 relay-to-localhost-mta
 ----------------------
 
-Send three mails, using different options, to stdin of masqmail, which
-relays it per STMP to a local MTA listening at localhost:25.
+Sends a mail to stdin of masqmail, which relays it per STMP to a
+local MTA listening at localhost:25.
 
 So use it only if you have an MTA running on your box (sendmail,
 exim, qmail or whatever, or masqmail when you have it already
