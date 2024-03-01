@@ -212,7 +212,7 @@ mode_smtp()
 	smtp_in(stdin, stderr, peername, NULL);
 }
 
-/* default mode if address args or -t is specified, or called as rmail */
+/* default mode if address args or -t is specified */
 static void
 mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 		char **addresses, int addr_cnt)
@@ -480,14 +480,6 @@ main(int argc, char *argv[])
 		M_cmd = "rm";
 	} else if (strcmp(progname, "newaliases") == 0) {
 		mta_mode = MODE_BI;
-	} else if (strcmp(progname, "rmail") == 0) {
-		/*
-		**  the `rmail' alias should probably be removed now
-		**  that we have the rmail script. But let's keep it
-		**  for some while for compatibility. 2010-06-19
-		*/
-		mta_mode = MODE_ACCEPT;
-		opt_i = TRUE;
 	} else if (strcmp(progname, "runq") == 0) {
 		mta_mode = MODE_RUNQUEUE;
 		do_runq = TRUE;
