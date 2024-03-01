@@ -116,14 +116,10 @@ vdebugwrite(int pri, const char *fmt, va_list args)
 	gchar buf[24];
 	strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
 
-	if (debugfile) {
-		fprintf(debugfile, "%s [%d] ", buf, getpid());
-		vfprintf(debugfile, fmt, args);
-		fflush(debugfile);
-	} else {
-		fprintf(stderr, "no debug file, msg was:\n");
-		vfprintf(stderr, fmt, args);
-	}
+	FILE *file = debugfile ? debugfile : stderr;
+	fprintf(file, "%s [%d] ", buf, getpid());
+	vfprintf(file, fmt, args);
+	fflush(file);
 }
 #endif
 
@@ -139,7 +135,7 @@ logwrite(int pri, const char *fmt, ...)
 #endif
 	vlogwrite(pri, fmt, args);
 #ifdef ENABLE_DEBUG
-	if (debugfile)
+	if (debugfile || (conf.debug_level && conf.use_syslog))
 		vdebugwrite(pri, fmt, args_copy);
 	va_end(args_copy);
 #endif
