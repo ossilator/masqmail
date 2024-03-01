@@ -27,6 +27,7 @@ RELAY_HOST="MASQMAIL-TEST"
 run_masqmail()
 {
 	# the trailing '|| return' suppresses 'set -e' here.
+	$(eval echo $TEST_WRAPPER) \
 	$MASQMAIL -C "$CONFIG" "$@" || return
 }
 
