@@ -140,8 +140,6 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	write_pidfile(PID_DIR "/masqmail.pid");
 	drop_root();
 
-	conf.do_verbose = FALSE;
-
 	/*
 	**  closing and reopening the log ensures that it is open afterwards
 	**  because it is possible that the log is assigned to fd 1 and gets
@@ -168,8 +166,6 @@ mode_smtp()
 	struct sockaddr_in saddr;
 	gchar *peername = NULL;
 	int dummy = sizeof(saddr);
-
-	conf.do_verbose = FALSE;
 
 	DEBUG(5) debugf("accepting smtp message on stdin\n");
 
@@ -267,7 +263,6 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 		logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n",
 				msg->uid);
 	} else if (pid == 0) {
-		conf.do_verbose = FALSE;
 		fclose(stdin);
 		fclose(stdout);
 		fclose(stderr);
@@ -426,7 +421,6 @@ main(int argc, char *argv[])
 	gchar *f_address = NULL;
 	address *return_path = NULL;  /* may be changed by -f option */
 	gchar *full_sender_name = NULL;
-	gboolean do_verbose = FALSE;
 	gint debug_level = -1;
 
 	/* strip the path part */
@@ -577,9 +571,6 @@ main(int argc, char *argv[])
 		} else if (strcmp(opt, "t") == 0) {
 			opt_t = TRUE;
 
-		} else if (strcmp(opt, "v") == 0) {
-			do_verbose = TRUE;
-
 		} else {
 			fprintf(stderr, "unrecognized option `-%s'\n", opt);
 			exit(1);
@@ -662,9 +653,6 @@ main(int argc, char *argv[])
 
 	if (do_queue) {
 		conf.do_queue = TRUE;
-	}
-	if (do_verbose) {
-		conf.do_verbose = TRUE;
 	}
 	if (debug_level >= 0) {  /* if >= 0, it was given by argument */
 		conf.debug_level = debug_level;
