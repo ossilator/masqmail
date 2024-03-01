@@ -24,6 +24,8 @@ HOST_NAME=$(hostname)
 
 RELAY_HOST="MASQMAIL-TEST"
 
+BACKOFF=".1 .2 .4 .8 1.6 3.2"
+
 run_masqmail()
 {
 	# the trailing '|| return' suppresses 'set -e' here.
@@ -75,11 +77,58 @@ send_mail_direct()
 	run_masqmail "$@"
 }
 
+configure_server()
+{
+	local idx=${TEST_NAME%%_*}
+	TEST_PORT=$((40000 + ${idx#t}))
+	cat >> "$CONFIG" <<EOF
+
+listen_addresses = $TEST_HOST:$TEST_PORT
+
+pid_dir = "$CURR_DIR"
+EOF
+}
+
+prepare_server()
+{
+	make_config "$OUT_DIR/sink"
+	configure_sink
+	configure_server
+}
+
+shutdown_server()
+{
+	kill $1
+	for i in $BACKOFF; do
+		sleep $i
+		kill -0 $1 2> /dev/null || return 0
+	done
+	kill -9 $1 2> /dev/null || return 0
+	sleep .1
+}
+
+start_server()
+{
+	run_masqmail -bd "$@"
+	for i in $BACKOFF; do
+		sleep $i
+		test ! -s "$CURR_DIR/masqmail.pid" || break
+	done
+	SERVER_PID=$(cat "$CURR_DIR/masqmail.pid")
+	trap "shutdown_server $SERVER_PID" EXIT
+}
+
+launch_server()
+{
+	prepare_server
+	start_server "$@"
+}
+
 configure_relay()
 {
 	ROUTE=$CURR_DIR/test.route
 	cat > "$ROUTE" <<EOF
-mail_host = "$TEST_HOST"
+mail_host = "$TEST_HOST:$TEST_PORT"
 resolve_list = byname
 EOF
 	cat >> "$CONFIG" <<EOF
@@ -90,7 +139,7 @@ EOF
 
 prepare_relay()
 {
-	make_config "$OUT_DIR"
+	make_config "$OUT_DIR/relay"
 	configure_relay
 }
 
@@ -106,6 +155,8 @@ EOF
 
 send_mail_relay()
 {
+	launch_server
+
 	prepare_relay
 	configure_relay_all
 	run_masqmail "$@"
