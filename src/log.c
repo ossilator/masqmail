@@ -40,6 +40,22 @@ ext_strerror(int err)
 	return "unknown error";
 }
 
+static gboolean
+open_log(const gchar *name, FILE **file)
+{
+	gboolean ret = TRUE;
+	mode_t saved_mode = umask(066);
+	gchar *filename = g_strdup_printf("%s/%s.log", conf.log_dir, name);
+	*file = fopen(filename, "a");
+	if (!*file) {
+		fprintf(stderr, "could not open '%s': %s\n", filename, strerror(errno));
+		ret = FALSE;
+	}
+	g_free(filename);
+	umask(saved_mode);
+	return ret;
+}
+
 static FILE *logfile = NULL;
 #ifdef ENABLE_DEBUG
 static FILE *debugfile = NULL;
@@ -48,34 +64,17 @@ static FILE *debugfile = NULL;
 gboolean
 logopen()
 {
-	gchar *filename;
-	mode_t saved_mode = umask(066);
+#ifdef ENABLE_DEBUG
+	if (conf.debug_level && !open_log("debug", &debugfile)) {
+		return FALSE;
+	}
+#endif
 
 	if (conf.use_syslog) {
 		openlog(PACKAGE, LOG_PID, LOG_MAIL);
-	} else {
-		filename = g_strdup_printf("%s/masqmail.log", conf.log_dir);
-		logfile = fopen(filename, "a");
-		if (!logfile) {
-			fprintf(stderr, "could not open log '%s': %s\n", filename, strerror(errno));
-			return FALSE;
-		}
-		g_free(filename);
+		return TRUE;
 	}
-
-#ifdef ENABLE_DEBUG
-	if (conf.debug_level > 0) {
-		filename = g_strdup_printf("%s/debug.log", conf.log_dir);
-		debugfile = fopen(filename, "a");
-		if (!debugfile) {
-			fprintf(stderr, "could not open debug log '%s'\n", filename);
-			return FALSE;
-		}
-		g_free(filename);
-	}
-#endif
-	umask(saved_mode);
-	return TRUE;
+	return open_log("masqmail", &logfile);
 }
 
 void
