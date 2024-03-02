@@ -76,45 +76,18 @@ get_optarg(char *argv[], gint *argp, char *cp)
 	return NULL;
 }
 
-/*
-** Create any missing directory in pathname `dir'. (Like `mkdir -p'.)
-** The code is taken from nmh.
-*/
-gboolean
+static void
 makedir_rec(char *dir, int perms)
 {
-	char path[PATH_MAX];
-	char *cp, *c;
-	int had_an_error = 0;
-	mode_t savedmask;
-
-	c = strncpy(path, dir, sizeof(path));
-
-	savedmask = umask(0);
-
-	while (!had_an_error && (c = strchr(c+1, '/'))) {
-		*c = '\0';
-		/* Create an outer directory. */
-		if (mkdir(path, perms) == -1 && errno != EEXIST) {
-			fprintf(stderr, "unable to create `%s': %s\n",
-					path, strerror(errno));
-			had_an_error = 1;
-		}
-		*c = '/';
+	if (!mkdir(dir, perms)) {
+		chmod(dir, perms);  // override possible umask
+		return;
 	}
-
-	/*
-	** Create the innermost nested subdirectory of the
-	** path we're being asked to create.
-	*/
-	if (!had_an_error && mkdir(dir, perms)==-1 && errno != EEXIST) {
-		fprintf(stderr, "unable to create `%s': %s\n",
-				dir, strerror(errno));
-		had_an_error = 1;
+	if (errno == EEXIST) {
+		return;
 	}
-	umask(savedmask);
-
-	return (had_an_error) ? 0 : 1;
+	fprintf(stderr, "unable to create `%s': %s\n", dir, strerror(errno));
+	exit(1);
 }
 
 static gboolean
