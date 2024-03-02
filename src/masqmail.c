@@ -638,14 +638,8 @@ main(int argc, char *argv[])
 	*/
 	chdir("/");
 
-	if (conf.run_as_user) {
-		logwrite(LOG_NOTICE, "Using spool directory `%s' for "
-				"lock files.\n", conf.spool_dir);
-		conf.lock_dir = conf.spool_dir;
-	} else {
-		makedir(conf.lock_dir, TRUE);
-	}
 	makedir(conf.spool_dir, TRUE);
+	makedir(conf.lock_dir, TRUE);
 	makedir(conf.log_dir, TRUE);
 
 	if (!conf.run_as_user) {

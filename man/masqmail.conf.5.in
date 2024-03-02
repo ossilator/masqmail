@@ -116,8 +116,7 @@ Default: \fI/var/mail\fR
 .TP
 .BI "spool_dir = " dir
 
-The directory where masqmail stores its spool files
-(and lock files if \fIrun_as_user\fP).
+The directory where masqmail stores its spool files.
 Masqmail needs read and write permissions for this directory.
 .I dir
 must be an absolute path.
@@ -133,13 +132,10 @@ The directory where masqmail stores its spool lock files.
 Masqmail needs read and write permissions for this directory.
 .I dir
 must be an absolute path.
-The default is
-.I @with_lockdir@
-for normal operation.
 The directory is created at startup if missing.
 
-If \fIrun_as_user\fP then lock files are stored in the \fIspool_dir\fP
-directly and the \fBlock_dir\fP setting is ignored.
+Default:
+.I @with_lockdir@
 
 .TP
 .BI "host_name = " string
