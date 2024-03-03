@@ -1,4 +1,0 @@
-Test hostname-stdin
--------------------
-
-Sends a mail to <you@hostname>. The mail is passed on stdin.
