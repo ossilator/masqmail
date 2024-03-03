@@ -42,7 +42,7 @@ sigterm_handler(int sig)
 
 	if (pidfile) {
 		uid_t uid = geteuid();
-		if (seteuid(0) != 0) {
+		if (!conf.run_as_user && seteuid(0) != 0) {
 			logwrite(LOG_ALERT, "sigterm_handler: could not set "
 					"euid to %d: %s\n",
 					0, strerror(errno));
