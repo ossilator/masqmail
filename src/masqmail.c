@@ -630,7 +630,6 @@ main(int argc, char *argv[])
 	if ((strcmp(conf_file, CONF_FILE) != 0) && (conf.orig_uid != 0)) {
 		logwrite(LOG_NOTICE, "Changing to run_as_user.\n");
 		conf.run_as_user = TRUE;
-		set_euidgid(conf.orig_uid, conf.orig_gid, NULL, NULL);
 		if (setgid(conf.orig_gid)) {
 			logwrite(LOG_ALERT, "could not set gid to %d: %s\n",
 					conf.orig_gid, strerror(errno));
