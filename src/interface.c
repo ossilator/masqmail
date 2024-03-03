@@ -49,11 +49,21 @@ make_server_socket(interface *iface)
 	}
 
 	if (init_sockaddr(&server, iface)) {
+		gboolean need_root = ntohs(server.sin_port) < 1024;
+		if (need_root) {
+			acquire_root();
+		}
 		/* bind the socket */
 		if (bind(sock, (struct sockaddr *) &server,
 				sizeof(server)) < 0) {
 			logwrite(LOG_ALERT, "bind: %s\n", strerror(errno));
+			if (need_root) {
+				drop_root();
+			}
 			return -1;
+		}
+		if (need_root) {
+			drop_root();
 		}
 	} else {
 		close(sock);

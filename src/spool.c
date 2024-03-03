@@ -284,14 +284,8 @@ spool_write(message *msg, gboolean do_write_data)
 	gchar *spool_file, *tmp_file;
 	FILE *out;
 	gboolean ok = TRUE;
-	uid_t saved_uid, saved_gid;
 	/* user can read/write, group can read, others cannot do anything: */
 	mode_t saved_mode = umask(026);
-
-	/* set uid and gid to the mail ids */
-	if (!conf.run_as_user) {
-		set_euidgid(conf.mail_uid, conf.mail_gid, &saved_uid, &saved_gid);
-	}
 
 	/* header spool: */
 	ok = spool_write_header(msg);
@@ -330,11 +324,6 @@ spool_write(message *msg, gboolean do_write_data)
 		g_free(tmp_file);
 	}
 
-	/* set uid and gid back */
-	if (!conf.run_as_user) {
-		set_euidgid(saved_uid, saved_gid, NULL, NULL);
-	}
-
 	umask(saved_mode);
 
 	return ok;
@@ -345,7 +334,6 @@ spool_write(message *msg, gboolean do_write_data)
 gboolean
 spool_lock(gchar *uid)
 {
-	uid_t saved_uid, saved_gid;
 	gchar *hitch_name;
 	gchar *lock_name;
 	gboolean ok = FALSE;
@@ -353,19 +341,9 @@ spool_lock(gchar *uid)
 	hitch_name = g_strdup_printf("%s/%s-%d.lock", conf.lock_dir, uid, getpid());
 	lock_name = g_strdup_printf("%s/%s.lock", conf.lock_dir, uid);
 
-	/* set uid and gid to the mail ids */
-	if (!conf.run_as_user) {
-		set_euidgid(conf.mail_uid, conf.mail_gid, &saved_uid, &saved_gid);
-	}
-
 	ok = dot_lock(lock_name, hitch_name);
 	if (!ok)
 		logwrite(LOG_WARNING, "spool file %s is locked\n", uid);
-
-	/* set uid and gid back */
-	if (!conf.run_as_user) {
-		set_euidgid(saved_uid, saved_gid, NULL, NULL);
-	}
 
 	g_free(lock_name);
 	g_free(hitch_name);
@@ -376,35 +354,19 @@ spool_lock(gchar *uid)
 gboolean
 spool_unlock(gchar *uid)
 {
-	uid_t saved_uid, saved_gid;
 	gchar *lock_name;
-
-	/* set uid and gid to the mail ids */
-	if (!conf.run_as_user) {
-		set_euidgid(conf.mail_uid, conf.mail_gid, &saved_uid, &saved_gid);
-	}
 
 	lock_name = g_strdup_printf("%s/%s.lock", conf.lock_dir, uid);
 	dot_unlock(lock_name);
 	g_free(lock_name);
 
-	/* set uid and gid back */
-	if (!conf.run_as_user) {
-		set_euidgid(saved_uid, saved_gid, NULL, NULL);
-	}
 	return TRUE;
 }
 
 gboolean
 spool_delete_all(message *msg)
 {
-	uid_t saved_uid, saved_gid;
 	gchar *spool_file;
-
-	/* set uid and gid to the mail ids */
-	if (!conf.run_as_user) {
-		set_euidgid(conf.mail_uid, conf.mail_gid, &saved_uid, &saved_gid);
-	}
 
 	/* header spool: */
 	spool_file = g_strdup_printf("%s/%s-H", conf.spool_dir, msg->uid);
@@ -420,9 +382,5 @@ spool_delete_all(message *msg)
 	}
 	g_free(spool_file);
 
-	/* set uid and gid back */
-	if (!conf.run_as_user) {
-		set_euidgid(saved_uid, saved_gid, NULL, NULL);
-	}
 	return TRUE;
 }

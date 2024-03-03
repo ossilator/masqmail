@@ -758,11 +758,8 @@ read_route_list(GList *rf_list)
 {
 	GList *list = NULL;
 	GList *node;
-	uid_t saved_uid, saved_gid;
 
-	if (!conf.run_as_user) {
-		set_euidgid(0, 0, &saved_uid, &saved_gid);
-	}
+	acquire_root();
 	foreach(rf_list, node) {
 		gchar *fname = (gchar *) (node->data);
 		connect_route *route = read_route(fname);
@@ -770,10 +767,7 @@ read_route_list(GList *rf_list)
 			list = g_list_append(list, route);
 		}
 	}
-	/* set uid and gid back */
-	if (!conf.run_as_user) {
-		set_euidgid(saved_uid, saved_gid, NULL, NULL);
-	}
+	drop_root();
 	return list;
 }
 

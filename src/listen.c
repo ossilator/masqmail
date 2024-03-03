@@ -99,11 +99,6 @@ listen_port(GList *iface_list, gint qival)
 
 	signal(SIGCHLD, sigchld_handler);
 
-	/* now that we have our socket(s), we can give up root privileges */
-	if (!conf.run_as_user) {
-		set_euidgid(conf.mail_uid, conf.mail_gid, NULL, NULL);
-	}
-
 	/*  sel_ret = 0; */
 	time(&time_before);
 	time_before -= qival;

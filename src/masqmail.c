@@ -41,17 +41,12 @@ sigterm_handler(int sig)
 	sigterm_in_progress = 1;
 
 	if (pidfile) {
-		uid_t uid = geteuid();
-		if (seteuid(0) != 0) {
-			logwrite(LOG_ALERT, "sigterm_handler: could not set "
-					"euid to %d: %s\n",
-					0, strerror(errno));
-		}
+		acquire_root();
 		if (unlink(pidfile) != 0)
 			logwrite(LOG_WARNING,
 					"could not delete pid file %s: %s\n",
 					pidfile, strerror(errno));
-		seteuid(uid);  /* we exit anyway after this, just to be sure */
+		drop_root();  // we exit anyway after this, but whatever
 	}
 
 	signal(sig, SIG_DFL);
@@ -163,8 +158,10 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 	}
 
 	signal(SIGTERM, sigterm_handler);
+	acquire_root();
 	makedir_rec(PID_DIR, 0755);
 	write_pidfile(PID_DIR "/masqmail.pid");
+	drop_root();
 
 	/*
 	**  closing and reopening the log ensures that it is open afterwards
@@ -192,10 +189,6 @@ mode_smtp(void)
 	gchar *peername = NULL;
 	int dummy = sizeof(saddr);
 
-	if (!conf.run_as_user) {
-		set_euidgid(conf.orig_uid, conf.orig_gid, NULL, NULL);
-	}
-
 	DEBUG(5) debugf("accepting smtp message on stdin\n");
 
 	if (getpeername(0, (struct sockaddr *) (&saddr), &dummy) == 0) {
@@ -217,15 +210,8 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 	gint i;
 	pid_t pid;
 
-	if (return_path && !is_privileged_user(conf.orig_uid)) {
-		fprintf(stderr, "must be root, %s or in group %s for "
-				"setting return path.\n",
-				DEF_MAIL_USER, DEF_MAIL_GROUP);
-		exit(1);
-	}
-
-	if (!conf.run_as_user) {
-		set_euidgid(conf.orig_uid, conf.orig_gid, NULL, NULL);
+	if (return_path) {
+		verify_privileged_user("setting return path");
 	}
 
 	DEBUG(5) debugf("accepting message on stdin\n");
@@ -325,10 +311,8 @@ manipulate_queue(char *cmd, char *id[])
 		return FALSE;
 	}
 
-	set_euidgid(conf.mail_uid, conf.mail_gid, NULL, NULL);
-
 	/* privileged users may delete any mail */
-	if (is_privileged_user(conf.orig_uid)) {
+	if (is_privileged_user()) {
 		for (; *id; id++) {
 			fprintf(stderr, "id: %s\n", *id);
 			if (queue_delete(*id)) {
@@ -380,7 +364,7 @@ run_queue(gboolean do_runq_online, char *route_name)
 	int ret;
 
 	/* queue runs */
-	set_identity(conf.orig_uid, "queue run");
+	verify_privileged_user("queue run");
 
 	if (!do_runq_online) {
 		ret = queue_run();
@@ -670,21 +654,6 @@ main(int argc, char *argv[])
 	*/
 	chdir("/");
 
-	if (!conf.run_as_user) {
-		if (setgid(0) != 0) {
-			fprintf(stderr, "could not set gid to 0. "
-					"Is the setuid bit set? : %s\n",
-					strerror(errno));
-			exit(1);
-		}
-		if (setuid(0) != 0) {
-			fprintf(stderr, "could not gain root privileges. "
-					"Is the setuid bit set? : %s\n",
-					strerror(errno));
-			exit(1);
-		}
-	}
-
 	if (conf.run_as_user) {
 		logwrite(LOG_NOTICE, "Using spool directory `%s' for "
 				"lock files.\n", conf.spool_dir);
@@ -698,6 +667,21 @@ main(int argc, char *argv[])
 		chown(conf.spool_dir, conf.mail_uid, conf.mail_gid);
 		makedir_rec(conf.log_dir, 0755);
 		chown(conf.log_dir, conf.mail_uid, conf.mail_gid);
+	}
+
+	if (!conf.run_as_user) {
+		// this sets both the effective and the real gid
+		if (setgid(conf.mail_gid) != 0) {
+			fprintf(stderr, "could not set gid to %d: %s. Is the setuid bit set?\n",
+			        conf.mail_gid, strerror(errno));
+			exit(1);
+		}
+		// this sets only the effective uid, as we may need to re-acquire root
+		if (seteuid(conf.mail_uid) != 0) {
+			fprintf(stderr, "could not set uid to %d: %s. Is the setuid bit set?\n",
+			        conf.mail_uid, strerror(errno));
+			exit(1);
+		}
 	}
 
 	if (!logopen()) {

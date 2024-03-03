@@ -301,7 +301,7 @@ add_received_hdr(message *msg)
 		hdr = create_header(HEAD_RECEIVED,
 				"Received: by %s (%s %s, from userid %d)\n"
 				"\tid %s%s; %s\n",
-				conf.host_name, PACKAGE, VERSION, geteuid(),
+				conf.host_name, PACKAGE, VERSION, conf.orig_uid,
 				msg->uid,
 				for_string ? for_string : "", rec_timestamp());
 	} else {
@@ -338,7 +338,7 @@ accept_message_prepare(message *msg, guint flags)
 
 	/* if local, get password entry and set return path if missing */
 	if (!msg->received_host) {
-		struct passwd *passwd = getpwuid(geteuid());
+		struct passwd *passwd = getpwuid(conf.orig_uid);
 		msg->ident = g_strdup(passwd->pw_name);
 		if (!msg->return_path) {
 			gchar *path = g_strdup_printf("<%s@%s>",

@@ -390,8 +390,10 @@ gboolean queue_delete(gchar *uid);
 gchar *online_query(void);
 
 /* permissions.c */
-void set_euidgid(gint uid, gint gid, uid_t *old_uid, gid_t *old_gid);
-void set_identity(uid_t old_uid, gchar *task_name);
+gboolean is_privileged_user(void);
+void verify_privileged_user(gchar *task_name);
+void acquire_root(void);
+void drop_root(void);
 
 /* rewrite.c */
 gboolean map_address_header(header *hdr, GList *table);
@@ -419,9 +421,6 @@ void destroy_table(GList *table);
 
 /* timeival.c */
 gint time_interval(gchar *str);
-
-/* permissions.c */
-gboolean is_privileged_user(uid_t uid);
 
 /* other things */
 

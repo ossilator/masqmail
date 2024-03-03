@@ -53,27 +53,13 @@ logopen()
 	if (conf.use_syslog) {
 		openlog(PACKAGE, LOG_PID, LOG_MAIL);
 	} else {
-		uid_t saved_uid;
-		gid_t saved_gid;
-
-		if (!conf.run_as_user) {
-			set_euidgid(conf.mail_uid, conf.mail_gid, &saved_uid, &saved_gid);
-		}
-
 		filename = g_strdup_printf("%s/masqmail.log", conf.log_dir);
 		logfile = fopen(filename, "a");
 		if (!logfile) {
 			fprintf(stderr, "could not open log '%s': %s\n", filename, strerror(errno));
-			if (!conf.run_as_user) {
-				set_euidgid(saved_uid, saved_gid, NULL, NULL);
-			}
 			return FALSE;
 		}
 		g_free(filename);
-
-		if (!conf.run_as_user) {
-			set_euidgid(saved_uid, saved_gid, NULL, NULL);
-		}
 	}
 
 #ifdef ENABLE_DEBUG

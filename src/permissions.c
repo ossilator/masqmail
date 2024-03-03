@@ -38,11 +38,13 @@ is_ingroup(uid_t uid, gid_t gid)
 }
 
 gboolean
-is_privileged_user(uid_t uid)
+is_privileged_user(void)
 {
 	if (conf.run_as_user) {
 		return TRUE;
 	}
+
+	uid_t uid = conf.orig_uid;
 
 	/* uncomment these lines if you need the `uucp' group to be trusted too
 	struct group *grent = getgrnam("uucp");
@@ -56,34 +58,32 @@ is_privileged_user(uid_t uid)
 }
 
 void
-set_euidgid(gint uid, gint gid, uid_t *old_uid, gid_t *old_gid)
+verify_privileged_user(gchar *task_name)
 {
-	if (old_uid)
-		*old_uid = geteuid();
-	if (old_gid)
-		*old_gid = getegid();
-
-	seteuid(0);
-
-	if (setegid(gid) != 0) {
-		logwrite(LOG_ALERT, "could not change gid to %d: %s\n", gid, strerror(errno));
+	if (!conf.run_as_user && !is_privileged_user()) {
+		fprintf(stderr, "must be root, %s or in group %s for %s.\n", DEF_MAIL_USER, DEF_MAIL_GROUP, task_name);
 		exit(1);
 	}
-	if (seteuid(uid) != 0) {
-		logwrite(LOG_ALERT, "could not change uid to %d: %s\n", uid, strerror(errno));
+}
+
+static void
+set_euid(gint uid)
+{
+	if (!conf.run_as_user && seteuid(uid) != 0) {
+		logwrite(LOG_ERR, "could not change uid to %d: %s\n",
+		         uid, strerror(errno));
 		exit(1);
 	}
 }
 
 void
-set_identity(uid_t old_uid, gchar *task_name)
+acquire_root(void)
 {
-	if (!conf.run_as_user) {
-		if (!is_privileged_user(old_uid)) {
-			fprintf(stderr, "must be root, %s or in group %s for %s.\n", DEF_MAIL_USER, DEF_MAIL_GROUP, task_name);
-			exit(1);
-		}
+	set_euid(0);
+}
 
-		set_euidgid(conf.mail_uid, conf.mail_gid, NULL, NULL);
-	}
+void
+drop_root(void)
+{
+	set_euid(conf.mail_uid);
 }

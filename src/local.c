@@ -51,9 +51,6 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 {
 	struct passwd *pw;
 	gboolean ok = FALSE;
-	uid_t saved_uid = geteuid();
-	gid_t saved_gid = getegid();
-	gboolean uid_ok = TRUE, gid_ok = TRUE;
 	gchar *filename;
 	FILE *out;
 
@@ -69,15 +66,9 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 	}
 
 	if (!conf.run_as_user) {
-		uid_ok = (seteuid(0) == 0);
-		if (uid_ok) {
-			gid_ok = (setegid(conf.mail_gid) == 0);
-			uid_ok = (seteuid(pw->pw_uid) == 0);
-		}
-		if (!uid_ok || !gid_ok) {
-			logwrite(LOG_ALERT, "could not set uid or gid for "
-					"local delivery, uid = %d: %s\n",
-					pw->pw_uid, strerror(errno));
+		if (seteuid(pw->pw_uid) != 0) {
+			logwrite(LOG_ALERT, "could not set uid %d for local delivery: %s\n",
+			         pw->pw_uid, strerror(errno));
 			return FALSE;
 		}
 	}
@@ -126,29 +117,17 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 	}
 	g_free(filename);
 
-	if (!conf.run_as_user) {
-		uid_ok = (seteuid(0) == 0);
-		if (uid_ok) {
-			gid_ok = (setegid(saved_gid) == 0);
-			uid_ok = (seteuid(saved_uid) == 0);
-		}
-	}
-
-	if (!uid_ok || !gid_ok) {
+	if (!conf.run_as_user && seteuid(conf.mail_uid) != 0) {
 		/*
 		**  FIXME: if this fails we HAVE to exit, because we shall
 		**  not run with some users id. But we do not return, and so
 		**  this message will not be finished, so the user will get
 		**  the message again next time a delivery is attempted...
 		*/
-		logwrite(LOG_ALERT, "could not set back uid or gid after "
+		logwrite(LOG_ALERT, "could not set back uid after "
 				"local delivery: %s\n", strerror(errno));
-		logwrite(LOG_ALERT, "uid=%d, gid=%d, euid=%d, egid=%d, "
-				"want = %d, %d\n", getuid(), getgid(),
-				geteuid(), getegid(), saved_uid, saved_gid);
-		logwrite(LOG_ALERT, "In case of trouble, see "
-				"local.c:append_file() for details.\n",
-				strerror(errno));
+		DEBUG(1) debugf("uid=%d, euid=%d, want = %d\n",
+		                getuid(), geteuid(), conf.mail_uid);
 		exit(1);
 	}
 	return ok;
@@ -195,7 +174,7 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 
 	old_signal = signal(SIGCHLD, SIG_DFL);
 
-	out = peidopen(cmd, "w", envp, &pid, conf.mail_uid, conf.mail_gid);
+	out = peopen(cmd, "w", envp, &pid);
 	if (!out) {
 		logwrite(LOG_ALERT, "could not open pipe '%s': %s\n",
 				cmd, strerror(errno));
