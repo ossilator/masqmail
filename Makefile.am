@@ -1,6 +1,6 @@
 EXTRA_DIST = admin devel LICENSES
 
-SUBDIRS = src man docs examples tpl
+SUBDIRS = src man docs examples tpl tests
 
 doc_DATA = ChangeLog NEWS AUTHORS COPYING README TODO INSTALL THANKS
 

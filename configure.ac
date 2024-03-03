@@ -214,5 +214,6 @@ AC_CONFIG_FILES([
 	docs/Makefile
 	examples/Makefile
 	tpl/Makefile
+	tests/Makefile
 ])
 AC_OUTPUT
