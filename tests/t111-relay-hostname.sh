@@ -9,4 +9,4 @@ $(make_mail)
 .
 EOF
 
-sleep .5
+verify_delivery

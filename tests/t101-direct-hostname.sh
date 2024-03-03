@@ -8,3 +8,5 @@ send_mail_direct $LOGNAME@$TEST_HOST <<EOF
 $(make_mail)
 .
 EOF
+
+verify_delivery

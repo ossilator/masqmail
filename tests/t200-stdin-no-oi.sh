@@ -14,3 +14,6 @@ there is a dot above (Yes, one and not two).
 
 Fritz
 EOF
+
+verify_delivery
+verify_content '^\.$'

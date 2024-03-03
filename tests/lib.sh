@@ -181,6 +181,25 @@ make_mail()
 	echo "$GREETING"
 }
 
+verify_delivery()
+{
+	local box=${1:-$MAIL_BOX}
+	for i in $BACKOFF; do
+		grep -q "^$GREETING\$" "$box" && return 0
+		sleep $i
+	done
+	echo "Mail was not delivered correctly to ${box#$TEST_DIR/}." >&2
+	return 1
+}
+
+verify_content()
+{
+	local box=${2:-$MAIL_BOX}
+	grep -q "$1" "$box" && return 0
+	echo "Expected content '$1' not found in ${box#$TEST_DIR/}." >&2
+	return 1
+}
+
 if [ ! -d "$OUT_BASE" ]; then
 	tmp=$(mktemp -d)
 	# we race with other instances here
