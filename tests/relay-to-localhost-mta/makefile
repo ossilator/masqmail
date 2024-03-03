@@ -8,12 +8,8 @@ test.conf: test.conf.tpl
 	# fails if the current path contains `^'.
 	sed "s^PWD^`pwd`^" $< >$@
 
-test: test.tpl
-	sed s/RECV_HOST/`hostname`/ $< >$@
-	chmod +x $@
-
 clean:
-	rm -f test.conf test
+	rm -f test.conf
 
 realclean: clean
 	rm -rf spool

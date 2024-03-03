@@ -12,11 +12,11 @@ do_queue = false
 # problems. Could be we even need a FQDN here.
 host_name="MASQMAIL-TEST"
 
-# we want to deliver through a route named `test' to a local MTA.
-# thus we do not define any hosts as local. All mail should go through
-# the route.
 permanent_routes = "PWD/test.route"
 
+# all mail should go through the above route. thus we do not define any
+# hosts as local, and prevent the fallback to localhost + host_name.
+local_hosts="MASQMAIL-BOGUS"
 
 # spool files in the current directory
 spool_dir="PWD/spool"
