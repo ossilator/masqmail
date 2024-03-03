@@ -398,10 +398,7 @@ read_conf(gchar *filename)
 		if (strcmp(lval, "debug_level")==0) {
 			conf.debug_level = atoi(rval);
 		} else if (strcmp(lval, "run_as_user")==0) {
-			if (!conf.run_as_user) {
-				/* you should not be able to reset that flag */
-				conf.run_as_user = parse_boolean(rval);
-			}
+			conf.run_as_user = parse_boolean(rval);
 		} else if (strcmp(lval, "use_syslog")==0) {
 			conf.use_syslog = parse_boolean(rval);
 		} else if (strcmp(lval, "mail_dir")==0) {

@@ -611,9 +611,9 @@ main(int argc, char *argv[])
 	**  So it is possible for a user to run his own daemon without
 	**  breaking security.
 	*/
+	gboolean run_as_user = FALSE;
 	if ((strcmp(conf_file, CONF_FILE) != 0) && (conf.orig_uid != 0)) {
-		logwrite(LOG_NOTICE, "Changing to run_as_user.\n");
-		conf.run_as_user = TRUE;
+		run_as_user = TRUE;
 		if (setgid(conf.orig_gid)) {
 			logwrite(LOG_ALERT, "could not set gid to %d: %s\n",
 					conf.orig_gid, strerror(errno));
@@ -642,6 +642,14 @@ main(int argc, char *argv[])
 	}
 	if (debug_level >= 0) {  /* if >= 0, it was given by argument */
 		conf.debug_level = debug_level;
+	}
+
+	if (run_as_user) {
+		if (!conf.run_as_user) {
+			conf.run_as_user = TRUE;
+		} else {
+			run_as_user = FALSE;
+		}
 	}
 
 	/*
@@ -689,6 +697,14 @@ main(int argc, char *argv[])
 	}
 
 	DEBUG(1) debugf("----STARTING---- masqmail %s\n", VERSION);
+
+	if (conf.run_as_user) {
+		if (!run_as_user) {
+			logwrite(LOG_NOTICE, "Changing to run_as_user.\n");
+		} else {
+			DEBUG(1) debugf("Changing to run_as_user.\n");
+		}
+	}
 
 	DEBUG(5) {
 		gchar **str = argv;
