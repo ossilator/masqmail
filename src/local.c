@@ -80,9 +80,10 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 				filename, strerror(errno));
 	} else {
 #ifdef USE_LIBLOCKFILE
+		gchar *lockfile = g_strconcat(filename, ".lock", NULL);
 		gint err;
 		/* lock file using liblockfile */
-		err = maillock(user, 3);
+		err = lockfile_create(lockfile, 3, 0);
 		if (err == 0) {
 #else
 		/* lock file: */
@@ -100,7 +101,7 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 			/* close when still user */
 			fclose(out);
 #ifdef USE_LIBLOCKFILE
-			mailunlock();
+			lockfile_remove(lockfile);
 #endif
 		} else {
 			fclose(out);
@@ -108,6 +109,7 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 			DEBUG(3) debugf("could not lock file %s: error %d\n",
 					filename, err);
 		}  /* XEmacs indenting convenience... */
+		g_free(lockfile);
 #else
 			DEBUG(3) debugf("could not lock file %s: %s\n",
 					filename, strerror(errno));
