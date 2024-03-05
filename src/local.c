@@ -159,20 +159,12 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 {
 	gchar *envp[40];
 	FILE *out;
-	uid_t saved_uid = geteuid();
-	gid_t saved_gid = getegid();
 	gboolean ok = FALSE;
 	gint i, n;
 	pid_t pid;
 	void (*old_signal) (int);
 	int status;
 	address *ancestor = addr_find_ancestor(rcpt);
-
-	/* set uid and gid to the mail ids */
-	if (!conf.run_as_user) {
-		set_euidgid(conf.mail_uid, conf.mail_gid,
-				&saved_uid, &saved_gid);
-	}
 
 	/* set environment */
 	n = 0;
@@ -232,11 +224,6 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 	/* free environment */
 	for (i = 0; i < n; i++) {
 		g_free(envp[i]);
-	}
-
-	/* set uid and gid back */
-	if (!conf.run_as_user) {
-		set_euidgid(saved_uid, saved_gid, NULL, NULL);
 	}
 
 	return ok;
