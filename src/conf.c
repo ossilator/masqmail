@@ -462,7 +462,7 @@ read_conf(gchar *filename)
 			listen_addrs_tmp = parse_list(rval, TRUE);
 		} else if (strncmp(lval, "query_routes.", 13)==0) {
 			GList *file_list = parse_list(rval, FALSE);
-			table_pair *pair = create_pair(lval+13, file_list);
+			table_pair *pair = create_pair_base(lval + 13, file_list);
 			conf.query_routes = g_list_append(conf.query_routes,
 					pair);
 		} else if (strcmp(lval, "permanent_routes")==0) {

@@ -14,13 +14,13 @@ var_table_rcpt(GList *var_table, address *rcpt)
 	gchar *tmp_str;
 
 	var_table = g_list_prepend(var_table,
-			create_pair_string("rcpt_local", rcpt->local_part));
+			create_pair("rcpt_local", rcpt->local_part));
 	var_table = g_list_prepend(var_table,
-			create_pair_string("rcpt_domain", rcpt->domain));
+			create_pair("rcpt_domain", rcpt->domain));
 
 	tmp_str = g_strdup_printf("%s@%s", rcpt->local_part, rcpt->domain);
 	var_table = g_list_prepend(var_table,
-			create_pair_string("rcpt", tmp_str));
+			create_pair("rcpt", tmp_str));
 	g_free(tmp_str);
 
 	return var_table;
@@ -33,24 +33,24 @@ var_table_msg(GList *var_table, message *msg)
 	gchar *tmp_str;
 
 	var_table = g_list_prepend(var_table,
-			create_pair_string("uid", msg->uid));
+			create_pair("uid", msg->uid));
 	var_table = g_list_prepend(var_table,
-			create_pair_string("received_host",
+			create_pair("received_host",
 			msg->received_host ? msg->received_host : ""));
 	var_table = g_list_prepend(var_table,
-			create_pair_string("ident",
+			create_pair("ident",
 			msg->ident ? msg->ident : ""));
 	var_table = g_list_prepend(var_table,
-			create_pair_string("return_path_local",
+			create_pair("return_path_local",
 			ret_path->local_part));
 	var_table = g_list_prepend(var_table,
-			create_pair_string("return_path_domain",
+			create_pair("return_path_domain",
 			ret_path->domain));
 
 	tmp_str = g_strdup_printf("%s@%s",
 			ret_path->local_part, ret_path->domain);
 	var_table = g_list_prepend(var_table,
-			create_pair_string("return_path", tmp_str));
+			create_pair("return_path", tmp_str));
 	g_free(tmp_str);
 
 	return var_table;
@@ -60,11 +60,11 @@ GList*
 var_table_conf(GList *var_table)
 {
 	var_table = g_list_prepend(var_table,
-			create_pair_string("host_name", conf.host_name));
+			create_pair("host_name", conf.host_name));
 	var_table = g_list_prepend(var_table,
-			create_pair_string("package", PACKAGE));
+			create_pair("package", PACKAGE));
 	var_table = g_list_prepend(var_table,
-			create_pair_string("version", VERSION));
+			create_pair("version", VERSION));
 
 	return var_table;
 }

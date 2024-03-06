@@ -412,8 +412,8 @@ gboolean route_from_hdr_is_allowed(connect_route *route, char *from_hdr);
 void route_split_rcpts(connect_route *route, GList *rcpt_list, GList **p_rcpt_list, GList **p_non_rcpt_list);
 
 /* tables.c */
-table_pair *create_pair(gchar *key, gpointer value);
-table_pair *create_pair_string(gchar *key, gpointer value);
+table_pair *create_pair_base(gchar *key, gpointer value);
+table_pair *create_pair(gchar *key, gchar *value);
 table_pair *parse_table_pair(gchar *line, char delim);
 gpointer table_find_func(GList *table_list, gchar *key, int (*cmp_func) (const char *, const char *));
 gpointer table_find(GList *table_list, gchar *key);
