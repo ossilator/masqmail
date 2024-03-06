@@ -24,13 +24,7 @@ create_pair_base(gchar *key, gpointer value)
 table_pair*
 create_pair(gchar *key, gchar *value)
 {
-	table_pair *pair;
-
-	pair = g_malloc(sizeof(table_pair));
-	pair->key = g_strdup(key);
-	pair->value = g_strdup(value);
-
-	return pair;
+	return create_pair_base(key, g_strdup(value));
 }
 
 table_pair*
