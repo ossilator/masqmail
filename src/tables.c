@@ -10,7 +10,7 @@
 #include <fnmatch.h>
 
 table_pair*
-create_pair(gchar *key, gpointer value)
+create_pair_base(gchar *key, gpointer value)
 {
 	table_pair *pair;
 
@@ -22,7 +22,7 @@ create_pair(gchar *key, gpointer value)
 }
 
 table_pair*
-create_pair_string(gchar *key, gpointer value)
+create_pair(gchar *key, gchar *value)
 {
 	table_pair *pair;
 

@@ -44,7 +44,7 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 		gchar *err_msg = g_strdup_vprintf(err_fmt, args);
 
 		var_table = g_list_prepend(var_table,
-				create_pair_string("err_msg", err_msg));
+				create_pair("err_msg", err_msg));
 		g_free(err_msg);
 
 		if ((file = fopen(template, "r"))) {
