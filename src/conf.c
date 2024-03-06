@@ -684,16 +684,22 @@ read_route(gchar *filename)
 }
 
 static void
-_g_list_free_all(GList *list)
+destroy_address_list(GList *list)
 {
-	GList *node;
-	if (!list) {
-		return;
-	}
-	foreach(list, node) {
-		g_free(node->data);
-	}
-	g_list_free(list);
+	g_list_free_full(list, (GDestroyNotify) destroy_address);
+}
+
+void
+destroy_replacement_pair(table_pair *p)
+{
+	destroy_address(p->value);
+	destroy_pair_base(p);
+}
+
+static void
+destroy_replacement_table(GList *list)
+{
+	g_list_free_full(list, (GDestroyNotify) destroy_replacement_pair);
 }
 
 void
@@ -706,11 +712,16 @@ destroy_route(connect_route *r)
 	}
 	g_free(r->wrapper);
 	g_free(r->helo_name);
-	_g_list_free_all(r->allowed_senders);
-	_g_list_free_all(r->denied_senders);
-	_g_list_free_all(r->allowed_recipients);
-	_g_list_free_all(r->denied_recipients);
+	destroy_address_list(r->allowed_senders);
+	destroy_address_list(r->denied_senders);
+	destroy_address_list(r->allowed_recipients);
+	destroy_address_list(r->denied_recipients);
+	destroy_address_list(r->allowed_from_hdrs);
+	destroy_address_list(r->denied_from_hdrs);
+	destroy_table(r->map_h_from_addresses);
 	destroy_table(r->map_h_reply_to_addresses);
+	destroy_table(r->map_h_mail_followup_to_addresses);
+	destroy_replacement_table(r->map_return_path_addresses);
 	g_list_free(r->resolve_list);
 #ifdef ENABLE_AUTH
 	g_free(r->auth_name);
