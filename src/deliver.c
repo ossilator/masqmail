@@ -818,6 +818,8 @@ deliver_msg_list(GList *msg_list, guint flags)
 			local_msgout->rcpt_list = local_rcpt_list;
 			local_msgout_list = g_list_append(local_msgout_list,
 					local_msgout);
+		} else {
+			g_list_free(local_rcpt_list);
 		}
 
 		/* remote recipients, requires online delivery  */
@@ -826,6 +828,8 @@ deliver_msg_list(GList *msg_list, guint flags)
 			remote_msgout->rcpt_list = other_rcpt_list;
 			remote_msgout_list = g_list_append(remote_msgout_list,
 					remote_msgout);
+		} else {
+			g_list_free(other_rcpt_list);
 		}
 	}
 
