@@ -21,7 +21,7 @@ resolve_ip(gchar *ip)
 	}
 	mxip.name = g_strdup(ip);
 	mxip.pref = 0;
-	mxip.ip = (guint32) * (guint32 *) (&ia);
+	mxip.ip = ia.s_addr;
 	return g_list_append(NULL, g_memdup2(&mxip, sizeof(mxip)));
 }
 
