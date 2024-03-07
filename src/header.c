@@ -18,6 +18,7 @@ static const char * const header_names[] = {
 	"Date",
 	"Message-Id",
 	"Reply-To",
+	"Mail-Followup-To",
 	"Subject",
 	"Return-Path",
 	"Envelope-To",
