@@ -120,8 +120,7 @@ deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt,
 }
 
 static gboolean
-deliver_local_mda(message *msg, GList *hdr_list, address *rcpt,
-		address *env_addr)
+deliver_local_mda(message *msg, GList *hdr_list, address *rcpt)
 {
 	gboolean ok = FALSE;
 	gchar *cmd = g_malloc(256);
@@ -223,8 +222,7 @@ deliver_local(msg_out *msgout)
 				}
 			} else if (strcmp(mbox_type, "mda") == 0) {
 				if (conf.mda) {
-					if (deliver_local_mda(msg, hdr_list,
-							rcpt, env_addr)) {
+					if (deliver_local_mda(msg, hdr_list, rcpt)) {
 						ok = TRUE;
 					}
 				} else {
@@ -259,8 +257,7 @@ deliver_local(msg_out *msgout)
 }
 
 static gboolean
-deliver_msglist_host_pipe(connect_route *route, GList *msgout_list,
-		gchar *host, GList *res_list)
+deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 {
 	gboolean ok = TRUE;
 	GList *msgout_node;
@@ -501,8 +498,7 @@ deliver_msglist_host(connect_route *route, GList *msgout_list, gchar *host,
 
 	if (route->pipe) {
 		DEBUG(5) debugf("with pipe\n");
-		return deliver_msglist_host_pipe(route, msgout_list,
-				host, res_list);
+		return deliver_msglist_host_pipe(route, msgout_list);
 	} else {
 		DEBUG(5) debugf("with smtp\n");
 		return deliver_msglist_host_smtp(route, msgout_list,
@@ -531,7 +527,7 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 
 	/* this is not easy... */
 
-	mo_ph_list = route_msgout_list(route, msgout_list);
+	mo_ph_list = route_msgout_list(msgout_list);
 	/* okay, now we have ordered our messages by the hosts. */
 	if (!mo_ph_list) {
 		return FALSE;

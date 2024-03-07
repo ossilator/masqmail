@@ -315,10 +315,9 @@ route_prepare_msgout(connect_route *route, msg_out *msgout)
 /*
 **  put msgout's is msgout_list into bins (msgout_perhost structs) for each
 **  host. Used if there is no mail_host.
-**  route param is not used, we leave it here because that may change.
 */
 GList*
-route_msgout_list(connect_route *route, GList *msgout_list)
+route_msgout_list(GList *msgout_list)
 {
 	GList *mo_ph_list = NULL;
 	GList *msgout_node;

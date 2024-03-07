@@ -26,7 +26,7 @@ resolve_ip(gchar *ip)
 }
 
 static mxip_addr*
-connect_hostlist(int *psockfd, gchar *host, guint port, GList *addr_list)
+connect_hostlist(int *psockfd, guint port, GList *addr_list)
 {
 	GList *addr_node;
 	struct sockaddr_in saddr;
@@ -94,8 +94,7 @@ connect_resolvelist(int *psockfd, gchar *host, guint port,
 		mxip_addr *addr;
 
 		if ((addr_list = resolve_ip(host))) {
-			addr = connect_hostlist(psockfd, host, port,
-					addr_list);
+			addr = connect_hostlist(psockfd, port, addr_list);
 			g_list_free(addr_list);
 			return addr;
 		}
@@ -124,8 +123,7 @@ connect_resolvelist(int *psockfd, gchar *host, guint port,
 		if ((addr_list = res_func(NULL, host))) {
 
 			mxip_addr *addr;
-			if ((addr = connect_hostlist(psockfd, host, port,
-					addr_list))) {
+			if ((addr = connect_hostlist(psockfd, port, addr_list))) {
 				return addr;
 			}
 			DEBUG(5) debugf("connect_hostlist failed: %s\n",
