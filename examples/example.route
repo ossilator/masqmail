@@ -73,7 +73,9 @@ do_correct_helo = true
 # replies will go to (if you do not set a Reply-to header). In most
 # cases it corresponds to the return path, but this is not
 # required. It CAN have a real name; both examples for Charlie above
-# are correct, and it is more pretty to include a real name.
+# are correct, and it is more pretty to include a real name. However,
+# it is better to do that in the MUA, in which case masqmail will leave
+# it alone even if configured here.
 
 # The return path:
 # If we send the mail directly, we can set any valid address here.

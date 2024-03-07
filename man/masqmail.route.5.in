@@ -378,6 +378,10 @@ map_h_from_addresses = \(dqjohn: John Smith <jsmith@mail.academic.edu>;
     charlie: Charlie Miller <cmiller@mx.commercial.com>\(dq
 .fi
 
+Note that if the matched address already contains angle brackets,
+the display name provided by the rewrite rule will be ignored.
+This allows the MUA settings to take precedence.
+
 .TP
 .BI "map_h_reply_to_addresses = " list
 

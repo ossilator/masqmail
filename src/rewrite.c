@@ -63,9 +63,20 @@ map_address_header(header *hdr, GList *table)
 		gchar *newer_hdr;
 		if (rewr) {
 			did_change = TRUE;
-			const gchar *nl = *addr_end ? "" : "\n";  // the parser eats the trailing newline
-			newer_hdr = g_strdup_printf("%s%.*s%s%s", new_hdr ? new_hdr : "",
-			                            (int)(p - op), op, rewr->full_address, nl);
+			if (loc_beg == p) {
+				// have only addr-spec, so replace the whole of it,
+				// possibly making it an angle-addr.
+				const gchar *nl = *addr_end ? "" : "\n";  // the parser eats the trailing newline
+				newer_hdr = g_strdup_printf("%s%.*s%s%s", new_hdr ? new_hdr : "",
+				                            (int)(p - op), op, rewr->full_address, nl);
+			} else {
+				// have an angle-addr or comments, so replace only the addr-spec.
+				const char *suffix = dom_end ? dom_end : loc_end;
+				newer_hdr = g_strdup_printf("%s%.*s%s%.*s", new_hdr ? new_hdr : "",
+				                            (int)(loc_beg - op), op,
+				                            rewr->address->address,
+				                            (int)(addr_end - suffix), suffix);
+			}
 		} else if (did_change) {
 			newer_hdr = g_strdup_printf("%s%.*s", new_hdr, (int)(addr_end - op), op);
 		} else {

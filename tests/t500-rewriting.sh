@@ -18,9 +18,10 @@ EOF
 # giving particular attention to the last element.
 send_mail -f sendy@$RELAY_HOST $RECV_ADDR <<EOF
 From: foo
-Reply-To: bar
+Reply-To: Juice <bar>
 Mail-Followup-To: some@one, bar@$RELAY_HOST
 Mail-Followup-To: some@one, other@two.me, bar@$RELAY_HOST
+Mail-Followup-To: some@one, <bar>
 Mail-Followup-To: baz , list@example.com	,
 	some@one
 Mail-Followup-To: some@one
@@ -30,9 +31,10 @@ EOF
 
 verify_remote_delivery
 verify_content '^From: Dark Foo <fooish@example\.com>$'
-verify_content '^Reply-To: Bar Man <drink@example-fail\.com>$'
+verify_content '^Reply-To: Juice <drink@example-fail\.com>$'
 verify_content '^Mail-Followup-To: some@one, Bar Exam <admin@blackhole\.com>$'
 verify_content '^Mail-Followup-To: some@one, other@two.me, Bar Exam <admin@blackhole\.com>$'
+verify_content '^Mail-Followup-To: some@one, <admin@blackhole\.com>$'
 verify_content '^Mail-Followup-To: \"The Real Me\" <me@example\.com>, list@example\.com	,$'
 verify_content '^	some@one$'
 verify_content '^Mail-Followup-To: some@one$'
