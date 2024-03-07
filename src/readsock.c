@@ -55,7 +55,7 @@ _read_chug(FILE *in)
 }
 
 static int
-_read_line(FILE *in, char *buf, int buf_len, int timeout)
+_read_line(FILE *in, char *buf, int buf_len)
 {
 	int p = 0;
 	int c = 0;
@@ -98,7 +98,7 @@ read_sockline(FILE *in, char *buf, int buf_len, int timeout, unsigned int flags)
 		_read_chug(in);
 	}
 
-	p = _read_line(in, buf, buf_len, timeout);
+	p = _read_line(in, buf, buf_len);
 
 	alarm_off();
 
@@ -146,7 +146,7 @@ read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout,
 	while (1) {
 		int pp;
 
-		pp = _read_line(in, buf, size, timeout);
+		pp = _read_line(in, buf, size);
 		if (pp == -2) {
 			*pbuf = realloc(*pbuf, *buf_len + size);
 			buf = *pbuf + *buf_len;
