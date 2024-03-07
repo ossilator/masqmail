@@ -602,6 +602,11 @@ parse_rewrite_map(gchar *rval, GList **out, addr_type_t addr_type)
 		table_pair *pair = parse_table_pair(item, ':');
 		gchar *repl = pair->value;
 		replacement *addr;
+		if (g_str_has_prefix(repl, "*@")) {
+			addr = g_malloc0(sizeof(replacement));
+			addr->address->domain = g_strdup(repl + 2);
+			goto enlist;
+		}
 		addr = create_replacement(repl, addr_type);
 		if (!addr) {
 			logwrite(LOG_ALERT, "invalid replacement address '%s': %s\n", repl,
@@ -613,6 +618,7 @@ parse_rewrite_map(gchar *rval, GList **out, addr_type_t addr_type)
 			destroy_pair(pair);
 			ret = FALSE;
 		} else {
+		  enlist:
 			g_free(pair->value);
 			pair->value = addr;
 			*out = g_list_append(*out, pair);

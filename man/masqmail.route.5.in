@@ -382,6 +382,13 @@ Note that if the matched address already contains angle brackets,
 the display name provided by the rewrite rule will be ignored.
 This allows the MUA settings to take precedence.
 
+If the local part in the replacement address is an asterisk, then
+only the domain name will be rewritten.
+This is useful for qualifying local addresses that are otherwise
+identical to the public ones.
+No angle brackets and display name may be included in this case,
+as the result would be meaningless.
+
 .TP
 .BI "map_h_reply_to_addresses = " list
 

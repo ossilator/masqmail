@@ -63,7 +63,14 @@ map_address_header(header *hdr, GList *table)
 		gchar *newer_hdr;
 		if (rewr) {
 			did_change = TRUE;
-			if (loc_beg == p) {
+			if (!rewr->address->local_part) {
+				// replacement local part is a wildcard, so replace only the domain.
+				const char *suffix = dom_end ? dom_end : loc_end;
+				newer_hdr = g_strdup_printf("%s%.*s@%s%.*s", new_hdr ? new_hdr : "",
+				                            (int)(loc_end - op), op,
+				                            rewr->address->domain,
+				                            (int)(addr_end - suffix), suffix);
+			} else if (loc_beg == p) {
 				// have only addr-spec, so replace the whole of it,
 				// possibly making it an angle-addr.
 				const gchar *nl = *addr_end ? "" : "\n";  // the parser eats the trailing newline
@@ -156,7 +163,9 @@ rewrite_return_path(msg_out *msgout, const connect_route *route)
 	}
 	DEBUG(5) debugf("=> replacement '%s'\n", ret_path->address->address);
 	msgout->return_path = create_address_raw(
-			ret_path->address->local_part,
+			ret_path->address->local_part ?
+					ret_path->address->local_part :
+					msg->return_path->local_part,
 			ret_path->address->domain[0] ?
 					ret_path->address->domain :
 					msg->return_path->domain);
