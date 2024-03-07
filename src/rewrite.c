@@ -93,8 +93,7 @@ rewrite_headers(msg_out *msgout, const connect_route *route)
 			table = route->map_h_from_addresses;
 		} else if (hdr->id == HEAD_REPLY_TO) {
 			table = route->map_h_reply_to_addresses;
-		} else if (hdr->id == HEAD_UNKNOWN &&
-		           !strncasecmp(hdr->header, "Mail-Followup-To", 16)) {
+		} else if (hdr->id == HEAD_MAIL_FOLLOWUP_TO) {
 			table = route->map_h_mail_followup_to_addresses;
 		} else {
 			continue;
