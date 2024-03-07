@@ -124,7 +124,9 @@ rewrite_headers(msg_out *msgout, const connect_route *route)
 				continue;
 			}
 			new_hdr = create_header(HEAD_SENDER, "Sender: %s\n",
-			                        msgout->return_path->address);
+			                        msgout->return_path ?
+			                            msgout->return_path->address :
+			                            msgout->msg->return_path->address);
 			goto replace;
 		}
 		GList *table;
