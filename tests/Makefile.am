@@ -7,7 +7,8 @@ TESTS = \
 	t201-stdin-with-oi.sh \
 	t210-stdin-t.sh \
 	t300-aliases.sh \
-	t400-rewriting.sh
+	t400-rewriting.sh \
+	t401-domain-rewriting.sh
 
 EXTRA_DIST = \
 	lib.sh \
