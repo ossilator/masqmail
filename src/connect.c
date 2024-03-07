@@ -126,8 +126,6 @@ connect_resolvelist(int *psockfd, gchar *host, guint port,
 			if ((addr = connect_hostlist(psockfd, port, addr_list))) {
 				return addr;
 			}
-			DEBUG(5) debugf("connect_hostlist failed: %s\n",
-					strerror(errno));
 			g_list_free(addr_list);
 		} else if (!g_list_next(res_node)) {
 			logwrite(LOG_ALERT, "could not resolve %s: %s\n",

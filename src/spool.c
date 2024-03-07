@@ -197,7 +197,7 @@ msg_spool_read(gchar *uid)
 	msg = create_message();
 	msg->uid = g_strdup(uid);
 
-	DEBUG(4) debugf("msg_spool_read():\n");
+	DEBUG(4) debugf("msg_spool_read(%s):\n", uid);
 	/* header spool: */
 	ok = spool_read_header(msg);
 	DEBUG(4) debugf("spool_read_header() returned: %d\n", ok);
@@ -218,15 +218,11 @@ spool_write_header(message *msg)
 
 	/* header spool: */
 	tmp_file = g_strdup_printf("%s/%d-H.tmp", conf.spool_dir, getpid());
-	DEBUG(4) debugf("tmp_file = %s\n", tmp_file);
 
 	if ((out = fopen(tmp_file, "w"))) {
-		DEBUG(6) debugf("opened tmp_file %s\n", tmp_file);
-
 		fprintf(out, "%s\n", msg->uid);
 		fprintf(out, "MF:%s\n", addr_string(msg->return_path));
 
-		DEBUG(6) debugf("after MF\n");
 		foreach(msg->rcpt_list, node) {
 			address *rcpt = (address *) (node->data);
 			spool_write_rcpt(out, rcpt);
@@ -235,7 +231,6 @@ spool_write_header(message *msg)
 			address *rcpt = (address *) (node->data);
 			spool_write_rcpt(out, rcpt);
 		}
-		DEBUG(6) debugf("after RT\n");
 		fprintf(out, "PR:%s\n", prot_names[msg->received_prot]);
 		if (msg->received_host != NULL)
 			fprintf(out, "RH:%s\n", msg->received_host);
@@ -252,7 +247,6 @@ spool_write_header(message *msg)
 		if (msg->warned_time > 0)
 			fprintf(out, "TW: %u\n", (int) (msg->warned_time));
 
-		DEBUG(6) debugf("after RH\n");
 		fprintf(out, "\n");
 
 		foreach(msg->hdr_list, node) {

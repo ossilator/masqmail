@@ -470,8 +470,6 @@ smtp_out_open(gchar *host, gint port, GList *resolve_list)
 			debugf("socket: name.sin_addr = %s\n", inet_ntoa(name.sin_addr));
 		}
 		return psb;
-	} else {
-		DEBUG(5) debugf("connect_resolvelist failed: %s %s\n", strerror(errno), hstrerror(h_errno));
 	}
 
 	return NULL;
@@ -550,7 +548,6 @@ smtp_out_auth_cram_md5(smtp_base *psb)
 
 			fprintf(psb->out, "%s\r\n", reply64);
 			fflush(psb->out);
-			DEBUG(6) debugf("  reply64 = %s\n", reply64);
 			DEBUG(6) debugf("C: %s\n", reply64);
 
 			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))

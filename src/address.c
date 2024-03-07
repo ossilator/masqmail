@@ -46,7 +46,6 @@ create_address_pipe(gchar *path)
 void
 destroy_address(address *addr)
 {
-	DEBUG(6) debugf("destroy_address entered\n");
 	g_free(addr->address);
 	g_free(addr->local_part);
 	g_free(addr->domain);
