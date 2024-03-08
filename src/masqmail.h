@@ -387,7 +387,7 @@ gboolean spool_read_data(message *msg);
 message *msg_spool_read(gchar *uid);
 gboolean spool_write(message *msg, gboolean do_writedata);
 gboolean spool_lock(gchar *uid);
-gboolean spool_unlock(gchar *uid);
+void spool_unlock(gchar *uid);
 void spool_delete_all(message *msg);
 
 /* queue.c */

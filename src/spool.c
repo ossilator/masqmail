@@ -355,7 +355,7 @@ spool_lock(gchar *uid)
 	return ok;
 }
 
-gboolean
+void
 spool_unlock(gchar *uid)
 {
 	gchar *lock_name;
@@ -363,8 +363,6 @@ spool_unlock(gchar *uid)
 	lock_name = g_strdup_printf("%s/%s.lock", conf.lock_dir, uid);
 	dot_unlock(lock_name);
 	g_free(lock_name);
-
-	return TRUE;
 }
 
 void

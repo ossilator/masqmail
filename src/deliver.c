@@ -911,13 +911,8 @@ deliver_msg_list(GList *msg_list, guint flags)
 	/* unlock spool files */
 	foreach(msgout_list, msgout_node) {
 		msg_out *msgout = (msg_out *) (msgout_node->data);
-		if (spool_unlock(msgout->msg->uid)) {
-			DEBUG(5) debugf("spool_unlock(%s)\n",
-					msgout->msg->uid);
-		} else {
-			DEBUG(5) debugf("spool_unlock(%s) failed.\n",
-					msgout->msg->uid);
-		}
+		DEBUG(5) debugf("spool_unlock(%s)\n", msgout->msg->uid);
+		spool_unlock(msgout->msg->uid);
 	}
 	destroy_msg_out_list(msgout_list);
 
