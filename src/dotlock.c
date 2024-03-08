@@ -55,5 +55,7 @@ dot_lock(gchar *lock_name, gchar *hitch_name)
 void
 dot_unlock(gchar *lock_name)
 {
-	unlink(lock_name);
+	if (unlink(lock_name)) {
+		logerrno(LOG_WARNING, "could not remove lock file %s", lock_name);
+	}
 }
