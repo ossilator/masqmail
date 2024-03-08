@@ -40,6 +40,10 @@ is_ingroup(uid_t uid, gid_t gid)
 gboolean
 is_privileged_user(uid_t uid)
 {
+	if (conf.run_as_user) {
+		return TRUE;
+	}
+
 	/* uncomment these lines if you need the `uucp' group to be trusted too
 	struct group *grent = getgrnam("uucp");
 
