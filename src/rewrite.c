@@ -8,18 +8,25 @@
 #include "masqmail.h"
 #endif
 
-static gchar *
+static replacement *
+map_local_part(gchar *local_part, GList *table)
+{
+	replacement *ret = table_find_fnmatch(table, local_part);
+	return ret;
+}
+
+static replacement *
 map_address(const gchar *loc_beg, const gchar *loc_end,
             GList *table)
 {
 	DEBUG(5) debugf("considering '%.*s' for rewrite\n",
 	                (int)(loc_end - loc_beg), loc_beg);
 	gchar *local_part = g_strndup(loc_beg, loc_end - loc_beg);
-	gchar *ret = table_find_fnmatch(table, local_part);
+	replacement *ret = map_local_part(local_part, table);
 	g_free(local_part);
 	DEBUG(5) {
 		if (ret) {
-			debugf("=> replacement '%s'\n", ret);
+			debugf("=> replacement '%s'\n", ret->full_address);
 		} else {
 			debugf("=> not found\n");
 		}
@@ -51,14 +58,14 @@ map_address_header(header *hdr, GList *table)
 			return FALSE;
 		}
 
-		gchar *rewr_string = map_address(loc_beg, loc_end, table);
+		replacement *rewr = map_address(loc_beg, loc_end, table);
 
 		gchar *newer_hdr;
-		if (rewr_string) {
+		if (rewr) {
 			did_change = TRUE;
 			const gchar *nl = *addr_end ? "" : "\n";  // the parser eats the trailing newline
 			newer_hdr = g_strdup_printf("%s%.*s%s%s", new_hdr ? new_hdr : "",
-			                            (int)(p - op), op, rewr_string, nl);
+			                            (int)(p - op), op, rewr->full_address, nl);
 		} else if (did_change) {
 			newer_hdr = g_strdup_printf("%s%.*s", new_hdr, (int)(addr_end - op), op);
 		} else {
@@ -130,16 +137,16 @@ rewrite_return_path(msg_out *msgout, const connect_route *route)
 		DEBUG(5) debugf("=> no rules\n");
 		return;
 	}
-	const address *ret_path = table_find_fnmatch(
-			route->map_return_path_addresses, msg->return_path->local_part);
+	const replacement *ret_path = map_local_part(
+			msg->return_path->local_part, route->map_return_path_addresses);
 	if (!ret_path) {
 		DEBUG(5) debugf("=> no match\n");
 		return;
 	}
-	DEBUG(5) debugf("=> replacement '%s'\n", ret_path->address);
+	DEBUG(5) debugf("=> replacement '%s'\n", ret_path->address->address);
 	msgout->return_path = create_address_raw(
-			ret_path->local_part,
-			ret_path->domain[0] ?
-					ret_path->domain :
+			ret_path->address->local_part,
+			ret_path->address->domain[0] ?
+					ret_path->address->domain :
 					msg->return_path->domain);
 }

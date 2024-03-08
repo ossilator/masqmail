@@ -590,10 +590,43 @@ read_conf(void)
 	return TRUE;
 }
 
+static gboolean
+parse_rewrite_map(gchar *rval, GList **out, addr_type_t addr_type)
+{
+	GList *list, *node;
+	gboolean ret = TRUE;
+
+	list = parse_list(rval, TRUE);
+	foreach(list, node) {
+		gchar *item = node->data;
+		table_pair *pair = parse_table_pair(item, ':');
+		gchar *repl = pair->value;
+		replacement *addr;
+		addr = create_replacement(repl, addr_type);
+		if (!addr) {
+			logwrite(LOG_ALERT, "invalid replacement address '%s': %s\n", repl,
+			         parse_error);
+			destroy_pair(pair);
+			ret = FALSE;
+		} else if (!addr->address->domain[0]) {
+			logwrite(LOG_ALERT, "replacement address '%s' lacks domain\n", repl);
+			destroy_pair(pair);
+			ret = FALSE;
+		} else {
+			g_free(pair->value);
+			pair->value = addr;
+			*out = g_list_append(*out, pair);
+		}
+	}
+	destroy_ptr_list(list);
+	return ret;
+}
+
 static connect_route*
 read_route(gchar *filename)
 {
 	FILE *in;
+	gboolean ok = TRUE;
 	connect_route *route;
 	gchar lval[256], rval[2048];
 
@@ -642,49 +675,17 @@ read_route(gchar *filename)
 			route->denied_from_hdrs = parse_address_glob_list(rval);
 
 		} else if (strcmp(lval, "map_return_path_addresses")==0) {
-			GList *node, *list;
-
-			list = parse_list(rval, TRUE);
-			foreach(list, node) {
-				gchar *item = (gchar *) (node->data);
-				table_pair *pair = parse_table_pair(item, ':');
-				address *addr = create_address(
-						(gchar *) (pair->value), A_RFC821, NULL);
-				g_free(pair->value);
-				pair->value = addr;
-				route->map_return_path_addresses = g_list_append(route->map_return_path_addresses, pair);
-			}
-			destroy_ptr_list(list);
+			ok &= parse_rewrite_map(
+					rval, &route->map_return_path_addresses, A_RFC821);
 		} else if (strcmp(lval, "map_h_from_addresses")==0) {
-			GList *list, *node;
-
-			list = parse_list(rval, TRUE);
-			foreach(list, node) {
-				gchar *item = (gchar *) (node->data);
-				table_pair *pair = parse_table_pair(item, ':');
-				route->map_h_from_addresses = g_list_append(route->map_h_from_addresses, pair);
-			}
-			destroy_ptr_list(list);
+			ok &= parse_rewrite_map(
+					rval, &route->map_h_from_addresses, A_RFC822);
 		} else if (strcmp(lval, "map_h_reply_to_addresses")==0) {
-			GList *list, *node;
-
-			list = parse_list(rval, TRUE);
-			foreach(list, node) {
-				gchar *item = (gchar *) (node->data);
-				table_pair *pair = parse_table_pair(item, ':');
-				route->map_h_reply_to_addresses = g_list_append(route->map_h_reply_to_addresses, pair);
-			}
-			destroy_ptr_list(list);
+			ok &= parse_rewrite_map(
+					rval, &route->map_h_reply_to_addresses, A_RFC822);
 		} else if (strcmp(lval, "map_h_mail_followup_to_addresses")==0) {
-			GList *list, *node;
-
-			list = parse_list(rval, TRUE);
-			foreach(list, node) {
-				gchar *item = (gchar *) (node->data);
-				table_pair *pair = parse_table_pair(item, ':');
-				route->map_h_mail_followup_to_addresses = g_list_append(route->map_h_mail_followup_to_addresses, pair);
-			}
-			destroy_ptr_list(list);
+			ok &= parse_rewrite_map(
+					rval, &route->map_h_mail_followup_to_addresses, A_RFC822);
 		} else if (strcmp(lval, "resolve_list")==0) {
 			route->resolve_list = parse_resolve_list(rval);
 #ifdef ENABLE_AUTH
@@ -725,6 +726,11 @@ read_route(gchar *filename)
 	}
 	fclose(in);
 
+	if (!ok) {
+		destroy_route(route);
+		return NULL;
+	}
+
 	return route;
 }
 
@@ -737,7 +743,7 @@ destroy_address_list(GList *list)
 void
 destroy_replacement_pair(table_pair *p)
 {
-	destroy_address(p->value);
+	destroy_replacement(p->value);
 	destroy_pair_base(p);
 }
 
@@ -763,9 +769,9 @@ destroy_route(connect_route *r)
 	destroy_address_list(r->denied_recipients);
 	destroy_address_list(r->allowed_from_hdrs);
 	destroy_address_list(r->denied_from_hdrs);
-	destroy_table(r->map_h_from_addresses);
-	destroy_table(r->map_h_reply_to_addresses);
-	destroy_table(r->map_h_mail_followup_to_addresses);
+	destroy_replacement_table(r->map_h_from_addresses);
+	destroy_replacement_table(r->map_h_reply_to_addresses);
+	destroy_replacement_table(r->map_h_mail_followup_to_addresses);
 	destroy_replacement_table(r->map_return_path_addresses);
 	g_list_free(r->resolve_list);
 #ifdef ENABLE_AUTH

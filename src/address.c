@@ -137,6 +137,18 @@ copy_recipient_list(GList *rcpt_list)
 	return g_list_copy_deep(rcpt_list, (GCopyFunc) ref_recipient, NULL);
 }
 
+replacement*
+create_replacement(gchar *path, addr_type_t addr_type)
+{
+	replacement *repl = (replacement *) _create_address(
+			sizeof(replacement), path, NULL, addr_type, NULL);
+	if (!repl) {
+		return NULL;
+	}
+	repl->full_address = g_strdup(path);
+	return repl;
+}
+
 static void
 _destroy_address(address *addr)
 {
@@ -166,6 +178,14 @@ void
 destroy_recipient_list(GList *rcpt_list)
 {
 	g_list_free_full(rcpt_list, (GDestroyNotify) destroy_recipient);
+}
+
+void
+destroy_replacement(replacement *addr)
+{
+	_destroy_address(addr->address);
+	g_free(addr->full_address);
+	g_free(addr);
 }
 
 gboolean

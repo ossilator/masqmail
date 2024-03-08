@@ -62,6 +62,11 @@ typedef struct _recipient {
 #define addr_unmark_alias(addr) { addr->flags &= ~ADDR_FLAG_ALIAS; }
 #define addr_is_alias(addr) ((addr->flags & ADDR_FLAG_ALIAS) != 0 )
 
+typedef struct {
+	address address[1];  // parsed address; must be first member
+	gchar *full_address;  // full address: `markus schnalke <meillo@marmaro.de>'
+} replacement;
+
 typedef struct _connect_route {
 	gchar *name;
 	gchar *filename;
@@ -351,6 +356,9 @@ gboolean addr_isequal_parent(recipient *addr1, address *addr2, int (*cmpfunc) (c
 recipient *addr_find_ancestor(recipient *addr);
 gboolean addr_is_delivered_children(recipient *addr);
 gboolean addr_is_finished_children(recipient *addr);
+
+replacement *create_replacement(gchar *path, addr_type_t addr_type);
+void destroy_replacement(replacement *addr);
 
 /* accept.c */
 accept_error accept_message(FILE *in, message *msg, guint flags);
