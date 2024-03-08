@@ -367,7 +367,7 @@ spool_unlock(gchar *uid)
 	return TRUE;
 }
 
-gboolean
+void
 spool_delete_all(message *msg)
 {
 	gchar *spool_file;
@@ -385,6 +385,4 @@ spool_delete_all(message *msg)
 		logerrno(LOG_ERR, "could not delete spool file %s", spool_file);
 	}
 	g_free(spool_file);
-
-	return TRUE;
 }

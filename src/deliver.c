@@ -706,11 +706,9 @@ deliver_finish(msg_out *msgout)
 	}
 
 	if (finished) {
-		if (spool_delete_all(msg)) {
-			logwrite(LOG_INFO, "%s completed.\n", msg->uid);
-			return TRUE;
-		}
-		return FALSE;
+		spool_delete_all(msg);
+		logwrite(LOG_INFO, "%s completed.\n", msg->uid);
+		return TRUE;
 	}
 
 	/* one not delivered address was found */
