@@ -52,10 +52,8 @@ dot_lock(gchar *lock_name, gchar *hitch_name)
 	return ok;
 }
 
-gboolean
+void
 dot_unlock(gchar *lock_name)
 {
 	unlink(lock_name);
-
-	return TRUE;
 }
