@@ -246,9 +246,6 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 		logwrite(LOG_ERR, "could not fork for delivery, id = %s\n",
 				msg->uid);
 	} else if (pid == 0) {
-		fclose(stdin);
-		fclose(stdout);
-		fclose(stderr);
 		if (deliver(msg)) {
 			exit(0);
 		} else {
