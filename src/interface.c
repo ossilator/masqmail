@@ -60,6 +60,7 @@ make_server_socket(interface *iface)
 			if (need_root) {
 				drop_root();
 			}
+			close(sock);
 			return -1;
 		}
 		if (need_root) {
