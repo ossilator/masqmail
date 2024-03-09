@@ -807,11 +807,8 @@ read_route_list(GList *rf_list, gboolean is_perma)
 {
 	GList *list = NULL;
 	GList *node;
-	uid_t saved_uid, saved_gid;
 
-	if (!conf.run_as_user) {
-		set_euidgid(0, 0, &saved_uid, &saved_gid);
-	}
+	acquire_root();
 	foreach(rf_list, node) {
 		gchar *fname = (gchar *) (node->data);
 		connect_route *route = read_route(fname, is_perma);
@@ -822,10 +819,7 @@ read_route_list(GList *rf_list, gboolean is_perma)
 					"configuration %s\n", fname);
 		}
 	}
-	/* set uid and gid back */
-	if (!conf.run_as_user) {
-		set_euidgid(saved_uid, saved_gid, NULL, NULL);
-	}
+	drop_root();
 	return list;
 }
 

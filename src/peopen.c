@@ -9,7 +9,6 @@
 #include <glib.h>
 
 #include <ctype.h>
-#include <sysexits.h>
 
 /*
 ** static void
@@ -54,8 +53,7 @@ create_argv(const char *cmd, int count)
 }
 
 FILE*
-peidopen(const char *command, const char *type, char *const envp[],
-		int *ret_pid, uid_t uid, gid_t gid)
+peopen(const char *command, const char *type, char *const envp[], int *ret_pid)
 {
 	enum { Read, Write } mode;
 	int pipe_fd[2];
@@ -95,23 +93,6 @@ peidopen(const char *command, const char *type, char *const envp[],
 				 mode == Read ? STDOUT_FILENO : STDIN_FILENO) != -1) {
 			/* char *argv [] = { "/bin/sh", "-c", (char*) command, NULL }; */
 			char **argv = create_argv(command, 10);
-			int ret;
-
-			if (uid != (uid_t) - 1) {
-				if ((ret = seteuid(0)) != 0) {
-					exit(EX_NOPERM);
-				}
-			}
-			if (gid != (gid_t) - 1) {
-				if ((ret = setgid(gid)) != 0) {
-					exit(EX_NOPERM);
-				}
-			}
-			if (uid != (uid_t) - 1) {
-				if ((ret = setuid(uid)) != 0) {
-					exit(EX_NOPERM);
-				}
-			}
 			execve(*argv, argv, envp);
 		}
 
@@ -127,10 +108,4 @@ peidopen(const char *command, const char *type, char *const envp[],
 		close(pipe_fd[1]);
 		return NULL;
 	}
-}
-
-FILE*
-peopen(const char *command, const char *type, char *const envp[], int *ret_pid)
-{
-	return peidopen(command, type, envp, ret_pid, -1, -1);
 }

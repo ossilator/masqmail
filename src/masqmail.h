@@ -437,8 +437,10 @@ gchar *online_query();
 
 /* permissions.c */
 gboolean is_ingroup(uid_t uid, gid_t gid);
-void set_euidgid(gint uid, gint gid, uid_t *old_uid, gid_t *old_gid);
-void set_identity(uid_t old_uid, gchar *task_name);
+gboolean is_privileged_user(void);
+void verify_privileged_user(gchar *task_name);
+void acquire_root(void);
+void drop_root(void);
 
 /* rewrite.c */
 gboolean set_address_header_domain(header *hdr, gchar *domain);
@@ -470,9 +472,6 @@ void destroy_table(GList *table);
 
 /* timeival.c */
 gint time_interval(gchar *str);
-
-/* permissions.c */
-gboolean is_privileged_user(uid_t uid);
 
 /* other things */
 
