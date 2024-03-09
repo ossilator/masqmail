@@ -136,16 +136,9 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 	write_pidfile(PID_DIR "/masqmail.pid");
 	drop_root();
 
-	/*
-	**  closing and reopening the log ensures that it is open afterwards
-	**  because it is possible that the log is assigned to fd 1 and gets
-	**  thus closes by fclose(stdout). Similar for the debugfile.
-	*/
-	logclose();
 	fclose(stdin);
 	fclose(stdout);
 	fclose(stderr);
-	logopen();
 
 	logwrite(LOG_INFO, "%s %s daemon starting\n", PACKAGE, VERSION);
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval);
@@ -397,6 +390,8 @@ main(int argc, char *argv[])
 	address *return_path = NULL;  /* may be changed by -f option */
 	gchar *full_sender_name = NULL;
 	gint debug_level = -1;
+
+	ensure_stdio();
 
 	/* strip the path part */
 	progname = strrchr(argv[0], '/');

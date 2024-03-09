@@ -6,6 +6,7 @@
 
 #include "masqmail.h"
 
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sysexits.h>
 
@@ -184,3 +185,31 @@ vdebugf(const char *fmt, va_list args)
 	vdebugwrite(LOG_DEBUG, fmt, args);
 }
 #endif
+
+// stdio is generally assumed to be open, and therefore that
+// no newly opened fd will be < 3. we rely on this, too.
+void
+ensure_stdio(void)
+{
+	int infl = fcntl(0, F_GETFL);
+	int outfl = fcntl(1, F_GETFL);
+	int errfl = fcntl(2, F_GETFL);
+	if (infl >= 0 && outfl >= 0 && errfl >= 0) {
+		return;
+	}
+	int fd = open("/dev/null", O_RDWR);
+	if (fd < 0) {
+		perror("could not open /dev/null");  // might go nowhere
+		exit(1);
+	}
+	if (infl < 0 && fd != 0) {
+		dup2(fd, 0);
+	}
+	if (outfl < 0 && fd != 1) {
+		dup2(fd, 1);
+	}
+	if (errfl < 0 && fd != 2) {
+		dup2(fd, 2);
+	}
+	// no need to close(fd), as it's by necessity < 3.
+}
