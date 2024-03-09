@@ -94,18 +94,21 @@ makedir(char *dir, gboolean reown)
 }
 
 gboolean
-write_pidfile(gchar *name)
+write_pidfile(void)
 {
 	FILE *fptr;
 
+	makedir(conf.pid_dir, FALSE);
+	gchar *name = g_strdup_printf("%s/masqmail.pid", conf.pid_dir);
 	if ((fptr = fopen(name, "wt"))) {
 		fprintf(fptr, "%d\n", getpid());
 		fclose(fptr);
-		pidfile = strdup(name);
+		pidfile = name;
 		return TRUE;
 	}
-	logwrite(LOG_WARNING, "could not write pid file: %s\n",
-			strerror(errno));
+	logwrite(LOG_WARNING, "could not write pid file %s: %s\n",
+	         name, strerror(errno));
+	g_free(name);
 	return FALSE;
 }
 
@@ -136,8 +139,7 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 
 	signal(SIGTERM, sigterm_handler);
 	acquire_root();
-	makedir(PID_DIR, FALSE);
-	write_pidfile(PID_DIR "/masqmail.pid");
+	write_pidfile();
 	drop_root();
 
 	/*

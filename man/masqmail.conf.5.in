@@ -78,6 +78,14 @@ instead.
 Default: \fI@with_logdir@\fR
 
 .TP
+\fBpid_dir = \fIfile\fR
+
+The directory where the PID (process id) file is stored when daemonizing.
+\fIfile\fR must be an absolute path.
+
+Default: \fI@with_piddir@\fR
+
+.TP
 \fBmail_dir = \fIfile\fR
 
 The directory where local mail is stored,
