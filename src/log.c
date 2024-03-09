@@ -40,7 +40,9 @@ ext_strerror(int err)
 }
 
 static FILE *logfile = NULL;
+#ifdef ENABLE_DEBUG
 static FILE *debugfile = NULL;
+#endif
 
 gboolean
 logopen()
@@ -96,8 +98,10 @@ logclose()
 		closelog();
 	else if (logfile)
 		fclose(logfile);
+#ifdef ENABLE_DEBUG
 	if (debugfile)
 		fclose(debugfile);
+#endif
 }
 
 void
