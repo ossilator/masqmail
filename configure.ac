@@ -191,16 +191,26 @@ AC_DEFINE_UNQUOTED(LOCK_DIR, "${with_lockdir}", [The lock file location])
 AC_SUBST(with_lockdir)
 
 AX_RECURSIVE_EVAL([${datadir}/masqmail], [xmmdatadir])
+AC_SUBST(xmmdatadir)
 AC_DEFINE_UNQUOTED(DATA_DIR, "$xmmdatadir", [The data directory])
+
+AX_RECURSIVE_EVAL([${bindir}], [xbindir])
+AC_SUBST(xbindir)
 
 AX_RECURSIVE_EVAL([${sbindir}], [xsbindir])
 AC_DEFINE_UNQUOTED(SBINDIR, "$xsbindir", [The sbin directory])
+AC_SUBST(xsbindir)
 
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
 	src/tests/Makefile
 	man/Makefile
+	man/masqmail.8
+	man/mservdetect.1
+	man/masqmail.conf.5
+	man/masqmail.route.5
+	man/rmail.8
 	docs/Makefile
 	examples/Makefile
 	tpl/Makefile

@@ -30,7 +30,6 @@ on your config to learn how to update it.
 - Switched the default group for masqmail from `trusted' to `mail'.
 
 - Fixed a problem with psb->remote_host, introduced in version 0.3.2
-(changeset 412385b57dc4).
 
 - Fixed a bug in matching of allowed recipients. Thanks to Juergen
 Daubert for finding and reporting the issue.
@@ -448,7 +447,7 @@ online_routes)).
 
 0.2.0
 
-This is the first release of he development branch of masqmail
+This is the first release of the development branch of masqmail
 
 - the default configuration is now /etc/masqmail/masqmail.conf
   (as it already was for the debian package). The --with-conffile
