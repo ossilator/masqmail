@@ -252,7 +252,8 @@ This is the same practice as that of exim (but different to sendmail).
 .TP
 \fB\-C \fIfilename\fR
 
-Use another configuration than \fI/etc/masqmail/masqmail.conf\fR.
+Use another configuration file than
+.IR @with_confdir@/masqmail.conf .
 Useful for debugging purposes.
 If not invoked by a privileged user, masqmail will drop all privileges.
 
@@ -311,7 +312,7 @@ Do not attempt to deliver immediately.
 Any messages will be queued until the next queue running process picks them
 up and delivers them.
 You get the same (but global) effect by setting the do_queue option in
-/etc/masqmail/masqmail.conf.
+.IR @with_confdir@/masqmail.conf .
 
 .TP
 \fB\-oi\fR
@@ -400,13 +401,14 @@ QUALIFY_DOMAIN \(en the domain which will be appended to unqualified addresses.
 .SH FILES
 
 .TP
-.I /etc/masqmail/masqmail.conf
+.I @with_confdir@/masqmail.conf
 The main configuration for masqmail.
 Depending on the settings in this file, you will also have other configuration
-files in \fI/etc/masqmail/\fR.
+files in
+.IR @with_confdir@/ .
 
 .TP
-.I /var/spool/masqmail/
+.I @with_spooldir@/
 The spool directory where masqmail stores its queued mails.
 
 .TP
@@ -415,7 +417,7 @@ The directory where locally delivered mail will be put,
 if not configured differently in \fImasqmail.conf\fR.
 
 .TP
-.I /var/log/masqmail/
+.I @with_logdir@/
 The directory where masqmail stores its log messages.
 
 .P

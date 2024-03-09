@@ -7,7 +7,8 @@ masqmail.route \- masqmail route configuration file
 .SH DESCRIPTION
 
 This man page describes the syntax of the route configuration files of \fBmasqmail (8)\fR.
-Their usual locations are in \fI/etc/masqmail/\fR.
+Their usual location is in
+.IR @with_confdir@/ .
 
 Mail will be sent with the SMTP protocol to its destination, unless
 `pipe' is given.

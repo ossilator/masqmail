@@ -5,7 +5,7 @@ rmail \- handle remote mail received via uucp
 
 
 .SH SYNOPSIS
-\fB/usr/sbin/rmail \fIrecipient ...\fR
+.BI @xsbindir@/rmail "recipient .\|.\|."
 
 
 .SH DESCRIPTION

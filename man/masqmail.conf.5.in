@@ -7,7 +7,8 @@ masqmail.conf \- masqmail configuration file
 .SH DESCRIPTION
 
 This man page describes the syntax of the main configuration file of masqmail.
-Its usual location is \fI/etc/masqmail/masqmail.conf\fR
+Its usual location is
+.IR @with_confdir@/masqmail.conf .
 
 The configuration consists of lines of the form
 
@@ -77,7 +78,8 @@ The directory where logs are stored, if syslog is not used.
 Debug files are always stored in this directory if debugging is enabled.
 \fIfile\fR must be an absolute path.
 
-Default: \fI/var/log/masqmail\fR
+Default:
+.I @with_logdir@
 
 .TP
 \fBmail_dir = \fIfile\fR
@@ -96,14 +98,17 @@ The directory where masqmail stores its spool files
 Masqmail needs read and write permissions for this directory.
 \fIfile\fR must be an absolute path.
 
-Default: \fI/var/spool/masqmail\fR
+Default:
+.I @with_spooldir@
 
 .TP
 \fBlock_dir = \fIfile\fR
 
 The directory where masqmail stores its lock files.
 Masqmail needs read and write permissions for this directory.
-The default is \fI/var/lock/masqmail\fR for normal operation.
+The default is
+.I @with_lockdir@
+for normal operation.
 \fIfile\fR must be an absolute path.
 The directory is created on startup if yet missing.
 
@@ -273,12 +278,13 @@ Then you write the following line in the main configuration:
 
 .RS 8
 .nf
-\fBquery_routes.\fBFastNet\fR = \fI"/etc/masqmail/fastnet.route"\fR
+query_routes.FastNet = \(dq@with_confdir@/fastnet.route\(dq
 .fi
 .RE
 .IP
 
-\fI/etc/masqmail/fastnet.route\fR is the route configuration file,
+.I @with_confdir@/fastnet.route
+is the route configuration file,
 see \fBmasqmail.route(5)\fR.
 As soon as a link to FastNet has been set up,
 you call `masqmail \fB\-qo \fIFastNet\fR'.
@@ -507,7 +513,8 @@ these must be at the beginning of a line and will be replaced
 with the list of the failed recipients,
 the message headers and the message body of the failed message.
 
-Default is /usr/share/masqmail/tpl/failmsg.tpl.
+Default is
+.IR @xmmdatadir@/tpl/failmsg.tpl .
 
 .TP
 \fBwarnmsg_file = \fIfile\fR
@@ -515,7 +522,8 @@ Default is /usr/share/masqmail/tpl/failmsg.tpl.
 Set this to a template which will be used to generate delivery warning reports.
 It uses the same mechanisms for variables as \fBerrmsg_file\fR, see above.
 
-Default is /usr/share/masqmail/tpl/warnmsg.tpl.
+Default is
+.IR @xmmdatadir@/tpl/warnmsg.tpl .
 
 .TP
 \fBwarn_intervals\fR = \fIlist\fR
