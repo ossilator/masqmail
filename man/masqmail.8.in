@@ -444,6 +444,10 @@ if not configured differently in the config file.
 .I @with_logdir@/
 The directory where masqmail stores its log files.
 
+.TP
+.I @with_piddir@/
+The directory where masqmail stores its PID file.
+
 .P
 All these paths can be configured at compile time, and also
 in the main config file (except for the main config file itself).

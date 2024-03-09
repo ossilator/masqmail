@@ -95,6 +95,7 @@ typedef struct _masqmail_conf {
 	gchar *lock_dir;
 	gchar *spool_dir;
 	gchar *log_dir;
+	gchar *pid_dir;
 
 	gint debug_level;
 	gboolean use_syslog;

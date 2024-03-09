@@ -380,6 +380,7 @@ read_conf(gchar *filename)
 	conf.localpartcmp = strcmp;
 	conf.max_defer_time = 86400 * 4;  /* 4 days */
 	conf.max_msg_size = 0; /* no limit on msg size */
+	conf.pid_dir = PID_DIR;
 	conf.log_dir = LOG_DIR;
 	conf.lock_dir = LOCK_DIR;
 	conf.spool_dir = SPOOL_DIR;
@@ -406,6 +407,8 @@ read_conf(gchar *filename)
 			conf.spool_dir = g_strdup(rval);
 		} else if (strcmp(lval, "log_dir")==0) {
 			conf.log_dir = g_strdup(rval);
+		} else if (strcmp(lval, "pid_dir")==0) {
+			conf.pid_dir = g_strdup(rval);
 		} else if (strcmp(lval, "host_name")==0) {
 			if (rval[0] != '/') {
 				conf.host_name = g_strdup(rval);

@@ -111,6 +111,17 @@ Default:
 .I @with_logdir@
 
 .TP
+.BI "pid_dir = " dir
+
+The directory where the PID (process id) file is stored when daemonizing.
+.I dir
+must be an absolute path.
+The directory is created at startup if missing.
+
+Default:
+.I @with_piddir@
+
+.TP
 .BI "mail_dir = " dir
 
 The directory where local mail is stored,
