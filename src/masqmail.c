@@ -77,10 +77,13 @@ get_optarg(char *argv[], gint *argp, char *cp)
 }
 
 static void
-makedir_rec(char *dir, int perms)
+makedir(char *dir, gboolean reown)
 {
-	if (!mkdir(dir, perms)) {
-		chmod(dir, perms);  // override possible umask
+	if (!mkdir(dir, 0755)) {
+		chmod(dir, 0755);  // override possible umask
+		if (reown && !conf.run_as_user) {
+			chown(dir, conf.mail_uid, conf.mail_gid);
+		}
 		return;
 	}
 	if (errno == EEXIST) {
@@ -132,7 +135,7 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 
 	signal(SIGTERM, sigterm_handler);
 	acquire_root();
-	makedir_rec(PID_DIR, 0755);
+	makedir(PID_DIR, FALSE);
 	write_pidfile(PID_DIR "/masqmail.pid");
 	drop_root();
 
@@ -639,16 +642,11 @@ main(int argc, char *argv[])
 		logwrite(LOG_NOTICE, "Using spool directory `%s' for "
 				"lock files.\n", conf.spool_dir);
 		conf.lock_dir = conf.spool_dir;
-		makedir_rec(conf.spool_dir, 0755);
-		makedir_rec(conf.log_dir, 0755);
 	} else {
-		makedir_rec(conf.lock_dir, 0775);
-		chown(conf.lock_dir, conf.mail_uid, conf.mail_gid);
-		makedir_rec(conf.spool_dir, 0755);
-		chown(conf.spool_dir, conf.mail_uid, conf.mail_gid);
-		makedir_rec(conf.log_dir, 0755);
-		chown(conf.log_dir, conf.mail_uid, conf.mail_gid);
+		makedir(conf.lock_dir, TRUE);
 	}
+	makedir(conf.spool_dir, TRUE);
+	makedir(conf.log_dir, TRUE);
 
 	if (!conf.run_as_user) {
 		// this sets both the effective and the real gid
