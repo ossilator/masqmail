@@ -84,7 +84,7 @@ peopen(const char *command, const char *type, char *const envp[], int *ret_pid)
 
 			if (max_fd <= 0)
 				max_fd = 64;
-			for (i = 0; i < max_fd; i++)
+			for (i = 3; i < max_fd; i++)
 				if ((i != pipe_fd[0]) && (i != pipe_fd[1]))
 					close(i);
 		}
