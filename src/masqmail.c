@@ -682,7 +682,9 @@ main(int argc, char *argv[])
 
 	makedir(conf.spool_dir, TRUE);
 	makedir(conf.lock_dir, TRUE);
-	makedir(conf.log_dir, TRUE);
+	if (!conf.use_syslog || conf.debug_level) {
+		makedir(conf.log_dir, TRUE);
+	}
 
 	if (!conf.run_as_user) {
 		// this sets both the effective and the real gid
