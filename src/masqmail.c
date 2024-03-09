@@ -136,9 +136,7 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 	write_pidfile(PID_DIR "/masqmail.pid");
 	drop_root();
 
-	fclose(stdin);
-	fclose(stdout);
-	fclose(stderr);
+	null_stdio();
 
 	logwrite(LOG_INFO, "%s %s daemon starting\n", PACKAGE, VERSION);
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval);
@@ -241,9 +239,7 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 	if ((pid = fork()) < 0) {
 		logerrno(LOG_ERR, "could not fork for delivery");
 	} else if (pid == 0) {
-		fclose(stdin);
-		fclose(stdout);
-		fclose(stderr);
+		null_stdio();
 		if (deliver(msg)) {
 			exit(0);
 		} else {

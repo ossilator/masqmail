@@ -213,3 +213,15 @@ ensure_stdio(void)
 	}
 	// no need to close(fd), as it's by necessity < 3.
 }
+
+void
+null_stdio(void)
+{
+	close(0);
+	if (open("/dev/null", O_RDWR) < 0) {
+		logerrno(LOG_ERR, "could not open /dev/null");
+		exit(1);
+	}
+	dup2(0, 1);
+	// leave stderr alone - we may be logging to it
+}

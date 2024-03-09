@@ -367,6 +367,7 @@ gboolean pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guin
 /* log.c */
 gchar *ext_strerror(int err);
 void ensure_stdio(void);
+void null_stdio(void);
 gboolean logopen(void);
 void logclose(void);
 void logwrite(int pri, const char *fmt, ...) G_GNUC_PRINTF(2, 3);
