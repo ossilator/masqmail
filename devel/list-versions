@@ -7,6 +7,5 @@
 grep '^AC_INIT' /dev/null configure.*
 printf "NEWS:"
 sed -n '/^[0-9]\.[0-9]\{1,\}\.[0-9]\{1,\}/{p;q}' NEWS
-grep '^\.TH' /dev/null man/*.[0-9]
 #) | sed 's~\([^:]*\):.*\([0-9]\.[0-9]\{1,\}\.[0-9]\{1,\}\).*~\2 \1~'
 ) | awk -F: '{ file=$1; match($0, /[0-9]\.[0-9]+\.[0-9]+(-[A-Za-z0-9_+-]+)?/); print(substr($0, RSTART, RLENGTH) "	" $1); }'

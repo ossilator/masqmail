@@ -9,7 +9,7 @@
 docs="/tmp/masqmail-opts-docs.$$"
 code="/tmp/masqmail-opts-code.$$"
 
-cat man/masqmail.*.5 | grep -o '^\\fB[^(\\]*\\f.' |
+cat man/masqmail.*.5.in | grep -o '^\\fB[^(\\]*\\f.' |
     egrep -v 'OBSOLETE|http://' | sed 's,^\\fB,,; s,[\\ =].*,,' |
     sort -u | grep -v '^val$' >"$docs"
 

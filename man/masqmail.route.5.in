@@ -1,4 +1,4 @@
-.TH masqmail.route 5 2015-02-07 masqmail-0.3.5 "File Formats"
+.TH masqmail.route 5 @RELEASE_DATE@ "@PACKAGE_STRING@" "File Formats"
 
 .SH NAME
 masqmail.route \- masqmail route configuration file

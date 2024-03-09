@@ -199,11 +199,20 @@ AC_DEFINE_UNQUOTED(DATA_DIR, "$xmmdatadir", [The data directory])
 AX_RECURSIVE_EVAL([${sbindir}], [xsbindir])
 AC_DEFINE_UNQUOTED(SBINDIR, "$xsbindir", [The sbin directory])
 
+RELEASE_DATE=`date -r "$0" +%F`
+AC_SUBST(RELEASE_DATE)
+
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
 	src/tests/Makefile
 	man/Makefile
+	man/masqmail.8
+	man/mservdetect.1
+	man/masqmail.aliases.5
+	man/masqmail.conf.5
+	man/masqmail.route.5
+	man/rmail.8
 	docs/Makefile
 	examples/Makefile
 	tpl/Makefile

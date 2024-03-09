@@ -1,4 +1,4 @@
-.TH masqmail.aliases 5 2015-02-07 masqmail-0.3.5 "File Formats"
+.TH masqmail.aliases 5 @RELEASE_DATE@ "@PACKAGE_STRING@" "File Formats"
 
 .SH NAME
 masqmail.aliases \- masqmail alias file format
