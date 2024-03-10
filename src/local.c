@@ -216,12 +216,12 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 
 		if (WEXITSTATUS(status) != 0) {
 			int exstat = WEXITSTATUS(status);
-			logwrite(LOG_ALERT, "process returned %d (%s)\n",
-					exstat, ext_strerror(1024 + exstat));
+			logwrite(LOG_ALERT, "process '%s' returned %d (%s)\n",
+			         cmd, exstat, ext_strerror(1024 + exstat));
 			errno = 1024 + exstat;
 		} else if (WIFSIGNALED(status)) {
-			logwrite(LOG_ALERT, "process got signal %d\n",
-					WTERMSIG(status));
+			logwrite(LOG_ALERT, "process '%s' got signal %d\n",
+			         cmd, WTERMSIG(status));
 		} else
 			ok = TRUE;
 
