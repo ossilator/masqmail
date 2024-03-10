@@ -18,17 +18,17 @@ messages with a return address on the local network which will be
 rewitten at delivery time. The purpose of this is:
 
 - to allow delivery failure messages that are produced on the local
-network to be delivered immediately, while those that are produced
-outside can be delivered to a mailbox on the internet, to be retrieved
-later.
+  network to be delivered immediately, while those that are produced
+  outside can be delivered to a mailbox on the internet, to be retrieved
+  later.
 
 - to give mail servers a return address which they can accept if they
-check for spam mail. Many mail servers require a return address which
-has the same domain as the server it is getting the message from. If
-you normally connect to only one provider, this is usually not a
-problem as you can configure your mailer to a fixed address (but then
-there is still the problem with the failure messages...), but it is a
-problem if you use different ones from time to time.
+  check for spam mail. Many mail servers require a return address which
+  has the same domain as the server it is getting the message from. If
+  you normally connect to only one provider, this is usually not a
+  problem as you can configure your mailer to a fixed address (but then
+  there is still the problem with the failure messages...), but it is a
+  problem if you use different ones from time to time.
 
 Masqmail shall once be a complete replacement for sendmail (or other
 MTAs such as exim, qmail or smail) on a local network, but it is NOT

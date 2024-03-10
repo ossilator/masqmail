@@ -45,52 +45,48 @@ See the output of
 Here is a selection of the options with additional explanations:
 
 --with-user=USER
-sets the user as which masqmail will run. Default is 'mail'. USER has
-to exist before you 'make install'.
+  sets the user as which masqmail will run. Default is 'mail'. USER has
+  to exist before you 'make install'.
 
 --with-group=GROUP
-sets the group as which masqmail will run. Default is 'mail'. GROUP
-has to exist before you 'make install'.
-
+  sets the group as which masqmail will run. Default is 'mail'. GROUP
+  has to exist before you 'make install'.
 
 --with-logdir=LOGDIR
-sets the directory where masqmail stores its log files. It will be
-created on program startup if it does not exist. Default is
-/var/log/masqmail.
+  sets the directory where masqmail stores its log files. It will be
+  created on program startup if it does not exist. Default is
+  /var/log/masqmail.
 
 --with-spooldir=SPOOLDIR
-sets the directory where masqmail stores its spool files. It will be
-created on program startup if it does not exist. Default is
-/var/spool/masqmail.
+  sets the directory where masqmail stores its spool files. It will be
+  created on program startup if it does not exist. Default is
+  /var/spool/masqmail.
 
 --with-confdir=CONFDIR
-sets the default configuration directory to CONFDIR, in case you
-prefer another location than /etc/masqmail.
+  sets the default configuration directory to CONFDIR, in case you
+  prefer another location than /etc/masqmail.
 
 --with-piddir=PIDDIR
-sets the directory for the pid file of the daemon. The default and usual
-location is /var/run, but some GNU/Linux distributions have converted
-to /run. It gets created on program startup if missing.
+  sets the directory for the pid file of the daemon. The default and usual
+  location is /var/run, but some GNU/Linux distributions have converted
+  to /run. It gets created on program startup if missing.
 
 --with-lockdir=LOCKDIR
-sets the default directory for lock file for spooled messages. Default
-is /var/lock/masqmail. It gets created on program startup if missing.
-
+  sets the default directory for lock file for spooled messages. Default
+  is /var/lock/masqmail. It gets created on program startup if missing.
 
 --disable-resolver
-disables resolver support. Without the resolver functions, masqmail
-uses only gethostbyname() to resolve DNS names, and you cannot send
-mail without a smart host. Not recommended.
+  disables resolver support. Without the resolver functions, masqmail
+  uses only gethostbyname() to resolve DNS names, and you cannot send
+  mail without a smart host. Not recommended.
 
 --disable-auth
-disables ESMTP AUTH support (enabled by default)
-
+  disables ESMTP AUTH support (enabled by default)
 
 --disable-debug
-disables debugging; setting it on the command line or in the
-configuration has no effect. Strongly discouraged, since you miss
-valuable information if something goes wrong.
-
+  disables debugging; setting it on the command line or in the
+  configuration has no effect. Strongly discouraged, since you miss
+  valuable information if something goes wrong.
 
 
 Checking the installation
@@ -110,7 +106,6 @@ should give output similar to
 
 Important are the set-user-id bit for /usr/local/sbin/masqmail and
 the ownership of the directories.
-
 
 
 Making masqmail the default
@@ -138,7 +133,6 @@ for help.
 You can also directly start masqmail as daemon with:
 
 	/usr/local/sbin/masqmail -bd -q30m
-
 
 
 Basic Configuration
