@@ -391,18 +391,16 @@ manipulate_queue(char *cmd, char *id[])
 
 /* -qo, -q (without argument), or called as runq */
 static int
-run_queue(gboolean do_runq, gboolean do_runq_online, char *route_name)
+run_queue(gboolean do_runq_online, char *route_name)
 {
 	int ret;
 
 	/* queue runs */
 	set_identity(conf.orig_uid, "queue run");
 
-	if (do_runq) {
+	if (!do_runq_online) {
 		ret = queue_run();
-	}
-
-	if (do_runq_online) {
+	} else {
 		if (route_name) {
 			conf.online_query = g_strdup_printf("/bin/echo %s",
 					route_name);
@@ -454,7 +452,6 @@ main(int argc, char *argv[])
 	gint arg;
 
 	gboolean do_listen = FALSE;
-	gboolean do_runq = FALSE;
 	gboolean do_runq_online = FALSE;
 	gboolean do_queue = FALSE;
 	gint queue_interval = 0;
@@ -482,7 +479,6 @@ main(int argc, char *argv[])
 		mta_mode = MODE_BI;
 	} else if (strcmp(progname, "runq") == 0) {
 		mta_mode = MODE_RUNQUEUE;
-		do_runq = TRUE;
 	} else if (strcmp(progname, "smtpd") == 0
 	           || strcmp(progname, "in.smtpd") == 0) {
 		mta_mode = MODE_SMTP;
@@ -603,7 +599,6 @@ main(int argc, char *argv[])
 			} else {
 				/* do a single queue run */
 				set_mode(MODE_RUNQUEUE);
-				do_runq = TRUE;
 			}
 
 		} else if (strcmp(opt, "t") == 0) {
@@ -776,7 +771,7 @@ main(int argc, char *argv[])
 		break;
 
 	case MODE_RUNQUEUE:
-		exit(run_queue(do_runq, do_runq_online, route_name) ? 0 : 1);
+		exit(run_queue(do_runq_online, route_name) ? 0 : 1);
 		break;
 
 	case MODE_SMTP:
