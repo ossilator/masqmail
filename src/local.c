@@ -26,7 +26,7 @@ message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 	GList *node;
 
 	if (flags & MSGSTR_FROMLINE) {
-		fprintf(out, "From <%s@%s> %s", msg->return_path->local_part,
+		fprintf(out, "From %s@%s %s", msg->return_path->local_part,
 				msg->return_path->domain, ctime(&now));
 	}
 
