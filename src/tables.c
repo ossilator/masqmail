@@ -117,7 +117,7 @@ table_read(gchar *fname, gchar delim)
 	}
 	fclose(fptr);
 	if (!list) {
-		logwrite(LOG_NOTICE, "table file %s contained no entries\n",
+		logwrite(LOG_NOTICE, "table file %s contains no entries\n",
 				fname);
 	}
 	return list;
