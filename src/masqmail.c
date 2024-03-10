@@ -401,14 +401,7 @@ run_queue(gboolean do_runq_online, char *route_name)
 	if (!do_runq_online) {
 		ret = queue_run();
 	} else {
-		if (route_name) {
-			conf.online_query = g_strdup_printf("/bin/echo %s",
-					route_name);
-		}
-		/*
-		**  TODO: change behavior of `-qo without argument'?
-		**  Because that behavior is included in -q.
-		*/
+		conf.online_query = g_strdup_printf("/bin/echo %s", route_name);
 		ret = queue_run_online();
 	}
 	return ret;
@@ -575,16 +568,10 @@ main(int argc, char *argv[])
 			/* must be before the `q' check */
 			set_mode(MODE_RUNQUEUE);
 			do_runq_online = TRUE;
-			/* can be NULL, then we use online detection method */
-			/* TODO: behavior might change if it is NULL */
 			route_name = get_optarg(argv, &arg, opt+2);
 			if (!route_name) {
-				fprintf(stderr, "Please do not use -qo "
-						"without argument anymore; "
-						"use -q instead.\n");
-				fprintf(stderr, "The behavior for -qo without "
-						"argument is likely to "
-						"change.\n");
+				fprintf(stderr, "-qo requires name arg.\n");
+				exit(1);
 			}
 
 		} else if (strncmp(opt, "q", 1) == 0) {
