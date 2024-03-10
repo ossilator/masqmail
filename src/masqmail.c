@@ -128,7 +128,7 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 		if ((pid = fork()) > 0) {
 			exit(0);
 		} else if (pid < 0) {
-			logwrite(LOG_ALERT, "could not fork!\n");
+			logwrite(LOG_ERR, "could not fork!\n");
 			exit(1);
 		}
 	}
@@ -149,7 +149,7 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 	fclose(stderr);
 	logopen();
 
-	logwrite(LOG_NOTICE, "%s %s daemon starting\n", PACKAGE, VERSION);
+	logwrite(LOG_INFO, "%s %s daemon starting\n", PACKAGE, VERSION);
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval);
 }
 
@@ -195,7 +195,7 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 
 	for (i = 0; i < addr_cnt; i++) {
 		if (addresses[i][0] == '|') {
-			logwrite(LOG_ALERT, "no pipe allowed as recipient "
+			logwrite(LOG_ERR, "no pipe allowed as recipient "
 					"address: %s\n", addresses[i]);
 			/* should we better ignore this one addr? */
 			exit(1);
@@ -238,7 +238,7 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 	}
 
 	/* here the mail is queued and thus in our responsibility */
-	logwrite(LOG_NOTICE, "%s <= %s with %s\n", msg->uid,
+	logwrite(LOG_INFO, "%s <= %s with %s\n", msg->uid,
 			addr_string(msg->return_path), prot_names[PROT_LOCAL]);
 
 	if (conf.do_queue) {
@@ -248,7 +248,7 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 
 	/* deliver at once */
 	if ((pid = fork()) < 0) {
-		logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n",
+		logwrite(LOG_ERR, "could not fork for delivery, id = %s\n",
 				msg->uid);
 	} else if (pid == 0) {
 		fclose(stdin);
@@ -591,18 +591,18 @@ main(int argc, char *argv[])
 	if ((strcmp(conf_file, CONF_FILE) != 0) && (conf.orig_uid != 0)) {
 		run_as_user = TRUE;
 		if (setgid(conf.orig_gid)) {
-			logerrno(LOG_ALERT, "could not set gid to %d", conf.orig_gid);
+			logerrno(LOG_ERR, "could not set gid to %d", conf.orig_gid);
 			exit(1);
 		}
 		if (setuid(conf.orig_uid)) {
-			logerrno(LOG_ALERT, "could not set uid to %d", conf.orig_uid);
+			logerrno(LOG_ERR, "could not set uid to %d", conf.orig_uid);
 			exit(1);
 		}
 	}
 
 	conf.debug_level = debug_level;  /* for debugging during read_conf() */
 	if (!read_conf(conf_file)) {
-		logwrite(LOG_ALERT, "SHUTTING DOWN due to problems reading "
+		logwrite(LOG_ERR, "SHUTTING DOWN due to problems reading "
 				"config\n");
 		exit(5);
 	}

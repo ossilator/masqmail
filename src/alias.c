@@ -207,8 +207,7 @@ expand_one(GList *alias_table, address *addr, int doglob)
 		/* but first ... search in parents for loops: */
 		if (addr_isequal_parent(addr, alias_addr, conf.localpartcmp)) {
 			/* loop detected, ignore this path */
-			logwrite(LOG_ALERT, "alias: detected loop, "
-				"hence ignoring '%s'\n",
+			logwrite(LOG_ERR, "alias: detected loop, hence ignoring '%s'\n",
 				alias_addr->address);
 			continue;
 		}

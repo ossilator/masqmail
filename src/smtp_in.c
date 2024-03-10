@@ -319,11 +319,11 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 			smtp_printf(out, "250 OK id=%s\r\n", msg->uid);
 
 			if (remote_host != NULL) {
-				logwrite(LOG_NOTICE, "%s <= <%s@%s> host=%s with %s\n", msg->uid,
+				logwrite(LOG_INFO, "%s <= <%s@%s> host=%s with %s\n", msg->uid,
 				         msg->return_path->local_part, msg->return_path->domain,
 				         remote_host, prot_names[psc->prot]);
 			} else {
-				logwrite(LOG_NOTICE, "%s <= <%s@%s> with %s\n", msg->uid,
+				logwrite(LOG_INFO, "%s <= <%s@%s> with %s\n", msg->uid,
 				         msg->return_path->local_part, msg->return_path->domain,
 				         prot_names[psc->prot]);
 			}
@@ -333,7 +333,8 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 			} else {
 				pid = fork();
 				if (pid < 0) {
-					logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n", msg->uid);
+					logwrite(LOG_ERR, "could not fork for delivery, id = %s\n",
+					         msg->uid);
 				} else if (pid == 0) {
 					/* FIXME: most likely inverted exit code */
 					_exit(deliver(msg));

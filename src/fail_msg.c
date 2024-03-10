@@ -27,9 +27,8 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 			address *addr = (address *) (node->data);
 
 			if (addr_isequal_parent(addr, ret_path, strcasecmp)) {
-				logwrite(LOG_ALERT, "%s == %s: postmaster "
-						"address failed\n", msg->uid,
-						addr_string(ret_path));
+				logwrite(LOG_ERR, "%s == %s: postmaster address failed\n",
+				         msg->uid, addr_string(ret_path));
 				return FALSE;
 			}
 		}
@@ -98,10 +97,10 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 				if ((WEXITSTATUS(status) != 0) ||
 						WIFSIGNALED(status)) {
 					if (WEXITSTATUS(status)) {
-						logwrite(LOG_WARNING, "child returned %d\n", WEXITSTATUS(status));
+						logwrite(LOG_ERR, "child returned %d\n", WEXITSTATUS(status));
 					}
 					if (WIFSIGNALED(status)) {
-						logwrite(LOG_WARNING, "child got signal: %d\n", WTERMSIG(status));
+						logwrite(LOG_ERR, "child got signal: %d\n", WTERMSIG(status));
 					}
 				} else {
 					ok = TRUE;
@@ -110,7 +109,7 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 			g_free(cmd);
 			fclose(file);
 		} else {
-			logerrno(LOG_ALERT, "could not open failure message template %s",
+			logerrno(LOG_ERR, "could not open failure message template %s",
 			         conf.errmsg_file);
 		}
 
