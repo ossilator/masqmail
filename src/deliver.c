@@ -7,6 +7,7 @@
 
 #include "smtp_out.h"
 
+#include <assert.h>
 #include <fnmatch.h>
 #include <sysexits.h>
 #include <netdb.h>
@@ -340,11 +341,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 	smtp_base *psb;
 	gint port = 25;
 
-	/* paranoid check: */
-	if (!msgout_list) {
-		logwrite(LOG_ALERT, "Ooops: empty list of messages in deliver_msglist_host()\n");
-		return FALSE;
-	}
+	assert(msgout_list);
 
 	if (!host) {
 		/* XXX: what if mail_host isn't set? Is this possible? */

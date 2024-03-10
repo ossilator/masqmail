@@ -6,6 +6,7 @@
 
 #include "masqmail.h"
 
+#include <assert.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 
@@ -104,20 +105,13 @@ connect_resolvelist(int *psockfd, gchar *host, guint port,
 		*/
 	}
 
-	if (!res_func_list) {
-		logwrite(LOG_ALERT, "res_funcs not set!\n");
-		exit(1);
-	}
-
+	assert(res_func_list);
 	foreach(res_func_list, res_node) {
 		resolve_func res_func;
 		DEBUG(6) debugf("  foreach() body\n");
 
 		res_func = (resolve_func) res_node->data;
-		if (!res_func) {
-			logwrite(LOG_ALERT, "Empty res_func!\n");
-			exit(1);
-		}
+		assert(res_func);
 
 		errno = 0;
 		if ((addr_list = res_func(NULL, host))) {
