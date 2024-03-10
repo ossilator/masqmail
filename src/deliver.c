@@ -304,8 +304,6 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 				addr_mark_delivered(rcpt);
 				ok = TRUE;
 			} else {
-				logwrite(LOG_ALERT, "pipe_out '%s' failed\n", route->pipe);
-
 				if (route->connect_error_fail) {
 					addr_mark_failed(rcpt);
 				} else {

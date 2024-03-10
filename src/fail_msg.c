@@ -78,9 +78,7 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 							/* we may have to read the data at this point and remember if we did */
 							gboolean flag = (msg->data_list == NULL);
 							if (flag) {
-								if (!spool_read_data(msg)) {
-									logwrite(LOG_ALERT, "could not open data spool file %s\n", msg->uid);
-								}
+								spool_read_data(msg);
 							}
 							foreach(msg->data_list, node) {
 								gchar *line = (gchar *) (node->data);

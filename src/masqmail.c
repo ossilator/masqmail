@@ -711,7 +711,6 @@ main(int argc, char *argv[])
 	}
 
 	if (!logopen()) {
-		fprintf(stderr, "could not open log file\n");
 		exit(1);
 	}
 

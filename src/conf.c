@@ -768,9 +768,6 @@ read_route_list(GList *rf_list)
 		connect_route *route = read_route(fname);
 		if (route) {
 			list = g_list_append(list, route);
-		} else {
-			logwrite(LOG_ALERT, "could not read route "
-					"configuration %s\n", fname);
 		}
 	}
 	/* set uid and gid back */
