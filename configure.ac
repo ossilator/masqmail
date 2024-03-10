@@ -5,6 +5,7 @@ AC_INIT(
 	[MasqMail], [0.3.6-dev],
 	[https://github.com/ossilator/masqmail/issues],
 	[masqmail], [https://github.com/ossilator/masqmail])
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/masqmail.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE()
@@ -192,24 +193,11 @@ AC_ARG_WITH(lockdir,
 AC_DEFINE_UNQUOTED(LOCK_DIR, "${with_lockdir}", [The lock file location])
 AC_SUBST(with_lockdir)
 
-test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+AX_RECURSIVE_EVAL([${datadir}/masqmail], [xmmdatadir])
+AC_DEFINE_UNQUOTED(DATA_DIR, "$xmmdatadir", [The data directory])
 
-dnl well, /me/ thought that autoconf should make things _easy_ ... -- oku
-dnl I needed the two `eval's to get the variable expanded in all cases -- meillo
-dnl this is just horrible! -- meillo
-AC_DEFINE_UNQUOTED(DATA_DIR, "`eval eval echo $datadir`/masqmail", [The data directory])
-
-dnl gymnastics to get the correct path where masqmail should be installed
-dnl we need this to call ourselves in failmsg.c
-if test "x${exec_prefix}" != 'xNONE'; then
-	AC_DEFINE_UNQUOTED(SBINDIR, "${exec_prefix}/sbin", [The sbin directory])
-else
-	if test "x${prefix}" != 'xNONE'; then
-		AC_DEFINE_UNQUOTED(SBINDIR, "${prefix}/sbin")
-	else
-		AC_DEFINE_UNQUOTED(SBINDIR, "/usr/sbin")
-	fi
-fi
+AX_RECURSIVE_EVAL([${sbindir}], [xsbindir])
+AC_DEFINE_UNQUOTED(SBINDIR, "$xsbindir", [The sbin directory])
 
 AC_CONFIG_FILES([
 	Makefile
