@@ -11,15 +11,6 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 
-static int volatile sighup_seen = 0;
-
-static void
-sighup_handler(int sig)
-{
-	sighup_seen = 1;
-	signal(SIGHUP, sighup_handler);
-}
-
 static void
 sigchld_handler(int sig)
 {
@@ -73,7 +64,7 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 }
 
 void
-listen_port(GList *iface_list, gint qival, char *argv[])
+listen_port(GList *iface_list, gint qival)
 {
 	int i;
 	fd_set active_fd_set, read_fd_set;
@@ -107,8 +98,6 @@ listen_port(GList *iface_list, gint qival, char *argv[])
 		FD_SET(sock, &active_fd_set);
 	}
 
-	/* setup handler for HUP signal: */
-	signal(SIGHUP, sighup_handler);
 	signal(SIGCHLD, sigchld_handler);
 
 	/* now that we have our socket(s), we can give up root privileges */
@@ -157,18 +146,6 @@ listen_port(GList *iface_list, gint qival, char *argv[])
 			if (errno != EINTR) {
 				logwrite(LOG_ALERT, "select: (terminating): "
 						"%s\n", strerror(errno));
-				exit(1);
-			} else if (sighup_seen) {
-				logwrite(LOG_NOTICE, "HUP signal received. "
-						"Restarting daemon\n");
-
-				for (i = 0; i < FD_SETSIZE; i++)
-					if (FD_ISSET(i, &active_fd_set))
-						close(i);
-
-				execv(argv[0], &(argv[0]));
-				logwrite(LOG_ALERT, "restarting failed: %s\n",
-						strerror(errno));
 				exit(1);
 			}
 		} else if (sel_ret > 0) {

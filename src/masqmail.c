@@ -140,7 +140,7 @@ write_pidfile(gchar *name)
 
 /* on -bd or if -q has an argument */
 static void
-mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
+mode_daemon(gboolean do_listen, gint queue_interval)
 {
 	guint pid;
 
@@ -181,8 +181,7 @@ mode_daemon(gboolean do_listen, gint queue_interval, char *argv[])
 	logopen();
 
 	logwrite(LOG_NOTICE, "%s %s daemon starting\n", PACKAGE, VERSION);
-	listen_port(do_listen ? conf.listen_addresses : NULL,
-			queue_interval, argv);
+	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval);
 }
 
 /* -bs or called as smtpd or in.smtpd */
@@ -754,7 +753,7 @@ main(int argc, char *argv[])
 
 	switch (mta_mode) {
 	case MODE_DAEMON:
-		mode_daemon(do_listen, queue_interval, argv);
+		mode_daemon(do_listen, queue_interval);
 		break;
 
 	case MODE_RUNQUEUE:
