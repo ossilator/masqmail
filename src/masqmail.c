@@ -138,9 +138,7 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 	write_pidfile();
 	drop_root();
 
-	fclose(stdin);
-	fclose(stdout);
-	fclose(stderr);
+	null_stdio();
 
 	logwrite(LOG_INFO, "%s %s daemon starting\n", PACKAGE, VERSION);
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval);
