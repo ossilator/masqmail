@@ -106,17 +106,6 @@ to matching remote recipients is sent.
 You may want to use this option in scripts that run as soon as a link
 to the internet has been set up (e.g. ip-up).
 
-.B Obsolete behavior:
-Up to now: If
-.B \-qo
-has no argument, the online connection is determinded
-by online detect and, if available, mail is sent through it.
-If none is available no mail is delivered.
-
-This behavior is likely to change in future versions
-because it is included in \-q.
-We could do something more useful instead.
-
 .P
 The other modes are simple ones:
 
