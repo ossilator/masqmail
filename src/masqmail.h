@@ -365,7 +365,7 @@ header *get_header(gchar *line);
 void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident);
 
 /* listen.c */
-void listen_port(GList *addr_list, gint qival, char *argv[]);
+void listen_port(GList *addr_list, gint qival);
 
 /* parse.c */
 gboolean split_address(const gchar *path, gchar **local_part, gchar **domain, gboolean is_rfc821);
