@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.71])
-AC_INIT([masqmail],[0.3.6-dev],[meillo@marmaro.de])
+AC_INIT([masqmail], m4_esyscmd_s([`dirname $0`/version.sh]), [meillo@marmaro.de])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/masqmail.c])
 AC_CONFIG_HEADERS([config.h])
