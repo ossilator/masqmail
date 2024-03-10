@@ -8,6 +8,7 @@ The manual pages describe newly added options. Take them for reference.
 
 
 0.3.5
+=====
 
 - Adds a glob-pattern based aliasing mechanism.
 
@@ -17,15 +18,16 @@ The manual pages describe newly added options. Take them for reference.
 
 
 0.3.4
+=====
 
 - Reworked the route concept to be more general and have better
-names: ``online_routes'' is now known as ``query_routes'' and the
-``local_net_route'' in now named ``permanent_routes''. Removed the idea
-of the localnet because it is only part of the more general concept:
-permanent routes. `local_nets' are now represented by `allowed_recipients'
-in a permanent route. (See: examples/localnet.route) Now, there is no
-more abiguity between `local' and `local net'. Run admin/config-transition
-on your config to learn how to update it.
+  names: ``online_routes'' is now known as ``query_routes'' and the
+  ``local_net_route'' in now named ``permanent_routes''. Removed the idea
+  of the localnet because it is only part of the more general concept:
+  permanent routes. `local_nets' are now represented by `allowed_recipients'
+  in a permanent route. (See: examples/localnet.route) Now, there is no
+  more abiguity between `local' and `local net'. Run admin/config-transition
+  on your config to learn how to update it.
 
 - Switched the default group for masqmail from `trusted' to `mail'.
 
@@ -33,61 +35,63 @@ on your config to learn how to update it.
 (changeset 412385b57dc4).
 
 - Fixed a bug in matching of allowed recipients. Thanks to Juergen
-Daubert for finding and reporting the issue.
+  Daubert for finding and reporting the issue.
 
 - Configure options: Enabled auth support per default. Removed support
-for openssl linking. It had been rarely used and could have caused
-legal problems. We don't miss functionality here, because we already
-have builtin MD5 support.  Removed ident support, which is hardly useful
-for masqmail.
+  for openssl linking. It had been rarely used and could have caused
+  legal problems. We don't miss functionality here, because we already
+  have builtin MD5 support.  Removed ident support, which is hardly useful
+  for masqmail.
 
 - `local_hosts' now understands glob patterns like `*example.org'.
 
 
 0.3.3
+=====
 
--  Fixed a possible security problem, reported by John Lightsey. Unwanted
-identity changes to the user root could have appeared.
+- Fixed a possible security problem, reported by John Lightsey. Unwanted
+  identity changes to the user root could have appeared.
 
 - Fixed local-part only address patterns in route conditions, as already
-described in the man page.
+  described in the man page.
 
 
 0.3.2
+=====
 
 - Fixed an important bug with folded headers! In earlier versions mail
-to many recipients may, in unpredictable cases, only have been
-delivered to the ones on the first line. This is fixed now. Sorry for
-the inconvenience.
+  to many recipients may, in unpredictable cases, only have been
+  delivered to the ones on the first line. This is fixed now. Sorry for
+  the inconvenience.
 
 - Reworked allowed and denied addrs for routes to be more consistent
-and allow more flexible matching:
-  o allowed_mail_locals + allowed_return_paths -> allowed_senders
-  o not_allowed_mail_locals + not_allowed_return_paths -> denied_senders
-  o allowed_rcpt_domains -> allowed_recipients
-  o not_allowed_rcpt_domains -> denied_recipients
-See man page masqmail.route(5).
+  and allow more flexible matching:
+  - allowed_mail_locals + allowed_return_paths -> allowed_senders
+  - not_allowed_mail_locals + not_allowed_return_paths -> denied_senders
+  - allowed_rcpt_domains -> allowed_recipients
+  - not_allowed_rcpt_domains -> denied_recipients
+  See man page masqmail.route(5).
 
 - Reworked online_detect to the simpler online_query. Only pipe is
-supported now. Use
+  supported now. Use
 	online_query="/bin/cat /path/to/file"
-instead of
+  instead of
 	online_detect=file
 	online_file=/path/to/file
-and
+  and
 	online_query="/path/to/some/script foo"
-instead of
+  instead of
 	online_detect=pipe
 	online_pipe="/path/to/some/script foo"
-See man page masqmail.conf(5) and admin/config-transition.
+  See man page masqmail.conf(5) and admin/config-transition.
 
 - Removed protocol option from route config because it was somehow
-redundant. Now, if `pipe' is set, the protocol will be pipe, otherwise
-it'll be smtp.
+  redundant. Now, if `pipe' is set, the protocol will be pipe, otherwise
+  it'll be smtp.
 
 - Now the Received headers are much friendlier to read. The header for
-locally (i.e. non-SMTP) received mail is changed to the format postfix
-uses.
+  locally (i.e. non-SMTP) received mail is changed to the format postfix
+  uses.
 
 - Several improvements to the man pages.
 
@@ -95,146 +99,152 @@ uses.
 
 
 0.3.1
+=====
 
 - Changed the SMTP greeting behavior to match RFC 2821 (always try EHLO
-first). Now always an EHLO greeting is sent first, no matter what kind of
-greeting text the server had sent. If the EHLO failes, an HELO greeting
-is tried as fall back. This change will fix setups in which it hadn't
-been possible to send mail because the server required AUTH but hadn't
-said ``ESMTP'' in its greeting message. Thanks to inne for pointing me
-on that. This fixes also Debian bug #349211.
+  first). Now always an EHLO greeting is sent first, no matter what kind of
+  greeting text the server had sent. If the EHLO failes, an HELO greeting
+  is tried as fall back. This change will fix setups in which it hadn't
+  been possible to send mail because the server required AUTH but hadn't
+  said ``ESMTP'' in its greeting message. Thanks to inne for pointing me
+  on that. This fixes also Debian bug #349211.
 
 - The postmaster address is now matched caseless, as required by RFC.
 
 - -qo (without argument) is now considered obsolete. Its behavior (online
-detect and send over the available route) is included in -q. One may
-simply use -q instead. In the -qo case no local mail is sent, but why
-would be not want to do so? -qo (without arg) is still working but will
-likely change its behavior to something more useful in the future.
+  detect and send over the available route) is included in -q. One may
+  simply use -q instead. In the -qo case no local mail is sent, but why
+  would be not want to do so? -qo (without arg) is still working but will
+  likely change its behavior to something more useful in the future.
 
 - Command line address arguments are now added to the recipient
-list instead of substracted, when -t is used. This coveres a rare
-corner-case. It is a change from exim's behavior to postfix's.
+  list instead of substracted, when -t is used. This coveres a rare
+  corner-case. It is a change from exim's behavior to postfix's.
 
 - Several changes were made related to the operation modes: The situation
-within the modes was made clear (see man page of masqmail(8)). If more
-than one mode is specified then masqmail aborts. For the default operation
-mode ``accept messages on stdin'' the command line switch -bm was added
-(similar to othe MTAs). If masqmail is called without arguments, the
-version information is printed now.
+  within the modes was made clear (see man page of masqmail(8)). If more
+  than one mode is specified then masqmail aborts. For the default operation
+  mode ``accept messages on stdin'' the command line switch -bm was added
+  (similar to othe MTAs). If masqmail is called without arguments, the
+  version information is printed now.
 
 - The command line option -m is recognized now (although ignored).
-Unknown -oXXX options are ignored. Some software (like spost of nmh)
-calls the MTA with -m. This is mainly a relict of old sendmail times
-but needed for compatibility.
+  Unknown -oXXX options are ignored. Some software (like spost of nmh)
+  calls the MTA with -m. This is mainly a relict of old sendmail times
+  but needed for compatibility.
 
 - The implementation of the command line option -oem had been
-weird. Now specifying -oem or -oee results in a (some kind of dumb but)
-logical behavior.  Common users will probably not notice any difference.
-The changes affect only the exit code of the corner-case: Calling masqmail
-with -oem but without -oi/-i while submitting messages on stdin.
+  weird. Now specifying -oem or -oee results in a (some kind of dumb but)
+  logical behavior.  Common users will probably not notice any difference.
+  The changes affect only the exit code of the corner-case: Calling masqmail
+  with -oem but without -oi/-i while submitting messages on stdin.
 
 - Fixed the recognition of lists of unqualified addresses in headers
-when using -t. E.g. `To: alice, bob'.
+  when using -t. E.g. `To: alice, bob'.
 
 - Renamed the config file option `alias_local_caseless' to
-`caseless_matching' because the option affects any address matching.
+  `caseless_matching' because the option affects any address matching.
 
 - Renamed the default route for the local network to
-`default local_net_route'. This is only of interest for log/debug file
-studies.
+  `default local_net_route'. This is only of interest for log/debug file
+  studies.
 
 - Improved and updated the man page for masqmail(8), especially in
-respect to -oem which appears to be wrongly implemented. Minor
-improvements of debug messages.
+  respect to -oem which appears to be wrongly implemented. Minor
+  improvements of debug messages.
 
 
 0.3.0
+=====
 
 - Start of the new development branch. Attention: Backward
-compatibility with 0.2.x versions will *NOT* be maintained. Upgrading
-from 0.2.x to 0.3.x will probably require manual adjustment of the
-configuration. The script admin/config-tansition can be used to check
-the config files for obsolete options.
+  compatibility with 0.2.x versions will *NOT* be maintained. Upgrading
+  from 0.2.x to 0.3.x will probably require manual adjustment of the
+  configuration. The script admin/config-tansition can be used to check
+  the config files for obsolete options.
 
 - Removed POP3 support (also pop-before-smtp/smtp-after-pop). Use some
-other POP3 client instead.
+  other POP3 client instead.
 
 - Removed maildir support. Use an MDA, like procmail, to deliver to
-maildir.
+  maildir.
 
 - Removed the built-in mserver functionality. Use the mservdetect
-program instead. See masqmail.conf(5) under `online_pipe' for details.
+  program instead. See masqmail.conf(5) under `online_pipe' for details.
 
 - Removed --disable-smtp-server and --with-glib-static configure
-options. We see no more need to not compile the SMTP server function.
-For static linking, see docs/howto-static-linking.
+  options. We see no more need to not compile the SMTP server function.
+  For static linking, see docs/howto-static-linking.
 
 - `host_name' is the only mandatory config option now. If you only set
-host_name, then masqmail will:
-  o accept mail on the command line
-  o listen on the local port 25 for incoming mail
-  o deliver mail locally
-  o not know how to handle mail for remote destinations
-Therefore you should set up at least one route configuration.
+  host_name, then masqmail will:
+  - accept mail on the command line
+  - listen on the local port 25 for incoming mail
+  - deliver mail locally
+  - not know how to handle mail for remote destinations
+  Therefore you should set up at least one route configuration.
 
 - Default values are available for: listen_addresses, local_hosts,
-log_dir, spool_dir, mail_dir. See masqmail.conf(5) for the values.
+  log_dir, spool_dir, mail_dir. See masqmail.conf(5) for the values.
 
 - Mservdetect works much better now.
 
 - Improved the documentation:
-  o Added setup guides
-  o Improved and simplified the example config
-And removed the old manual because it is really outdated now.
+  - Added setup guides
+  - Improved and simplified the example config
+  And removed the old manual because it is really outdated now.
 
 - Renamed misc/ to devel/ and contrib/ to admin/. devel/ contains
-stuff for developers of masqmail, admin/ contains stuff for people who
-install, upgrade, and configure masqmail.
+  stuff for developers of masqmail, admin/ contains stuff for people who
+  install, upgrade, and configure masqmail.
 
 
 0.2.28
+======
 
 - Added STARTTLS support with external wrappers like OpenSSL. See
-`wrapper' and `instant_helo' in masqmail.route(5) for examples how to
-use it. `instant_helo' is a new route config option.
+  `wrapper' and `instant_helo' in masqmail.route(5) for examples how to
+  use it. `instant_helo' is a new route config option.
 
 
 0.2.27
+======
 
 - Replaced contributed code with possible licensing problems with
-alternatives. The MD5 implementation changed from the reference
-implementation of RFC 1321 to the Public Domain implementation of
-Solar Designer. The HMAC-MD5 implementation changed from the reference
-implementation of RFC 2104 to an own implementation (ISC License).
+  alternatives. The MD5 implementation changed from the reference
+  implementation of RFC 1321 to the Public Domain implementation of
+  Solar Designer. The HMAC-MD5 implementation changed from the reference
+  implementation of RFC 2104 to an own implementation (ISC License).
 
 - Added the authors of contributed parts to the AUTHORS file.
 
 
 0.2.26
+======
 
 - Write a log message when the daemon starts up. Thanks to Juergen
-Daubert.
+  Daubert.
 
 - Fix handling of --with-liblockfile=no or --without-liblockfile for
-configure script. Thanks to Nico Roeser.
+  configure script. Thanks to Nico Roeser.
 
 - Improved the INSTALL file and some man pages. Thanks to Nico Roeser
-Improved the documentation of the wrapper option of route files.
+  Improved the documentation of the wrapper option of route files.
 
 
 0.2.25
+======
 
 - Added server-side SMTP SIZE support. Thanks to Paolo.
 
 - Masqmail will from now on:
-  o always remove Bcc: headers
-  o never create headers from envelope recipients
-  o add ``To: undisclosed-recipients:;'' if no recipient header (To:
+  - always remove Bcc: headers
+  - never create headers from envelope recipients
+  - add ``To: undisclosed-recipients:;'' if no recipient header (To:
     or Cc:) is present in the mail
 
 - Colons (`:') don't need to be quoted in the config file anymore.
-Thanks to Paolo.
+  Thanks to Paolo.
 
 - Added checks for too long addresses in SMTP dialog. Thanks to Paolo.
 
@@ -243,210 +253,241 @@ Thanks to Paolo.
 - Added warnmsg.tpl.it. Thanks to Paolo.
 
 - The tests do not get installed any longer. All on install created
-dirs are removed on uninstall, except they contain generated data like
-logs, spooled files, or configuration.
+  dirs are removed on uninstall, except they contain generated data like
+  logs, spooled files, or configuration.
 
 - Documented some, yet undocumented, config options. Several typo
-fixes in man pages and code comments.
+  fixes in man pages and code comments.
 
 
 0.2.24
+======
 
 - This version keeps on logging after an restart of the deamon, for
-instance when sending SIGHUP to the daemon process for rereading its
-config.
+  instance when sending SIGHUP to the daemon process for rereading its
+  config.
 
 - Now the daemon keeps the same process id when it receives SIGHUP to
-reread the config.
+  reread the config.
 
 - Mail messages with lines longer than 4096 characters do not get
-truncated anymore.
+  truncated anymore.
 
 - Fixed checking of the trusted group. Primary groups are now
-detected too.
+  detected too.
 
 - Mservdetect's man page is now in section 1.
 
 - An `rmail' command is now included and gets installed with
-masqmail. See docs/uucp-setup for more information.
+  masqmail. See docs/uucp-setup for more information.
 
 - Docs and thelike, that masqmail installs, is removed on uninstall
-now.
+  now.
 
 
 0.2.23
+======
 
 - This release fixes a major bug in 0.2.22 which made online detection
-by file unusable. Thanks to Juergen Daubert for reporting and providing
-a patch.
+  by file unusable. Thanks to Juergen Daubert for reporting and providing
+  a patch.
 
 - Masqmail installs to /usr/local by default now. Previously it
-installed to /usr. To regain the old behavior, add
+  installed to /usr. To regain the old behavior, add
 	--prefix=/usr
-to the configure call.
+  to the configure call.
 
 - Man pages get installed again; in 0.2.22 they were not. Again thanks
-to Juergen Daubert. Docs and examples do get installed now too.
+  to Juergen Daubert. Docs and examples do get installed now too.
 
 - Updated the docs. Moved the man pages from docs/ to man/. Added the
-old manual from the old website to the distribution. Added a bug
-reporting howto.
+  old manual from the old website to the distribution. Added a bug
+  reporting howto.
 
 
 0.2.22
+======
 
 - Hello, I'm meillo, the new maintainer and developer of masqmail. Oku
-handed masqmail over to me, because he wasn't active anymore.
+  handed masqmail over to me, because he wasn't active anymore.
 
 - This release includes various fixes for problems in 0.2.21, mainly
-based on bugs from Debian.
+  based on bugs from Debian.
 
 - Distribution specific data has been excluded from the distribution,
-but is separately available on the project's website.
+  but is separately available on the project's website.
 
 - Man pages will not be generated from xml sources in future, but the
-nroff sources will be maintained directly.
+  nroff sources will be maintained directly.
 
 - The default online status file is now
-/var/run/masqmail/masqmail-route, as it already was in the Debian
-package.
+  /var/run/masqmail/masqmail-route, as it already was in the Debian
+  package.
 
 
 0.2.21
+======
 
 - Retrospective: Probably, this version was not published in the usual
-way by oku. I (meillo) grabbed it from Debian's package archive. It does
-not introduce new functions but fixes security problems, such as writing
-log files as user `mail'. It also changes the location for pid files;
-they are stored in /var/run/masqmail/ now.
+  way by oku. I (meillo) grabbed it from Debian's package archive. It does
+  not introduce new functions but fixes security problems, such as writing
+  log files as user `mail'. It also changes the location for pid files;
+  they are stored in /var/run/masqmail/ now.
 
 
 0.2.18
+======
 
 - delivery warnings and failures are now also implemented if the
-connection to a server fails. Because masqmail is designed for dialup
-networks, a connection failure will merely generate a warning by default.
-If you deliver in a local network and use the default local_net route,
-this would generte a failure. You can change this behaviour by setting
-'connect_error_fail' to either true or false in the route configurations.
+  connection to a server fails. Because masqmail is designed for dialup
+  networks, a connection failure will merely generate a warning by default.
+  If you deliver in a local network and use the default local_net route,
+  this would generte a failure. You can change this behaviour by setting
+  'connect_error_fail' to either true or false in the route configurations.
+
 
 0.2.17
+======
 
 - delivery warnings have been finally implemented: if delivery of a mail
-fails temporarily, warning mail will be generated, informing the sender
-of the problem. After some time, the mail will be handled as failing
-permanently, and be bounced. New options: 'warn_intervals',
-'max_defer_time' and 'warnmsg_file'.
+  fails temporarily, warning mail will be generated, informing the sender
+  of the problem. After some time, the mail will be handled as failing
+  permanently, and be bounced. New options: 'warn_intervals',
+  'max_defer_time' and 'warnmsg_file'.
 
 - the message templates for failures and warnings will now be installed
-into /usr/share/masqmail/tpl/, and no longer to /etc/masqmail/tpl/. The
-default for the search path (options 'errmsg_file' and 'warnmsg_file'
-has been changed accordingly.
+  into /usr/share/masqmail/tpl/, and no longer to /etc/masqmail/tpl/. The
+  default for the search path (options 'errmsg_file' and 'warnmsg_file'
+  has been changed accordingly.
 
 - new option 'last_route'. See man 5 masqmail.route.
 
-0.2.12
-two new options have been added:
-- do_pipelining will be used only in broken mail setups. Actually, I
-implemented it only to test such a setup.
 
-- helo_name for routes sets the helo_name. This may be useful for
-eg. ssh tunneling, or if do_correcthelo does not work, because you are
-behind a firewall.
+0.2.12
+======
+
+- two new options have been added:
+  - do_pipelining will be used only in broken mail setups. Actually, I
+    implemented it only to test such a setup.
+  - helo_name for routes sets the helo_name. This may be useful for
+    eg. ssh tunneling, or if do_correcthelo does not work, because you are
+    behind a firewall.
 
 - the old 'remote_port' option should not be used any more. Set the
-port with mail_host="foo.bar.com:1234" in the route file instead.
+  port with mail_host="foo.bar.com:1234" in the route file instead.
+
 
 0.2.11
+======
 
 - two new options have been added: do_save_envelope_to for the main
-configuration and map_h_mail_followup_to_addresses for the route
-files. See the man pages on purpose and usage.
+  configuration and map_h_mail_followup_to_addresses for the route
+  files. See the man pages on purpose and usage.
 
 - the route files can now be mode 0400, owned by root. Previous
-versions had problems when sendmail was called directly by a
-non-priviledged user, because the route files could not be read.
+  versions had problems when sendmail was called directly by a
+  non-priviledged user, because the route files could not be read.
+
 
 0.2.10
+======
 
 - this version should work on FreeBSD. At least I care now if it does not.
 
 - masqmail now writes pid files to /var/run/, one for the smtp/queue
-daemon and one for the get daemon. So you now know whom to kill ;-)
+  daemon and one for the get daemon. So you now know whom to kill ;-)
 
 - much effort has been put into the Debian package, which now uses debconf.
 
+
 0.2.7
+=====
 
 - sorry for my reluctany in the last months...
 - my email address is oku@masqmail.cx. I hope that I keep this for the rest
-of my life...
+  of my life...
+
 
 0.2.6
+=====
 
 - you can configure the prefered local delivery mechanism for each user. See
-man page masqmail.conf (5), options mbox_default, mbox_users, mda_users and
-maildir_users. BIT FAT NOTE: if you used an mda, set mbox_default = "mda"
-(or use the mda_users option). Just setting mda is not enough any more.
+  man page masqmail.conf (5), options mbox_default, mbox_users, mda_users and
+  maildir_users. BIT FAT NOTE: if you used an mda, set mbox_default = "mda"
+  (or use the mda_users option). Just setting mda is not enough any more.
 
 - there are the allowed_return_paths and not_allowed_return_paths for the
-route configurations, this enables better checking for return path addresses
-than allowed_mail_locals. You can also use this to enable or disable messages
-from null sender addresses (<>) using "<>".
-note: this option has been there for quite a time... I just forgot to document it.
+  route configurations, this enables better checking for return path addresses
+  than allowed_mail_locals. You can also use this to enable or disable messages
+  from null sender addresses (<>) using "<>".
+  note: this option has been there for quite a time... I just forgot to
+  document it.
+
 
 0.2.5
+=====
 
 - simple relay checking: if you set do_relay=false in masqmail.conf, users
-with a return path that is not local will get a 550 reply if they try to
-deliver to a not local address. This is for users to force them to have a
-proper configuration. It is _not_ to prevent spammers from using your MTA
-as a relay, it can be easily forged! masqmail is not designed to be an always
-accessible MTA for an internet site.
+  with a return path that is not local will get a 550 reply if they try to
+  deliver to a not local address. This is for users to force them to have a
+  proper configuration. It is _not_ to prevent spammers from using your MTA
+  as a relay, it can be easily forged! masqmail is not designed to be an
+  always accessible MTA for an internet site.
 
 - added Maildir support. To use it, add --enable-maildir as ./configure
-optiom. Currently, if enabled, all local deliveries are to Maildir
-(in ~user/Maildir), and none to mailbox. This is preliminary, future versions
-will be configurable (probably together with mda delivery).
+  optiom. Currently, if enabled, all local deliveries are to Maildir
+  (in ~user/Maildir), and none to mailbox. This is preliminary, future
+  versions will be configurable (probably together with mda delivery).
 
-0.2.4 
+
+0.2.4
+=====
 
 - added -v option, this logs to stdout, so you see what happens when
-calling masqmail from command line. This is not yet finished, and only
-for fetching mails completed.
+  calling masqmail from command line. This is not yet finished, and only
+  for fetching mails completed.
+
 
 0.2.3
+=====
 
 - new option lock_dir where locks will be put to. Defaults to the spool
-dir with '/lock/' appended (if spool_dir is /var/spool/masqmail/, lock_dir
-is /var/spool/masqmail/lock/).
+  dir with '/lock/' appended (if spool_dir is /var/spool/masqmail/, lock_dir
+  is /var/spool/masqmail/lock/).
 
 - You can use the 'do_uidl_dele' option more reliably. The uidl list
-will be written immediately after a message was fetched, so if you use the
-do_uidl and do_uidl_dele option you can safely interrupt masqmail when it is
-getting mail via pop3, and do not get the message again next time.
+  will be written immediately after a message was fetched, so if you use the
+  do_uidl and do_uidl_dele option you can safely interrupt masqmail when it
+  is getting mail via pop3, and do not get the message again next time.
 
 - there are a lot of new options for ./configure to customize masqmail
-to your needs. See INSTALL.
+  to your needs. See INSTALL.
 
 - Uli Funcke sent a patch with the new options 'local_addresses' and
-'not_local_addresses' for masqmail.conf. With these, you can declare single
-email addresses as local, though they normally are not, and vice versa,
-declare addresses as not local though normally they are (determined with
-local_hosts). These options are not yet documented.
+  'not_local_addresses' for masqmail.conf. With these, you can declare single
+  email addresses as local, though they normally are not, and vice versa,
+  declare addresses as not local though normally they are (determined with
+  local_hosts). These options are not yet documented.
+
 
 0.2.2
-- with -go5m you can now run a get daemon, the command 'masqmail -go5m' will fetch
-mail every five minutes, using the detected online configuration.
+=====
+
+- with -go5m you can now run a get daemon, the command 'masqmail -go5m' will
+  fetch mail every five minutes, using the detected online configuration.
+
 
 0.2.1
+=====
 
 - there is a new option for the main conf: online_gets. Using this option,
-you can retrieve mail with just calling masqmail -go, masqmail will detect
-whether it is online (similar to connect_routes (which is now called
-online_routes)).
+  you can retrieve mail with just calling masqmail -go, masqmail will detect
+  whether it is online (similar to connect_routes (which is now called
+  online_routes)).
+
 
 0.2.0
+=====
 
 This is the first release of he development branch of masqmail
 
@@ -455,89 +496,116 @@ This is the first release of he development branch of masqmail
   option for configure has been replaced by the --with-confdir option.
 
 - added delivery failure notices:
-  o you can customize your own delivery failure report, its
+  - you can customize your own delivery failure report, its
     default location is /etc/masqmail/tpl/failmsg.tpl
-  o if a delivery via a route fails permanently (the server replied with a 5xx status)
-    the message will be bounced, if it is bounced, no further delivery will be attempted.
-    This is different to previous versions, where failed messages were kept in the queue until
-    it was finally delivered, deleted or forever.
+  - if a delivery via a route fails permanently (the server replied with
+    a 5xx status) the message will be bounced, if it is bounced, no further
+    delivery will be attempted.
+    This is different to previous versions, where failed messages were kept
+    in the queue until it was finally delivered, deleted or forever.
 
 - there is a new online detection method: pipe. This allows you more
-  flexibility to detect the current online status, eg. the DHCP status on notebooks.
+  flexibility to detect the current online status, eg. the DHCP status
+  on notebooks.
 
-This method will once replace the 'mserver' option,
-you can already use the program mservdetect to use it:
+  This method will at some point replace the 'mserver' option,
+  you can already use the program mservdetect to use it:
 
-online_method=pipe
-online_pipe="/usr/bin/mservdetect localhost 222"
+	online_method=pipe
+	online_pipe="/usr/bin/mservdetect localhost 222"
 
-instead of
+  instead of
 
-online_detect=mserver
-mserver_iface="localhost:222"
+	online_detect=mserver
+	mserver_iface="localhost:222"
+
 
 0.1.9
+=====
 
 - you can use pipes in routes to implement gateways to uucp, fax, sms etc.
-The setup is similar to mda transport. See man pages.
+  The setup is similar to mda transport. See man pages.
 
 - for each connection (connect_routes), you can now give a list of
-route files, which will be used in the order given. You can use the
-filter rules (allowed_* and not_allowed_* rules) within each route.
+  route files, which will be used in the order given. You can use the
+  filter rules (allowed_* and not_allowed_* rules) within each route.
+
 
 0.1.8
+=====
 
 - for pop retrieval and smtp sending you can use a wrapper for eg. ssl
-tunneling. See man pages.
+  tunneling. See man pages.
 
 - a user can delete his mail from the spool with -Mrm if received
-locally, and if you configure with --enable-ident and set
-ident_trusted_nets also if received via smtp.
+  locally, and if you configure with --enable-ident and set
+  ident_trusted_nets also if received via smtp.
 
 - a backslash now works to escape characters in the configuration, so
-you can now use quotes inside quotes. All other characters with a
-leading backslash will be converted to itself (\a becomes a, \\
-becomes \).
+  you can now use quotes inside quotes. All other characters with a
+  leading backslash will be converted to itself (\a becomes a, \\
+  becomes \).
 
 - you can now use an mda for local mails. The mda will be called
-*after* alias expansion. See documentation for more.
+  *after* alias expansion. See documentation for more.
+
 
 0.1.0
+=====
+
 - masqmail can now retrieve mail with pop3. See the manual on how to do that.
+
 - supports now ESMTP AUTH as a client.
+
 - when called with -qo (without a connection name), the online status
-will be checked with the configured method.
+  will be checked with the configured method.
+
 
 0.0.10
-- there is now alias support. Give the location of the alias file (usually /etc/aliases) with eg.
-alias_file = "/etc/aliases"
-- delivery to pipes is now possible, but only if it appears in an alias file. Example:
-pipe: |/usr/bin/command
-will expand the address pipe to "|/usr/bin/command" which invokes '/usr/bin/command'
-as the user and group masqmail is running as.
+======
+
+- there is now alias support. Give the location of the alias file (usually
+  /etc/aliases) with e.g. alias_file = "/etc/aliases"
+
+- delivery to pipes is now possible, but only if it appears in an alias file.
+  Example:
+
+	pipe: |/usr/bin/command
+
+  will expand the address pipe to "|/usr/bin/command" which invokes
+  '/usr/bin/command' as the user and group masqmail is running as.
+
 - entries starting with '\' in alias files will not be exanded further
 
-- changed permissions for queue runs again: got to be root, mail or in group trusted.
+- changed permissions for queue runs again: got to be root, mail or in
+  group trusted.
 
 - some configuration parameters can be read from files, these are
-allowed_mail_locals, not_allowed_mail_locals, allowed_rcpt_domains, not_allowed_rcpt_domains,
-map_return_path_addresses, map_h_from_addresses, map_h_reply_to_addresses
-any entry in these list beginning with a '/' are regarded as
-filenames, the content of these will be put at that location. Entries
-in these files are separated by new lines.  Example:
-in the route file you have:
-map_h_from_addresses = "/etc/masqmail/hfrom.map"
-and hfrom.map contains:
+  allowed_mail_locals, not_allowed_mail_locals, allowed_rcpt_domains,
+  not_allowed_rcpt_domains, map_return_path_addresses, map_h_from_addresses,
+  map_h_reply_to_addresses any entry in these list beginning with a '/' are
+  regarded as filenames, the content of these will be put at that location.
+  Entries in these files are separated by new lines.  Example:
+  in the route file you have:
 
-john: John Smith <jsmith@mail.academic.edu>
-cmiller: "Charlie Miller" <cmiller@foo.com>
+	map_h_from_addresses = "/etc/masqmail/hfrom.map"
+
+  and hfrom.map contains:
+
+	john: John Smith <jsmith@mail.academic.edu>
+	cmiller: "Charlie Miller" <cmiller@foo.com>
+
 
 UPDATE (Jan 2000): The new home location of MasqMail is
 http://www.innominate.org/~oku/masqmail/, the new email adress of the
 author is Oliver Kurth <kurth@innominate.de>.
 
+
 0.0.9
+=====
+
 - see ChangeLog.
+
 
 NOTE: The home location of MasqMail at
 http://merlin.uni-sw.gwdg.de/~okurth/masqmail/ is uncertain from the
@@ -545,37 +613,64 @@ beginning of Nov. 1999! See http://www.freshmeat.net for new
 announcements. I leave the university and begin a new job on Nov. 1st 1999
 in Berlin :-).
 
-0.0.8:
+
+0.0.8
+=====
+
 - there is now a FAQ page. See docs/faq.html.
+
 - added allowed_rcpt_domains option for routes.
+
 - added allowed_mail_locals and not_allowed_mail_locals options for routes.
+
 - mailq now gives information about the time mails spent in the queue,
-the message size and the received host.
+  the message size and the received host.
 
-0.0.7:
--bug fix release: for statements in two	adjacent lines, the second was not recognized.
 
-0.0.6:
+0.0.7
+=====
+
+- bug fix release: for statements in two adjacent lines, the second was not
+  recognized.
+
+
+0.0.6
+=====
+
 - bug fix release: some MUAs (cucipop) saw the locally delivered mails
-concatenated. (cucipop is not a MUA  but a pop server, but it has to read the
-mails).
+  concatenated. (cucipop is not a MUA  but a pop server, but it has to read
+  the mails).
 
-0.0.5:
+
+0.0.5
+=====
+
 - fixed a bug that caused the headers to be lost under some circumstances.
+
 - added expand_h_sender_domain option for routes.
+
 - rewrote the libresolv part in configure. Should work better now.
 
-0.0.4:
+
+0.0.4
+=====
+
 - MM should now recognize whether libresolv should be linked.
+
 - added --with-logdir=LOGDIR and --with-spooldir=SPOOLDIR to set directories.
   These will be created if not already existent.
+
 - added --with-user=USER, --with-group=GROUP options to set user and group id
   for MasqMail.
 
-0.0.3:
+
+0.0.3
+=====
+
 - MasqMail can now deliver mails that are received at online
   time immediately to the internet. See the options detect_online,
   mserver_iface and online_file.
+
 - You can define a route configuration for the local net. See option
   local_net_route.
 
