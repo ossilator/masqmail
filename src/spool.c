@@ -323,8 +323,8 @@ spool_write(message *msg, gboolean do_write_data)
 				g_free(spool_file);
 			}
 		} else {
-			logwrite(LOG_ALERT, "could not open temporary data spool file: %s\n",
-			         strerror(errno));
+			logwrite(LOG_ALERT, "could not open temporary data spool file '%s': %s\n",
+			         tmp_file, strerror(errno));
 			ok = FALSE;
 		}
 		g_free(tmp_file);
