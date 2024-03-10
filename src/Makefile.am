@@ -57,7 +57,6 @@ smtpsend_SOURCES=\
 	child.c\
 	connect.c\
 	header.c\
-	interface.c\
 	lookup.c\
 	message.c\
 	parse.c\
@@ -69,8 +68,7 @@ mservdetect_SOURCES=\
 	masqmail.h\
 	readsock.h\
 	mservdetect.c\
-	readsock.c\
-	peopen.c
+	readsock.c
 
 readtest_SOURCES=\
 	readsock.c\
