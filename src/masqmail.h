@@ -356,8 +356,8 @@ gboolean deliver_msg_list(GList *msg_list, guint flags);
 gboolean deliver(message *msg);
 
 /* fail_msg.c */
-gboolean fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt, va_list args);
-gboolean warn_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt, va_list args);
+gboolean fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg);
+gboolean warn_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg);
 
 /* interface.c */
 int make_server_socket(interface *iface);

@@ -20,14 +20,12 @@ static gboolean deliver_finish(msg_out *msgout);
 **  been successfully sent
 */
 static gboolean
-delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
+delivery_failures_str(message *msg, GList *rcpt_list, gchar *err_msg)
 {
 	gboolean ok_fail = TRUE, ok_warn = TRUE;
 	time_t now = time(NULL);
 
 	GList *failed_list = NULL, *defered_list = NULL, *rcpt_node;
-	va_list args;
-	va_start(args, err_fmt);
 
 	foreach(rcpt_list, rcpt_node) {
 		address *rcpt = (address *) (rcpt_node->data);
@@ -45,17 +43,26 @@ delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
 		}
 	}
 	if (failed_list) {
-		ok_fail = fail_msg(msg, conf.errmsg_file, failed_list,
-				err_fmt, args);
+		ok_fail = fail_msg(msg, conf.errmsg_file, failed_list, err_msg);
 		g_list_free(failed_list);
 	}
 	if (defered_list) {
-		ok_warn = warn_msg(msg, conf.warnmsg_file, defered_list,
-				err_fmt, args);
+		ok_warn = warn_msg(msg, conf.warnmsg_file, defered_list, err_msg);
 		g_list_free(defered_list);
 	}
-	va_end(args);
 	return ok_fail && ok_warn;
+}
+
+static gboolean
+delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
+{
+	va_list args;
+	va_start(args, err_fmt);
+	gchar *err_msg = g_strdup_vprintf(err_fmt, args);
+	va_end(args);
+	gboolean ret = delivery_failures_str(msg, rcpt_list, err_msg);
+	g_free(err_msg);
+	return ret;
 }
 
 static gint
@@ -310,7 +317,7 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 
 			destroy_table(var_table);
 		}
-		ok_fail = delivery_failures(msg, rcpt_list, "%s", strerror(errno));
+		ok_fail = delivery_failures_str(msg, rcpt_list, strerror(errno));
 
 		if (flag) {
 			msg_free_data(msg);
