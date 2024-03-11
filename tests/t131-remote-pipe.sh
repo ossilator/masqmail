@@ -7,7 +7,7 @@ configure_sink
 
 make_config LOCAL
 configure_route <<EOF
-pipe = "$MASQMAIL -C $SERVER_CONFIG -bm -f\$return_path \${rcpt}"
+pipe = "\"$MASQMAIL\" -C \"$SERVER_CONFIG\" -bm -f\$return_path \${rcpt}"
 EOF
 configure_relay_all
 

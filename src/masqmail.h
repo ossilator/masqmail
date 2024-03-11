@@ -515,5 +515,20 @@ for((node) = g_list_first(list);\
 #endif
 #endif
 
+#define DO_PRAGMA(str) _Pragma(#str)
+#if defined(__clang__)
+#  define WARNING_PUSH DO_PRAGMA(clang diagnostic push)
+#  define WARNING_POP DO_PRAGMA(clang diagnostic pop)
+#  define WARNING_DISABLE(which) DO_PRAGMA(clang diagnostic ignored which)
+#elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
+#  define WARNING_PUSH DO_PRAGMA(GCC diagnostic push)
+#  define WARNING_POP DO_PRAGMA(GCC diagnostic pop)
+#  define WARNING_DISABLE(which) DO_PRAGMA(GCC diagnostic ignored which)
+#else
+#  define WARNING_PUSH
+#  define WARNING_POP
+#  define WARNING_DISABLE(which)
+#endif
+
 /* *BSD needs this: */
 extern char **environ;

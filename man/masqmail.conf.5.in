@@ -476,17 +476,39 @@ mda=\(dq/usr/bin/procmail \-Y \-d ${rcpt_local}\(dq
 .RE
 .IP
 
+Notes:
+.RS
+
+.IP \(bu 2
+The command is split according to
+.MR sh 1
+rules, but is
+.B not
+run through the shell.
+Therefore, you cannot use shell expansions and redirections; if you
+need those, call a script.
+.B Do not
+use \(lq/bin/sh\ -c\(rq, as this
+.I will
+create a shell injection vulnerability in conjunction with externally
+controllable variables.
+
+.IP \(bu 2
+If you need to quote something, remember to add an additional level
+of backslashes, as the option value is de-quoted.
+
+.IP \(bu 2
 For the MDA, as for pipe commands,
 a few environment variables will be set as well.
 See
 .MR masqmail 8 .
-To use environment variables for the mda,
-the dollar sign `$' has to be escaped with a backslash,
-otherwise they will be tried to be expanded with the internal variables.
 
+.IP \(bu 2
 The command's stderr is forwarded to
 .MR masqmail 8 's
 log file.
+
+.RE
 
 .TP
 .BI "mda_fromline = " boolean
@@ -511,6 +533,9 @@ an online connection currently.
 
 .I command
 must start with an absolute path to an executable program.
+It can contain optional arguments, which are parsed using
+.MR sh 1
+rules.
 
 Masqmail executes the command given and reads from its standard output.
 The command should print a single route name (as defined by

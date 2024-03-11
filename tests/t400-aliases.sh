@@ -28,7 +28,7 @@ cat > "$ALIASES" <<EOF
 foo: alice_123, bob_123, rob_123@localhost
 alice_123: $RECV_USER
 bob_123: bobby@example.com
-rob_123: "|$SCRIPT"
+rob_123: "|\"$SCRIPT\""
 EOF
 cat >> "$LOCAL_CONFIG" <<EOF
 

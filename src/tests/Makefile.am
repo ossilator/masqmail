@@ -17,7 +17,6 @@ nodist_smtpsend_SOURCES = \
 	lookup.c \
 	message.c \
 	parse.c \
-	peopen.c \
 	readsock.c \
 	smtp_out.c
 smtpsend_LDADD = @RESOLV_LIBS@ @GLIB_LIBS@

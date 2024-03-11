@@ -7,7 +7,6 @@
 */
 
 #include "masqmail.h"
-#include "peopen.h"
 
 #ifdef USE_LIBLOCKFILE
 #  include <maillock.h>
@@ -200,10 +199,23 @@ pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags
 
 	old_signal = signal(SIGCHLD, SIG_DFL);
 
-	out = peopen(cmd, "w", envp, &pid);
-	if (!out) {
-		logerrno(LOG_ERR, "could not open pipe '%s'", cmd);
+	gchar **argv;
+	GError *gerr = NULL;
+	if (!g_shell_parse_argv(cmd, NULL, &argv, &gerr)) {
+		loggerror(LOG_ERR, gerr, "failed to parse pipe command");
+		goto fail;
+	}
+	int stdin_fd;
+	gboolean cldok = g_spawn_async_with_pipes(
+			NULL /* workdir */, argv, envp,
+			G_SPAWN_DO_NOT_REAP_CHILD |
+					G_SPAWN_CHILD_INHERITS_STDOUT | G_SPAWN_CHILD_INHERITS_STDERR,
+			NULL, NULL, /* child setup */
+			&pid, &stdin_fd, NULL /* out */, NULL /* err */, &gerr);
+	if (!cldok) {
+		loggerror(LOG_ERR, gerr, "failed to launch pipe command '%s'", cmd);
 	} else {
+		out = fdopen(stdin_fd, "w");
 		ok = message_stream(out, msg, hdr_list, flags);
 
 		fclose(out);
@@ -224,6 +236,7 @@ pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags
 		}
 	}
 
+  fail:
 	signal(SIGCHLD, old_signal);
 
 	/* free environment */

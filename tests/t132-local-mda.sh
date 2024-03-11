@@ -12,7 +12,7 @@ echo "Options: \$@" >> "$LOCAL_BOX"
 EOF
 chmod +x "$SCRIPT"
 cat >> "$LOCAL_CONFIG" <<EOF
-mda = "$SCRIPT received \$uid from \$return_path \"(\$ident on \$received_host)\" for \${rcpt_local}@\$rcpt_domain"
+mda = "\"$SCRIPT\" received \$uid from \$return_path \"(\$ident on \$received_host)\" for \${rcpt_local}@\$rcpt_domain"
 mda_users = $RECV_USER
 EOF
 
