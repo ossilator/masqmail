@@ -43,9 +43,7 @@ sigterm_handler(int sig)
 	if (pidfile) {
 		acquire_root();
 		if (unlink(pidfile) != 0)
-			logwrite(LOG_WARNING,
-					"could not delete pid file %s: %s\n",
-					pidfile, strerror(errno));
+			logerrno(LOG_WARNING, "could not delete pid file %s", pidfile);
 		drop_root();  // we exit anyway after this, but whatever
 	}
 
@@ -106,8 +104,7 @@ write_pidfile(void)
 		pidfile = name;
 		return TRUE;
 	}
-	logwrite(LOG_WARNING, "could not write pid file %s: %s\n",
-	         name, strerror(errno));
+	logerrno(LOG_WARNING, "could not write pid file %s", name);
 	g_free(name);
 	return FALSE;
 }
@@ -594,13 +591,11 @@ main(int argc, char *argv[])
 	if ((strcmp(conf_file, CONF_FILE) != 0) && (conf.orig_uid != 0)) {
 		run_as_user = TRUE;
 		if (setgid(conf.orig_gid)) {
-			logwrite(LOG_ALERT, "could not set gid to %d: %s\n",
-					conf.orig_gid, strerror(errno));
+			logerrno(LOG_ALERT, "could not set gid to %d", conf.orig_gid);
 			exit(1);
 		}
 		if (setuid(conf.orig_uid)) {
-			logwrite(LOG_ALERT, "could not set uid to %d: %s\n",
-					conf.orig_uid, strerror(errno));
+			logerrno(LOG_ALERT, "could not set uid to %d", conf.orig_uid);
 			exit(1);
 		}
 	}

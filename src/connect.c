@@ -57,8 +57,8 @@ connect_hostlist(int *psockfd, guint port, GList *addr_list)
 		}
 
 		saved_errno = errno;
-		logwrite(LOG_WARNING, "connection to %s failed: %s\n",
-				inet_ntoa(saddr.sin_addr), strerror(errno));
+		logerrno(LOG_WARNING, "connection to %s failed",
+		         inet_ntoa(saddr.sin_addr));
 		close(*psockfd);
 		errno = saved_errno;
 

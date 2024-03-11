@@ -67,8 +67,7 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 	}
 
 	if (!conf.run_as_user && seteuid(pw->pw_uid) != 0) {
-		logwrite(LOG_ALERT, "could not set uid %d for local delivery: %s\n",
-		         pw->pw_uid, strerror(errno));
+		logerrno(LOG_ALERT, "could not set uid %d for local delivery", pw->pw_uid);
 		return FALSE;
 	}
 
@@ -76,8 +75,7 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 
 	filename = g_strdup_printf("%s/%s", conf.mail_dir, user);
 	if (!(out = fopen(filename, "a"))) {
-		logwrite(LOG_ALERT, "could not open file %s: %s\n",
-				filename, strerror(errno));
+		logerrno(LOG_ALERT, "could not open file %s", filename);
 	} else {
 #ifdef USE_LIBLOCKFILE
 		gchar *lockfile = g_strconcat(filename, ".lock", NULL);
@@ -125,8 +123,7 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 		**  this message will not be finished, so the user will get
 		**  the message again next time a delivery is attempted...
 		*/
-		logwrite(LOG_ALERT, "could not set back uid after "
-				"local delivery: %s\n", strerror(errno));
+		logerrno(LOG_ALERT, "could not set back uid after local delivery");
 		DEBUG(1) debugf("uid=%d, euid=%d, want = %d\n",
 		                getuid(), geteuid(), conf.mail_uid);
 		exit(1);
@@ -177,8 +174,7 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 
 	out = peopen(cmd, "w", envp, &pid);
 	if (!out) {
-		logwrite(LOG_ALERT, "could not open pipe '%s': %s\n",
-				cmd, strerror(errno));
+		logerrno(LOG_ALERT, "could not open pipe '%s'", cmd);
 	} else {
 		message_stream(out, msg, hdr_list, flags);
 
