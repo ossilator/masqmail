@@ -36,8 +36,6 @@ masqmail_SOURCES=\
 	message.c\
 	online.c\
 	parse.c\
-	peopen.c\
-	peopen.h\
 	permissions.c\
 	readsock.c\
 	rewrite.c\

@@ -5,7 +5,6 @@
 */
 
 #include "masqmail.h"
-#include "peopen.h"
 #include "readsock.h"
 
 #include <sys/wait.h>
@@ -45,15 +44,23 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg)
 
 		if ((file = fopen(template, "r"))) {
 			FILE *out;
-			gchar *cmd;
 			pid_t pid;
+			int stdin_fd;
 
-			cmd = g_strdup_printf(SBINDIR "/masqmail -oi -f <> %s", ret_path->address);
-			if (!(out = peopen(cmd, "w", environ, &pid))) {
-				logerrno(LOG_ERR, "peopen failed");
+			GError *gerr = NULL;
+			gchar *argv[] = { SBINDIR "/masqmail", "-oi", "-f", "<>", ret_path->address, NULL };
+			gboolean cldok = g_spawn_async_with_pipes(
+					NULL /* workdir */, argv, NULL /* env */,
+					G_SPAWN_DO_NOT_REAP_CHILD |
+							G_SPAWN_CHILD_INHERITS_STDOUT | G_SPAWN_CHILD_INHERITS_STDERR,
+					NULL, NULL, /* child setup */
+					&pid, &stdin_fd, NULL /* out */, NULL /* err */, &gerr);
+			if (!cldok) {
+				loggerror(LOG_ERR, gerr, "failed to launch child");
 			} else {
 				gchar fmt[256];
 
+				out = fdopen(stdin_fd, "w");
 				while (read_sockline(file, fmt, 256, 0, 0) > 0) {
 					if (fmt[0] == '@') {
 						GList *node;
@@ -102,7 +109,6 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg)
 					ok = TRUE;
 				}
 			}
-			g_free(cmd);
 			fclose(file);
 		} else {
 			logerrno(LOG_ERR, "could not open failure message template %s",
