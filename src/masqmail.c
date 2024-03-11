@@ -43,9 +43,7 @@ sigterm_handler(int sig)
 	if (pidfile) {
 		acquire_root();
 		if (unlink(pidfile) != 0)
-			logwrite(LOG_WARNING,
-					"could not delete pid file %s: %s\n",
-					pidfile, strerror(errno));
+			logerrno(LOG_WARNING, "could not delete pid file %s", pidfile);
 		drop_root();  // we exit anyway after this, but whatever
 	}
 
@@ -104,8 +102,7 @@ write_pidfile(gchar *name)
 		pidfile = strdup(name);
 		return TRUE;
 	}
-	logwrite(LOG_WARNING, "could not write pid file: %s\n",
-			strerror(errno));
+	logerrno(LOG_WARNING, "could not write pid file");
 	return FALSE;
 }
 
@@ -128,7 +125,7 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 		if ((pid = fork()) > 0) {
 			exit(0);
 		} else if (pid < 0) {
-			logwrite(LOG_ALERT, "could not fork!\n");
+			logerrno(LOG_ALERT, "could not fork");
 			exit(1);
 		}
 	}
@@ -249,8 +246,7 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 
 	/* deliver at once */
 	if ((pid = fork()) < 0) {
-		logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n",
-				msg->uid);
+		logerrno(LOG_ALERT, "could not fork for delivery");
 	} else if (pid == 0) {
 		fclose(stdin);
 		fclose(stdout);
@@ -591,13 +587,11 @@ main(int argc, char *argv[])
 	if ((strcmp(conf_file, CONF_FILE) != 0) && (conf.orig_uid != 0)) {
 		run_as_user = TRUE;
 		if (setgid(conf.orig_gid)) {
-			logwrite(LOG_ALERT, "could not set gid to %d: %s\n",
-					conf.orig_gid, strerror(errno));
+			logerrno(LOG_ALERT, "could not set gid to %d", conf.orig_gid);
 			exit(1);
 		}
 		if (setuid(conf.orig_uid)) {
-			logwrite(LOG_ALERT, "could not set uid to %d: %s\n",
-					conf.orig_uid, strerror(errno));
+			logerrno(LOG_ALERT, "could not set uid to %d", conf.orig_uid);
 			exit(1);
 		}
 	}

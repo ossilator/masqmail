@@ -108,9 +108,7 @@ table_read(gchar *fname, gchar delim)
 	gchar buf[256];
 
 	if (!(fptr = fopen(fname, "rt"))) {
-		logwrite(LOG_ALERT, "could not open table file %s: %s. Thus "
-				"no aliasing will be done\n",
-				fname, strerror(errno));
+		logerrno(LOG_ALERT, "could not open table file %s", fname);
 		return NULL;
 	}
 

@@ -70,8 +70,7 @@ static void
 set_euid(gint uid)
 {
 	if (!conf.run_as_user && seteuid(uid) != 0) {
-		logwrite(LOG_ERR, "could not change uid to %d: %s\n",
-		         uid, strerror(errno));
+		logerrno(LOG_ERR, "could not change uid to %d", uid);
 		exit(1);
 	}
 }

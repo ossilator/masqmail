@@ -55,8 +55,7 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 
 			cmd = g_strdup_printf(SBINDIR "/masqmail -oi -f <> %s@%s", ret_path->local_part, ret_path->domain);
 			if (!(out = peopen(cmd, "w", environ, &pid))) {
-				logwrite(LOG_ERR, "peopen failed: %s\n",
-						strerror(errno));
+				logerrno(LOG_ERR, "peopen failed");
 			} else {
 				gchar fmt[256];
 
@@ -111,9 +110,8 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 			g_free(cmd);
 			fclose(file);
 		} else {
-			logwrite(LOG_ALERT, "could not open failure message "
-					"template %s: %s\n",
-					conf.errmsg_file, strerror(errno));
+			logerrno(LOG_ALERT, "could not open failure message template %s",
+			         conf.errmsg_file);
 		}
 
 		destroy_table(var_table);

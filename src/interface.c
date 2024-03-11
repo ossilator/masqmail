@@ -44,7 +44,7 @@ make_server_socket(interface *iface)
 	/* Create the socket. */
 	sock = socket(PF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
-		logwrite(LOG_ALERT, "socket: %s\n", strerror(errno));
+		logerrno(LOG_ALERT, "socket");
 		return -1;
 	}
 
@@ -56,7 +56,7 @@ make_server_socket(interface *iface)
 		/* bind the socket */
 		if (bind(sock, (struct sockaddr *) &server,
 				sizeof(server)) < 0) {
-			logwrite(LOG_ALERT, "bind: %s\n", strerror(errno));
+			logerrno(LOG_ALERT, "bind");
 			if (need_root) {
 				drop_root();
 			}

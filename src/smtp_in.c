@@ -333,7 +333,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 			} else {
 				pid = fork();
 				if (pid < 0) {
-					logwrite(LOG_ALERT, "could not fork for delivery, id = %s\n", msg->uid);
+					logerrno(LOG_ALERT, "could not fork for delivery");
 				} else if (pid == 0) {
 					/* FIXME: most likely inverted exit code */
 					_exit(deliver(msg));

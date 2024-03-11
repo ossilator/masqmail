@@ -23,6 +23,18 @@ logwrite(G_GNUC_UNUSED int pri, const char *fmt, ...)
 }
 
 void
+logerrno(G_GNUC_UNUSED int pri, const char *fmt, ...)
+{
+	int saved_errno = errno;
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(stdout, fmt, args);
+	va_end(args);
+	printf(": %s\n", strerror(saved_errno));
+	errno = saved_errno;
+}
+
+void
 debugf(const char *fmt, ...)
 {
 	va_list args;

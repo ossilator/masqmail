@@ -47,7 +47,7 @@ dot_lock(gchar *lock_name, gchar *hitch_name)
 			unlink(hitch_name);
 		}
 	} else
-		logwrite(LOG_WARNING, "could not create lock file %s: %s\n", lock_name, strerror(errno));
+		logerrno(LOG_WARNING, "could not create lock file %s", lock_name);
 
 	return ok;
 }

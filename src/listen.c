@@ -47,8 +47,7 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 	signal(SIGCHLD, sigchld_handler);
 	pid = fork();
 	if (pid < 0) {
-		logwrite(LOG_WARNING, "could not fork for incoming smtp "
-				"connection: %s\n", strerror(errno));
+		logerrno(LOG_WARNING, "could not fork for incoming smtp connection");
 	} else if (pid == 0) {
 		/* child */
 		close(listen_sock);
@@ -87,8 +86,7 @@ listen_port(GList *iface_list, gint qival)
 			continue;
 		}
 		if (listen(sock, 1) < 0) {
-			logwrite(LOG_ALERT, "listen: (terminating): %s\n",
-					strerror(errno));
+			logerrno(LOG_ALERT, "listen() (terminating)");
 			exit(1);
 		}
 		logwrite(LOG_NOTICE, "listening on interface %s:%d\n",
@@ -138,8 +136,7 @@ listen_port(GList *iface_list, gint qival)
 		if ((sel_ret = select(FD_SETSIZE, &read_fd_set, NULL, NULL,
 				qival > 0 ? &tm : NULL)) < 0) {
 			if (errno != EINTR) {
-				logwrite(LOG_ALERT, "select: (terminating): "
-						"%s\n", strerror(errno));
+				logerrno(LOG_ALERT, "select: (terminating)");
 				exit(1);
 			}
 		} else if (sel_ret > 0) {
@@ -155,7 +152,7 @@ listen_port(GList *iface_list, gint qival)
 						&clientname,
 						(socklen_t *)&size);
 				if (new < 0) {
-					logwrite(LOG_ALERT, "accept: (ignoring): %s\n", strerror(errno));
+					logerrno(LOG_ALERT, "accept: (ignoring)");
 				} else {
 					accept_connect(sock, new,
 							&clientname);
@@ -173,7 +170,7 @@ listen_port(GList *iface_list, gint qival)
 
 				_exit(0);
 			} else if (pid < 0) {
-				logwrite(LOG_ALERT, "could not fork for "
+				logerrno(LOG_ALERT, "could not fork for "
 						"queue run");
 			}
 		}

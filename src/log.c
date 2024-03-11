@@ -150,6 +150,22 @@ logwrite(int pri, const char *fmt, ...)
 	errno = saved_errno;
 }
 
+// this works pretty much like perror()
+void
+logerrno(int pri, const char *fmt, ...)
+{
+	va_list args;
+	int saved_errno = errno;
+
+	va_start(args, fmt);
+	gchar *msg = g_strdup_vprintf(fmt, args);
+	va_end(args);
+	logwrite(pri, "%s: %s\n", msg, strerror(saved_errno));
+	g_free(msg);
+
+	errno = saved_errno;
+}
+
 #ifdef ENABLE_DEBUG
 void
 debugf(const char *fmt, ...)

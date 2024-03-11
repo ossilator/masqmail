@@ -29,7 +29,7 @@ online_query()
 
 	in = peopen(pipe, "r", environ, &pid);
 	if (!in) {
-		logwrite(LOG_ALERT, "could not open pipe '%s': %s\n", pipe, strerror(errno));
+		logerrno(LOG_ALERT, "could not open pipe '%s'", pipe);
 		signal(SIGCHLD, old_signal);
 		return NULL;
 	}

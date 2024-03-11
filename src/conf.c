@@ -73,8 +73,7 @@ parse_list_file(const gchar *fname)
 	gchar buf[256];
 
 	if (!(fptr = fopen(fname, "rt"))) {
-		logwrite(LOG_ALERT, "could not open %s for reading: %s\n",
-				fname, strerror(errno));
+		logerrno(LOG_ALERT, "could not open %s for reading", fname);
 		exit(1);
 	}
 	while (fgets(buf, sizeof buf, fptr)) {
@@ -388,8 +387,7 @@ read_conf(gchar *filename)
 	conf.mail_dir = "/var/mail";
 
 	if (!(in = fopen(filename, "r"))) {
-		logwrite(LOG_ALERT, "could not open config file %s: %s\n",
-				filename, strerror(errno));
+		logerrno(LOG_ALERT, "could not open config file %s", filename);
 		return FALSE;
 	}
 
@@ -416,9 +414,7 @@ read_conf(gchar *filename)
 				char buf[256];
 				FILE *fptr = fopen(rval, "rt");
 				if (!fptr) {
-					logwrite(LOG_ALERT, "could not open "
-							"%s: %s\n", rval,
-							strerror(errno));
+					logerrno(LOG_ALERT, "could not open %s", rval);
 					return FALSE;
 				}
 				fgets(buf, sizeof buf, fptr);
@@ -562,8 +558,7 @@ read_route(gchar *filename)
 	DEBUG(5) debugf("read_route, filename = %s\n", filename);
 
 	if (!(in = fopen(filename, "r"))) {
-		logwrite(LOG_ALERT, "could not open route file %s: %s\n",
-				filename, strerror(errno));
+		logerrno(LOG_ALERT, "could not open route file %s", filename);
 		return NULL;
 	}
 
