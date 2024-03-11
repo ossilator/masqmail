@@ -20,14 +20,12 @@ static void deliver_finish(msg_out *msgout);
 **  been successfully sent
 */
 static gboolean
-delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
+delivery_failures(message *msg, GList *rcpt_list, gchar *err_msg)
 {
 	gboolean ok_fail = TRUE, ok_warn = TRUE;
 	time_t now = time(NULL);
 
 	GList *failed_list = NULL, *defered_list = NULL, *rcpt_node;
-	va_list args;
-	va_start(args, err_fmt);
 
 	foreach(rcpt_list, rcpt_node) {
 		address *rcpt = (address *) (rcpt_node->data);
@@ -45,16 +43,13 @@ delivery_failures(message *msg, GList *rcpt_list, gchar *err_fmt, ...)
 		}
 	}
 	if (failed_list) {
-		ok_fail = fail_msg(msg, conf.errmsg_file, failed_list,
-				err_fmt, args);
+		ok_fail = fail_msg(msg, conf.errmsg_file, failed_list, err_msg);
 		g_list_free(failed_list);
 	}
 	if (defered_list) {
-		ok_warn = warn_msg(msg, conf.warnmsg_file, defered_list,
-				err_fmt, args);
+		ok_warn = warn_msg(msg, conf.warnmsg_file, defered_list, err_msg);
 		g_list_free(defered_list);
 	}
-	va_end(args);
 	return ok_fail && ok_warn;
 }
 
@@ -241,8 +236,7 @@ deliver_local(msg_out *msgout)
 
 		g_list_free(hdr_list);
 	}
-	ok_fail = delivery_failures(msg, rcpt_list, "%s (%d)",
-			ext_strerror(errno), errno);
+	ok_fail = delivery_failures(msg, rcpt_list, "Local delivery failed");
 
 	if (flag) {
 		msg_free_data(msg);
@@ -308,7 +302,8 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 
 			destroy_table(var_table);
 		}
-		ok_fail = delivery_failures(msg, rcpt_list, "%s", strerror(errno));
+		ok_fail = delivery_failures(msg, rcpt_list,
+		                            "Remote delivery using pipe command failed");
 
 		if (flag) {
 			msg_free_data(msg);
@@ -343,10 +338,11 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 		port = route->mail_host->port;
 	}
 
+	gchar *err_msg = NULL;
 	if (route->wrapper) {
-		psb = smtp_out_open_child(host, route->wrapper);
+		psb = smtp_out_open_child(host, route->wrapper, &err_msg);
 	} else {
-		psb = smtp_out_open(host, port, res_list);
+		psb = smtp_out_open(host, port, res_list, &err_msg);
 	}
 
 	if (!psb) {
@@ -367,27 +363,13 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 				} else {
 					addr_mark_defered(rcpt);
 				}
-				if (route->wrapper) {
-					ret = delivery_failures(msgout->msg,
-							msgout->rcpt_list,
-							"could not open "
-							"wrapper:\n\t%s",
-							strerror(errno));
-				} else {
-					ret = delivery_failures(msgout->msg,
-							msgout->rcpt_list,
-							"could not open "
-							"connection to %s:%d "
-							":\n\t%s", host, port,
-							h_errno != 0 ?
-							hstrerror(h_errno) :
-							strerror(errno));
-				}
+				ret = delivery_failures(msgout->msg, msgout->rcpt_list, err_msg);
 				if (ret) {
 					deliver_finish(msgout);
 				}
 			}
 		}
+		g_free(err_msg);
 		return ok;
 	}
 
@@ -400,7 +382,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 				route->auth_secret);
 	}
 #endif
-	if (!smtp_out_init(psb, route->instant_helo)) {
+	if (!smtp_out_init(psb, route->instant_helo, &err_msg)) {
 		/* smtp_out_init() failed */
 		smtp_out_quit(psb);
 		if ((psb->error==smtp_fail) || (psb->error==smtp_trylater) ||
@@ -411,17 +393,12 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 						(msg_out *)(msgout_node->data);
 				smtp_out_mark_rcpts(psb, msgout->rcpt_list);
 
-				if (delivery_failures(msgout->msg,
-						msgout->rcpt_list,
-						"while connected with %s, "
-						"the server replied\n\t%s",
-						(route->wrapper) ?
-						"<wrapper>" : host,
-						psb->buffer)) {
+				if (delivery_failures(msgout->msg, msgout->rcpt_list, err_msg)) {
 					deliver_finish(msgout);
 				}
 			}
 		}
+		g_free(err_msg);
 		destroy_smtpbase(psb);
 		return ok;
 	}
@@ -443,13 +420,13 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 			break;
 		}
 
-		smtp_out_msg(psb, msg, msgout->return_path, msgout->rcpt_list,
-				msgout->hdr_list);
+		smtp_out_msg(psb, msg, msgout->return_path,
+		             msgout->rcpt_list, msgout->hdr_list, &err_msg);
 
-		ok_fail = delivery_failures(msg, msgout->rcpt_list,
-				"while connected with %s, the server "
-				"replied\n\t%s", (route->wrapper) ?
-				"<wrapper>" : host, psb->buffer);
+		ok_fail = delivery_failures(msg, msgout->rcpt_list, err_msg);
+
+		g_free(err_msg);
+		err_msg = NULL;
 
 		if ((psb->error == smtp_eof) || (psb->error == smtp_timeout)) {
 			/* connection lost */

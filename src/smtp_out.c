@@ -432,32 +432,43 @@ smtp_out_mark_rcpts(smtp_base *psb, GList *rcpt_list)
 }
 
 static void
-smtp_out_log_failure(smtp_base *psb, message *msg)
+smtp_out_log_failure(smtp_base *psb, message *msg, gchar **err_msg)
 {
-	gchar *err_str;
+	const gchar *wrap_str = psb->is_wrapped ? " (via wrapper)" : "";
 
-	if (psb->error == smtp_timeout)
-		err_str = g_strdup("connection timed out.");
-	else if (psb->error == smtp_eof)
-		err_str = g_strdup("connection terminated prematurely.");
-	else if (psb->error == smtp_syntax)
-		err_str = g_strdup_printf("got unexpected response: %s", psb->buffer);
-	else if (psb->error == smtp_cancel)
-		err_str = g_strdup("delivery was canceled.\n");
-	else
+	const gchar *err_str;
+	const gchar *err_sep_log = "", *err_sep_mail = ".", *err_pay = "";
+	if (psb->error == smtp_timeout) {
+		err_str = "Connection timed out";
+	} else if (psb->error == smtp_eof) {
+		err_str = "Connection terminated prematurely";
+	} else if (psb->error == smtp_cancel) {
+		err_str = "Message size exceeds limit";
+	} else {
+		err_str = "Unexpected response";
+		err_sep_log = ": ";
+		err_sep_mail = ":\n\t";
 		/* error message should still be in the buffer */
-		err_str = g_strdup_printf("failed: %s\n", psb->buffer);
+		err_pay = psb->buffer;
+	}
 
-	if (msg == NULL)
-		logwrite(LOG_INFO, "host=%s %s\n", psb->remote_host, err_str);
-	else
-		logwrite(LOG_INFO, "%s == host=%s %s\n", msg->uid, psb->remote_host, err_str);
+	if (msg == NULL) {
+		logwrite(LOG_INFO, "host=%s%s %s%s%s\n",
+		         psb->remote_host, wrap_str, err_str, err_sep_log, err_pay);
+	} else {
+		logwrite(LOG_INFO, "%s == host=%s%s %s%s%s\n",
+		         msg->uid, psb->remote_host, wrap_str, err_str, err_sep_log, err_pay);
+	}
 
-	g_free(err_str);
+	if (err_msg) {
+		*err_msg = g_strdup_printf(
+				"%s while connected to\n%s%s%s%s",
+				err_str, psb->remote_host, wrap_str, err_sep_mail, err_pay);
+	}
 }
 
 smtp_base*
-smtp_out_open(gchar *host, gint port, GList *resolve_list)
+smtp_out_open(gchar *host, gint port, GList *resolve_list, gchar **err_msg)
 {
 	smtp_base *psb;
 	gint sock;
@@ -465,7 +476,7 @@ smtp_out_open(gchar *host, gint port, GList *resolve_list)
 
 	DEBUG(5) debugf("smtp_out_open entered, host = %s\n", host);
 
-	if (!(addr = connect_resolvelist(&sock, host, port, resolve_list))) {
+	if (!(addr = connect_resolvelist(&sock, host, port, resolve_list, err_msg))) {
 		return NULL;
 	}
 
@@ -484,7 +495,7 @@ smtp_out_open(gchar *host, gint port, GList *resolve_list)
 }
 
 smtp_base*
-smtp_out_open_child(const gchar *host, gchar *cmd)
+smtp_out_open_child(const gchar *host, gchar *cmd, gchar **err_msg)
 {
 	smtp_base *psb;
 	gint sock;
@@ -492,12 +503,17 @@ smtp_out_open_child(const gchar *host, gchar *cmd)
 	DEBUG(5) debugf("smtp_out_open_child entered, cmd = %s\n", cmd);
 	sock = child(cmd);
 	if (sock <= 0) {
-		return NULL;
+		goto fail;
 	}
 	psb = create_smtpbase(sock);
+	psb->is_wrapped = TRUE;
 	psb->remote_host = g_strdup(host);
 
 	return psb;
+
+  fail:
+	*err_msg = g_strdup("Failed to launch connection wrapper");
+	return NULL;
 }
 
 gboolean
@@ -509,7 +525,7 @@ smtp_out_rset(smtp_base *psb)
 		return TRUE;
 	}
 
-	smtp_out_log_failure(psb, NULL);
+	smtp_out_log_failure(psb, NULL, NULL);
 
 	return FALSE;
 }
@@ -626,7 +642,7 @@ smtp_out_auth(smtp_base *psb)
 #endif
 
 gboolean
-smtp_out_init(smtp_base *psb, gboolean instant_helo)
+smtp_out_init(smtp_base *psb, gboolean instant_helo, gchar **err_msg)
 {
 	DEBUG(1) debugf("smtp_out_init(): instant_helo=%d\n", instant_helo);
 
@@ -650,7 +666,7 @@ smtp_out_init(smtp_base *psb, gboolean instant_helo)
 	return TRUE;
 
   fail:
-	smtp_out_log_failure(psb, NULL);
+	smtp_out_log_failure(psb, NULL, err_msg);
 	return FALSE;
 }
 
@@ -683,7 +699,7 @@ smtp_out_rcptto_resp(smtp_base *psb, message *msg, address *rcpt, int *rcpt_acce
 
 void
 smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
-		GList *rcpt_list, GList *hdr_list)
+             GList *rcpt_list, GList *hdr_list, gchar **err_msg)
 {
 	gint i;
 	gssize size;
@@ -782,7 +798,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 	// marked as delivered, and set the actual status instead.
 	smtp_out_mark_rcpts(psb, rcpt_list);
 
-	smtp_out_log_failure(psb, msg);
+	smtp_out_log_failure(psb, msg, err_msg);
 }
 
 void

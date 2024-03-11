@@ -11,8 +11,7 @@
 #include <sys/wait.h>
 
 gboolean
-fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
-		va_list args)
+fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg)
 {
 	gboolean ok = FALSE;
 	address *ret_path = NULL;
@@ -41,11 +40,9 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 	if (template) {
 		FILE *file;
 		GList *var_table = var_table_conf(var_table_msg(NULL, msg));
-		gchar *err_msg = g_strdup_vprintf(err_fmt, args);
 
 		var_table = g_list_prepend(var_table,
 				create_pair("err_msg", err_msg));
-		g_free(err_msg);
 
 		if ((file = fopen(template, "r"))) {
 			FILE *out;
@@ -159,13 +156,12 @@ warn_msg_is_due(message *msg)
 }
 
 gboolean
-warn_msg(message *msg, gchar *template, GList *defered_rcpts, gchar *err_fmt,
-		va_list args)
+warn_msg(message *msg, gchar *template, GList *defered_rcpts, gchar *err_msg)
 {
 	time_t now = time(NULL);
 
 	if (warn_msg_is_due(msg)) {
-		if (fail_msg(msg, template, defered_rcpts, err_fmt, args)) {
+		if (fail_msg(msg, template, defered_rcpts, err_msg)) {
 			msg->warned_time = now;
 			return TRUE;
 		} else {

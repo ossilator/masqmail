@@ -80,7 +80,7 @@ connect_hostlist(int *psockfd, gint port, GList *addr_list)
 */
 mxip_addr*
 connect_resolvelist(int *psockfd, gchar *host, gint port,
-		GList *res_func_list)
+		GList *res_func_list, gchar **err_msg)
 {
 	GList *res_node;
 	GList *addr_list;
@@ -113,12 +113,17 @@ connect_resolvelist(int *psockfd, gchar *host, gint port,
 	}
 	logwrite(LOG_ERR, "could not resolve %s: %s\n",
 	         host, hstrerror(h_errno));
+	*err_msg = g_strdup_printf("Could not resolve host %s:\n\t%s\n",
+	                           host, h_errno != 0 ? hstrerror(h_errno) : strerror(errno));
 	return NULL;
 
   gotip: ;
 	mxip_addr *addr = connect_hostlist(psockfd, port, addr_list);
 	if (addr) {
 		addr_list = g_list_remove(addr_list, addr);
+	} else {
+		*err_msg = g_strdup_printf("Could not connect to %s:%ds:\n\t%s\n",
+		                           host, port, strerror(errno));
 	}
 	destroy_mxip_addr_list(addr_list);
 	return addr;

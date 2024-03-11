@@ -50,15 +50,24 @@ smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg)
 {
 	DEBUG(5) debugf("smtp_deliver entered\n");
 
-	smtp_base *psb = smtp_out_open(host, port, resolve_list);
+	gchar *err_msg = NULL;
+	smtp_base *psb = smtp_out_open(host, port, resolve_list, &err_msg);
 	if (!psb) {
+		fputs(err_msg, stderr);
+		g_free(err_msg);
 		return -1;
 	}
 	set_heloname(psb, msg->return_path->domain, TRUE);
-	if (!smtp_out_init(psb, FALSE)) {
+	if (!smtp_out_init(psb, FALSE, &err_msg)) {
+		fputs(err_msg, stderr);
+		g_free(err_msg);
 		goto out;
 	}
-	smtp_out_msg(psb, msg, msg->return_path, NULL, NULL);
+	smtp_out_msg(psb, msg, msg->return_path, NULL, NULL, &err_msg);
+	if (err_msg) {
+		fputs(err_msg, stderr);
+		g_free(err_msg);
+	}
   out:
 	smtp_out_quit(psb);
 	smtp_error err = psb->error;

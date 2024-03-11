@@ -356,15 +356,16 @@ address *_create_address(gchar *string, gchar **end, gboolean is_rfc821);
 GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain);
 
 /* connect.c */
-mxip_addr *connect_resolvelist(int *psockfd, gchar *host, gint port, GList *res_funcs);
+mxip_addr *connect_resolvelist(int *psockfd, gchar *host, gint port,
+                               GList *res_funcs, gchar **err_msg);
 
 /* deliver.c */
 void deliver_msg_list(GList *msg_list, guint flags);
 void deliver(message *msg);
 
 /* fail_msg.c */
-gboolean fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt, va_list args);
-gboolean warn_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt, va_list args);
+gboolean fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg);
+gboolean warn_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg);
 
 /* interface.c */
 int make_server_socket(interface *iface);
