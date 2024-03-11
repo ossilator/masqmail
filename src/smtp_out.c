@@ -495,14 +495,35 @@ smtp_base*
 smtp_out_open_child(gchar *cmd, gchar **err_msg)
 {
 	smtp_base *psb;
-	gint sock;
 
 	DEBUG(5) debugf("smtp_out_open_child entered, cmd = %s\n", cmd);
-	sock = child(cmd);
-	if (sock <= 0) {
+
+	gchar **argv;
+	GError *gerr = NULL;
+	if (!g_shell_parse_argv(cmd, NULL, &argv, &gerr)) {
+		loggerror(LOG_ERR, gerr, "failed to parse wrapper command");
 		goto fail;
 	}
-	psb = create_smtpbase(sock);
+
+	int pipe[2];
+	if (socketpair(AF_UNIX, SOCK_STREAM, 0, pipe) < 0) {
+		logerrno(LOG_ERR, "socketpair");
+		g_strfreev(argv);
+		goto fail;
+	}
+	gboolean ok = g_spawn_async_with_fds(
+			NULL /* workdir */, argv, NULL /* env */,
+			G_SPAWN_DO_NOT_REAP_CHILD,
+			NULL, NULL, /* child setup */
+			NULL /* pid */, pipe[0], pipe[0], pipe[0], &gerr);
+	g_strfreev(argv);
+	close(pipe[0]);
+	if (!ok) {
+		loggerror(LOG_ERR, gerr, "failed to launch wrapper command");
+		close(pipe[1]);
+		goto fail;
+	}
+	psb = create_smtpbase(pipe[1]);
 	psb->remote_host = NULL;
 
 	return psb;
