@@ -821,15 +821,8 @@ deliver_msg_list(GList *msg_list, guint flags)
 
 		rcpt_list = g_list_copy(msgout->msg->rcpt_list);
 		if (conf.log_user) {
-			address *addr = create_address_qualified(conf.log_user,
-					TRUE, conf.host_name);
-			if (addr) {
-				rcpt_list = g_list_prepend(rcpt_list, addr);
-			} else {
-				logwrite(LOG_ALERT, "invalid log_user "
-						"address `%s', ignoring\n",
-						conf.log_user);
-			}
+			address *addr = create_address_raw(conf.log_user, conf.host_name);
+			rcpt_list = g_list_prepend(rcpt_list, addr);
 		}
 		if (globalias_table) {
 			GList *globaliased_rcpt_list;

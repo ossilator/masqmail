@@ -6,6 +6,25 @@
 
 #include "masqmail.h"
 
+static address*
+create_address_rawest(gchar *local_part, gchar *domain)
+{
+	address *addr = g_malloc0(sizeof(address));
+	addr->local_part = local_part;
+	addr->domain = domain;
+	// pedantically, the local part may need quoting/escaping,
+	// but our address parser doesn't dequote, either.
+	addr->address = domain ? g_strdup_printf("%s@%s", local_part, domain)
+	                       : g_strdup(local_part);
+	return addr;
+}
+
+address*
+create_address_raw(gchar *local_part, gchar *domain)
+{
+	return create_address_rawest(g_strdup(local_part), g_strdup(domain));
+}
+
 address*
 create_address(gchar *path, gboolean is_rfc821)
 {

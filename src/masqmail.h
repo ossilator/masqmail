@@ -314,6 +314,7 @@ void destroy_msg_out_list(GList *msgout_list);
 /* address.c */
 address *create_address(gchar *path, gboolean is_rfc821);
 address *create_address_qualified(gchar *path, gboolean is_rfc821, gchar *domain);
+address *create_address_raw(gchar *local_part, gchar *domain);
 address *create_address_pipe(gchar *path);
 void destroy_address(address *addr);
 address *copy_modify_address(const address *orig, gchar *l_part, gchar *dom);
