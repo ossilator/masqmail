@@ -52,13 +52,5 @@ main(int argc, char *argv[])
 		       inet_ntoa(*(struct in_addr *) &(p_mxip->ip)), p_mxip->pref);
 	}
 
-	printf("\nIP resolved directly (assumed FQDN, no default domain added):\n");
-	{
-		guint32 ip;
-		if (dns_look_ip(argv[1], &ip) >= 0) {
-			printf("%s\n", inet_ntoa(*((struct in_addr *) (&ip))));
-		}
-	}
-
 	return 0;
 }

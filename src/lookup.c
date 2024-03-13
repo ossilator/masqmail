@@ -153,55 +153,19 @@ dns_getmx(int *pref)
 	return 0;
 }
 
-int
-dns_look_ip(gchar *domain, guint32 *ip)
-{
-	gchar *n = domain;
-
-	while (TRUE) {
-		if (dns_resolve(n, T_A, FALSE) != 0) {
-			return -1;
-		}
-
-		dns_next();
-		if (rr_type == T_A) {
-			if (rr_dlen < 4) {
-				return -1;  /* soft */
-			}
-			*ip = *(guint32 *) (resp_pos);
-
-			DEBUG(5) debugf("DNS: dns_look_ip(): ip = %s\n", inet_ntoa(*(struct in_addr *) ip));
-
-			resp_pos += rr_dlen;
-			return 0;
-		} else if (rr_type == T_CNAME) {
-			if (dn_expand(response.buf, resp_end, resp_pos, name, MAX_DNSNAME) < 0) {
-				return -1;
-			}
-
-			DEBUG(5) debugf("DNS: (CNAME) dns_look_ip(): name = %s\n", name);
-
-			resp_pos += rr_dlen;
-			n = name;
-		} else {
-			return -1;
-		}
-	}
-}
-
 static GList*
-resolve_dns_a(GList *list, gchar *domain)
+resolve_dns_a(GList *list, gchar *domain, gboolean do_search, int pref)
 {
 	int ret;
 
 	DEBUG(5) debugf("DNS: resolve_dns_a entered\n");
 
-	if (dns_resolve(domain, T_A, TRUE) == 0) {
+	if (dns_resolve(domain, T_A, do_search) == 0) {
 		mxip_addr mxip;
 		while ((ret = dns_getip(&(mxip.ip))) != 2) {
 			if (ret == 1) {
 				mxip.name = g_strdup(name);
-				mxip.pref = 0;
+				mxip.pref = pref;
 				list = g_list_append(list, g_memdup2(&mxip, sizeof(mxip)));
 			}
 		}
@@ -231,13 +195,13 @@ resolve_dns_mx(GList *list, gchar *domain)
 	DEBUG(5) debugf("DNS: resolve_dns_mx entered\n");
 
 	if (dns_resolve(domain, T_MX, TRUE) == 0) {
-		GList *node_next;
+		GList *tmp_list = NULL;
 		mxip_addr mxip;
 		while ((ret = dns_getmx(&(mxip.pref))) != 2) {
 			if (ret == 1) {
 				mxip.name = g_strdup(name);
 				mxip.ip = rand();
-				list = g_list_append(list, g_memdup2(&mxip, sizeof(mxip)));
+				tmp_list = g_list_append(tmp_list, g_memdup2(&mxip, sizeof(mxip)));
 				cnt++;
 			}
 		}
@@ -249,24 +213,16 @@ resolve_dns_mx(GList *list, gchar *domain)
 		**  we temporarily 'misused' the ip field and
 		**  put a random number in it as a secondary sort key.
 		*/
-		list = g_list_sort(list, _mx_sort_func);
+		tmp_list = g_list_sort(tmp_list, _mx_sort_func);
 
-		/* CNAME resolving has to be added as well. */
-
-		for (node = g_list_first(list); node != NULL; node = node_next) {
-
+		foreach (tmp_list, node) {
 			mxip_addr *p_mxip = (mxip_addr *) (node->data);
-			node_next = g_list_next(node);
-
-			if (dns_look_ip(p_mxip->name, &(p_mxip->ip)) != 0) {
-				DEBUG(1) debugf("DNS: could not resolve target of mx %s\n", p_mxip->name);
-				list = g_list_remove_link(list, node);
-				g_free(node->data);
-				g_list_free_1(node);
-			}
+			list = resolve_dns_a(list, p_mxip->name, FALSE, p_mxip->pref);
 		}
+
+		destroy_mxip_addr_list(tmp_list);
 	} else {
-		list = resolve_dns_a(list, domain);
+		list = resolve_dns_a(list, domain, TRUE, 0);
 	}
 	return list;
 }
