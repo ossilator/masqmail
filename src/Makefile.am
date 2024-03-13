@@ -1,8 +1,9 @@
+SUBDIRS = tests
+
 AM_CFLAGS=-Wno-pointer-sign @CFLAGS@ @GLIB_CFLAGS@ -D_GNU_SOURCE -DG_DISABLE_DEPRECATED
 
 sbin_PROGRAMS=masqmail
 bin_PROGRAMS=mservdetect
-noinst_PROGRAMS=smtpsend readtest resolvtest
 
 install-exec-hook:
 	chmod u+s $(DESTDIR)@sbindir@/masqmail
@@ -46,41 +47,11 @@ masqmail_SOURCES=\
 	tables.c\
 	timeival.c
 
-smtpsend_SOURCES=\
-	smtpsend.c\
-	masqmail.h\
-	readsock.h\
-	smtp_out.h\
-	lookup.h\
-	accept.c\
-	address.c\
-	child.c\
-	connect.c\
-	header.c\
-	lookup.c\
-	message.c\
-	parse.c\
-	peopen.c\
-	readsock.c\
-	smtp_out.c
-
 mservdetect_SOURCES=\
 	masqmail.h\
 	readsock.h\
 	mservdetect.c\
 	readsock.c
 
-readtest_SOURCES=\
-	readsock.c\
-	readsock.h\
-	readtest.c
-
-resolvtest_SOURCES=\
-	resolvtest.c\
-	lookup.c
-
 masqmail_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@ @LOCKFILE_LIBS@
-smtpsend_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@
 mservdetect_LDADD=@GLIB_LIBS@
-readtest_LDADD=@GLIB_LIBS@
-resolvtest_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@
