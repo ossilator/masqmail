@@ -36,6 +36,10 @@ dns_resolve(char *domain, int type, gboolean do_search,
 		return -1;
 	}
 
+	// set it centrally for the case we find corrupted data
+	h_errno = NETDB_INTERNAL;
+	errno = EMSGSIZE;  // libresolv uses that for parsing errors
+
 	return ns_initparse(nsbuf, resp_len, nsmsg);
 }
 
