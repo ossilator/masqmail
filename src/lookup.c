@@ -189,7 +189,7 @@ dns_look_ip(gchar *domain, guint32 *ip)
 	}
 }
 
-GList*
+static GList*
 resolve_dns_a(GList *list, gchar *domain)
 {
 	int ret;
@@ -265,6 +265,8 @@ resolve_dns_mx(GList *list, gchar *domain)
 				g_list_free_1(node);
 			}
 		}
+	} else {
+		list = resolve_dns_a(list, domain);
 	}
 	return list;
 }

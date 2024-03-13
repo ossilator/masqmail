@@ -169,8 +169,6 @@ parse_resolve_list(gchar *line)
 		if (strcmp(item, "byname")==0) {
 			res_list = g_list_append(res_list, resolve_byname);
 #ifdef ENABLE_RESOLVER
-		} else if (strcmp(item, "dns_a")==0) {
-			res_list = g_list_append(res_list, resolve_dns_a);
 		} else if (strcmp(item, "dns_mx")==0) {
 			res_list = g_list_append(res_list, resolve_dns_mx);
 #endif
@@ -679,8 +677,6 @@ read_route(gchar *filename)
 #ifdef ENABLE_RESOLVER
 		route->resolve_list = g_list_append(route->resolve_list,
 				resolve_dns_mx);
-		route->resolve_list = g_list_append(route->resolve_list,
-				resolve_dns_a);
 #endif
 		route->resolve_list = g_list_append(route->resolve_list,
 				resolve_byname);

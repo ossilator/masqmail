@@ -176,17 +176,34 @@ and a colon, e.g., mail_host=\(dqmail.foo.com:25\(dq.
 .BI "resolve_list = " list
 
 Specify the method how the domain of the server is resolved.
-Possible values are dns_mx, dns_a, byname.
-For `dns_mx', the domain is assumed to be an MX pointer to a list of host names,
-these will be tried each in order
-(lowest preference value first, equal preference values in random order).
-For `dns_a', the domain is assumed to be an A pointer.
-For `byname', the library function \fBgethostbyname(3)\fR will be used.
+Possible values are
+.B dns_mx
+and
+.BR byname .
 
-For routes to a local network, where you likely don't have a DNS service,
-use only `byname'.
+For
+.BR dns_mx ,
+the domain will be resolved using DNS according to
+RFC 5321 (SMTP) rules, utilizing MX records if found.
+For
+.BR byname ,
+the library function
+.MR gethostbyname 3
+will be used.
 
-The default is "dns_mx;dns_a;byname".
+Routes with a
+.B mail_host
+should use only
+.BR byname .
+
+Other routes may include either or both, depending on expected
+destinations -
+.B byname
+for local networks which have no internal DNS server, and
+.B dns_mx
+for other networks.
+
+The default is \(lqdns_mx;byname\(rq.
 
 .TP
 .BI "helo_name = " string

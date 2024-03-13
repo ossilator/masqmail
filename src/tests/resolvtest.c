@@ -45,14 +45,6 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
-	printf("A:\n");
-	addr_list = resolve_dns_a(NULL, argv[1]);
-	foreach(addr_list, node) {
-		mxip_addr *p_mxip = (mxip_addr *) (node->data);
-		printf("%s  \t%s\n", p_mxip->name, inet_ntoa(*(struct in_addr *) &(p_mxip->ip)));
-	}
-
-	printf("\nMX:\n");
 	addr_list = resolve_dns_mx(NULL, argv[1]);
 	foreach(addr_list, node) {
 		mxip_addr *p_mxip = (mxip_addr *) (node->data);
