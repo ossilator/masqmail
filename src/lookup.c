@@ -163,6 +163,8 @@ resolve_dns_a(GList *list, gchar *domain, gboolean do_search, int pref)
 	if (dns_resolve(domain, T_A, do_search) == 0) {
 		mxip_addr mxip;
 		while ((ret = dns_getip(&(mxip.ip))) != 2) {
+			if (ret < 0)
+				goto afail;
 			if (ret == 1) {
 				mxip.name = g_strdup(name);
 				mxip.pref = pref;
@@ -171,6 +173,10 @@ resolve_dns_a(GList *list, gchar *domain, gboolean do_search, int pref)
 		}
 	}
 	return list;
+
+  afail:
+	destroy_mxip_addr_list(list);
+	return NULL;
 }
 
 static gint
@@ -199,6 +205,8 @@ resolve_dns_mx(gchar *domain)
 		GList *tmp_list = NULL;
 		mxip_addr mxip;
 		while ((ret = dns_getmx(&(mxip.pref))) != 2) {
+			if (ret < 0)
+				goto mxfail;
 			if (ret == 1) {
 				mxip.name = g_strdup(name);
 				mxip.ip = rand();
@@ -219,8 +227,11 @@ resolve_dns_mx(gchar *domain)
 		foreach (tmp_list, node) {
 			mxip_addr *p_mxip = (mxip_addr *) (node->data);
 			list = resolve_dns_a(list, p_mxip->name, FALSE, p_mxip->pref);
+			if (!list)
+				break;
 		}
 
+	  mxfail:
 		destroy_mxip_addr_list(tmp_list);
 	} else {
 		list = resolve_dns_a(list, domain, TRUE, 0);
