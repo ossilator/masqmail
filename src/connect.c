@@ -118,8 +118,8 @@ connect_resolvelist(int *psockfd, gchar *host, gint port,
   gotip: ;
 	mxip_addr *addr = connect_hostlist(psockfd, port, addr_list);
 	if (addr) {
-		return addr;
+		addr_list = g_list_remove(addr_list, addr);
 	}
-	g_list_free(addr_list);
-	return NULL;
+	destroy_mxip_addr_list(addr_list);
+	return addr;
 }

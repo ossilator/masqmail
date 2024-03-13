@@ -293,3 +293,16 @@ resolve_byname(GList *list, gchar *domain)
 	}
 	return list;
 }
+
+void
+destroy_mxip_addr(mxip_addr *mxip)
+{
+	g_free(mxip->name);
+	g_free(mxip);
+}
+
+void
+destroy_mxip_addr_list(GList *list)
+{
+	g_list_free_full(list, (GDestroyNotify) destroy_mxip_addr);
+}
