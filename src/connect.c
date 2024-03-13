@@ -77,9 +77,6 @@ connect_hostlist(int *psockfd, gint port, GList *addr_list)
 **  resolve the host and tries to connect to the addresses
 **  returned. If a connection attemp is timed out or refused,
 **  the next address is tried.
-**
-**  TODO: the resolver functions might return duplicate addresses,
-**  if attempt failed for one it should not be tried again.
 */
 mxip_addr*
 connect_resolvelist(int *psockfd, gchar *host, gint port,
@@ -92,12 +89,8 @@ connect_resolvelist(int *psockfd, gchar *host, gint port,
 
 	h_errno = 0;
 	if (isdigit(*host)) {
-		mxip_addr *addr;
-
 		if ((addr_list = resolve_ip(host))) {
-			addr = connect_hostlist(psockfd, port, addr_list);
-			g_list_free(addr_list);
-			return addr;
+			goto gotip;
 		}
 		/*
 		**  Probably a hostname that begins with a digit.
@@ -115,17 +108,18 @@ connect_resolvelist(int *psockfd, gchar *host, gint port,
 
 		errno = 0;
 		if ((addr_list = res_func(NULL, host))) {
-
-			mxip_addr *addr;
-			if ((addr = connect_hostlist(psockfd, port, addr_list))) {
-				return addr;
-			}
-			g_list_free(addr_list);
-		} else if (!g_list_next(res_node)) {
-			logwrite(LOG_ERR, "could not resolve %s: %s\n",
-					host, hstrerror(h_errno));
+			goto gotip;
 		}
 	}
+	logwrite(LOG_ERR, "could not resolve %s: %s\n",
+	         host, hstrerror(h_errno));
 	return NULL;
 
+  gotip: ;
+	mxip_addr *addr = connect_hostlist(psockfd, port, addr_list);
+	if (addr) {
+		return addr;
+	}
+	g_list_free(addr_list);
+	return NULL;
 }
