@@ -33,16 +33,13 @@ AC_ARG_ENABLE(resolver,
 
 if test "$resolver_enabled" = yes; then
 	AC_DEFINE(ENABLE_RESOLVER, 1, [If the resolver is to be used])
-dnl checks necessary for libc5:
-dnl if there is res_search in libc, it is probably libc5
-dnl if not, it is probably libc6 and we need libresolv
-	AC_CHECK_LIB(c, res_search, need_resolv=no, need_resolv=yes)
+	AC_CHECK_LIB(c, ns_parserr, need_resolv=no, need_resolv=yes)
 	if test "$need_resolv" = yes; then
-		AC_CHECK_LIB(resolv, res_search,
+		AC_CHECK_LIB(resolv, ns_parserr,
 			has_resolv=yes; RESOLV_LIBS="-lresolv",
 			has_resolv=no)
 		if test "$has_resolv" = no; then
-			AC_MSG_ERROR("no libresolv")
+			AC_MSG_ERROR("no adequate libresolv")
 			RESOLV_LIBS=''
 		fi
 	fi

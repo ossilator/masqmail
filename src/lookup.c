@@ -14,39 +14,17 @@
 
 #ifdef ENABLE_RESOLVER
 
-static union {
-	HEADER hdr;
-	unsigned char buf[PACKETSZ];
-} response;
-static unsigned char *resp_end;
-static unsigned char *resp_pos;
-
-static int num_answers;
-static char name[MAX_DNSNAME];
-
-static unsigned short rr_type;
-static unsigned short rr_dlen;
-
-static unsigned short
-getshort(unsigned char *c)
-{
-	unsigned short u;
-	u = c[0];
-	return (u << 8) + c[1];
-}
-
 static int
-dns_resolve(char *domain, int type, gboolean do_search)
+dns_resolve(char *domain, int type, gboolean do_search,
+            guchar *nsbuf, ns_msg *nsmsg)
 {
-	int n;
-	int i;
 	int resp_len;
 
 	DEBUG(5) debugf("DNS: before res_search()\n");
 	if (do_search)
-		resp_len = res_search(domain, C_IN, type, response.buf, sizeof(response));
+		resp_len = res_search(domain, ns_c_in, type, nsbuf, NS_MAXMSG);
 	else
-		resp_len = res_query(domain, C_IN, type, response.buf, sizeof(response));
+		resp_len = res_query(domain, ns_c_in, type, nsbuf, NS_MAXMSG);
 	DEBUG(5) debugf("DBG: after res_search()\n");
 
 	if (resp_len <= 0) {
@@ -57,116 +35,29 @@ dns_resolve(char *domain, int type, gboolean do_search)
 		*/
 		return -1;
 	}
-	if (resp_len >= sizeof(response))
-		resp_len = sizeof(response);
 
-	resp_end = response.buf + resp_len;
-	resp_pos = response.buf + sizeof(HEADER);
-	n = ntohs(response.hdr.qdcount);
-
-	while (n-- > 0) {
-		i = dn_expand(response.buf, resp_end, resp_pos, name, MAX_DNSNAME);
-		if (i < 0)
-			return -1;
-		DEBUG(5) debugf("DBG: resolve name = %s\n", name);
-		resp_pos += i;
-		i = resp_end - resp_pos;
-		if (i < QFIXEDSZ)
-			return -1;
-		resp_pos += QFIXEDSZ;
-	}
-	num_answers = ntohs(response.hdr.ancount);
-
-	return 0;
-}
-
-static int
-dns_next()
-{
-	int i;
-
-	if (num_answers <= 0)
-		return 2;
-	num_answers--;
-
-	if (resp_pos == resp_end)
-		return -1;  /* soft */
-
-	i = dn_expand(response.buf, resp_end, resp_pos, name, 256);
-	if (i < 0)
-		return -1;  /* soft */
-	resp_pos += i;
-
-	i = resp_end - resp_pos;
-	if (i < 4 + 3 * 2)
-		return -1;  /* soft */
-
-	rr_type = getshort(resp_pos);
-	rr_dlen = getshort(resp_pos + 8);
-	resp_pos += 10;
-
-	return 0;
-}
-
-static int
-dns_getip(guint32 *ip)
-{
-	int ret;
-
-	if ((ret = dns_next()))
-		return ret;
-
-	if (rr_type == T_A) {
-		if (rr_dlen < 4)
-			return -1;  /* soft */
-		*ip = *(guint32 *) (resp_pos);
-		DEBUG(5) debugf("DNS: dns_getip(): ip = %s\n", inet_ntoa(*(struct in_addr *) ip));
-		resp_pos += rr_dlen;
-
-		return 1;
-	}
-	resp_pos += rr_dlen;
-	return 0;
-}
-
-static int
-dns_getmx(int *pref)
-{
-	int ret;
-
-	if ((ret = dns_next()))
-		return ret;
-
-	if (rr_type == T_MX) {
-		if (rr_dlen < 3)
-			return -1;  /* soft */
-
-		*pref = (resp_pos[0] << 8) + resp_pos[1];
-		if (dn_expand(response.buf, resp_end, resp_pos + 2, name, MAX_DNSNAME) < 0)
-			return -1;
-
-		resp_pos += rr_dlen;
-
-		return 1;
-	}
-	resp_pos += rr_dlen;
-	return 0;
+	return ns_initparse(nsbuf, resp_len, nsmsg);
 }
 
 static GList*
 resolve_dns_a(GList *list, gchar *domain, gboolean do_search, int pref)
 {
-	int ret;
+	ns_rr rr;
+	ns_msg nsmsg;
+	guchar nsbuf[NS_MAXMSG];
 
 	DEBUG(5) debugf("DNS: resolve_dns_a entered\n");
 
-	if (dns_resolve(domain, T_A, do_search) == 0) {
+	if (dns_resolve(domain, ns_t_a, do_search, nsbuf, &nsmsg) == 0) {
 		mxip_addr mxip;
-		while ((ret = dns_getip(&(mxip.ip))) != 2) {
-			if (ret < 0)
+		for (int i = 0; i < ns_msg_count(nsmsg, ns_s_an); i++) {
+			if (ns_parserr(&nsmsg, ns_s_an, i, &rr) < 0)
 				goto afail;
-			if (ret == 1) {
-				mxip.name = g_strdup(name);
+			if (ns_rr_type(rr) == ns_t_a) {
+				if (ns_rr_rdlen(rr) != 4)
+					goto afail;
+				mxip.name = g_strdup(ns_rr_name(rr));
+				mxip.ip = htonl(ns_get32(ns_rr_rdata(rr)));
 				mxip.pref = pref;
 				list = g_list_append(list, g_memdup2(&mxip, sizeof(mxip)));
 			}
@@ -196,20 +87,29 @@ resolve_dns_mx(gchar *domain)
 {
 	GList *list = NULL;
 	GList *node;
-	int ret;
 	int cnt = 0;
+	ns_rr rr;
+	ns_msg nsmsg;
+	gchar dname[NS_MAXDNAME];
+	guchar nsbuf[NS_MAXMSG];
 
 	DEBUG(5) debugf("DNS: resolve_dns_mx entered\n");
 
-	if (dns_resolve(domain, T_MX, TRUE) == 0) {
-		GList *tmp_list = NULL;
+	if (dns_resolve(domain, ns_t_mx, TRUE, nsbuf, &nsmsg) == 0) {
 		mxip_addr mxip;
-		while ((ret = dns_getmx(&(mxip.pref))) != 2) {
-			if (ret < 0)
+		GList *tmp_list = NULL;
+		for (int i = 0; i < ns_msg_count(nsmsg, ns_s_an); i++) {
+			if (ns_parserr(&nsmsg, ns_s_an, i, &rr) < 0)
 				goto mxfail;
-			if (ret == 1) {
-				mxip.name = g_strdup(name);
+			if (ns_rr_type(rr) == ns_t_mx) {
+				if (ns_rr_rdlen(rr) < 3)
+					break;
+				if (dn_expand(ns_msg_base(nsmsg), ns_msg_end(nsmsg),
+				              ns_rr_rdata(rr) + 2, dname, NS_MAXDNAME) < 0)
+					goto mxfail;
+				mxip.name = g_strdup(dname);
 				mxip.ip = rand();
+				mxip.pref = ns_get16(ns_rr_rdata(rr));
 				tmp_list = g_list_append(tmp_list, g_memdup2(&mxip, sizeof(mxip)));
 				cnt++;
 			}

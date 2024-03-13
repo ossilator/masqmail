@@ -6,8 +6,6 @@
 
 #include <glib.h>
 
-#define MAX_DNSNAME MAXDNAME
-
 typedef struct {
 	guint32 ip;
 	int pref;
