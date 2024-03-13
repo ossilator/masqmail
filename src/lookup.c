@@ -186,8 +186,9 @@ _mx_sort_func(gconstpointer aa, gconstpointer bb)
 }
 
 GList*
-resolve_dns_mx(GList *list, gchar *domain)
+resolve_dns_mx(gchar *domain)
 {
+	GList *list = NULL;
 	GList *node;
 	int ret;
 	int cnt = 0;
@@ -232,8 +233,9 @@ resolve_dns_mx(GList *list, gchar *domain)
 /* now something completely different... */
 
 GList*
-resolve_byname(GList *list, gchar *domain)
+resolve_byname(gchar *domain)
 {
+	GList *list = NULL;
 	struct hostent *hent;
 
 	DEBUG(5) debugf("DNS: resolve_byname entered\n");

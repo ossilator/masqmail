@@ -107,7 +107,7 @@ connect_resolvelist(int *psockfd, gchar *host, gint port,
 		assert(res_func);
 
 		errno = 0;
-		if ((addr_list = res_func(NULL, host))) {
+		if ((addr_list = res_func(host))) {
 			goto gotip;
 		}
 	}
