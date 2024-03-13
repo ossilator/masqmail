@@ -97,7 +97,12 @@ is the main log, if syslog is not used.
 is a much more verbose log, which is created when debugging is enabled
 .RB ( debug_level "\ >\ 0)."
 .I dir
-must be an absolute path.
+must be an absolute path, or empty to log everything to stderr
+instead (you probably want this when running
+.MR masqmail 8
+as a
+.MR systemd 1
+service).
 The directory is created at startup if missing.
 
 Default:

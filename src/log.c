@@ -63,16 +63,18 @@ void logopen()
 {
 	if (conf.use_syslog) {
 		openlog(PACKAGE, LOG_PID, LOG_MAIL);
-	} else {
+	} else if (conf.log_dir[0]) {
 		int logfd = open_log("masqmail");
 		dup2(logfd, 2);
 		close(logfd);
 	}
 
 #ifdef ENABLE_DEBUG
-	if (conf.debug_level > 0) {
-		int dbgfd = open_log("debug");
-		debugfile = fdopen(dbgfd, "a");
+	if (conf.log_dir[0]) {
+		if (conf.debug_level > 0) {
+			int dbgfd = open_log("debug");
+			debugfile = fdopen(dbgfd, "a");
+		}
 	}
 #endif
 }
