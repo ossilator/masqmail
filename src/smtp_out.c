@@ -476,6 +476,8 @@ smtp_out_open(gchar *host, gint port, GList *resolve_list)
 		/* create structure to hold status data: */
 		psb = create_smtpbase(sock);
 		psb->remote_host = addr->name;
+		addr->name = NULL;
+		destroy_mxip_addr(addr);
 
 		DEBUG(5) {
 			struct sockaddr_in name;

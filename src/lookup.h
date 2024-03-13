@@ -21,3 +21,6 @@ GList *resolve_dns_a(GList *list, gchar *domain);
 GList *resolve_dns_mx(GList *list, gchar *domain);
 GList *resolve_byname(GList *list, gchar *domain);
 int dns_look_ip(gchar *domain, guint32 *ip);
+
+void destroy_mxip_addr(mxip_addr *mxip);
+void destroy_mxip_addr_list(GList *list);
