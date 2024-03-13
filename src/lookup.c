@@ -265,6 +265,8 @@ resolve_dns_mx(GList *list, gchar *domain)
 				g_list_free_1(node);
 			}
 		}
+	} else {
+		list = resolve_dns_a(list, domain);
 	}
 	return list;
 }
