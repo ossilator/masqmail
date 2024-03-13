@@ -670,7 +670,7 @@ main(int argc, char *argv[])
 
 	makedir(conf.spool_dir, TRUE);
 	makedir(conf.lock_dir, TRUE);
-	if (!conf.use_syslog || conf.debug_level) {
+	if (conf.log_dir[0] && (!conf.use_syslog || conf.debug_level)) {
 		makedir(conf.log_dir, TRUE);
 	}
 

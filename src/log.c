@@ -43,6 +43,10 @@ ext_strerror(int err)
 static gboolean
 open_log(const gchar *name, FILE **file)
 {
+	if (!conf.log_dir[0]) {
+		return TRUE;
+	}
+
 	gboolean ret = TRUE;
 	mode_t saved_mode = umask(066);
 	gchar *filename = g_strdup_printf("%s/%s.log", conf.log_dir, name);
