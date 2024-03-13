@@ -7,12 +7,6 @@ markus schnalke <meillo@marmaro.de>
 
 Contributed code:
 
-src/md5/hmac_md5.*
-by markus schnalke (ISC License)
-
-src/md5/md5.*
-by Solar Designer (in the Public Domain)
-
 admin/rmail
 by luciano l. mannucci and Wietse Venema (no license applies)
 

@@ -9,7 +9,6 @@ AM_INIT_AUTOMAKE()
 dnl Checks for programs.
 
 AC_PROG_CC
-AC_PROG_RANLIB
 
 dnl Checks for libraries.
 
@@ -113,7 +112,6 @@ AC_DEFINE_UNQUOTED(DEF_MAIL_GROUP, "${with_group}", [The mail group])
 AC_SUBST(with_group)
 
 dnl optional features
-MD5_LIBS=''
 
 dnl auth support (default: use it)
 AC_ARG_ENABLE(auth,
@@ -125,13 +123,7 @@ AC_ARG_ENABLE(auth,
 	)
 if test "x$auth_enabled" = xyes; then
 	AC_DEFINE(ENABLE_AUTH, 1, [If AUTH is enabled])
-	need_md5='yes'
 fi
-
-if test "x$need_md5" = 'xyes'; then
-	MD5_LIBS='md5/libmd5.a'
-fi
-AC_SUBST(MD5_LIBS)
 
 dnl liblockfile
 AC_ARG_WITH(liblockfile,
@@ -219,7 +211,6 @@ fi
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
-	src/md5/Makefile
 	man/Makefile
 	docs/Makefile
 	examples/Makefile

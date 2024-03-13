@@ -1,5 +1,3 @@
-SUBDIRS=md5
-
 AM_CFLAGS=-Wno-pointer-sign @CFLAGS@ @GLIB_CFLAGS@ -D_GNU_SOURCE -DG_DISABLE_DEPRECATED
 
 sbin_PROGRAMS=masqmail
@@ -83,8 +81,8 @@ resolvtest_SOURCES=\
 	resolvtest.c\
 	lookup.c
 
-masqmail_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@ @LOCKFILE_LIBS@ @MD5_LIBS@
-smtpsend_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@ @MD5_LIBS@
+masqmail_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@ @LOCKFILE_LIBS@
+smtpsend_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@
 mservdetect_LDADD=@GLIB_LIBS@
 readtest_LDADD=@GLIB_LIBS@
 resolvtest_LDADD=@RESOLV_LIBS@ @GLIB_LIBS@
