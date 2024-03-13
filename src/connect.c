@@ -92,12 +92,8 @@ connect_resolvelist(int *psockfd, gchar *host, guint port,
 
 	h_errno = 0;
 	if (isdigit(*host)) {
-		mxip_addr *addr;
-
 		if ((addr_list = resolve_ip(host))) {
-			addr = connect_hostlist(psockfd, port, addr_list);
-			g_list_free(addr_list);
-			return addr;
+			goto gotip;
 		}
 		/*
 		**  Probably a hostname that begins with a digit.
@@ -115,17 +111,18 @@ connect_resolvelist(int *psockfd, gchar *host, guint port,
 
 		errno = 0;
 		if ((addr_list = res_func(NULL, host))) {
-
-			mxip_addr *addr;
-			if ((addr = connect_hostlist(psockfd, port, addr_list))) {
-				return addr;
-			}
-			g_list_free(addr_list);
-		} else if (!g_list_next(res_node)) {
-			logwrite(LOG_ERR, "could not resolve %s: %s\n",
-					host, hstrerror(h_errno));
+			goto gotip;
 		}
 	}
+	logwrite(LOG_ERR, "could not resolve %s: %s\n",
+	         host, hstrerror(h_errno));
 	return NULL;
 
+  gotip: ;
+	mxip_addr *addr = connect_hostlist(psockfd, port, addr_list);
+	if (addr) {
+		return addr;
+	}
+	g_list_free(addr_list);
+	return NULL;
 }
