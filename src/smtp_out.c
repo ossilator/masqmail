@@ -31,11 +31,6 @@
 #include "smtp_out.h"
 #include "readsock.h"
 
-#ifdef ENABLE_AUTH
-#include "md5/md5.h"
-#include "md5/hmac_md5.h"
-#endif
-
 void
 destroy_smtpbase(smtp_base *psb)
 {
@@ -559,10 +554,8 @@ smtp_out_auth_cram_md5(smtp_base *psb)
 			gchar *chall64 = get_response_arg(&(psb->buffer[4]));
 			gsize chall_size;
 			guchar *chall = g_base64_decode(chall64, &chall_size);
-			guchar digest[16];
 			gchar *reply64, *reply;
-			gchar digest_string[33];
-			gint i;
+			gchar *digest_string;
 
 			DEBUG(5) debugf("smtp_out_auth_cram_md5():\n");
 			DEBUG(5) debugf("  encoded challenge = %s\n", chall64);
@@ -570,15 +563,16 @@ smtp_out_auth_cram_md5(smtp_base *psb)
 			                (int) chall_size, chall, chall_size);
 			DEBUG(5) debugf("  secret = %s\n", psb->auth_secret);
 
-			hmac_md5(chall, chall_size, psb->auth_secret, strlen(psb->auth_secret), digest);
-			for (i = 0; i < 16; i++)
-				sprintf(&(digest_string[i + i]), "%02x", (unsigned int) (digest[i]));
-			digest_string[32] = '\0';
+			digest_string = g_compute_hmac_for_data(G_CHECKSUM_MD5,
+					(guchar*) psb->auth_secret, strlen(psb->auth_secret),
+					chall, chall_size);
 
 			DEBUG(5) debugf("  digest = %s\n", digest_string);
 
 			reply = g_strdup_printf("%s %s", psb->auth_login, digest_string);
 			DEBUG(5) debugf("  unencoded reply = %s\n", reply);
+
+			g_free(digest_string);
 
 			reply64 = g_base64_encode((guchar*) reply, strlen(reply));
 			DEBUG(5) debugf("  encoded reply = %s\n", reply64);
