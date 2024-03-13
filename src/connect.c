@@ -87,7 +87,6 @@ connect_resolvelist(int *psockfd, gchar *host, gint port,
 
 	DEBUG(5) debugf("connect_resolvelist entered\n");
 
-	h_errno = 0;
 	if (isdigit(*host)) {
 		if ((addr_list = resolve_ip(host))) {
 			goto gotip;
@@ -106,15 +105,15 @@ connect_resolvelist(int *psockfd, gchar *host, gint port,
 		res_func = (resolve_func) res_node->data;
 		assert(res_func);
 
-		errno = 0;
 		if ((addr_list = res_func(host))) {
 			goto gotip;
 		}
 	}
-	logwrite(LOG_ERR, "could not resolve %s: %s\n",
-	         host, hstrerror(h_errno));
+	const char *err_str = h_errno != NETDB_INTERNAL ?
+	                      hstrerror(h_errno) : strerror(errno);
+	logwrite(LOG_ERR, "could not resolve %s: %s\n", host, err_str);
 	*err_msg = g_strdup_printf("Could not resolve host %s:\n\t%s\n",
-	                           host, h_errno != 0 ? hstrerror(h_errno) : strerror(errno));
+	                           host, err_str);
 	return NULL;
 
   gotip: ;
