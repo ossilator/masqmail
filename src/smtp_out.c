@@ -464,7 +464,7 @@ smtp_out_log_failure(smtp_base *psb, message *msg)
 }
 
 smtp_base*
-smtp_out_open(gchar *host, gint port, GList *resolve_list)
+smtp_out_open(gchar *host, gint port, GList *resolve_list, gchar **err_msg)
 {
 	smtp_base *psb;
 	gint sock;
@@ -472,7 +472,7 @@ smtp_out_open(gchar *host, gint port, GList *resolve_list)
 
 	DEBUG(5) debugf("smtp_out_open entered, host = %s\n", host);
 
-	if ((addr = connect_resolvelist(&sock, host, port, resolve_list))) {
+	if ((addr = connect_resolvelist(&sock, host, port, resolve_list, err_msg))) {
 		/* create structure to hold status data: */
 		psb = create_smtpbase(sock);
 		psb->remote_host = addr->name;
@@ -492,7 +492,7 @@ smtp_out_open(gchar *host, gint port, GList *resolve_list)
 }
 
 smtp_base*
-smtp_out_open_child(gchar *cmd)
+smtp_out_open_child(gchar *cmd, gchar **err_msg)
 {
 	smtp_base *psb;
 	gint sock;
@@ -500,12 +500,16 @@ smtp_out_open_child(gchar *cmd)
 	DEBUG(5) debugf("smtp_out_open_child entered, cmd = %s\n", cmd);
 	sock = child(cmd);
 	if (sock <= 0) {
-		return NULL;
+		goto fail;
 	}
 	psb = create_smtpbase(sock);
 	psb->remote_host = NULL;
 
 	return psb;
+
+  fail:
+	*err_msg = g_strdup("failed to launch connection wrapper");
+	return NULL;
 }
 
 gboolean

@@ -352,13 +352,14 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 		port = route->mail_host->port;
 	}
 
+	gchar *err_msg = NULL;
 	if (route->wrapper) {
-		psb = smtp_out_open_child(route->wrapper);
+		psb = smtp_out_open_child(route->wrapper, &err_msg);
 		if (psb) {
 			psb->remote_host = g_strdup(host);
 		}
 	} else {
-		psb = smtp_out_open(host, port, res_list);
+		psb = smtp_out_open(host, port, res_list, &err_msg);
 	}
 
 	if (!psb) {
@@ -379,22 +380,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 				} else {
 					addr_mark_defered(rcpt);
 				}
-				if (route->wrapper) {
-					ret = delivery_failures(msgout->msg,
-							msgout->rcpt_list,
-							"could not open "
-							"wrapper:\n\t%s",
-							strerror(errno));
-				} else {
-					ret = delivery_failures(msgout->msg,
-							msgout->rcpt_list,
-							"could not open "
-							"connection to %s:%d "
-							":\n\t%s", host, port,
-							h_errno != 0 ?
-							hstrerror(h_errno) :
-							strerror(errno));
-				}
+				ret = delivery_failures_str(msgout->msg, msgout->rcpt_list, err_msg);
 				if (ret) {
 					deliver_finish(msgout);
 				}

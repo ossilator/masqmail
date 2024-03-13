@@ -53,7 +53,8 @@ smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg)
 
 	DEBUG(5) debugf("smtp_deliver entered\n");
 
-	if ((psb = smtp_out_open(host, port, resolve_list))) {
+	gchar *err_msg;
+	if ((psb = smtp_out_open(host, port, resolve_list, &err_msg))) {
 		set_heloname(psb, msg->return_path->domain, TRUE);
 		/* initiate connection, send message and quit: */
 		if (smtp_out_init(psb, FALSE)) {
@@ -67,6 +68,9 @@ smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg)
 		destroy_smtpbase(psb);
 
 		return err;
+	} else {
+		fprintf(stderr, "delivery failed:\n%s", err_msg);
+		g_free(err_msg);
 	}
 	return -1;
 }
