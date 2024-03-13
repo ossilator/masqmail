@@ -45,7 +45,7 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
-	addr_list = resolve_dns_mx(NULL, argv[1]);
+	addr_list = resolve_dns_mx(argv[1]);
 	foreach(addr_list, node) {
 		mxip_addr *p_mxip = (mxip_addr *) (node->data);
 		printf("%s  \t%s  %d\n", p_mxip->name,
