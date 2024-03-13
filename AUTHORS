@@ -7,9 +7,6 @@ markus schnalke <meillo@marmaro.de>
 
 Contributed code:
 
-src/base64/*
-by Oliver Kurth (GPL-2)
-
 src/md5/hmac_md5.*
 by markus schnalke (ISC License)
 
