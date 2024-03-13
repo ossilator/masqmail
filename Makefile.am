@@ -1,4 +1,4 @@
-EXTRA_DIST = admin devel
+EXTRA_DIST = admin devel LICENSES
 
 SUBDIRS = src man docs examples tpl
 

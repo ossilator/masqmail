@@ -1,8 +1,7 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: (C) 2010 markus schnalke <meillo@marmaro.de>
 #
 # check masqmail config files for options that are obsolete
-#
-# 2010  markus schnalke <meillo@marmaro.de>
 
 if [ $# -eq 0 ] ; then
 	echo "usage: config-transition CONFIGFILE..." >&2
