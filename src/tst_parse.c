@@ -40,6 +40,7 @@ static const rfc821_addr_test rfc821_addrs[] = {
 	{ "<gärbage>", NULL, NULL, "unexpected 8-bit character", TRUE },
 	{ " garbage <user>", NULL, NULL, "excess characters at end of string", FALSE },
 	{ "<user@example.com>", "user", "example.com", NULL, FALSE },
+	{ "<user@>", NULL, NULL, "empty domain", FALSE },
 	{ "<user@[to_tal * nonsense]>", "user", "[to_tal * nonsense]", NULL, FALSE },
 	{ "<user@[fail", NULL, NULL, "unterminated domain literal", FALSE },
 	{ "<\"one@two\"@example.com>", "\"one@two\"", "example.com", NULL, FALSE },
@@ -131,6 +132,7 @@ static const rfc822_addr_test rfc822_addrs[] = {
 	// ... with domain
 	{ "<user@example.com>", "user", "example.com", -1, NULL, FALSE },
 	{ "< user @ example.com >", "user", "example.com", -1, NULL, FALSE },
+	{ "<user@>", NULL, NULL, -1, "empty domain", FALSE },
 	{ "<@dom1,@dom2:user@example.com>", "user", "example.com", -1, NULL, TRUE },
 			// source routes must be ignored
 	// ... with comments
