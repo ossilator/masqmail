@@ -150,6 +150,7 @@ read_word_with_dots(const gchar *p, has_dots_t *had_dots)
 static const gchar *
 read_domain(const gchar *p)
 {
+	const gchar *op = p;
 #ifdef PARSE_TEST
 	g_print("read_domain: %s\n", p);
 #endif
@@ -180,6 +181,10 @@ read_domain(const gchar *p)
 			}
 		}
 		p++;
+	}
+	if (p == op) {
+		parse_error = "empty domain";
+		return FALSE;
 	}
 	return p;
 }
