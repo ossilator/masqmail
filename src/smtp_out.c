@@ -576,14 +576,16 @@ smtp_out_auth_login(smtp_base *psb)
 			gsize resp_size;
 			gchar *reply64;
 
-			DEBUG(5) debugf("smtp_out_auth_login():\n");
-			resp64 = get_response_arg(&(psb->buffer[4]));
-			DEBUG(5) debugf("  encoded response = `%s'\n", resp64);
-			resp = g_base64_decode(resp64, &resp_size);
-			g_free(resp64);
-			DEBUG(5) debugf("  decoded response = `%.*s', size = %d\n",
-			                (int) resp_size, resp, resp_size);
-			g_free(resp);
+			DEBUG(5) {
+				debugf("smtp_out_auth_login():\n");
+				resp64 = get_response_arg(&(psb->buffer[4]));
+				debugf("  encoded response = `%s'\n", resp64);
+				resp = g_base64_decode(resp64, &resp_size);
+				g_free(resp64);
+				debugf("  decoded response = `%.*s', size = %d\n",
+				       (int) resp_size, resp, resp_size);
+				g_free(resp);
+			}
 			reply64 = g_base64_encode((guchar*) psb->auth_login, strlen(psb->auth_login));
 			fprintf(psb->out, "%s\r\n", reply64);
 			fflush(psb->out);
@@ -591,13 +593,15 @@ smtp_out_auth_login(smtp_base *psb)
 			g_free(reply64);
 			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
 				if ((ok = check_response(psb, TRUE))) {
-					resp64 = get_response_arg(&(psb->buffer[4]));
-					DEBUG(5) debugf("  encoded response = `%s'\n", resp64);
-					resp = g_base64_decode(resp64, &resp_size);
-					g_free(resp64);
-					DEBUG(5) debugf("  decoded response = `%.*s', size = %d\n",
-					                (int) resp_size, resp, resp_size);
-					g_free(resp);
+					DEBUG(5) {
+						resp64 = get_response_arg(&(psb->buffer[4]));
+						debugf("  encoded response = `%s'\n", resp64);
+						resp = g_base64_decode(resp64, &resp_size);
+						g_free(resp64);
+						debugf("  decoded response = `%.*s', size = %d\n",
+						       (int) resp_size, resp, resp_size);
+						g_free(resp);
+					}
 					reply64 = g_base64_encode((guchar*) psb->auth_secret, strlen(psb->auth_secret));
 					fprintf(psb->out, "%s\r\n", reply64);
 					fflush(psb->out);
