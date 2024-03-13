@@ -28,7 +28,7 @@ denied_recipients = "*@cpwright.com"
 
 # the mail server which relays mail for you:
 # if this is not set, mail will be sent directly.
-# If your ISP gives has a mail server, it is wiser to use it:
+# If your ISP provides a mail server, it is wiser to use it:
 
 mail_host = "mail.isp.com"
 
@@ -57,10 +57,10 @@ do_correct_helo = true
 # cases it corresponds to the return path, but this is not
 # required. It CAN have a real name, both examples for Charlie above
 # are correct, and it is more pretty to include a real name.
-#
+
 # The return path:
-# if we send the mail directly, we can set any valid address here,
-# use the one you prefer to get error messages to:
+# If we send the mail directly, we can set any valid address here.
+# Use the one you prefer to get error messages to.
 map_return_path_addresses = "okurth: kurth@innominate.de"
 
 # 'From:' header:

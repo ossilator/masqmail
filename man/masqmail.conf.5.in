@@ -74,6 +74,7 @@ The directory where logs are stored, if syslog is not used.
 Debug files are always stored in this directory if debugging is enabled.
 \fIfile\fR must be an absolute path, or empty to log to stdout/stderr
 instead.
+The directory is created at startup if missing.
 
 Default: \fI@with_logdir@\fR
 
@@ -91,6 +92,7 @@ Default: \fI@with_piddir@\fR
 The directory where local mail is stored,
 usually \fI/var/spool/mail\fR or \fI/var/mail\fR.
 \fIfile\fR must be an absolute path.
+The directory is created at startup if missing.
 
 Default: \fI/var/mail\fR
 
@@ -100,6 +102,7 @@ Default: \fI/var/mail\fR
 The directory where masqmail stores its spool files.
 Masqmail needs read and write permissions for this directory.
 \fIfile\fR must be an absolute path.
+The directory is created at startup if missing.
 
 Default: \fI@with_spooldir@\fR
 
@@ -109,7 +112,7 @@ Default: \fI@with_spooldir@\fR
 The directory where masqmail stores its lock files.
 Masqmail needs read and write permissions for this directory.
 \fIfile\fR must be an absolute path.
-The directory is created at startup if yet missing.
+The directory is created at startup if missing.
 
 Default: \fI@with_lockdir@\fR
 
@@ -134,7 +137,7 @@ Default: none; \fBhost_name\fP MUST be set in the config file
 .TP
 \fBlocal_hosts = \fIlist\fR
 
-A semicolon `;' separated list of hostnames which are considered local.
+A semicolon-separated list of hostnames which are considered local.
 Can contain glob patterns, like
 `*example.org' or `mail?.*mydomain.net'.
 Normally you should set it to "localhost;foo;foo.bar.com" if your host has the
@@ -149,7 +152,7 @@ Example: \fIlocalhost;foo;foo.example.org\fR
 .TP
 \fBlocal_addresses = \fIlist\fR
 
-A semicolon `;' separated list of fully qualified email-addresses which are
+A semicolon-separated list of fully qualified email-addresses which are
 considered local although their domain name part is not in the list of
 \fBlocal_hosts\fR. 
 This list can be seen as an addition to \fBlocal_hosts\fP.
@@ -172,10 +175,10 @@ person1@localhost, if not redirected by an alias.
 .TP
 \fBnot_local_addresses = \fIlist\fR
 
-A semicolon `;' separated list of fully qualified email-addresses which are
+A semicolon-separated list of fully qualified email-addresses which are
 considered not local although their domain name part is in the list of
 \fBlocal_hosts\fR. 
-This list can be seen as a substraction to \fBlocal_hosts\fP.
+This list can be seen as a substraction from \fBlocal_hosts\fP.
 
 This is the opposite of the previous case.
 The majority of addresses of a specific domain are local.
@@ -195,7 +198,7 @@ not_local_addresses = "eric@mydomain.net"
 .TP
 \fBlisten_addresses = \fIlist\fR
 
-A semicolon `;' separated list of interfaces on which connections will
+A semicolon-separated list of interfaces on which connections will
 be accepted.
 An interface ist defined by a hostname, optionally followed by a colon `:'
 and a number for the port.
@@ -213,11 +216,11 @@ Default: \fIlocalhost:25\fR (i.e. only local processes can connect)
 \fBdo_save_envelope_to = \fIboolean\fR
 
 If this is set to true, a possibly existing Envelope-to: header in
-an incoming mail which is received via either pop3 or smtp will be saved
+an incoming mail which is received via either POP3 or SMTP will be saved
 as an X-Orig-Envelope-to: header.
 
-This is useful if you retrieve mail from a pop3 server with fetchmail,
-and the server supports Envelope-to: headers,
+This is useful if you retrieve mail from a POP3 server with fetchmail,
+the server supports Envelope-to: headers,
 and you want to make use of those with a mail filtering tool, e.g. procmail.
 It cannot be preserved because masqmail sets such a header by itself.
 
@@ -227,7 +230,7 @@ Default is false.
 \fBdo_relay = \fIboolean\fR
 
 If this is set to false, mail with a return path that is not local
-and a destination that is also not local will not be accepted via smtp
+and a destination that is also not local will not be accepted via SMTP
 and a 550 reply will be given.
 Default is true.
 
@@ -327,7 +330,7 @@ Default: false
 .TP
 \fBpipe_fromline = \fIboolean\fR
 
-If this is set, a from line will be prepended to the output stream whenever
+If this is set, a 'From ' line will be prepended to the output stream whenever
 a pipe command is called after an alias expansion.
 Default is false.
 
@@ -357,16 +360,16 @@ A list of users which wish delivery to an mbox style mail folder.
 .TP
 \fBmda_users = \fIlist\fR
 
-A list of users which wish local delivery to an mda.
+A list of users which wish local delivery to an MDA.
 You have to set \fBmda\fR (see below) as well.
 
 .TP
 \fBmda = \fIexpand string\fR
 
-If you want local delivery to be transferred to an mda (Mail Delivery Agent),
+If you want local delivery to be transferred to an MDA (Mail Delivery Agent),
 set this to a command.
 The argument will be expanded on delivery time,
-you can use variables beginning with a dolloar sign `$',
+you can use variables beginning with a dollar sign `$',
 optionally enclosed in curly braces.
 Variables you can use are:
 
@@ -374,8 +377,8 @@ Variables you can use are:
 .TP
 uid
 the unique message id.
-(This is not necessarily identical with the Message ID
-as given in the Message ID: header.)
+(This is not necessarily identical to the Message ID
+as given in the Message-ID: header.)
 
 .TP
 received_host
@@ -418,25 +421,25 @@ mda="/usr/bin/procmail \-Y \-d ${rcpt_local}"
 .RE
 .IP
 
-For the mda, as for pipe commands,
+For the MDA, as for pipe commands,
 a few environment variables will be set as well.
 See \fBmasqmail(8)\fR.
-To use environment variables for the mda,
+To use environment variables for the MDA,
 the dollar sign `$' has to be escaped with a backslash,
 otherwise they will be tried to be expanded with the internal variables.
 
 .TP
 \fBmda_fromline = \fIboolean\fR
 
-If this is set, a from line will be prepended to the output stream whenever
-a message is delivered to an mda.
+If this is set, a 'From ' line will be prepended to the output stream whenever
+a message is delivered to an MDA.
 Default is false.
 
 .TP
 \fBmda_fromhack = \fIboolean\fR
 
 If this is set, each line beginning with `From ' is replaced with `>From '
-whenever a message is delivered to an mda.
+whenever a message is delivered to an MDA.
 You probably want this if you have set \fBmda_fromline\fR above.
 Default is false.
 
@@ -502,7 +505,7 @@ use:
 
 Set this to a template which will be used to generate delivery failure reports.
 Variable parts within the template begin with a dollar sign and are identical
-to those which can be used as arguments for the mda command,
+to those which can be used as arguments for the MDA command,
 see \fBmda\fR above.
 Additional information can be included with @failed_rcpts,
 @msg_headers and @msg_body,
@@ -558,7 +561,7 @@ that passes through the masqmail system will also be sent
 to the given mail address.
 
 For example you can feed your mails into a program like hypermail
-for archiving purpose by placing an appropriate pipe command
+for archiving purposes by placing an appropriate pipe command
 in masqmail.alias.
 
 .TP

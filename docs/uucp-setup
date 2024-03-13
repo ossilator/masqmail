@@ -14,7 +14,7 @@ has rmail support like this. That's probably the reason why it was
 the same in masqmail.
 
 A better, through still basic approach, was introduced with 0.2.24:
-misc/rmail is a small shell script (taken from postfix), which calls
+admin/rmail is a small shell script (taken from postfix), which calls
 masqmail with appropriate options. Copy the script into your path and
 ensure that the included sendmail variable points to the masqmail
 executable.

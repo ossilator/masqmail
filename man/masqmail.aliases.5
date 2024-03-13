@@ -7,10 +7,10 @@ masqmail.aliases \- masqmail alias file format
 .SH DESCRIPTION
 
 This man page describes the format of the masqmail alias file.
-It's usual location is \fI/etc/aliases\fR.
+Its usual location is \fI/etc/aliases\fR.
 
 There exists also a variant of this format for glob patterns.
-It's used with the \fIglobalias_file\fP config option.
+It is used with the \fIglobalias_file\fP config option.
 
 The difference between the two formats are only on the left-hand side.
 A normal alias file has a local_part there that gets string-compared
@@ -53,7 +53,7 @@ Loops will be detected, the offending address will be ignored.
 Aliases will be expanded at delivery time.
 This means that if there is a message still in the queue and you change
 any alias which matches one of the recipient addresses,
-the change will have effect next time a delivery is attemped.
+the change will have effect next time a delivery is attempted.
 
 There is no need to restart masqmail or run any command when the alias
 file has been changed. (`masqmail -bi' is a no-op.)

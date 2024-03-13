@@ -249,7 +249,7 @@ If not invoked by a privileged user, masqmail will drop all privileges.
 \fB\-d \fInumber\fR
 
 Set the debug level.
-This takes precedence before the value of `debug_level' in the configuration file.
+This takes precedence over the value of `debug_level' in the configuration file.
 Read the warning in the description of the latter.
 Only root may set the debug level.
 
@@ -262,7 +262,7 @@ Only root, the user mail and anyone in group mail is allowed to do that.
 .TP
 \fB\-F [\fIstring\fB]\fR
 
-Set the full sender name (in the From: header) to \fIstring\fR.
+Set the sender display name (in the From: header) to \fIstring\fR.
 
 .TP
 \fB\-i\fR
@@ -350,15 +350,15 @@ which add the arguments to the set of header recipients.
 Sendmail seems to behave differently, depending on the version.
 See exim(8) for further information.
 
-For masqmail the most simple approach had been taken.
+For masqmail the most simple approach has been taken.
 
 As the behavior of \-t together with command line address arguments
-differs among MTAs, one better not steps into this corner case.
+differs among MTAs, one better avoids this corner case.
 
 
 .SH ENVIRONMENT FOR PIPES AND MDAS
 
-For security reasons, before any pipe command from an alias expansion or an mda is called,
+For security reasons, before any pipe command from an alias expansion or an MDA is called,
 the environment variables will be completely discarded and newly set up. These are:
 
 SENDER, RETURN_PATH \(en the return path.
@@ -398,10 +398,14 @@ if not configured differently in \fImasqmail.conf\fR.
 .I @with_logdir@/
 The directory where masqmail stores its log messages.
 
+.TP
+.I @with_piddir@/
+The directory where masqmail stores its PID file.
+
 .P
-Any of the paths can be configured at compile time,
-and (except the main config file) also in the main config file.
-The typical paths are different, depending on the Unix system you use. 
+All these paths can be configured at compile time,
+and (except for the main config file) also in the main config file.
+The actual defaults vary, depending on the Unix system you use.
 
 
 .SH CONFORMING TO
