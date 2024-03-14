@@ -175,7 +175,7 @@ mode_smtp()
 	} else if (errno != ENOTSOCK)
 		exit(1);
 
-	smtp_in(stdin, stderr, peername, NULL);
+	smtp_in(stdin, stderr, peername);
 }
 
 /* default mode if address args or -t is specified, or called as rmail */
