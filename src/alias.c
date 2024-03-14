@@ -167,8 +167,7 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 			alias_addr = create_recipient(val + 1, conf.host_name);
 			DEBUG(6) debugf("alias:     address generated: '%s'\n",
 			                alias_addr->address->address);
-			alias_list = g_list_append(alias_list, alias_addr);
-			continue;
+			goto append;
 		}
 	
 		if (*val == '|') {
@@ -177,18 +176,15 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 			alias_addr = create_recipient_pipe(g_strchomp(val));
 			DEBUG(6) debugf("alias:     pipe generated: %s\n",
 			                alias_addr->address->local_part);
-			alias_list = g_list_append(alias_list, alias_addr);
-			continue;
+			goto append;
 		}
 
 		alias_addr = create_recipient(val, conf.host_name);
-
 		if (!addr_is_local(alias_addr->address)) {
 			DEBUG(5) debugf("alias: '%s' is non-local, "
 					"hence completed\n",
 					alias_addr->address->address);
-			alias_list = g_list_append(alias_list, alias_addr);
-			continue;
+			goto append;
 		}
 
 		/* addr is local and to expand at this point */
@@ -199,7 +195,6 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 			         alias_addr->address->address);
 			continue;
 		}
-		alias_addr->parent = addr;
 
 		/* recurse */
 		DEBUG(6) debugf("alias: >>\n");
@@ -208,9 +203,15 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 		if (alias_node) {
 			alias_list = g_list_concat(alias_list, alias_node);
 		}
+		goto xlink;
+
+	  append:
+		alias_list = g_list_append(alias_list, alias_addr);
+	  xlink:
+		addr->children = g_list_append(addr->children, alias_addr);
+		alias_addr->parent = addr;
 	}
 	g_list_free_full(val_list, (GDestroyNotify) g_free);
-	addr->children = g_list_copy(alias_list);
 
 	return alias_list;
 }
