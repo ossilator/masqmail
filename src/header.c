@@ -83,6 +83,7 @@ create_header(header_id id, gchar *fmt, ...)
 
 	hdr = g_malloc(sizeof(header));
 
+	hdr->ref_count = 1;
 	hdr->id = id;
 	hdr->header = g_strdup_vprintf(fmt, args);
 
@@ -108,10 +109,29 @@ create_header(header_id id, gchar *fmt, ...)
 void
 destroy_header(header *hdr)
 {
-	if (hdr) {
+	if (hdr && !--hdr->ref_count) {
 		g_free(hdr->header);
 		g_free(hdr);
 	}
+}
+
+void
+destroy_header_list(GList *hdr_list)
+{
+	g_list_free_full(hdr_list, (GDestroyNotify) destroy_header);
+}
+
+static header*
+ref_header(header *hdr, G_GNUC_UNUSED gpointer ctx)
+{
+	hdr->ref_count++;
+	return hdr;
+}
+
+GList *
+copy_header_list(GList *hdr_list)
+{
+	return g_list_copy_deep(hdr_list, (GCopyFunc) ref_header, NULL);
 }
 
 header*
@@ -121,6 +141,7 @@ copy_header(header *hdr)
 
 	if (hdr) {
 		new_hdr = g_malloc(sizeof(header));
+		hdr->ref_count = 1;
 		new_hdr->id = hdr->id;
 		new_hdr->header = g_strdup(hdr->header);
 		new_hdr->value = new_hdr->header + (hdr->value - hdr->header);
@@ -146,6 +167,7 @@ get_header(gchar *line)
 	}
 
 	hdr = g_malloc(sizeof(header));
+	hdr->ref_count = 1;
 
 	p++;
 	while (*p && (*p == ' ' || *p == '\t')) {
