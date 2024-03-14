@@ -99,7 +99,7 @@ destroy_message(message *msg)
 
 	g_free(msg->uid);
 	g_free(msg->ident);
-	g_free(msg->return_path);
+	destroy_address(msg->return_path);
 
 	destroy_ptr_list(msg->rcpt_list);
 	destroy_header_list(msg->hdr_list);
