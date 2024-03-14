@@ -29,6 +29,7 @@ destroy_smtpbase(smtp_base *psb)
 
 	close(psb->sock);
 
+	g_free(psb->remote_host);
 	g_free(psb->helo_name);
 	g_free(psb->buffer);
 	g_strfreev(psb->auth_names);
