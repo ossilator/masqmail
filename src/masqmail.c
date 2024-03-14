@@ -172,6 +172,8 @@ mode_smtp(void)
 		exit(1);
 
 	smtp_in(stdin, stderr, peername);
+
+	g_free(peername);
 }
 
 /* default mode if address args or -t is specified, or called as rmail */
