@@ -98,11 +98,25 @@ parse_list(gchar *line)
 	return list;
 }
 
+static gboolean
+is_non_recipient(recipient *addr, GList *non_rcpt_list)
+{
+	GList *non_node;
+	foreach (non_rcpt_list, non_node) {
+		recipient *non_addr = non_node->data;
+		if (addr_isequal(addr->address, non_addr->address, conf.localpartcmp)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 /*
 **  addr is assumed to be local and no pipe address nor not-to-expand
 */
 static GList*
-expand_one(GList *alias_table, recipient *addr, int doglob)
+expand_one(GList *alias_table, recipient *addr, int doglob,
+           GList *non_rcpt_list)
 {
 	GList *val_list;
 	GList *val_node;
@@ -136,7 +150,10 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 	if (!repl) {
 		DEBUG(5) debugf("alias: '%s' is fully expanded, hence "
 				"completed\n", addrstr);
-		return g_list_append(NULL, addr);
+		if (!is_non_recipient(addr, non_rcpt_list)) {
+			return g_list_append(NULL, addr);
+		}
+		return NULL;
 	}
 
 	DEBUG(5) debugf("alias: '%s' -> '%s'\n", addrstr, repl);
@@ -186,7 +203,7 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 
 		/* recurse */
 		DEBUG(6) debugf("alias: >>\n");
-		alias_node = expand_one(alias_table, alias_addr, doglob);
+		alias_node = expand_one(alias_table, alias_addr, doglob, non_rcpt_list);
 		DEBUG(6) debugf("alias: <<\n");
 		if (alias_node) {
 			alias_list = g_list_concat(alias_list, alias_node);
@@ -194,7 +211,9 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 		goto xlink;
 
 	  append:
-		alias_list = g_list_append(alias_list, alias_addr);
+		if (!is_non_recipient(alias_addr, non_rcpt_list)) {
+			alias_list = g_list_append(alias_list, alias_addr);
+		}
 	  xlink:
 		addr->children = g_list_append(addr->children, alias_addr);
 		alias_addr->parent = addr;
@@ -211,7 +230,6 @@ alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
 	GList *rcpt_node = NULL;
 	GList *alias_list = NULL;
 	GList *done_list = NULL;
-	GList *rcpt_node_next = NULL;
 
 	for (rcpt_node = rcpt_list; rcpt_node;
 			rcpt_node=g_list_next(rcpt_node)) {
@@ -219,7 +237,7 @@ alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
 		if (addr_is_local(addr->address)) {
 			DEBUG(5) debugf("alias: expand local '%s' "
 					"(orig rcpt addr)\n", addr->address->address);
-			alias_list = expand_one(alias_table, addr, doglob);
+			alias_list = expand_one(alias_table, addr, doglob, non_rcpt_list);
 			if (alias_list) {
 				done_list = g_list_concat(done_list,
 						alias_list);
@@ -231,34 +249,5 @@ alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
 		}
 	}
 
-	/* we're done if we don't have to remove rcpts */
-	if (!non_rcpt_list) {
-		return done_list;
-	}
-
-	/* delete addresses of non_rcpt_list from done_list */
-	for (rcpt_node = g_list_first(done_list); rcpt_node;
-			rcpt_node = rcpt_node_next) {
-		recipient *addr = rcpt_node->data;
-		GList *non_node;
-
-		rcpt_node_next = g_list_next(rcpt_node);
-		foreach(non_rcpt_list, non_node) {
-			recipient *non_addr = non_node->data;
-			if (addr_isequal(addr->address, non_addr->address,
-			                 conf.localpartcmp)) {
-				done_list = g_list_remove_link(done_list,
-						rcpt_node);
-				g_list_free_1(rcpt_node);
-				/*
-				**  this address is still in the children
-				**  lists of the original address, simply
-				**  mark them delivered
-				*/
-				addr_mark_delivered(addr);
-				break;
-			}
-		}
-	}
 	return done_list;
 }
