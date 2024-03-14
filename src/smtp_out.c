@@ -27,6 +27,7 @@ destroy_smtpbase(smtp_base *psb)
 	fclose(psb->in);
 	fclose(psb->out);
 
+	g_free(psb->remote_host);
 	g_free(psb->helo_name);
 	g_free(psb->buffer);
 	g_strfreev(psb->auth_names);
@@ -458,6 +459,7 @@ smtp_out_open(gchar *host, gint port, GList *resolve_list)
 		/* create structure to hold status data: */
 		psb = create_smtpbase(sock);
 		psb->remote_host = addr->name;
+		addr->name = NULL;
 
 		DEBUG(5) {
 			struct sockaddr_in name;
@@ -472,7 +474,7 @@ smtp_out_open(gchar *host, gint port, GList *resolve_list)
 }
 
 smtp_base*
-smtp_out_open_child(gchar *cmd)
+smtp_out_open_child(const gchar *host, gchar *cmd)
 {
 	smtp_base *psb;
 	gint sock;
@@ -483,7 +485,7 @@ smtp_out_open_child(gchar *cmd)
 		return NULL;
 	}
 	psb = create_smtpbase(sock);
-	psb->remote_host = NULL;
+	psb->remote_host = g_strdup(host);
 
 	return psb;
 }

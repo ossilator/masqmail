@@ -344,10 +344,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 	}
 
 	if (route->wrapper) {
-		psb = smtp_out_open_child(route->wrapper);
-		if (psb) {
-			psb->remote_host = host;
-		}
+		psb = smtp_out_open_child(host, route->wrapper);
 	} else {
 		psb = smtp_out_open(host, port, res_list);
 	}
