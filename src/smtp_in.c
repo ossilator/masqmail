@@ -101,21 +101,14 @@ get_address(gchar *line, gchar *addr)
 	return TRUE;
 }
 
-static smtp_connection*
-create_base(void)
+static void
+init_base(smtp_connection *base)
 {
-	smtp_connection *base = g_malloc(sizeof(smtp_connection));
-	if (!base) {
-		return NULL;
-	}
-
 	base->prot = PROT_SMTP;
 	base->next_id = 0;
 	base->helo_seen = 0;
 	base->from_seen = 0;
 	base->rcpt_seen = 0;
-
-	return base;
 }
 
 static void G_GNUC_PRINTF(2, 3)
@@ -144,23 +137,16 @@ smtp_printf(FILE *out, gchar *fmt, ...)
 void
 smtp_in(FILE *in, FILE *out, gchar *remote_host)
 {
-	gchar *buffer;
 	smtp_cmd_id cmd_id;
 	message *msg = NULL;
-	smtp_connection *psc;
 	int len;
 	gssize msize;
+	smtp_connection psc[1];
+	gchar buffer[BUF_LEN];
 
 	DEBUG(5) debugf("smtp_in entered, remote_host = %s\n", remote_host);
 
-	psc = create_base();
-
-	buffer = (gchar *) g_malloc(BUF_LEN);
-	if (!buffer) {
-		/* this check is actually unneccessary as g_malloc()
-		   aborts on failure */
-		return;
-	}
+	init_base(psc);
 
 	/* send greeting string, containing ESMTP: */
 	smtp_printf(out, "220 %s MasqMail %s ESMTP\r\n", conf.host_name, VERSION);
