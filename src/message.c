@@ -92,7 +92,7 @@ destroy_message(message *msg)
 
 	g_free(msg->uid);
 	g_free(msg->ident);
-	g_free(msg->return_path);
+	destroy_address(msg->return_path);
 
 	g_list_free_full(msg->rcpt_list, g_free);
 	g_list_free_full(msg->hdr_list, (GDestroyNotify) destroy_header);
