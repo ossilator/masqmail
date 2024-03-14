@@ -111,16 +111,19 @@ is_non_recipient(recipient *addr, GList *non_rcpt_list)
 	return FALSE;
 }
 
-/*
-**  addr is assumed to be local and no pipe address nor not-to-expand
-*/
-static void
+static gboolean
 expand_one(GList *alias_table, int doglob, recipient *addr,
            GList *non_rcpt_list, GList **alias_list)
 {
 	GList *val_list;
 	GList *val_node;
 	char *addrstr;
+
+	if (!addr_is_local(addr->address)) {
+		DEBUG(5) debugf("alias: '%s' is non-local, hence completed\n",
+		                addr->address->address);
+		return FALSE;
+	}
 
 	addrstr = doglob ? addr->address->address : addr->address->local_part;
 
@@ -148,10 +151,7 @@ expand_one(GList *alias_table, int doglob, recipient *addr,
 	if (!repl) {
 		DEBUG(5) debugf("alias: '%s' is fully expanded, hence "
 				"completed\n", addrstr);
-		if (!is_non_recipient(addr, non_rcpt_list)) {
-			*alias_list = g_list_append(*alias_list, addr);
-		}
-		return;
+		return FALSE;
 	}
 
 	DEBUG(5) debugf("alias: '%s' -> '%s'\n", addrstr, repl);
@@ -181,15 +181,6 @@ expand_one(GList *alias_table, int doglob, recipient *addr,
 		}
 
 		alias_addr = create_recipient(val, conf.host_name);
-		if (!addr_is_local(alias_addr->address)) {
-			DEBUG(5) debugf("alias: '%s' is non-local, "
-					"hence completed\n",
-					alias_addr->address->address);
-			goto append;
-		}
-
-		/* addr is local and to expand at this point */
-		/* but first ... search in parents for loops: */
 		if (addr_isequal_parent(addr, alias_addr->address, conf.localpartcmp)) {
 			/* loop detected, ignore this path */
 			logwrite(LOG_ERR, "alias: detected loop, hence ignoring '%s'\n",
@@ -199,9 +190,12 @@ expand_one(GList *alias_table, int doglob, recipient *addr,
 
 		/* recurse */
 		DEBUG(6) debugf("alias: >>\n");
-		expand_one(alias_table, doglob, alias_addr, non_rcpt_list, alias_list);
+		gboolean xpd = expand_one(
+				alias_table, doglob, alias_addr, non_rcpt_list, alias_list);
 		DEBUG(6) debugf("alias: <<\n");
-		goto xlink;
+		if (xpd) {
+			goto xlink;
+		}
 
 	  append:
 		if (!is_non_recipient(alias_addr, non_rcpt_list)) {
@@ -212,6 +206,8 @@ expand_one(GList *alias_table, int doglob, recipient *addr,
 		alias_addr->parent = addr;
 	}
 	g_list_free_full(val_list, (GDestroyNotify) g_free);
+
+	return TRUE;
 }
 
 void
@@ -223,13 +219,7 @@ alias_expand(GList *alias_table, int doglob, GList *non_rcpt_list, GList **rcpt_
 	for (rcpt_node = *rcpt_list; rcpt_node;
 			rcpt_node=g_list_next(rcpt_node)) {
 		recipient *addr = rcpt_node->data;
-		if (addr_is_local(addr->address)) {
-			DEBUG(5) debugf("alias: expand local '%s' "
-					"(orig rcpt addr)\n", addr->address->address);
-			expand_one(alias_table, doglob, addr, non_rcpt_list, &done_list);
-		} else {
-			DEBUG(5) debugf("alias: don't expand non-local '%s' "
-					"(orig rcpt addr)\n", addr->address->address);
+		if (!expand_one(alias_table, doglob, addr, non_rcpt_list, &done_list)) {
 			done_list = g_list_append(done_list, addr);
 		}
 	}
