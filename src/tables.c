@@ -76,6 +76,12 @@ table_find(GList *table_list, gchar *key)
 	return table_find_func(table_list, key, strcmp);
 }
 
+gpointer
+table_find_casefold(GList *table_list, gchar *key)
+{
+	return table_find_func(table_list, key, strcasecmp);
+}
+
 static int
 fnmatch0(const char *pattern, const char *string)
 {
@@ -86,6 +92,18 @@ gpointer
 table_find_fnmatch(GList *table_list, gchar *key)
 {
 	return table_find_func(table_list, key, fnmatch0);
+}
+
+static int
+fnmatch_casefold(const char *pattern, const char *string)
+{
+	return fnmatch(pattern, string, FNM_CASEFOLD);
+}
+
+gpointer
+table_find_fnmatch_casefold(GList *table_list, gchar *key)
+{
+	return table_find_func(table_list, key, fnmatch_casefold);
 }
 
 GList*

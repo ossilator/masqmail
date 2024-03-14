@@ -98,21 +98,6 @@ parse_list(gchar *line)
 	return list;
 }
 
-static int
-globaliascmp(const char *pattern, const char *addr)
-{
-	if (conf.localpartcmp == strcasecmp) {
-		return fnmatch(pattern, addr, FNM_CASEFOLD);
-	} else if (strncasecmp(addr, "postmaster", 10)==0) {
-		/* postmaster must always be matched caseless
-		** see RFC 822 and RFC 5321 */
-		return fnmatch(pattern, addr, FNM_CASEFOLD);
-	} else {
-		/* case-sensitive */
-		return fnmatch(pattern, addr, 0);
-	}
-}
-
 /*
 **  addr is assumed to be local and no pipe address nor not-to-expand
 */
@@ -123,7 +108,6 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 	GList *val_node;
 	GList *alias_list = NULL;
 	GList *alias_node;
-	gchar *val;
 	char *addrstr;
 
 	addrstr = doglob ? addr->address->address : addr->address->local_part;
@@ -132,27 +116,31 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 	DEBUG(6) debugf("alias: '%s' is local and will get expanded\n",
 			addrstr);
 
-	if (doglob) {
-		val = (gchar *) table_find_func(alias_table, addrstr,
-				globaliascmp);
-
-	} else if (strcasecmp(addr->address->local_part, "postmaster") == 0) {
-		/* postmaster must always be matched caseless
-		** see RFC 822 and RFC 5321 */
-		val = (gchar *) table_find_func(alias_table, addrstr,
-				strcasecmp);
+	gchar *repl;
+	if (conf.localpartcmp == strcasecmp ||
+	    // postmaster must always be matched caselessly, see RFCs 5321 and 5322
+	    strcasecmp(addr->address->local_part, "postmaster") == 0) {
+		if (doglob) {
+			repl = table_find_fnmatch_casefold(alias_table, addrstr);
+		} else {
+			repl = table_find_casefold(alias_table, addrstr);
+		}
 	} else {
-		val = (gchar *) table_find_func(alias_table, addrstr,
-				conf.localpartcmp);
+		if (doglob) {
+			// FIXME: the domain is matched case-sensitively as well
+			repl = table_find_fnmatch(alias_table, addrstr);
+		} else {
+			repl = table_find(alias_table, addrstr);
+		}
 	}
-	if (!val) {
+	if (!repl) {
 		DEBUG(5) debugf("alias: '%s' is fully expanded, hence "
 				"completed\n", addrstr);
 		return g_list_append(NULL, addr);
 	}
 
-	DEBUG(5) debugf("alias: '%s' -> '%s'\n", addrstr, val);
-	val_list = parse_list(val);
+	DEBUG(5) debugf("alias: '%s' -> '%s'\n", addrstr, repl);
+	val_list = parse_list(repl);
 	alias_list = NULL;
 
 	foreach(val_list, val_node) {
