@@ -129,7 +129,7 @@ spool_read_header(message *msg)
 					msg->return_path->address);
 		} else if (strncasecmp(buf, "RT:", 3) == 0) {
 			recipient *addr = spool_scan_rcpt(buf);
-			if (addr_is_delivered(addr) || addr_is_failed(addr)) {
+			if (addr_is_finished(addr)) {
 				msg->non_rcpt_list = g_list_append(msg->non_rcpt_list, addr);
 			} else {
 				msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
