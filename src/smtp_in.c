@@ -220,7 +220,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 				}
 
 				msg = create_message();
-				msg->received_host = remote_host ? g_strdup(remote_host) : NULL;
+				msg->received_host = remote_host;
 				msg->received_prot = psc->prot;
 				/* get transfer id and increment for next one */
 				msg->transfer_id = (psc->next_id)++;

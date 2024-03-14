@@ -165,6 +165,8 @@ mode_smtp(void)
 	}
 
 	smtp_in(stdin, stdout, peername);
+
+	g_free(peername);
 }
 
 /* default mode if address args or -t is specified */

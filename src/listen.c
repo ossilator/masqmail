@@ -57,6 +57,7 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 		_exit(0);
 	}
 
+	g_free(rem_host);
 	close(sock);
 	close(dup_sock);
 }
