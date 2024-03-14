@@ -141,6 +141,54 @@ Replaced by 'denied_recipients', if the values are prefixed with \
 domains. \
 "
 
+check["resolve_list.*dns_a"] = "route" SUBSEP "Removed in 1.0.0" SUBSEP "\
+The dns_mx value now implies the former dns_a value. \
+"
+
+check["expand_h_sender_domain"] = "route" SUBSEP "Removed in 1.0.0" SUBSEP "\
+Replaced by 'map_h_sender_addresses', because of questionable semantics. \
+"
+
+check["expand_h_sender_address"] = "route" SUBSEP "Removed in 1.0.0" SUBSEP "\
+Replaced by 'map_h_sender_addresses', because of questionable semantics. \
+"
+
+check["set_h_from_domain"] = "route" SUBSEP "Removed in 1.0.0" SUBSEP "\
+Replaced by 'map_h_from_addresses', by creating an entry with key '*' and \
+a value where the domain is prefixed with '*@'. \
+"
+
+check["set_h_reply_to_domain"] = "route" SUBSEP "Removed in 1.0.0" SUBSEP "\
+Replaced by 'map_h_reply_to_addresses', by creating an entry with key '*' and \
+a value where the domain is prefixed with '*@'. \
+"
+
+check["set_return_path_domain"] = "route" SUBSEP "Removed in 1.0.0" SUBSEP "\
+Replaced by 'map_return_path_addresses', by creating an entry with key '*' and \
+a value where the domain is prefixed with '*@'. \
+"
+
+check["map_h_from_addresses"] = "route" SUBSEP "Changed in 1.0.0" SUBSEP "\
+Keys now match local addresses only. \
+"
+
+check["map_h_reply_to_addresses"] = "route" SUBSEP "Changed in 1.0.0" SUBSEP "\
+Keys now match local addresses only. \
+"
+
+check["map_h_mail_followup_to_addresses"] = "route" SUBSEP "Changed in 1.0.0" SUBSEP "\
+Keys now match local addresses only. \
+"
+
+check["map_return_path_addresses"] = "route" SUBSEP "Changed in 1.0.0" SUBSEP "\
+Keys now match local addresses only. \
+"
+
+check["wrapper.*[<>|]"] = "route" SUBSEP "Changed in 1.0.0" SUBSEP "\
+Redirections are no longer supported. Call a script if you need them, \
+but note that stderr is now automatically redirected to masqmail.log. \
+"
+
 # get files
 
 # already covered by the get.* and online_gets.* options in the conf
