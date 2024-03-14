@@ -529,8 +529,7 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 			**  failed addresses already have been bounced;
 			**  there should be a better way to handle those.
 			*/
-			if (!addr_is_delivered(rcpt) &&
-					!addr_is_failed(rcpt) &&
+			if (!addr_is_finished(rcpt) &&
 					!(rcpt->flags & ADDR_FLAG_LAST_ROUTE)){
 				rcpt_list_non_delivered = g_list_append(rcpt_list_non_delivered, rcpt);
 			}
@@ -615,7 +614,7 @@ update_non_rcpt_list(msg_out *msgout)
 
 	foreach(msgout->rcpt_list, rcpt_node) {
 		recipient *rcpt = rcpt_node->data;
-		if (addr_is_delivered(rcpt) || addr_is_failed(rcpt)) {
+		if (addr_is_finished(rcpt)) {
 			msg->non_rcpt_list = g_list_append(msg->non_rcpt_list,
 					rcpt);
 		}

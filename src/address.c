@@ -190,7 +190,7 @@ addr_is_finished_children(recipient *addr)
 	GList *addr_node;
 
 	if (!addr->children) {
-		return (addr_is_failed(addr) || addr_is_delivered(addr));
+		return addr_is_finished(addr);
 	}
 	foreach(addr->children, addr_node) {
 		recipient *child = addr_node->data;

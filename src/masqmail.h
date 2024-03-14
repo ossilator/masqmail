@@ -54,6 +54,8 @@ typedef struct _recipient {
 #define addr_unmark_failed(addr) { addr->flags &= ~ADDR_FLAG_FAILED; }
 #define addr_is_failed(addr) ((addr->flags & ADDR_FLAG_FAILED) != 0 )
 
+#define addr_is_finished(addr) ((addr->flags & (ADDR_FLAG_DELIVERED | ADDR_FLAG_FAILED)) != 0)
+
 typedef struct _connect_route {
 	gchar *name;
 	gchar *filename;
