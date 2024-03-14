@@ -116,13 +116,11 @@ globaliascmp(const char *pattern, const char *addr)
 /*
 **  addr is assumed to be local and no pipe address nor not-to-expand
 */
-static GList*
+static void
 expand_one(GList *alias_table, recipient *addr, int doglob)
 {
 	GList *val_list;
 	GList *val_node;
-	GList *alias_list = NULL;
-	GList *alias_node;
 	gchar *val;
 	char *addrstr;
 
@@ -148,13 +146,13 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 	if (!val) {
 		DEBUG(5) debugf("alias: '%s' is fully expanded, hence "
 				"completed\n", addrstr);
-		return g_list_append(NULL, addr);
+		return;
 	}
 
 	DEBUG(5) debugf("alias: '%s' -> '%s'\n", addrstr, val);
-	val_list = parse_list(val);
-	alias_list = NULL;
+	addr_mark_alias(addr);
 
+	val_list = parse_list(val);
 	foreach(val_list, val_node) {
 		gchar *val = val_node->data;
 		recipient *alias_addr;
@@ -172,8 +170,7 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 			}
 			DEBUG(6) debugf("alias:     address generated: '%s'\n",
 			                alias_addr->address->address);
-			alias_list = g_list_append(alias_list, alias_addr);
-			continue;
+			goto append;
 		}
 	
 		if (*val == '|') {
@@ -182,8 +179,7 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 			alias_addr = create_recipient_pipe(val);
 			DEBUG(6) debugf("alias:     pipe generated: %s\n",
 			                alias_addr->address->local_part);
-			alias_list = g_list_append(alias_list, alias_addr);
-			continue;
+			goto append;
 		}
 
 		alias_addr = create_recipient(val, conf.host_name);
@@ -197,8 +193,7 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 			DEBUG(5) debugf("alias: '%s' is non-local, "
 					"hence completed\n",
 					alias_addr->address->address);
-			alias_list = g_list_append(alias_list, alias_addr);
-			continue;
+			goto append;
 		}
 
 		/* addr is local and to expand at this point */
@@ -209,29 +204,24 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 			         alias_addr->address->address);
 			continue;
 		}
-		alias_addr->parent = addr;
 
 		/* recurse */
 		DEBUG(6) debugf("alias: >>\n");
-		alias_node = expand_one(alias_table, alias_addr, doglob);
+		expand_one(alias_table, alias_addr, doglob);
 		DEBUG(6) debugf("alias: <<\n");
-		if (alias_node) {
-			alias_list = g_list_concat(alias_list, alias_node);
-		}
+
+	  append:
+		addr->children = g_list_append(addr->children, alias_addr);
+		alias_addr->parent = addr;
 	}
 	destroy_ptr_list(val_list);
-	addr->children = g_list_copy(alias_list);
-
-	return alias_list;
 }
 
-GList*
+void
 alias_expand(GList *alias_table, GList *rcpt_list,
              int doglob)
 {
 	GList *rcpt_node = NULL;
-	GList *alias_list = NULL;
-	GList *done_list = NULL;
 
 	for (rcpt_node = rcpt_list; rcpt_node;
 			rcpt_node=g_list_next(rcpt_node)) {
@@ -239,17 +229,10 @@ alias_expand(GList *alias_table, GList *rcpt_list,
 		if (addr_is_local(addr->address)) {
 			DEBUG(5) debugf("alias: expand local '%s' "
 					"(orig rcpt addr)\n", addr->address->address);
-			alias_list = expand_one(alias_table, addr, doglob);
-			if (alias_list) {
-				done_list = g_list_concat(done_list,
-						alias_list);
-			}
+			expand_one(alias_table, addr, doglob);
 		} else {
 			DEBUG(5) debugf("alias: don't expand non-local '%s' "
 					"(orig rcpt addr)\n", addr->address->address);
-			done_list = g_list_append(done_list, addr);
 		}
 	}
-
-	return done_list;
 }

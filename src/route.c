@@ -166,7 +166,10 @@ split_rcpts(GList *rcpt_list, GList *non_rcpt_list,
 
 	foreach(rcpt_list, rcpt_node) {
 		recipient *rcpt = rcpt_node->data;
-		if (is_non_recipient(rcpt, non_rcpt_list)) {
+		if (addr_is_alias(rcpt)) {
+			// is an expanded alias; deliver only to the expansions
+			split_rcpts(rcpt->children, non_rcpt_list, local_rcpts, remote_rcpts);
+		} else if (is_non_recipient(rcpt, non_rcpt_list)) {
 			// omit already delivered addresses
 		} else if (addr_is_local(rcpt->address)) {
 			*local_rcpts = g_list_append(*local_rcpts, rcpt);

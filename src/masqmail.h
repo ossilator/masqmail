@@ -33,6 +33,7 @@ typedef struct {
 #define ADDR_FLAG_DELIVERED 0x01
 #define ADDR_FLAG_DEFERED 0x02
 #define ADDR_FLAG_FAILED 0x04
+#define ADDR_FLAG_ALIAS 0x10
 #define ADDR_FLAG_LAST_ROUTE 0x40
 
 typedef struct _recipient {
@@ -55,6 +56,10 @@ typedef struct _recipient {
 #define addr_is_failed(addr) ((addr->flags & ADDR_FLAG_FAILED) != 0 )
 
 #define addr_is_finished(addr) ((addr->flags & (ADDR_FLAG_DELIVERED | ADDR_FLAG_FAILED)) != 0)
+
+#define addr_mark_alias(addr) { addr->flags |= ADDR_FLAG_ALIAS; }
+#define addr_unmark_alias(addr) { addr->flags &= ~ADDR_FLAG_ALIAS; }
+#define addr_is_alias(addr) ((addr->flags & ADDR_FLAG_ALIAS) != 0 )
 
 typedef struct _connect_route {
 	gchar *name;
@@ -293,7 +298,7 @@ typedef struct _smtp_connection {
 
 /* alias.c*/
 gboolean addr_is_local(address *addr);
-GList *alias_expand(GList *alias_table, GList *rcpt_list,
+void alias_expand(GList *alias_table, GList *rcpt_list,
 		int doglob);
 
 /* child.c */
