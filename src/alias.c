@@ -113,9 +113,6 @@ globaliascmp(const char *pattern, const char *addr)
 	}
 }
 
-/*
-**  addr is assumed to be local and no pipe address nor not-to-expand
-*/
 static void
 expand_one(GList *alias_table, recipient *addr, int doglob)
 {
@@ -123,6 +120,12 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 	GList *val_node;
 	gchar *val;
 	char *addrstr;
+
+	if (!addr_is_local(addr->address)) {
+		DEBUG(5) debugf("alias: '%s' is non-local, hence completed\n",
+		                addr->address->address);
+		return;
+	}
 
 	addrstr = doglob ? addr->address->address : addr->address->local_part;
 
@@ -189,15 +192,6 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 			continue;
 		}
 
-		if (!addr_is_local(alias_addr->address)) {
-			DEBUG(5) debugf("alias: '%s' is non-local, "
-					"hence completed\n",
-					alias_addr->address->address);
-			goto append;
-		}
-
-		/* addr is local and to expand at this point */
-		/* but first ... search in parents for loops: */
 		if (addr_isequal_parent(addr, alias_addr->address, conf.localpartcmp)) {
 			/* loop detected, ignore this path */
 			logwrite(LOG_ERR, "alias: detected loop, hence ignoring '%s'\n",
@@ -226,13 +220,6 @@ alias_expand(GList *alias_table, GList *rcpt_list,
 	for (rcpt_node = rcpt_list; rcpt_node;
 			rcpt_node=g_list_next(rcpt_node)) {
 		recipient *addr = rcpt_node->data;
-		if (addr_is_local(addr->address)) {
-			DEBUG(5) debugf("alias: expand local '%s' "
-					"(orig rcpt addr)\n", addr->address->address);
-			expand_one(alias_table, addr, doglob);
-		} else {
-			DEBUG(5) debugf("alias: don't expand non-local '%s' "
-					"(orig rcpt addr)\n", addr->address->address);
-		}
+		expand_one(alias_table, addr, doglob);
 	}
 }
