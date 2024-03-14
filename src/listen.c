@@ -38,7 +38,6 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 	int dup_sock = dup(sock);
 	FILE *out, *in;
 	gchar *rem_host;
-	gchar *ident = NULL;
 
 	rem_host = g_strdup(inet_ntoa(sock_addr->sin_addr));
 	logwrite(LOG_NOTICE, "connect from host %s, port %hu\n",
@@ -55,7 +54,7 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 		close(listen_sock);
 		out = fdopen(sock, "w");
 		in = fdopen(dup_sock, "r");
-		smtp_in(in, out, rem_host, ident);
+		smtp_in(in, out, rem_host);
 		_exit(0);
 	}
 

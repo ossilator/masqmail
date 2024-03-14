@@ -140,7 +140,7 @@ smtp_printf(FILE *out, gchar *fmt, ...)
 }
 
 void
-smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
+smtp_in(FILE *in, FILE *out, gchar *remote_host)
 {
 	gchar *buffer;
 	smtp_cmd_id cmd_id;
@@ -219,7 +219,6 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident)
 				msg = create_message();
 				msg->received_host = remote_host ? g_strdup(remote_host) : NULL;
 				msg->received_prot = psc->prot;
-				msg->ident = ident ? g_strdup(ident) : NULL;
 				/* get transfer id and increment for next one */
 				msg->transfer_id = (psc->next_id)++;
 	

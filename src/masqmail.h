@@ -338,7 +338,7 @@ header *copy_header(header *hdr);
 header *get_header(gchar *line);
 
 /* smtp_in.c */
-void smtp_in(FILE *in, FILE *out, gchar *remote_host, gchar *ident);
+void smtp_in(FILE *in, FILE *out, gchar *remote_host);
 
 /* listen.c */
 void listen_port(GList *addr_list, gint qival);
