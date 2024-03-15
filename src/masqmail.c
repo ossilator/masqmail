@@ -523,12 +523,12 @@ main(int argc, char *argv[])
 
 		} else if (strncmp(opt, "f", 1) == 0) {
 			/* set return path */
-			gchar *address = get_optarg(argv, &arg, opt+1);
-			if (!address) {
+			gchar *addr = get_optarg(argv, &arg, opt + 1);
+			if (!addr) {
 				fprintf(stderr, "-f requires address arg.\n");
 				exit(1);
 			}
-			f_address = g_strdup(address);
+			f_address = g_strdup(addr);
 
 		} else if (strncmp(opt, "F", 1) == 0) {
 			full_sender_name = get_optarg(argv, &arg, opt+1);

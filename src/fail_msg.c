@@ -59,7 +59,7 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 				logwrite(LOG_ERR, "peopen failed: %s\n",
 						strerror(errno));
 			} else {
-				gchar fmt[256], line[256];
+				gchar fmt[256];
 
 				while (read_sockline(file, fmt, 256, 0, 0) > 0) {
 					if (fmt[0] == '@') {
@@ -90,6 +90,7 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 								msg_free_data(msg);
 						}
 					} else {
+						gchar line[256];
 						expand(var_table, fmt, line, 256);
 						fputs(line, out);
 					}

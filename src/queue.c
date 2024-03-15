@@ -48,7 +48,6 @@ read_queue(void)
 	g_free(pattern);
 
 	DEBUG(4) {
-		int i;
 		for (i = 0; i < gl.gl_pathc; i++) {
 			debugf("spoolfile: %s\n", gl.gl_pathv[i]);
 		}
