@@ -193,7 +193,7 @@ scan_headers(message *msg, guint flags)
 		case HEAD_TO:
 		case HEAD_CC:
 			has_to_or_cc = TRUE;
-			/* fall through */
+			G_GNUC_FALLTHROUGH;
 		case HEAD_BCC:
 			if (flags & ACC_RCPT_FROM_HEAD) {
 				/* -t option (see comment above) */

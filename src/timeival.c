@@ -19,16 +19,19 @@ time_interval(gchar *str)
 	*q = '\0';
 	val = atoi(buf);
 
-	/* fall through: */
 	switch (*p) {
 	case 'w':
 		factor *= 7;
+		G_GNUC_FALLTHROUGH;
 	case 'd':
 		factor *= 24;
+		G_GNUC_FALLTHROUGH;
 	case 'h':
 		factor *= 60;
+		G_GNUC_FALLTHROUGH;
 	case 'm':
 		factor *= 60;
+		G_GNUC_FALLTHROUGH;
 	case 's':
 		break;
 	default:
