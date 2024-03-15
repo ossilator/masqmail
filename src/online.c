@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 
 gchar*
-online_query()
+online_query(void)
 {
 	gchar *pipe = conf.online_query;
 	pid_t pid;

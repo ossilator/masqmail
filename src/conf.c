@@ -13,7 +13,7 @@
 masqmail_conf conf;
 
 void
-init_conf()
+init_conf(void)
 {
 	struct passwd *passwd;
 	struct group *group;

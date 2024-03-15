@@ -24,7 +24,7 @@ static const char * const header_names[] = {
 
 /* this was borrowed from exim and slightly changed */
 gchar*
-rec_timestamp()
+rec_timestamp(void)
 {
 	static gchar buf[64];
 	int len;

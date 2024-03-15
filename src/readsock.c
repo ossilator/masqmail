@@ -36,7 +36,7 @@ alarm_on(int timeout)
 }
 
 static void
-alarm_off()
+alarm_off(void)
 {
 	alarm(0);
 

@@ -100,7 +100,7 @@ get_address(gchar *line, gchar *addr)
 }
 
 static smtp_connection*
-create_base()
+create_base(void)
 {
 	smtp_connection *base = g_malloc(sizeof(smtp_connection));
 	if (!base) {
