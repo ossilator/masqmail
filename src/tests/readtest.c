@@ -2,7 +2,7 @@
 #include "readsock.h"
 
 int
-main()
+main(void)
 {
 	char *buf = g_malloc(20);
 	int size = 20, ret;

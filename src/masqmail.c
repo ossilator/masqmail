@@ -184,7 +184,7 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 
 /* -bs or called as smtpd or in.smtpd */
 static void
-mode_smtp()
+mode_smtp(void)
 {
 	/* accept smtp message on stdin */
 	/* write responses to stderr. */

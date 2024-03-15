@@ -285,7 +285,7 @@ GList *alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
 int child(const char *command);
 
 /* conf.c */
-void init_conf();
+void init_conf(void);
 gboolean read_conf(gchar *filename);
 GList *read_route_list(GList *rf_list);
 void destroy_route(connect_route *r);
@@ -327,7 +327,7 @@ gchar *addr_string(address *addr);
 accept_error accept_message(FILE *in, message *msg, guint flags);
 
 /* header.c */
-gchar *rec_timestamp();
+gchar *rec_timestamp(void);
 header *find_header(GList *hdr_list, header_id id);
 header *create_header(header_id id, gchar *fmt, ...);
 void destroy_header(header *hdr);
@@ -387,7 +387,7 @@ void queue_list(void);
 gboolean queue_delete(gchar *uid);
 
 /* online.c */
-gchar *online_query();
+gchar *online_query(void);
 
 /* permissions.c */
 void set_euidgid(gint uid, gint gid, uid_t *old_uid, gid_t *old_gid);
