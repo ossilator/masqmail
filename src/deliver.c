@@ -280,7 +280,7 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 		ok = FALSE;
 		foreach(rcpt_list, rcpt_node) {
 			address *rcpt = (address *) (rcpt_node->data);
-			gchar *cmd = g_malloc(256);
+			gchar cmd[256];
 			GList *var_table = var_table_rcpt(var_table_msg(NULL,
 					msg), rcpt);
 
