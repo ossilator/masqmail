@@ -12,7 +12,7 @@ extern char *optarg;
 extern int optind, opterr, optopt;
 
 void
-logwrite(int pri, const char *fmt, ...)
+logwrite(G_GNUC_UNUSED int pri, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);

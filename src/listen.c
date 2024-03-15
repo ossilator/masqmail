@@ -12,7 +12,7 @@
 #include <sys/types.h>
 
 static void
-sigchld_handler(int sig)
+sigchld_handler(G_GNUC_UNUSED int sig)
 {
 	pid_t pid;
 	int status;

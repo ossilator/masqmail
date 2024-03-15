@@ -6,6 +6,8 @@
 
 #include "readsock.h"
 
+#include <glib.h>
+
 #include <ctype.h>
 #include <signal.h>
 #include <setjmp.h>
@@ -14,7 +16,7 @@
 static jmp_buf jmp_timeout;
 
 static void
-sig_timeout_handler(int sig)
+sig_timeout_handler(G_GNUC_UNUSED int sig)
 {
 	longjmp(jmp_timeout, 1);
 }
