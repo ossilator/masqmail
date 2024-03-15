@@ -109,8 +109,8 @@ addr_is_delivered_children(address *addr)
 		return addr_is_delivered(addr);
 	}
 	foreach(addr->children, addr_node) {
-		address *addr = (address *) (addr_node->data);
-		if (!addr_is_delivered_children(addr)) {
+		address *child = (address *) (addr_node->data);
+		if (!addr_is_delivered_children(child)) {
 			return FALSE;
 		}
 	}
@@ -128,8 +128,8 @@ addr_is_finished_children(address *addr)
 		return (addr_is_failed(addr) || addr_is_delivered(addr));
 	}
 	foreach(addr->children, addr_node) {
-		address *addr = (address *) (addr_node->data);
-		if (!addr_is_finished_children(addr)) {
+		address *child = (address *) (addr_node->data);
+		if (!addr_is_finished_children(child)) {
 			return FALSE;
 		}
 	}
