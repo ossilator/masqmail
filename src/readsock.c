@@ -121,9 +121,6 @@ int
 read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout,
 		unsigned int flags)
 {
-	int p = 0, size = *buf_len;
-	char *buf;
-
 	if (setjmp(jmp_timeout) != 0) {
 		alarm_off();
 		return -3;
@@ -136,6 +133,7 @@ read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout,
 		_read_chug(in);
 	}
 
+	int size = *buf_len;
 	if (!*pbuf) {
 		*pbuf = (char *) malloc(size);
 		if (!*pbuf) {
@@ -143,8 +141,9 @@ read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout,
 			exit(1);
 		}
 	}
-	buf = *pbuf;
+	char *buf = *pbuf;
 
+	int p = 0;
 	while (1) {
 		int pp;
 
