@@ -142,8 +142,6 @@ write_pidfile(gchar *name)
 static void
 mode_daemon(gboolean do_listen, gint queue_interval)
 {
-	guint pid;
-
 	/* daemon */
 	if (!conf.run_as_user) {
 		if ((conf.orig_uid != 0) && (conf.orig_uid != conf.mail_uid)) {
@@ -155,6 +153,7 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 
 	/* reparent to init only if init is not already the parent */
 	if (getppid() != 1) {
+		pid_t pid;
 		if ((pid = fork()) > 0) {
 			exit(0);
 		} else if (pid < 0) {
