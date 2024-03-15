@@ -10,6 +10,17 @@ AM_INIT_AUTOMAKE()
 dnl Checks for programs.
 
 AC_PROG_CC
+if test "$GCC" = yes; then
+	warnings="
+		-Wall -Wextra
+		-Wshadow
+		-Wcast-qual
+		-Wformat=2 -Wformat-signedness -Wformat-nonliteral
+		-Wstrict-prototypes
+		-Wno-overlength-strings
+	"
+	CFLAGS="$CFLAGS -pipe -std=c99 $(echo $warnings)"
+fi
 
 dnl Checks for libraries.
 
