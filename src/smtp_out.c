@@ -37,6 +37,8 @@ destroy_smtpbase(smtp_base *psb)
 	g_free(psb->auth_name);
 	g_free(psb->auth_login);
 	g_free(psb->auth_secret);
+
+	g_free(psb);
 }
 
 gchar*
