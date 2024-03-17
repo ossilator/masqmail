@@ -169,7 +169,7 @@ queue_list()
 
 			printf("              %s %s\n", addr_is_delivered(rcpt) ? "=>" : (addr_is_failed(rcpt) ? "!=" : "=="), addr_string(rcpt));
 		}
-		g_free(msg);
+		destroy_message(msg);
 	}
 }
 
