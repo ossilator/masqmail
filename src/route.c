@@ -243,7 +243,7 @@ route_prepare_msgout(connect_route *route, msg_out *msgout)
 			ret_path = (address *) table_find_fnmatch(route->map_return_path_addresses, msg->return_path->local_part);
 			if (ret_path) {
 				DEBUG(5) debugf("found <%s>\n", ret_path->address);
-				if (ret_path->domain == NULL)
+				if (!ret_path->domain[0])
 					ret_path->domain = msg->return_path->domain;
 				msgout->return_path = copy_address(ret_path);
 			}
