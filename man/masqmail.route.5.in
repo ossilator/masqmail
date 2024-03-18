@@ -346,6 +346,14 @@ map_return_path_addresses = "john: jsmith@mail.academic.edu; charlie: cmiller@mx
 .fi
 
 .TP
+\fBmap_outgoing_addresses\fR = \fIlist\fR
+
+Rewrite rules combining all the above.
+Display names are ignored for return-path rewriting.
+
+You probably should use this, rather than the individual rules.
+
+.TP
 \fBexpand_h_sender_address\fR = \fIboolean\fR
 
 This sets the sender address as given by the `Sender:' header

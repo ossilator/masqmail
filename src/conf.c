@@ -675,6 +675,9 @@ read_route(gchar *filename)
 		} else if (strcmp(lval, "map_h_mail_followup_to_addresses")==0) {
 			ok &= parse_rewrite_map(
 					rval, &route->map_h_mail_followup_to_addresses, A_RFC822);
+		} else if (strcmp(lval, "map_outgoing_addresses")==0) {
+			ok &= parse_rewrite_map(
+					rval, &route->map_outgoing_addresses, A_RFC822);
 		} else if (strcmp(lval, "expand_h_sender_address")==0) {
 			route->expand_h_sender_address = parse_boolean(rval);
 		} else if (strcmp(lval, "resolve_list")==0) {

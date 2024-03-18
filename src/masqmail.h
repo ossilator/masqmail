@@ -91,6 +91,7 @@ typedef struct _connect_route {
 	GList *map_h_reply_to_addresses;
 	GList *map_h_mail_followup_to_addresses;
 	GList *map_return_path_addresses;
+	GList *map_outgoing_addresses;
 	gboolean expand_h_sender_address;
 
 	gchar *pipe;

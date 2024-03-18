@@ -8,7 +8,8 @@ TESTS = \
 	t210-stdin-t.sh \
 	t300-aliases.sh \
 	t400-rewriting.sh \
-	t401-domain-rewriting.sh
+	t401-domain-rewriting.sh \
+	t402-combined-rewriting.sh
 
 EXTRA_DIST = \
 	lib.sh \
