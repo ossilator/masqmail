@@ -35,6 +35,17 @@ logerrno(G_GNUC_UNUSED int pri, const char *fmt, ...)
 }
 
 void
+loggerror(G_GNUC_UNUSED int pri, GError *gerr, const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(stdout, fmt, args);
+	va_end(args);
+	printf(": %s\n", gerr->message);
+	g_error_free(gerr);
+}
+
+void
 debugf(const char *fmt, ...)
 {
 	va_list args;
