@@ -374,16 +374,10 @@ send_header(smtp_base *psb, GList *hdr_list)
 	gint num_hdrs = 0;
 
 	/* header */
-	if (hdr_list) {
-		foreach(hdr_list, node) {
-			if (node->data) {
-				header *hdr = (header *) (node->data);
-				if (hdr->header) {
-					send_data_line(psb, hdr->header);
-					num_hdrs++;
-				}
-			}
-		}
+	foreach (hdr_list, node) {
+		header *hdr = (header *) (node->data);
+		send_data_line(psb, hdr->header);
+		num_hdrs++;
 	}
 
 	/* empty line separating headers from data: */
@@ -400,13 +394,9 @@ send_data(smtp_base *psb, message *msg)
 	gint num_lines = 0;
 
 	/* data */
-	if (msg->data_list) {
-		for (node = g_list_first(msg->data_list); node; node = g_list_next(node)) {
-			if (node->data) {
-				send_data_line(psb, node->data);
-				num_lines++;
-			}
-		}
+	for (node = g_list_first(msg->data_list); node; node = g_list_next(node)) {
+		send_data_line(psb, node->data);
+		num_lines++;
 	}
 
 	DEBUG(4) debugf("sent %d lines of data\n", num_lines);

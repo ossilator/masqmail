@@ -38,19 +38,13 @@ msg_calc_size(message *msg, gboolean is_smtp)
 	gssize c_cnt = 0;  /* character count */
 
 	/* message header size */
-	if (msg->hdr_list) {
-		for (node = g_list_first(msg->hdr_list); node; node = g_list_next(node)) {
-			if (node->data) {
-				header *hdr = (header *) (node->data);
-				if (hdr->header) {
-					char *p = hdr->header;
-					while (*p) {
-						if (*p++ == '\n')
-							l_cnt++;
-						c_cnt++;
-					}
-				}
-			}
+	for (node = g_list_first(msg->hdr_list); node; node = g_list_next(node)) {
+		header *hdr = (header *) (node->data);
+		char *p = hdr->header;
+		while (*p) {
+			if (*p++ == '\n')
+				l_cnt++;
+			c_cnt++;
 		}
 	}
 
@@ -59,16 +53,12 @@ msg_calc_size(message *msg, gboolean is_smtp)
 	l_cnt++;
 
 	/* message data size */
-	if (msg->data_list) {
-		for (node = g_list_first(msg->data_list); node; node = g_list_next(node)) {
-			if (node->data) {
-				char *p = node->data;
-				while (*p) {
-					if (*p++ == '\n')
-						l_cnt++;
-					c_cnt++;
-				}
-			}
+	for (node = g_list_first(msg->data_list); node; node = g_list_next(node)) {
+		char *p = node->data;
+		while (*p) {
+			if (*p++ == '\n')
+				l_cnt++;
+			c_cnt++;
 		}
 	}
 
