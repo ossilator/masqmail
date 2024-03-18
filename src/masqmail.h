@@ -420,6 +420,7 @@ void logopen(void);
 void logclose(void);
 void logwrite(int pri, const char *fmt, ...) G_GNUC_PRINTF(2, 3);
 void logerrno(int pri, const char *fmt, ...) G_GNUC_PRINTF(2, 3);
+void loggerror(int pri, GError *gerr, const char *fmt, ...) G_GNUC_PRINTF(3, 4);
 void debugf(const char *fmt, ...) G_GNUC_PRINTF(1, 2);
 void vdebugf(const char *fmt, va_list args) G_GNUC_PRINTF(1, 0);
 

@@ -174,6 +174,19 @@ logerrno(int pri, const char *fmt, ...)
 	errno = saved_errno;
 }
 
+void
+loggerror(int pri, GError *gerr, const char *fmt, ...)
+{
+	va_list args;
+
+	va_start(args, fmt);
+	gchar *msg = g_strdup_vprintf(fmt, args);
+	va_end(args);
+	logwrite(pri, "%s: %s\n", msg, gerr->message);
+	g_free(msg);
+	g_error_free(gerr);
+}
+
 #ifdef ENABLE_DEBUG
 void
 debugf(const char *fmt, ...)
