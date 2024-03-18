@@ -426,7 +426,7 @@ smtp_out_mark_rcpts(smtp_base *psb, GList *rcpt_list)
 {
 	GList *rcpt_node;
 	for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
-		address *rcpt = (address *) (rcpt_node->data);
+		recipient *rcpt = rcpt_node->data;
 
 		addr_unmark_delivered(rcpt);
 
@@ -742,8 +742,8 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		rcpt_accept = 0;
 
 		for (rcpt_node = g_list_first(rcpt_list); rcpt_node != NULL; rcpt_node = g_list_next(rcpt_node)) {
-			address *rcpt = (address *) (rcpt_node->data);
-			smtp_cmd_rcptto(psb, rcpt);
+			recipient *rcpt = rcpt_node->data;
+			smtp_cmd_rcptto(psb, rcpt->address);
 			if (!psb->use_pipelining) {
 				if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
 					if (check_response(psb, FALSE)) {
@@ -759,7 +759,8 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 							break;
 						} else {
 							logwrite(LOG_NOTICE, "%s == <%s> host=%s failed: %s\n",
-							         msg->uid, rcpt->address, psb->remote_host, psb->buffer);
+							         msg->uid, rcpt->address->address,
+							         psb->remote_host, psb->buffer);
 							if (psb->error == smtp_trylater) {
 								addr_mark_defered(rcpt);
 							} else {
@@ -802,7 +803,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 						*/
 						for (i = 0; i < rcpt_cnt; i++) {
 							if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
-								address *rcpt = g_list_nth_data(rcpt_list, i);
+								recipient *rcpt = g_list_nth_data(rcpt_list, i);
 								if (check_response(psb, FALSE)) {
 									rcpt_accept++;
 									addr_mark_delivered(rcpt);
@@ -819,7 +820,8 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 										break;
 									} else {
 										logwrite(LOG_NOTICE, "%s == <%s> host=%s failed: %s\n",
-										         msg->uid, rcpt->address, psb->remote_host, psb->buffer);
+										         msg->uid, rcpt->address->address,
+										         psb->remote_host, psb->buffer);
 										if (psb->error == smtp_trylater) {
 											addr_mark_defered(rcpt);
 										} else {
@@ -869,10 +871,10 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 	if (psb->error == smtp_ok) {
 		GList *rcpt_node;
 		for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
-			address *rcpt = (address *) (rcpt_node->data);
+			recipient *rcpt = rcpt_node->data;
 			if (addr_is_delivered(rcpt))
 				logwrite(LOG_INFO, "%s => <%s> host=%s\n",
-				         msg->uid, rcpt->address, psb->remote_host);
+				         msg->uid, rcpt->address->address, psb->remote_host);
 		}
 	} else {
 		/*

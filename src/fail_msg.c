@@ -22,7 +22,7 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg)
 
 		ret_path = create_address_raw("postmaster", conf.host_name);
 		foreach(failed_rcpts, node) {
-			address *addr = (address *) (node->data);
+			recipient *addr = node->data;
 
 			if (addr_isequal_parent(addr, ret_path, strcasecmp)) {
 				logwrite(LOG_ERR, "%s == <%s>: postmaster address failed\n",
@@ -59,8 +59,8 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg)
 						GList *node;
 						if (strncmp(fmt, "@failed_rcpts", 13) == 0) {
 							foreach(failed_rcpts, node) {
-								address *rcpt = (address *) (node->data);
-								fprintf(out, "\t<%s>\n", rcpt->address);
+								recipient *rcpt = node->data;
+								fprintf(out, "\t<%s>\n", rcpt->address->address);
 							}
 						} else if (strncmp(fmt, "@msg_headers", 12) == 0) {
 							foreach(msg->hdr_list, node) {

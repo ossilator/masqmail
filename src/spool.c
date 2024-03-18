@@ -37,29 +37,29 @@ read_line(FILE *in, gchar *buf, gint buf_len)
 }
 
 static void
-spool_write_rcpt(FILE *out, address *rcpt)
+spool_write_rcpt(FILE *out, recipient *rcpt)
 {
 	gchar dlvrd_char = addr_is_delivered(rcpt) ? 'X' : (addr_is_failed(rcpt) ? 'F' : ' ');
 
-	if (rcpt->local_part[0] != '|') {
-		fprintf(out, "RT:%c<%s>\n", dlvrd_char, rcpt->address);
+	if (rcpt->address->local_part[0] != '|') {
+		fprintf(out, "RT:%c<%s>\n", dlvrd_char, rcpt->address->address);
 	} else {
-		fprintf(out, "RT:%c%s\n", dlvrd_char, rcpt->local_part);
+		fprintf(out, "RT:%c%s\n", dlvrd_char, rcpt->address->address);
 	}
 }
 
-static address*
+static recipient*
 spool_scan_rcpt(gchar *line)
 {
-	address *rcpt = NULL;
+	recipient *rcpt = NULL;
 
 	if (!line[3]) {
 		return NULL;
 	}
 	if (line[4] == '|') {
-		rcpt = create_address_pipe(line+4);
+		rcpt = create_recipient_pipe(line+4);
 	} else {
-		rcpt = create_address(line+4, A_RFC821, NULL);
+		rcpt = create_recipient(line+4, NULL);
 	}
 	if (line[3] == 'X') {
 		addr_mark_delivered(rcpt);
@@ -128,8 +128,7 @@ spool_read_header(message *msg)
 			DEBUG(3) debugf("spool_read: MAIL FROM: %s\n",
 					msg->return_path->address);
 		} else if (strncasecmp(buf, "RT:", 3) == 0) {
-			address *addr;
-			addr = spool_scan_rcpt(buf);
+			recipient *addr = spool_scan_rcpt(buf);
 			if (addr_is_delivered(addr) || addr_is_failed(addr)) {
 				msg->non_rcpt_list = g_list_append(msg->non_rcpt_list, addr);
 			} else {
@@ -216,11 +215,11 @@ spool_write_header(message *msg)
 		fprintf(out, "MF:<%s>\n", msg->return_path->address);
 
 		foreach(msg->rcpt_list, node) {
-			address *rcpt = (address *) (node->data);
+			recipient *rcpt = node->data;
 			spool_write_rcpt(out, rcpt);
 		}
 		foreach(msg->non_rcpt_list, node) {
-			address *rcpt = (address *) (node->data);
+			recipient *rcpt = node->data;
 			spool_write_rcpt(out, rcpt);
 		}
 		fprintf(out, "PR:%s\n", prot_names[msg->received_prot]);

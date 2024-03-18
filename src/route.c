@@ -123,12 +123,12 @@ filter_rcpts(GList *rcpt_list, GList *patterns, gboolean keep_matching)
 	GList *out_list = NULL;
 
 	foreach(rcpt_list, rcpt_node) {
-		address *rcpt = (address *) (rcpt_node->data);
+		recipient *rcpt = rcpt_node->data;
 		GList *pat_node = NULL;
 		foreach (patterns, pat_node) {
 			address *pat = (address *) (pat_node->data);
-			if (!fnmatch(pat->domain, rcpt->domain, FNM_CASEFOLD) &&
-			    !fnmatch(pat->local_part, rcpt->local_part, 0)) {  /* TODO: match local_part caseless? */
+			if (!fnmatch(pat->domain, rcpt->address->domain, FNM_CASEFOLD) &&
+			    !fnmatch(pat->local_part, rcpt->address->local_part, 0)) {  /* TODO: match local_part caseless? */
 				break;
 			}
 		}
@@ -143,11 +143,10 @@ void
 split_rcpts(GList *rcpt_list, GList **local_rcpts, GList **remote_rcpts)
 {
 	GList *rcpt_node;
-	address *rcpt = NULL;
 
 	foreach(rcpt_list, rcpt_node) {
-		rcpt = (address *) (rcpt_node->data);
-		if (addr_is_local(rcpt)) {
+		recipient *rcpt = rcpt_node->data;
+		if (addr_is_local(rcpt->address)) {
 			*local_rcpts = g_list_append(*local_rcpts, rcpt);
 		} else {
 			*remote_rcpts = g_list_append(*remote_rcpts, rcpt);
@@ -242,8 +241,8 @@ route_prepare_msgout(connect_route *route, msg_out *msgout)
 			GList *node;
 			debugf("rcpts for routed delivery, route = %s, id = %s\n", route->name, msg->uid);
 			foreach(rcpt_list, node) {
-				address *rcpt = (address *) (node->data);
-				debugf("  rcpt for routed delivery: <%s>\n", rcpt->address);
+				recipient *rcpt = node->data;
+				debugf("  rcpt for routed delivery: <%s>\n", rcpt->address->address);
 			}
 		}
 
@@ -286,14 +285,14 @@ route_msgout_list(GList *msgout_list)
 		GList *rcpt_node;
 
 		foreach(rcpt_list, rcpt_node) {
-			address *rcpt = rcpt_node->data;
+			recipient *rcpt = rcpt_node->data;
 			msgout_perhost *mo_ph = NULL;
 			GList *mo_ph_node = NULL;
 
 			/* search host in mo_ph_list */
 			foreach(mo_ph_list, mo_ph_node) {
 				mo_ph = (msgout_perhost *) (mo_ph_node->data);
-				if (strcasecmp(mo_ph->host, rcpt->domain) == 0)
+				if (strcasecmp(mo_ph->host, rcpt->address->domain) == 0)
 					break;
 			}
 			if (mo_ph_node != NULL) {
@@ -322,7 +321,7 @@ route_msgout_list(GList *msgout_list)
 				}
 			} else {
 				/* this rcpt to goes to another host */
-				mo_ph = create_msgout_perhost(rcpt->domain);
+				mo_ph = create_msgout_perhost(rcpt->address->domain);
 				mo_ph_list = g_list_append(mo_ph_list, mo_ph);
 
 				/* make a copy of msgout */

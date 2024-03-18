@@ -194,7 +194,7 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 			exit(1);
 		}
 		msg->rcpt_list = g_list_append(msg->rcpt_list,
-				create_address(addresses[i], A_RFC821, conf.host_name));
+				create_recipient(addresses[i], conf.host_name));
 	}
 
 	/* -f option */
