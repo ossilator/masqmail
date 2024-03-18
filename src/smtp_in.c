@@ -116,7 +116,7 @@ create_base(void)
 	return base;
 }
 
-static void
+static void G_GNUC_PRINTF(2, 3)
 smtp_printf(FILE *out, gchar *fmt, ...)
 {
 	va_list args;

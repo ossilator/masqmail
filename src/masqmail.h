@@ -329,7 +329,7 @@ accept_error accept_message(FILE *in, message *msg, guint flags);
 /* header.c */
 gchar *rec_timestamp(void);
 header *find_header(GList *hdr_list, header_id id);
-header *create_header(header_id id, gchar *fmt, ...);
+header *create_header(header_id id, gchar *fmt, ...) G_GNUC_PRINTF(2, 3);
 void destroy_header(header *hdr);
 header *copy_header(header *hdr);
 header *get_header(gchar *line);
@@ -368,9 +368,9 @@ gboolean pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guin
 gchar *ext_strerror(int err);
 gboolean logopen(void);
 void logclose(void);
-void logwrite(int pri, const char *fmt, ...);
-void debugf(const char *fmt, ...);
-void vdebugf(const char *fmt, va_list args);
+void logwrite(int pri, const char *fmt, ...) G_GNUC_PRINTF(2, 3);
+void debugf(const char *fmt, ...) G_GNUC_PRINTF(1, 2);
+void vdebugf(const char *fmt, va_list args) G_GNUC_PRINTF(1, 0);
 
 /* spool.c */
 gboolean spool_read_data(message *msg);
