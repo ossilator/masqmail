@@ -71,14 +71,12 @@ skip_cfws(const gchar *p)
 	return p;
 }
 
-static gboolean
-read_word(const gchar *p, const gchar **b, const gchar **e)
+static const gchar *
+read_word(const gchar *p)
 {
 #ifdef PARSE_TEST
 	g_print("read_word: %s\n", p);
 #endif
-	*b = p;
-	/*  b = &p; */
 	if (*p == '\"') {
 		/* quoted-string */
 		p++;
@@ -92,40 +90,33 @@ read_word(const gchar *p, const gchar **b, const gchar **e)
 			p++;
 		}
 	}
-	*e = p;
-	return TRUE;
+	return p;
 }
 
-static gboolean
-read_word_with_dots(const gchar *p, const gchar **b, const gchar **e)
+static const gchar *
+read_word_with_dots(const gchar *p)
 {
-	const gchar *b0 = p;
-
 #ifdef PARSE_TEST
 	g_print("read_word_with_dots: %s\n", p);
 #endif
 	while (TRUE) {
-		if (!read_word(p, b, e)) {
-			return FALSE;
+		if (!(p = read_word(p))) {
+			break;
 		}
-		p = *e;
 		if (*p != '.') {
 			break;
 		}
 		p++;
 	}
-	*b = b0;
-	*e = p;
-	return TRUE;
+	return p;
 }
 
-static gboolean
-read_domain(const gchar *p, const gchar **b, const gchar **e)
+static const gchar *
+read_domain(const gchar *p)
 {
 #ifdef PARSE_TEST
 	g_print("read_domain: %s\n", p);
 #endif
-	*b = p;
 	if (*p != '[') {
 		while (isalnum(*p) || (*p == '-') || (*p == '.')) {
 			p++;
@@ -137,12 +128,11 @@ read_domain(const gchar *p, const gchar **b, const gchar **e)
 		}
 		if (*p != ']') {
 			parse_error = "unterminated domain literal";
-			return FALSE;
+			return NULL;
 		}
 		p++;
 	}
-	*e = p;
-	return TRUE;
+	return p;
 }
 
 gboolean
@@ -173,11 +163,11 @@ parse_address_rfc822(const gchar *string,
 	}
 
 	while (TRUE) {
-		if (!read_word_with_dots(p, &b, &e)) {
+		b = p;
+		if (!(p = read_word_with_dots(p))) {
 			return FALSE;
 		}
-
-		p = e;
+		e = p;
 #ifdef PARSE_TEST
 		g_print("after read_word_with_dots: %s\n", p);
 #endif
@@ -195,12 +185,11 @@ parse_address_rfc822(const gchar *string,
 			if (*p == '@') {
 				p++;	/* skip @ */
 				/* now the domain */
-				if (!read_domain(p, &b, &e)) {
+				*domain_begin = p;
+				if (!(p = read_domain(p))) {
 					return FALSE;
 				}
-				p = e;
-				*domain_begin = b;
-				*domain_end = e;
+				*domain_end = p;
 			} else {
 				/* unqualified? */
 				/* something like `To: alice, bob' with -t */
@@ -216,23 +205,21 @@ parse_address_rfc822(const gchar *string,
 				}
 				p++;
 			}
-			if (!read_word_with_dots(p, &b, &e)) {
+			*local_begin = p;
+			if (!(p = read_word_with_dots(p))) {
 				return FALSE;
 			}
-			p = e;
-			*local_begin = b;
-			*local_end = e;
+			*local_end = p;
 #ifdef PARSE_TEST
 			g_print("found local part: %s\n", *local_begin);
 #endif
 			if (*p == '@') {
 				p++;
-				if (!read_domain(p, &b, &e)) {
+				*domain_begin = p;
+				if (!(p = read_domain(p))) {
 					return FALSE;
 				}
-				p = e;
-				*domain_begin = b;
-				*domain_end = e;
+				*domain_end = p;
 			} else {
 				/* may be unqualified address */
 				*domain_begin = *domain_end = NULL;
@@ -293,7 +280,6 @@ parse_address_rfc821(const gchar *string,
 	gint angle_brackets = 0;
 
 	const gchar *p = string;
-	const gchar *b, *e;
 
 	*local_begin = *local_end = NULL;
 	*domain_begin = *domain_end = NULL;
@@ -312,16 +298,11 @@ parse_address_rfc821(const gchar *string,
 	}
 
 	while (TRUE) {
-		if (!read_word_with_dots(p, &b, &e)) {
+		*local_begin = p;
+		if (!(p = read_word_with_dots(p))) {
 			return FALSE;
 		}
-
-		p = e;
-#ifdef PARSE_TEST
-		g_print("after read_word_with_dots: %s\n", p);
-#endif
-		*local_begin = b;
-		*local_end = e;
+		*local_end = p;
 #ifdef PARSE_TEST
 		g_print("found local part: %s\n", *local_begin);
 		g_print("local_end = %s\n", *local_end);
@@ -331,12 +312,11 @@ parse_address_rfc821(const gchar *string,
 			break;
 		} else if (*p == '@') {
 			p++;
-			if (!read_domain(p, &b, &e)) {
+			*domain_begin = p;
+			if (!(p = read_domain(p))) {
 				return FALSE;
 			}
-			p = e;
-			*domain_begin = b;
-			*domain_end = e;
+			*domain_end = p;
 			break;
 		} else {
 			parse_error = "unexpected character after local part";
