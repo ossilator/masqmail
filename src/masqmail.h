@@ -313,13 +313,13 @@ void destroy_msg_out_list(GList *msgout_list);
 
 /* address.c */
 typedef enum { A_RFC821, A_RFC822 } addr_type_t;
-address *create_address(gchar *path, addr_type_t addr_type, gchar *domain);
-address *create_address_raw(gchar *local_part, gchar *domain);
-address *create_address_pipe(gchar *path);
+address *create_address(const gchar *path, addr_type_t addr_type, const gchar *domain);
+address *create_address_raw(const gchar *local_part, const gchar *domain);
+address *create_address_pipe(const gchar *path);
 void destroy_address(address *addr);
-address *copy_modify_address(const address *orig, gchar *l_part, gchar *dom);
+address *copy_modify_address(const address *orig, const gchar *l_part, const gchar *dom);
 #define copy_address(addr) copy_modify_address(addr, NULL, NULL)
-GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain);
+GList *addr_list_append_rfc822(GList *addr_list, const gchar *string, const gchar *domain);
 gboolean addr_isequal(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
 gboolean addr_isequal_parent(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
 address *addr_find_ancestor(address *addr);
@@ -345,8 +345,14 @@ void listen_port(GList *addr_list, gint qival);
 
 /* parse.c */
 extern const char *parse_error;
-gboolean parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
-gboolean parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
+gboolean parse_address_rfc822(const gchar *string,
+                              const gchar **local_begin, const gchar **local_end,
+                              const gchar **domain_begin, const gchar **domain_end,
+                              const gchar **address_end);
+gboolean parse_address_rfc821(const gchar *string,
+                              const gchar **local_begin, const gchar **local_end,
+                              const gchar **domain_begin, const gchar **domain_end,
+                              const gchar **address_end);
 
 /* connect.c */
 mxip_addr *connect_resolvelist(int *psockfd, gchar *host, guint port, GList *res_funcs, gchar **err_msg);

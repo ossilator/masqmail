@@ -23,8 +23,8 @@ static gchar specials[] = "()<>@,;:\\\".[]`";
 
 const char *parse_error = NULL;
 
-static gchar*
-skip_comment(gchar *p)
+static const gchar*
+skip_comment(const gchar *p)
 {
 
 #ifdef PARSE_TEST
@@ -44,7 +44,7 @@ skip_comment(gchar *p)
 }
 
 static gboolean
-read_word(gchar *p, gchar **b, gchar **e)
+read_word(const gchar *p, const gchar **b, const gchar **e)
 {
 #ifdef PARSE_TEST
 	g_print("read_word: %s\n", p);
@@ -74,9 +74,9 @@ read_word(gchar *p, gchar **b, gchar **e)
 }
 
 static gboolean
-read_word_with_dots(gchar *p, gchar **b, gchar **e)
+read_word_with_dots(const gchar *p, const gchar **b, const gchar **e)
 {
-	gchar *b0 = p;
+	const gchar *b0 = p;
 
 #ifdef PARSE_TEST
 	g_print("read_word_with_dots: %s\n", p);
@@ -97,7 +97,7 @@ read_word_with_dots(gchar *p, gchar **b, gchar **e)
 }
 
 static gboolean
-read_domain(gchar *p, gchar **b, gchar **e)
+read_domain(const gchar *p, const gchar **b, const gchar **e)
 {
 #ifdef PARSE_TEST
 	g_print("read_domain: %s\n", p);
@@ -123,13 +123,15 @@ read_domain(gchar *p, gchar **b, gchar **e)
 }
 
 gboolean
-parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end,
-		gchar **domain_begin, gchar **domain_end, gchar **address_end)
+parse_address_rfc822(const gchar *string,
+                     const gchar **local_begin, const gchar **local_end,
+                     const gchar **domain_begin, const gchar **domain_end,
+                     const gchar **address_end)
 {
 	gint angle_brackets = 0;
 
-	gchar *p = string;
-	gchar *b, *e;
+	const gchar *p = string;
+	const gchar *b, *e;
 
 	*local_begin = *local_end = NULL;
 	*domain_begin = *domain_end = NULL;
@@ -272,13 +274,15 @@ parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end,
 }
 
 gboolean
-parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end,
-		gchar **domain_begin, gchar **domain_end, gchar **address_end)
+parse_address_rfc821(const gchar *string,
+                     const gchar **local_begin, const gchar **local_end,
+                     const gchar **domain_begin, const gchar **domain_end,
+                     const gchar **address_end)
 {
 	gint angle_brackets = 0;
 
-	gchar *p = string;
-	gchar *b, *e;
+	const gchar *p = string;
+	const gchar *b, *e;
 
 	*local_begin = *local_end = NULL;
 	*domain_begin = *domain_end = NULL;
