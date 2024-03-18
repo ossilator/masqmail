@@ -16,7 +16,7 @@ addr_is_local(address *addr)
 	GList *addr_node;
 	address *a;
 
-	if (!addr->domain) {
+	if (!addr->domain[0]) {
 		return TRUE;
 	}
 	foreach(conf.local_hosts, dom_node) {

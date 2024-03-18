@@ -42,13 +42,6 @@ spool_write_rcpt(FILE *out, address *rcpt)
 	gchar dlvrd_char = addr_is_delivered(rcpt) ? 'X' : (addr_is_failed(rcpt) ? 'F' : ' ');
 
 	if (rcpt->local_part[0] != '|') {
-		/* this is a paranoid check, in case it slipped through: */
-		/* if this happens, it is a bug */
-		if (rcpt->domain == NULL) {
-			logwrite(LOG_WARNING, "BUG: null domain for address %s, setting to %s\n", rcpt->local_part, conf.host_name);
-			logwrite(LOG_WARNING, "please report this bug.\n");
-			rcpt->domain = g_strdup(conf.host_name);
-		}
 		fprintf(out, "RT:%c<%s>\n", dlvrd_char, rcpt->address);
 	} else {
 		fprintf(out, "RT:%c%s\n", dlvrd_char, rcpt->local_part);
