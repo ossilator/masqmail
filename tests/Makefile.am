@@ -9,7 +9,8 @@ TESTS = \
 	t300-aliases.sh \
 	t400-rewriting.sh \
 	t401-domain-rewriting.sh \
-	t402-combined-rewriting.sh
+	t402-combined-rewriting.sh \
+	t403-not-rewriting.sh
 
 EXTRA_DIST = \
 	lib.sh \

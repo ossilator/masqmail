@@ -204,7 +204,7 @@ addr_isequal(address *addr1, address *addr2,
 			(strcasecmp(addr1->domain, addr2->domain)==0);
 }
 
-static gboolean
+gboolean
 domain_is_local(const gchar *domain)
 {
 	if (!domain[0]) {

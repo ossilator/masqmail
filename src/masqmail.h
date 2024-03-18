@@ -335,6 +335,7 @@ address *copy_modify_address(const address *orig, const gchar *l_part, const gch
 #define copy_address(addr) copy_modify_address(addr, NULL, NULL)
 gboolean addr_isequal(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
 gboolean addr_is_local(address *addr);
+gboolean domain_is_local(const gchar *domain);
 
 recipient *create_recipient(const gchar *path, const gchar *domain);
 recipient *create_recipient_raw(const gchar *local_part, const gchar *domain);
