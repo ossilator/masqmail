@@ -183,7 +183,9 @@ spool_read_header(message *msg)
 		if (strncasecmp(buf, "HD:", 3) == 0) {
 			DEBUG(6) debugf("spool_read_header(): hdr start\n");
 			hdr = get_header(&(buf[3]));
-			msg->hdr_list = g_list_append(msg->hdr_list, hdr);
+			if (hdr) {
+				msg->hdr_list = g_list_append(msg->hdr_list, hdr);
+			}
 		} else if ((buf[0] == ' ' || buf[0] == '\t') && hdr) {
 			DEBUG(6) debugf("spool_read_header(): hdr continuation\n");
 			char *tmp = hdr->header;
