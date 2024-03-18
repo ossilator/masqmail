@@ -319,12 +319,12 @@ void destroy_ptr_list(GList *list);
 
 /* address.c */
 typedef enum { A_RFC821, A_RFC822 } addr_type_t;
-address *create_address(gchar *path, addr_type_t addr_type, gchar *domain);
-address *create_address_raw(gchar *local_part, gchar *domain);
-address *create_address_pipe(gchar *path);
+address *create_address(const gchar *path, addr_type_t addr_type, const gchar *domain);
+address *create_address_raw(const gchar *local_part, const gchar *domain);
+address *create_address_pipe(const gchar *path);
 void destroy_address(address *addr);
 #define copy_address(addr) create_address_raw(addr->local_part, addr->domain)
-GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain);
+GList *addr_list_append_rfc822(GList *addr_list, const gchar *string, const gchar *domain);
 gboolean addr_isequal(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
 gboolean addr_isequal_parent(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
 address *addr_find_ancestor(address *addr);
@@ -351,8 +351,14 @@ void listen_port(GList *addr_list, gint qival);
 
 /* parse.c */
 extern const char *parse_error;
-gboolean parse_address_rfc822(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
-gboolean parse_address_rfc821(gchar *string, gchar **local_begin, gchar **local_end, gchar **domain_begin, gchar **domain_end, gchar **address_end);
+gboolean parse_address_rfc822(const gchar *string,
+                              const gchar **local_begin, const gchar **local_end,
+                              const gchar **domain_begin, const gchar **domain_end,
+                              const gchar **address_end);
+gboolean parse_address_rfc821(const gchar *string,
+                              const gchar **local_begin, const gchar **local_end,
+                              const gchar **domain_begin, const gchar **domain_end,
+                              const gchar **address_end);
 
 /* connect.c */
 mxip_addr *connect_resolvelist(int *psockfd, gchar *host, gint port,

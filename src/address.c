@@ -27,7 +27,7 @@ create_address_rawest(gchar *local_part, gchar *domain)
 }
 
 address*
-create_address_raw(gchar *local_part, gchar *domain)
+create_address_raw(const gchar *local_part, const gchar *domain)
 {
 	return create_address_rawest(g_strdup(local_part), g_strdup(domain));
 }
@@ -41,10 +41,11 @@ create_address_raw(gchar *local_part, gchar *domain)
 **  parses both rfc 821 and rfc 822 addresses, depending on requested type.
 */
 static address*
-_create_address(gchar *string, gchar **end, addr_type_t addr_type, gchar *def_domain)
+_create_address(const gchar *string, const gchar **end,
+                addr_type_t addr_type, const gchar *def_domain)
 {
-	gchar *loc_beg, *loc_end;
-	gchar *dom_beg, *dom_end;
+	const gchar *loc_beg, *loc_end;
+	const gchar *dom_beg, *dom_end;
 	gboolean ret;
 
 	if (!string) {
@@ -83,14 +84,14 @@ _create_address(gchar *string, gchar **end, addr_type_t addr_type, gchar *def_do
 }
 
 address*
-create_address(gchar *path, addr_type_t addr_type, gchar *domain)
+create_address(const gchar *path, addr_type_t addr_type, const gchar *domain)
 {
 	return _create_address(path, NULL, addr_type, domain);
 }
 
 /* nothing special about pipes here, but its only called for that purpose */
 address*
-create_address_pipe(gchar *path)
+create_address_pipe(const gchar *path)
 {
 	address *addr = g_malloc0(sizeof(address));
 	addr->address = g_strdup(path);
@@ -180,10 +181,10 @@ addr_find_ancestor(address *addr)
 }
 
 GList*
-addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain)
+addr_list_append_rfc822(GList *addr_list, const gchar *string, const gchar *domain)
 {
-	gchar *p = string;
-	gchar *end;
+	const gchar *p = string;
+	const gchar *end;
 
 	while (*p) {
 #ifdef PARSE_TEST
