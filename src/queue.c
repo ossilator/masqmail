@@ -35,7 +35,7 @@ read_queue(void)
 	GList *msg_list = NULL;
 	glob_t gl;
 	gchar *pattern;
-	int i, *idx_arr;
+	int *idx_arr;
 
 	/*
 	**  Escaping the question marks prevents them from being
@@ -48,7 +48,7 @@ read_queue(void)
 	g_free(pattern);
 
 	DEBUG(4) {
-		for (i = 0; i < gl.gl_pathc; i++) {
+		for (size_t i = 0; i < gl.gl_pathc; i++) {
 			debugf("spoolfile: %s\n", gl.gl_pathv[i]);
 		}
 	}
@@ -56,7 +56,7 @@ read_queue(void)
 	idx_arr = g_malloc(sizeof(int) * gl.gl_pathc);
 	mix_arr(idx_arr, gl.gl_pathc);
 
-	for (i = 0; i < gl.gl_pathc; i++) {
+	for (size_t i = 0; i < gl.gl_pathc; i++) {
 		gchar *uid;
 
 		/* copy 13 chars, offset spooldir path + 1 char for / */
