@@ -207,8 +207,7 @@ scan_headers(message *msg, guint flags)
 			}
 			if (hdr->id == HEAD_BCC) {
 				DEBUG(3) debugf("removing 'Bcc' header\n");
-				msg->hdr_list = g_list_remove_link(msg->hdr_list, hdr_node);
-				g_list_free_1(hdr_node);
+				msg->hdr_list = g_list_delete_link(msg->hdr_list, hdr_node);
 				destroy_header(hdr);
 			}
 			break;
@@ -221,16 +220,12 @@ scan_headers(message *msg, guint flags)
 						hdr->value));
 			}
 			DEBUG(3) debugf("removing 'Envelope-To' header\n");
-			msg->hdr_list = g_list_remove_link(msg->hdr_list,
-					hdr_node);
-			g_list_free_1(hdr_node);
+			msg->hdr_list = g_list_delete_link(msg->hdr_list, hdr_node);
 			destroy_header(hdr);
 			break;
 		case HEAD_RETURN_PATH:
 			DEBUG(3) debugf("removing 'Return-Path' header\n");
-			msg->hdr_list = g_list_remove_link(msg->hdr_list,
-					hdr_node);
-			g_list_free_1(hdr_node);
+			msg->hdr_list = g_list_delete_link(msg->hdr_list, hdr_node);
 			destroy_header(hdr);
 			break;
 		default:

@@ -82,8 +82,7 @@ listen_port(GList *iface_list, gint qival)
 
 		node_next = g_list_next(node);
 		if ((sock = make_server_socket(iface)) < 0) {
-			iface_list = g_list_remove_link(iface_list, node);
-			g_list_free_1(node);
+			iface_list = g_list_delete_link(iface_list, node);
 			continue;
 		}
 		if (listen(sock, 1) < 0) {
