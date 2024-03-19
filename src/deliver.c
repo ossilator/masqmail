@@ -587,8 +587,8 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 
 		/* filter by allowed envelope sender */
 		if (!route_sender_is_allowed(route, msgout->msg->return_path)){
-			DEBUG(6) debugf("sender `%s' is not allowed for this "
-					"route\n", msgout->msg->return_path);
+			DEBUG(6) debugf("sender `%s' is not allowed for this route\n",
+			                msgout->msg->return_path->address);
 			destroy_msg_out(msgout_cloned);
 			continue;
 		}
