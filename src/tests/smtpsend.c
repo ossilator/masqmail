@@ -117,8 +117,14 @@ main(int argc, char *argv[])
 		message *msg = create_message();
 
 		while (optind < argc) {
-			msg->rcpt_list = g_list_append(msg->rcpt_list,
-					create_address(argv[optind++], A_RFC821, conf.host_name));
+			char *addr_str = argv[optind++];
+			address *addr = create_address(addr_str, A_RFC821, conf.host_name);
+			if (!addr) {
+				fprintf(stderr, "invalid recipient address '%s': %s\n",
+				        addr_str, parse_error);
+				exit(1);
+			}
+			msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
 		}
 
 		if ((ret = accept_message(stdin, msg, ACC_DOT_IGNORE)) == AERR_OK) {
