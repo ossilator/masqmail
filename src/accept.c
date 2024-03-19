@@ -300,7 +300,7 @@ add_received_hdr(message *msg)
 	if (!msg->received_host) {
 		/* received locally */
 		hdr = create_header(HEAD_RECEIVED,
-				"Received: by %s (%s %s, from userid %d)\n"
+				"Received: by %s (%s %s, from userid %u)\n"
 				"\tid %s%s; %s\n",
 				conf.host_name, PACKAGE, VERSION, conf.orig_uid,
 				msg->uid,

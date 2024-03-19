@@ -66,12 +66,12 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 
 	if (!conf.run_as_user) {
 		if (seteuid(pw->pw_uid) != 0) {
-			logerrno(LOG_ERR, "could not set uid %d for local delivery", pw->pw_uid);
+			logerrno(LOG_ERR, "could not set uid %u for local delivery", pw->pw_uid);
 			return FALSE;
 		}
 	}
 
-	DEBUG(5) debugf("running as euid %d, egid %d\n", geteuid(), getegid());
+	DEBUG(5) debugf("running as euid %u, egid %u\n", geteuid(), getegid());
 
 	filename = g_strdup_printf("%s/%s", conf.mail_dir, user);
 	if (!(out = fopen(filename, "a"))) {
@@ -122,7 +122,7 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 		**  the message again next time a delivery is attempted...
 		*/
 		logerrno(LOG_ERR, "could not set back uid after local delivery");
-		DEBUG(1) debugf("uid=%d, euid=%d, want = %d\n",
+		DEBUG(1) debugf("uid=%u, euid=%u, want = %u\n",
 		                getuid(), geteuid(), conf.mail_uid);
 		exit(1);
 	}

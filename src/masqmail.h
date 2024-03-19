@@ -83,11 +83,11 @@ typedef struct _connect_route {
 } connect_route;
 
 typedef struct _masqmail_conf {
-	gint mail_uid;
-	gint mail_gid;
+	uid_t mail_uid;
+	gid_t mail_gid;
 
-	gint orig_uid;
-	gint orig_gid;
+	uid_t orig_uid;
+	gid_t orig_gid;
 
 	gboolean run_as_user;
 

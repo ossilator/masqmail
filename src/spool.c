@@ -268,7 +268,7 @@ spool_write_header(message *msg)
 	} else {
 		logerrno(LOG_ERR, "could not open temporary header spool file '%s'",
 		         tmp_file);
-		DEBUG(1) debugf("euid = %d, egid = %d\n", geteuid(), getegid());
+		DEBUG(1) debugf("euid = %u, egid = %u\n", geteuid(), getegid());
 		ok = FALSE;
 	}
 

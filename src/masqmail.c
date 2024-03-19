@@ -285,8 +285,7 @@ manipulate_queue(char *cmd, char *id[])
 
 	struct passwd *pw = getpwuid(conf.orig_uid);
 	if (!pw) {
-		fprintf(stderr, "could not find a passwd entry for "
-				"uid %d: %s\n",
+		fprintf(stderr, "could not find a passwd entry for uid %u: %s\n",
 				conf.orig_uid, strerror(errno));
 		return FALSE;
 	}
@@ -578,11 +577,11 @@ main(int argc, char *argv[])
 	if ((strcmp(conf_file, CONF_FILE) != 0) && (conf.orig_uid != 0)) {
 		run_as_user = TRUE;
 		if (setgid(conf.orig_gid)) {
-			logerrno(LOG_ERR, "could not set gid to %d", conf.orig_gid);
+			logerrno(LOG_ERR, "could not set gid to %u", conf.orig_gid);
 			exit(1);
 		}
 		if (setuid(conf.orig_uid)) {
-			logerrno(LOG_ERR, "could not set uid to %d", conf.orig_uid);
+			logerrno(LOG_ERR, "could not set uid to %u", conf.orig_uid);
 			exit(1);
 		}
 	}
@@ -626,13 +625,13 @@ main(int argc, char *argv[])
 	if (!conf.run_as_user) {
 		// this sets both the effective and the real gid
 		if (setgid(conf.mail_gid) != 0) {
-			fprintf(stderr, "could not set gid to %d: %s. Is the setuid bit set?\n",
+			fprintf(stderr, "could not set gid to %u: %s. Is the setuid bit set?\n",
 			        conf.mail_gid, strerror(errno));
 			exit(1);
 		}
 		// this sets only the effective uid, as we may need to re-acquire root
 		if (seteuid(conf.mail_uid) != 0) {
-			fprintf(stderr, "could not set uid to %d: %s. Is the setuid bit set?\n",
+			fprintf(stderr, "could not set uid to %u: %s. Is the setuid bit set?\n",
 			        conf.mail_uid, strerror(errno));
 			exit(1);
 		}
