@@ -195,14 +195,14 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 	msg->received_prot = PROT_LOCAL;
 
 	for (i = 0; i < addr_cnt; i++) {
-		if (addresses[i][0] == '|') {
-			logwrite(LOG_ERR, "no pipe allowed as recipient "
-					"address: %s\n", addresses[i]);
+		address *addr = create_address(addresses[i], A_RFC821, conf.host_name);
+		if (!addr) {
+			fprintf(stderr, "invalid recipient address '%s': %s\n",
+			        addresses[i], parse_error);
 			/* should we better ignore this one addr? */
 			exit(1);
 		}
-		msg->rcpt_list = g_list_append(msg->rcpt_list,
-				create_address(addresses[i], A_RFC821, conf.host_name));
+		msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
 	}
 
 	/* -f option */
