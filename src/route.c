@@ -98,50 +98,50 @@ rewrite_headers(msg_out *msgout, connect_route *route)
 	DEBUG(5) debugf("rewrite_headers() returning\n");
 }
 
-/*
-**  Split a recipient list into the three groups:
-**  - local recipients
-**  - those maching the patterns
-**  - those not matching the patterns
-**  If patterns is NULL: only splitting between local and others is done.
-*/
 static void
-split_rcpts(GList *rcpt_list, GList *patterns, GList **rl_local,
-		GList **rl_matching, GList **rl_others)
+filter_rcpts(GList *patterns, gboolean keep_matching, GList **rcpt_list)
 {
 	GList *rcpt_node;
-	GList *pat_node = NULL;
-	address *rcpt = NULL;
+	GList *out_list = NULL;
 
-	if (rcpt_list == NULL)
-		return;
-
-	foreach(rcpt_list, rcpt_node) {
-		rcpt = (address *) (rcpt_node->data);
-		pat_node = NULL;
-
-		if (addr_is_local(rcpt)) {
-			if (rl_local)
-				*rl_local = g_list_append(*rl_local, rcpt);
-		} else {
-			/*
-			**  if patterns is NULL, pat_node will be NULL,
-			**  hence all non-locals are put to others
-			*/
-			foreach(patterns, pat_node) {
-				address *pat = (address *) (pat_node->data);
-				if (fnmatch(pat->domain, rcpt->domain, FNM_CASEFOLD)==0 && fnmatch(pat->local_part, rcpt->local_part, 0)==0) {  /* TODO: match local_part caseless? */
-					break;
-				}
-			}
-			if (pat_node) {
-				if (rl_matching)
-					*rl_matching = g_list_append(*rl_matching, rcpt);
-			} else {
-				if (rl_others)
-					*rl_others = g_list_append(*rl_others, rcpt);
+	foreach (*rcpt_list, rcpt_node) {
+		address *rcpt = (address *) (rcpt_node->data);
+		gboolean matched = FALSE;
+		GList *pat_node = NULL;
+		foreach (patterns, pat_node) {
+			address *pat = (address *) (pat_node->data);
+			if (!fnmatch(pat->domain, rcpt->domain, FNM_CASEFOLD) &&
+			    !fnmatch(pat->local_part, rcpt->local_part, 0)) {  /* TODO: match local_part caseless? */
+				matched = TRUE;
+				break;
 			}
 		}
+		if (matched == keep_matching) {
+			out_list = g_list_append(out_list, rcpt);
+		}
+	}
+	g_list_free(*rcpt_list);
+	*rcpt_list = out_list;
+}
+
+// Local domains are NOT regarded here, these should be sorted out earlier.
+void
+route_filter_rcpts(connect_route *route, GList **rcpt_list)
+{
+	// sort out those domains that can be sent over this connection:
+	if (route->allowed_recipients) {
+		DEBUG(5) debugf("testing for route->allowed_recipients\n");
+		filter_rcpts(route->allowed_recipients, TRUE, rcpt_list);
+	} else {
+		DEBUG(5) debugf("route->allowed_recipients == NULL\n");
+	}
+
+	// sort out those domains that cannot be sent over this connection:
+	if (route->denied_recipients) {
+		DEBUG(5) debugf("testing for route->denied_recipients\n");
+		filter_rcpts(route->denied_recipients, FALSE, rcpt_list);
+	} else {
+		DEBUG(5) debugf("route->denied_recipients == NULL\n");
 	}
 }
 
@@ -226,28 +226,6 @@ route_sender_is_allowed(connect_route *route, address *ret_path)
 		}
 	}
 	return TRUE;
-}
-
-/*
-**  Make lists of matching/not matching rcpts.
-**  Local domains are NOT regared here, these should be sorted out previously
-*/
-void
-route_split_rcpts(connect_route *route, GList *rcpt_list, GList **p_rcpt_list, GList **p_non_rcpt_list)
-{
-	GList *tmp_list = NULL;
-	/* sort out those domains that can be sent over this connection: */
-	if (route->allowed_recipients) {
-		DEBUG(5) debugf("testing for route->allowed_recipients\n");
-		split_rcpts(rcpt_list, route->allowed_recipients, NULL, &tmp_list, p_non_rcpt_list);
-	} else {
-		DEBUG(5) debugf("route->allowed_recipients == NULL\n");
-		tmp_list = g_list_copy(rcpt_list);
-	}
-
-	/* sort out those domains that cannot be sent over this connection: */
-	split_rcpts(tmp_list, route->denied_recipients, NULL, p_non_rcpt_list, p_rcpt_list);
-	g_list_free(tmp_list);
 }
 
 gboolean

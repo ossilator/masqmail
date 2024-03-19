@@ -546,20 +546,18 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 			continue;
 		}
 
-		/* filter by allowed envelope sender */
-		if (!route_sender_is_allowed(route, msgout->msg->return_path)){
-			DEBUG(6) debugf("sender `%s' is not allowed for this route\n",
-			                msgout->msg->return_path->address);
+		/* filter by allowed envelope rcpts */
+		route_filter_rcpts(route, &msgout_cloned->rcpt_list);
+
+		if (!msgout_cloned->rcpt_list) {
 			destroy_msg_out(msgout_cloned);
 			continue;
 		}
 
-		/* filter by allowed envelope rcpts */
-		GList *rcpt_list_allowed = NULL;
-		GList *rcpt_list_notallowed = NULL;
-		route_split_rcpts(route, msgout_cloned->rcpt_list,
-				&rcpt_list_allowed, &rcpt_list_notallowed);
-		if (!rcpt_list_allowed) {
+		/* filter by allowed envelope sender */
+		if (!route_sender_is_allowed(route, msgout->msg->return_path)){
+			DEBUG(6) debugf("sender `%s' is not allowed for this route\n",
+			                msgout->msg->return_path->address);
 			destroy_msg_out(msgout_cloned);
 			continue;
 		}
@@ -582,9 +580,6 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 		}
 
 		logwrite(LOG_INFO, "%s using '%s'\n", msgout->msg->uid, route->name);
-
-		g_list_free(msgout_cloned->rcpt_list);
-		msgout_cloned->rcpt_list = rcpt_list_allowed;
 
 		if (route->last_route) {
 			GList *rcpt_node;
