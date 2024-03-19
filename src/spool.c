@@ -241,10 +241,10 @@ spool_write_header(message *msg)
 			fprintf(out, "DS: %" G_GSSIZE_FORMAT "\n", msg->data_size);
 
 		if (msg->received_time > 0)
-			fprintf(out, "TR: %u\n", (int) (msg->received_time));
+			fprintf(out, "TR: %lu\n", (gulong) msg->received_time);
 
 		if (msg->warned_time > 0)
-			fprintf(out, "TW: %u\n", (int) (msg->warned_time));
+			fprintf(out, "TW: %lu\n", (gulong) msg->warned_time);
 
 		fprintf(out, "\n");
 

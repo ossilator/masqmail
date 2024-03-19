@@ -130,8 +130,8 @@ static gboolean
 warn_msg_is_due(message *msg)
 {
 	time_t now = time(NULL);
-	DEBUG(5) debugf("checking if warning is due for %s; now - msg->received_time = %d\n",
-	                msg->uid, now - msg->received_time);
+	DEBUG(5) debugf("checking if warning is due for %s; now - msg->received_time = %ld\n",
+	                msg->uid, (long) (now - msg->received_time));
 
 	GList *node;
 	for (node = g_list_last(conf.warn_intervals); node;
