@@ -827,7 +827,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 
 	DEBUG(5) {
 		debugf("smtp_out_msg():\n");
-		debugf("  psb->error = %d\n", psb->error);
+		debugf("  psb->error = %u\n", psb->error);
 		debugf("  ok = %d\n", ok);
 		debugf("  rcpt_accept = %d\n", rcpt_accept);
 	}

@@ -217,7 +217,7 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 		exit(1);
 	default:
 		/* should never happen: */
-		fprintf(stderr, "Unknown error (%d)\r\n", err);
+		fprintf(stderr, "Unknown error (%u)\r\n", err);
 		exit(1);
 	}
 
@@ -357,8 +357,8 @@ static void
 set_mode(enum mta_mode mode)
 {
 	if (mta_mode && mta_mode!=mode) {
-		fprintf(stderr, "operation mode was already specified "
-				"(%d vs. %d)\n", mta_mode, mode);
+		fprintf(stderr, "operation mode was already specified (%u vs. %u)\n",
+		        mta_mode, mode);
 		exit(1);
 	}
 
@@ -708,7 +708,7 @@ main(int argc, char *argv[])
 		break;
 
 	default:
-		fprintf(stderr, "unknown mode: %d\n", mta_mode);
+		fprintf(stderr, "unknown mode: %u\n", mta_mode);
 		break;
 	}
 

@@ -170,7 +170,7 @@ get_header(gchar *line)
 	hdr->header = g_strdup(line);
 	hdr->value = hdr->header + (hdr->value - line);
 
-	DEBUG(4) debugf("header: %d = %s", hdr->id, hdr->header);
+	DEBUG(4) debugf("header: %u = %s", hdr->id, hdr->header);
 	/* Note: This only outputs the first line if the header is folded */
 
 	return hdr;
