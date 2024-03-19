@@ -170,6 +170,11 @@ expand_one(GList *alias_table, address *addr, int doglob)
 			DEBUG(5) debugf("alias: '%s' is marked as final, "
 					"hence completed\n", val);
 			alias_addr = create_address(val+1, A_RFC821, conf.host_name);
+			if (!alias_addr) {
+				logwrite(LOG_ERR, "alias '%s' expands to invalid address '%s': %s\n",
+				         addr->address, val + 1, parse_error);
+				continue;
+			}
 			DEBUG(6) debugf("alias:     address generated: '%s'\n",
 			                alias_addr->address);
 			alias_list = g_list_append(alias_list, alias_addr);
@@ -187,6 +192,11 @@ expand_one(GList *alias_table, address *addr, int doglob)
 		}
 
 		alias_addr = create_address(val, A_RFC821, conf.host_name);
+		if (!alias_addr) {
+			logwrite(LOG_ERR, "alias '%s' expands to invalid address '%s': %s\n",
+			         addr->address, val, parse_error);
+			continue;
+		}
 
 		if (!addr_is_local(alias_addr)) {
 			DEBUG(5) debugf("alias: '%s' is non-local, "
