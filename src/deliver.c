@@ -568,6 +568,12 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 			if (from_hdr) {
 				address *addr = create_address(
 						from_hdr->value, A_RFC822, conf.host_name);
+				if (!addr) {
+					logwrite(LOG_WARNING, "invalid 'From:' address '%s': %s\n",
+					         from_hdr->value, parse_error);
+					destroy_msg_out(msgout_cloned);
+					continue;
+				}
 				gboolean isok = route_from_hdr_is_allowed(route, addr);
 				destroy_address(addr);
 				if (!isok) {
