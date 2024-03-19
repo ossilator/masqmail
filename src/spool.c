@@ -61,12 +61,18 @@ spool_scan_rcpt(gchar *line)
 	address *rcpt = NULL;
 
 	if (!line[3]) {
+		logwrite(LOG_ERR, "empty recipient in spool\n");
 		return NULL;
 	}
 	if (line[4] == '|') {
 		rcpt = create_address_pipe(line+4);
 	} else {
 		rcpt = create_address(line+4, A_RFC821, NULL);
+		if (!rcpt) {
+			logwrite(LOG_ERR, "failed to parse recipient address '%s' from spool: %s\n",
+			         line + 4, parse_error);
+			return NULL;
+		}
 	}
 	if (line[3] == 'X') {
 		addr_mark_delivered(rcpt);
@@ -136,11 +142,21 @@ spool_read_header(message *msg)
 			break;
 		} else if (strncasecmp(buf, "MF:", 3) == 0) {
 			msg->return_path = create_address(&(buf[3]), A_RFC821, NULL);
+			if (!msg->return_path) {
+				logwrite(LOG_ERR, "failed to parse return address '%s' from spool: %s\n",
+				         &(buf[3]), parse_error);
+				fclose(in);
+				return FALSE;
+			}
 			DEBUG(3) debugf("spool_read: MAIL FROM: %s\n",
 					msg->return_path->address);
 		} else if (strncasecmp(buf, "RT:", 3) == 0) {
 			address *addr;
 			addr = spool_scan_rcpt(buf);
+			if (!addr) {
+				fclose(in);
+				return FALSE;
+			}
 			if (addr_is_delivered(addr) || addr_is_failed(addr)) {
 				msg->non_rcpt_list = g_list_append(msg->non_rcpt_list, addr);
 			} else {
