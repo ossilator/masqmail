@@ -198,7 +198,7 @@ parse_interface(gchar *line, gint def_port)
 	g_strstrip(line);
 	iface->address = g_strdup(line);
 	iface->port = (cp) ? atoi(++cp) : def_port;
-	DEBUG(9) fprintf(stderr, "found: address:port=%s:%u\n",
+	DEBUG(9) fprintf(stderr, "found: address:port=%s:%d\n",
 			iface->address, iface->port);
 	return iface;
 }

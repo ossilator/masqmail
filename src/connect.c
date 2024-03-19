@@ -27,7 +27,7 @@ resolve_ip(gchar *ip)
 }
 
 static mxip_addr*
-connect_hostlist(int *psockfd, guint port, GList *addr_list)
+connect_hostlist(int *psockfd, gint port, GList *addr_list)
 {
 	GList *addr_node;
 	struct sockaddr_in saddr;
@@ -82,7 +82,7 @@ connect_hostlist(int *psockfd, guint port, GList *addr_list)
 **  if attempt failed for one it should not be tried again.
 */
 mxip_addr*
-connect_resolvelist(int *psockfd, gchar *host, guint port,
+connect_resolvelist(int *psockfd, gchar *host, gint port,
 		GList *res_func_list)
 {
 	GList *res_node;
