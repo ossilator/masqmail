@@ -284,6 +284,9 @@ manipulate_queue(char *cmd, char *id[])
 	/* non-privileged users may only delete their own messages */
 	for (; *id; id++) {
 		message *msg = msg_spool_read(*id);
+		if (!msg) {
+			continue;
+		}
 
 		fprintf(stderr, "id: %s\n", *id);
 

@@ -63,7 +63,10 @@ read_queue(void)
 		/* uid length = 6 chars + '-' + 3 chars + '-' + 2 = 13 chars */
 		uid = g_strndup(&(gl.gl_pathv[idx_arr[i]][strlen(conf.spool_dir) + 1]), 13);
 
-		msg_list = g_list_append(msg_list, msg_spool_read(uid));
+		message *msg = msg_spool_read(uid);
+		if (msg) {
+			msg_list = g_list_append(msg_list, msg);
+		}
 
 		g_free(uid);
 	}

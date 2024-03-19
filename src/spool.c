@@ -220,6 +220,10 @@ msg_spool_read(gchar *uid)
 	/* header spool: */
 	ok = spool_read_header(msg);
 	DEBUG(4) debugf("spool_read_header() returned: %d\n", ok);
+	if (!ok) {
+		destroy_message(msg);
+		return NULL;
+	}
 	return msg;
 }
 
