@@ -19,13 +19,11 @@ init_conf()
 	struct group *group;
 
 	if (!(passwd = getpwnam(DEF_MAIL_USER))) {
-		fprintf(stderr, "user %s not found! (terminating)\n",
-				DEF_MAIL_USER);
+		fprintf(stderr, "user " DEF_MAIL_USER " not found! (terminating)\n");
 		exit(1);
 	}
 	if (!(group = getgrnam(DEF_MAIL_GROUP))) {
-		fprintf(stderr, "group %s not found! (terminating)\n",
-				DEF_MAIL_GROUP);
+		fprintf(stderr, "group " DEF_MAIL_GROUP " not found! (terminating)\n");
 		exit(1);
 	}
 	conf.orig_uid = getuid();

@@ -52,7 +52,7 @@ var_table_conf(GList *var_table)
 	var_table = g_list_prepend(var_table,
 			create_pair("host_name", conf.host_name));
 	var_table = g_list_prepend(var_table,
-			create_pair("package", PACKAGE));
+			create_pair("package", PACKAGE_NAME));
 	var_table = g_list_prepend(var_table,
 			create_pair("version", VERSION));
 

@@ -120,8 +120,7 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 	/* daemon */
 	if (!conf.run_as_user) {
 		if ((conf.orig_uid != 0) && (conf.orig_uid != conf.mail_uid)) {
-			fprintf(stderr, "must be root or %s for daemon.\n",
-					DEF_MAIL_USER);
+			fprintf(stderr, "must be root or " DEF_MAIL_USER " for daemon.\n");
 			exit(1);
 		}
 	}
@@ -146,7 +145,7 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 
 	g_unix_signal_add(SIGTERM, sigterm_cb, loop);
 
-	logwrite(LOG_INFO, "%s %s daemon starting\n", PACKAGE, VERSION);
+	logwrite(LOG_INFO, PACKAGE_STRING " daemon starting\n");
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval);
 
 	g_main_loop_run(loop);
@@ -334,17 +333,14 @@ run_queue(gboolean do_runq_online, const char *route_name)
 static void
 mode_version(void)
 {
-	const gchar *with_resolver = "";
-	const gchar *with_auth = "";
-
+	printf(PACKAGE_STRING
 #ifdef ENABLE_RESOLVER
-	with_resolver = " +resolver";
+	       " +resolver"
 #endif
 #ifdef ENABLE_AUTH
-	with_auth = " +auth";
+	       " +auth"
 #endif
-
-	printf("%s %s%s%s\n", PACKAGE, VERSION, with_resolver, with_auth);
+	       "\n");
 }
 
 static void
@@ -654,7 +650,7 @@ main(int argc, const char * const argv[])
 
 	logopen();
 
-	DEBUG(1) debugf("----STARTING---- masqmail %s\n", VERSION);
+	DEBUG(1) debugf("---- " PACKAGE_STRING " STARTING ----\n");
 
 	if (conf.run_as_user) {
 		if (!run_as_user) {

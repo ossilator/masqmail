@@ -286,22 +286,20 @@ add_received_hdr(message *msg)
 	if (!msg->received_host) {
 		/* received locally */
 		hdr = create_header(HEAD_RECEIVED,
-				"Received: by %s (%s %s, from userid %u)\n"
-				"\tid %s%s; %s\n",
-				conf.host_name, PACKAGE, VERSION, conf.orig_uid,
-				msg->uid,
-				for_string ? for_string : "", rec_timestamp());
+		                    "Received: by %s (" PACKAGE_STRING ", from userid %u)\n"
+		                    "\tid %s%s; %s\n",
+		                    conf.host_name, conf.orig_uid, msg->uid,
+		                    for_string ? for_string : "", rec_timestamp());
 	} else {
 		/* received from remote */
 		DEBUG(5) debugf("adding 'Received:' header (5)\n");
 		hdr = create_header(HEAD_RECEIVED,
-				"Received: from %s\n"
-				"\tby %s with %s (%s %s)\n"
-				"\tid %s%s; %s\n",
-				msg->received_host, conf.host_name,
-				prot_names[msg->received_prot], PACKAGE,
-				VERSION, msg->uid,
-				for_string ? for_string : "", rec_timestamp());
+		                    "Received: from %s\n"
+		                    "\tby %s with %s (" PACKAGE_STRING ")\n"
+		                    "\tid %s%s; %s\n",
+		                    msg->received_host, conf.host_name,
+		                    prot_names[msg->received_prot], msg->uid,
+		                    for_string ? for_string : "", rec_timestamp());
 	}
 	msg->hdr_list = g_list_prepend(msg->hdr_list, hdr);
 	g_free(for_string);

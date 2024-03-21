@@ -61,7 +61,8 @@ void
 verify_privileged_user(const gchar *task_name)
 {
 	if (!conf.run_as_user && !is_privileged_user()) {
-		fprintf(stderr, "must be root, %s or in group %s for %s.\n", DEF_MAIL_USER, DEF_MAIL_GROUP, task_name);
+		fprintf(stderr, "must be root, " DEF_MAIL_USER " or in group "
+		                DEF_MAIL_GROUP " for %s.\n", task_name);
 		exit(1);
 	}
 }

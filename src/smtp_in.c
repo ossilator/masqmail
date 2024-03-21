@@ -149,7 +149,7 @@ smtp_in(FILE *in, FILE *out, const gchar *remote_host)
 	init_base(psc);
 
 	/* send greeting string, containing ESMTP: */
-	smtp_printf(out, "220 %s MasqMail %s ESMTP\r\n", conf.host_name, VERSION);
+	smtp_printf(out, "220 %s " PACKAGE_STRING " ESMTP\r\n", conf.host_name);
 
 	while ((len = read_sockline(in, buffer, BUF_LEN, 5 * 60, READSOCKL_CHUG)) >= 0) {
 		cmd_id = get_id(buffer);
