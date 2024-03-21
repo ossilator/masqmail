@@ -137,18 +137,18 @@ copy_header(header *hdr)
 header*
 get_header(gchar *line)
 {
-	gchar *p = line;
-	gchar buf[64], *q = buf;
-	gint i;
 	header *hdr;
 
-	while (*p && (*p != ':') && (q < buf+sizeof(buf)-1)) {
-		*(q++) = *(p++);
-	}
-	*q = '\0';
-
-	if (*p != ':') {
+	gchar *p = strchr(line, ':');
+	if (!p) {
 		return NULL;
+	}
+
+	guint i;
+	for (i = 0; i < HEAD_UNKNOWN; i++) {
+		if (strncasecmp(header_names[i], line, p - line) == 0) {
+			break;
+		}
 	}
 
 	hdr = g_malloc(sizeof(header));
@@ -165,11 +165,6 @@ get_header(gchar *line)
 	**  of a folded header line
 	*/
 
-	for (i = 0; i < HEAD_UNKNOWN; i++) {
-		if (strcasecmp(header_names[i], buf) == 0) {
-			break;
-		}
-	}
 	hdr->id = (header_id) i;
 	hdr->header = g_strdup(line);
 	hdr->value = hdr->header + (hdr->value - line);
