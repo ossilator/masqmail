@@ -278,33 +278,24 @@ route_msgout_list(GList *msgout_list)
 					**  msgout_list)
 					*/
 					msgout_last->rcpt_list = g_list_append(msgout_last->rcpt_list, rcpt);
-				} else {
-					/* if not, we append a new msgout */
-					/* make a copy of msgout */
-					msgout_new = create_msg_out(msgout->msg);
-					msgout_new->return_path = msgout->return_path;
-					msgout_new->hdr_list = msgout->hdr_list;
-
-					/* append our rcpt to it */
-					/* It is the 1st rcpt for this msg to this host, therefore we safely give NULL */
-					msgout_new->rcpt_list = g_list_append(NULL, rcpt);
-					mo_ph->msgout_list = g_list_append(mo_ph->msgout_list, msgout_new);
+					continue;
 				}
+				/* if not, we append a new msgout */
 			} else {
 				/* this rcpt to goes to another host */
 				mo_ph = create_msgout_perhost(rcpt->address->domain);
 				mo_ph_list = g_list_append(mo_ph_list, mo_ph);
-
-				/* make a copy of msgout */
-				msgout_new = create_msg_out(msgout->msg);
-				msgout_new->return_path = msgout->return_path;
-				msgout_new->hdr_list = msgout->hdr_list;
-
-				/* append our rcpt to it */
-				/* It is the 1st rcpt for this msg to this host, therefore we safely give NULL */
-				msgout_new->rcpt_list = g_list_append(NULL, rcpt);
-				mo_ph->msgout_list = g_list_append(mo_ph->msgout_list, msgout_new);
 			}  /* if mo_ph != NULL */
+
+			/* make a copy of msgout */
+			msgout_new = create_msg_out(msgout->msg);
+			msgout_new->return_path = msgout->return_path;
+			msgout_new->hdr_list = msgout->hdr_list;
+
+			/* append our rcpt to it. */
+			/* It is the 1st rcpt for this msg to this host, therefore we safely give NULL */
+			msgout_new->rcpt_list = g_list_append(NULL, rcpt);
+			mo_ph->msgout_list = g_list_append(mo_ph->msgout_list, msgout_new);
 		}  /* foreach(rcpt_list, ... */
 	}  /* foreach(msgout_list, ... */
 
