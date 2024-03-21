@@ -118,8 +118,7 @@ read_sockline(FILE *in, char *buf, int buf_len, int timeout, unsigned int flags)
 }
 
 int
-read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout,
-		unsigned int flags)
+read_sockline1(FILE *in, char **pbuf, int *buf_len, int timeout, unsigned int flags)
 {
 	if (setjmp(jmp_timeout) != 0) {
 		alarm_off();

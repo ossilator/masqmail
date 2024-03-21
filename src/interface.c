@@ -21,8 +21,7 @@ init_sockaddr(struct sockaddr_in *name, const interface *iface)
 		memcpy(&(name->sin_addr), &ia, sizeof(name->sin_addr));
 	} else {
 		if ((he = gethostbyname(iface->address)) == NULL) {
-			logwrite(LOG_ERR, "local address '%s' unknown. "
-					"(deleting)\n", iface->address);
+			logwrite(LOG_ERR, "local address '%s' unknown. (deleting)\n", iface->address);
 			return FALSE;
 		}
 		memcpy(&(name->sin_addr), he->h_addr, sizeof(name->sin_addr));
@@ -54,8 +53,7 @@ make_server_socket(const interface *iface)
 			acquire_root();
 		}
 		/* bind the socket */
-		if (bind(sock, (struct sockaddr *) &server,
-				sizeof(server)) < 0) {
+		if (bind(sock, (struct sockaddr *) &server, sizeof(server)) < 0) {
 			logerrno(LOG_ERR, "bind");
 			if (need_root) {
 				drop_root();

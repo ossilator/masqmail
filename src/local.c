@@ -134,13 +134,11 @@ append_file(const message *msg, const GList *hdr_list, const gchar *user)
 		} else {
 			fclose(out);
 #ifdef USE_LIBLOCKFILE
-			DEBUG(3) debugf("could not lock file %s: error %d\n",
-					filename, err);
+			DEBUG(3) debugf("could not lock file %s: error %d\n", filename, err);
 		}  /* XEmacs indenting convenience... */
 		g_free(lockfile);
 #else
-			DEBUG(3) debugf("could not lock file %s: %s\n",
-					filename, strerror(errno));
+			DEBUG(3) debugf("could not lock file %s: %s\n", filename, strerror(errno));
 		}
 #endif
 	}
@@ -235,12 +233,9 @@ pipe_out(const message *msg, const GList *hdr_list, const recipient *rcpt,
 	/* set environment */
 	gint n = 0;
 	envp[n++] = g_strdup_printf("RETURN_PATH=%s", msg->return_path->address);
-	envp[n++] = g_strdup_printf("SENDER=%s",
-			msg->return_path->address);
-	envp[n++] = g_strdup_printf("SENDER_DOMAIN=%s",
-			msg->return_path->domain);
-	envp[n++] = g_strdup_printf("SENDER_LOCAL=%s",
-			msg->return_path->local_part);
+	envp[n++] = g_strdup_printf("SENDER=%s", msg->return_path->address);
+	envp[n++] = g_strdup_printf("SENDER_DOMAIN=%s", msg->return_path->domain);
+	envp[n++] = g_strdup_printf("SENDER_LOCAL=%s", msg->return_path->local_part);
 	envp[n++] = g_strdup_printf("RECEIVED_HOST=%s",
 			msg->received_host ? msg->received_host : "");
 

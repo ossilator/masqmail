@@ -96,8 +96,7 @@ parse_list(gchar *line, gboolean read_file)
 	GList *list = NULL;
 	gchar *tok;
 
-	DEBUG(9) fprintf(stderr, "parsing list %s, file?:%d\n",
-			line, read_file);
+	DEBUG(9) fprintf(stderr, "parsing list %s, file?:%d\n", line, read_file);
 	for (tok = strtok(line, ";"); tok; tok = strtok(NULL, ";")) {
 		g_strstrip(tok);
 		if (!*tok) {
@@ -141,8 +140,7 @@ parse_address_glob_list(gchar *line)
 			addr = create_address_raw(item, "*");
 		}
 		list = g_list_append(list, addr);
-		DEBUG(6) debugf("parse_address_glob_list: "
-				"read pattern `%s' `%s'\n",
+		DEBUG(6) debugf("parse_address_glob_list: read pattern `%s' `%s'\n",
 		                addr->local_part, addr->domain);
 	}
 	destroy_ptr_list(plain_list);
@@ -368,8 +366,7 @@ read_statement(FILE *in, gchar *lval, gint lsize, gchar *rval, gint rsize)
 	}
 	DEBUG(9) fprintf(stderr, "  lval = `%s'\n", lval);
 	if ((c = fgetc(in) != '=')) {
-		fprintf(stderr, "'=' expected after %s, char was '%c'\n",
-				lval, c);
+		fprintf(stderr, "'=' expected after %s, char was '%c'\n", lval, c);
 	}
 	if (!read_rval(in, rval, rsize)) {
 		return FALSE;
@@ -454,8 +451,7 @@ read_conf(void)
 		} else if (strcmp(lval, "globalias_file")==0) {
 			conf.globalias_file = g_strdup(rval);
 		} else if (strcmp(lval, "caseless_matching")==0) {
-			conf.localpartcmp = parse_boolean(rval) ?
-					strcasecmp : strcmp;
+			conf.localpartcmp = parse_boolean(rval) ? strcasecmp : strcmp;
 		} else if (strcmp(lval, "mbox_default")==0) {
 			conf.mbox_default = g_strdup(rval);
 		} else if (strcmp(lval, "mbox_users")==0) {
@@ -477,8 +473,7 @@ read_conf(void)
 		} else if (strncmp(lval, "query_routes.", 13)==0) {
 			GList *file_list = parse_list(rval, FALSE);
 			table_pair *pair = create_pair_base(lval + 13, file_list);
-			conf.query_routes = g_list_append(conf.query_routes,
-					pair);
+			conf.query_routes = g_list_append(conf.query_routes, pair);
 		} else if (strcmp(lval, "permanent_routes")==0) {
 			conf.perma_routes = parse_list(rval, FALSE);
 		} else if (strcmp(lval, "online_query")==0) {
@@ -506,15 +501,13 @@ read_conf(void)
 			                 "rval=%s, conf.max_msg_size=%" G_GSSIZE_FORMAT "\n",
 			                 rval, conf.max_msg_size);
 		} else {
-			logwrite(LOG_WARNING, "var '%s' unknown: ignored\n",
-					lval);
+			logwrite(LOG_WARNING, "var '%s' unknown: ignored\n", lval);
 		}
 	}
 	fclose(in);
 
 	if (!conf.host_name) {
-		logwrite(LOG_ERR, "`host_name' MUST be set in "
-				"masqmail.conf. See man page\n");
+		logwrite(LOG_ERR, "`host_name' MUST be set in masqmail.conf. See man page\n");
 		return FALSE;
 	}
 	if (!conf.errmsg_file) {
@@ -566,9 +559,8 @@ read_conf(void)
 				parse_interface("localhost", 25));
 	} else {
 		foreach (const gchar *line, listen_addrs_tmp) {
-			conf.listen_addresses =
-					g_list_append(conf.listen_addresses,
-			                      parse_interface(line, 25));
+			conf.listen_addresses = g_list_append(conf.listen_addresses,
+					parse_interface(line, 25));
 		}
 		destroy_ptr_list(listen_addrs_tmp);
 	}
@@ -696,8 +688,7 @@ read_route(const gchar *filename)
 		} else if ((strcmp(lval, "auth_name")==0) ||
 				(strcmp(lval, "auth_login")==0) ||
 				(strcmp(lval, "auth_secret")==0)) {
-			logwrite(LOG_WARNING, "%s ignored: not compiled with "
-					"auth support.\n", lval);
+			logwrite(LOG_WARNING, "%s ignored: not compiled with auth support.\n", lval);
 #endif
 		} else if (strcmp(lval, "pipe")==0) {
 			route->pipe = g_strdup(rval);
@@ -708,18 +699,15 @@ read_route(const gchar *filename)
 		} else if (strcmp(lval, "last_route")==0) {
 			route->last_route = parse_boolean(rval);
 		} else {
-			logwrite(LOG_WARNING, "var '%s' unknown: ignored\n",
-					lval);
+			logwrite(LOG_WARNING, "var '%s' unknown: ignored\n", lval);
 		}
 	}
 
 	if (!route->resolve_list) {
 #ifdef ENABLE_RESOLVER
-		route->resolve_list = g_list_append(route->resolve_list,
-				resolve_dns_mx);
+		route->resolve_list = g_list_append(route->resolve_list, resolve_dns_mx);
 #endif
-		route->resolve_list = g_list_append(route->resolve_list,
-				resolve_byname);
+		route->resolve_list = g_list_append(route->resolve_list, resolve_byname);
 	}
 	fclose(in);
 

@@ -42,7 +42,8 @@ filter_rcpts(const GList *patterns, gboolean keep_matching, GList **rcpt_list)
 		gboolean matched = FALSE;
 		foreach (const address *pat, patterns) {
 			if (!fnmatch(pat->domain, rcpt->address->domain, FNM_CASEFOLD) &&
-			    !fnmatch(pat->local_part, rcpt->address->local_part, 0)) {  /* TODO: match local_part caseless? */
+			    // TODO: match local_part caselessly?
+			    !fnmatch(pat->local_part, rcpt->address->local_part, 0)) {
 				matched = TRUE;
 				break;
 			}
@@ -134,7 +135,8 @@ _g_list_addrcmp(gconstpointer pattern, gconstpointer addr)
 gboolean
 route_sender_is_allowed(const connect_route *route, const address *ret_path)
 {
-	if (route->denied_senders && g_list_find_custom(route->denied_senders, ret_path, _g_list_addrcmp)) {
+	if (route->denied_senders &&
+	    g_list_find_custom(route->denied_senders, ret_path, _g_list_addrcmp)) {
 		return FALSE;
 	}
 	if (route->allowed_senders) {
@@ -150,12 +152,12 @@ route_sender_is_allowed(const connect_route *route, const address *ret_path)
 gboolean
 route_from_hdr_is_allowed(const connect_route *route, const address *addr)
 {
-	if (route->denied_from_hdrs && g_list_find_custom(route->denied_from_hdrs, addr, _g_list_addrcmp)) {
+	if (route->denied_from_hdrs &&
+	    g_list_find_custom(route->denied_from_hdrs, addr, _g_list_addrcmp)) {
 		return FALSE;
 	}
 	if (route->allowed_from_hdrs) {
-		if (g_list_find_custom(route->allowed_from_hdrs, addr,
-				_g_list_addrcmp)) {
+		if (g_list_find_custom(route->allowed_from_hdrs, addr, _g_list_addrcmp)) {
 			return TRUE;
 		} else {
 			return FALSE;

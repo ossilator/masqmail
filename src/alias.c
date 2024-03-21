@@ -95,12 +95,11 @@ expand_one(const GList *globalias_table, const GList *alias_table, recipient *ad
 	val_list = parse_list(repl);
 	foreach (const gchar *val, val_list) {
 		recipient *alias_addr;
-	
+
 		DEBUG(6) debugf("alias: processing '%s'\n", val);
 
 		if (*val == '\\') {
-			DEBUG(5) debugf("alias: '%s' is marked as final, "
-					"hence completed\n", val);
+			DEBUG(5) debugf("alias: '%s' is marked as final, hence completed\n", val);
 			alias_addr = create_recipient(val + 1, conf.host_name);
 			if (!alias_addr) {
 				logwrite(LOG_ERR, "alias '%s' expands to invalid address '%s': %s\n",
@@ -112,10 +111,9 @@ expand_one(const GList *globalias_table, const GList *alias_table, recipient *ad
 			                alias_addr->address->address);
 			goto append;
 		}
-	
+
 		if (*val == '|') {
-			DEBUG(5) debugf("alias: '%s' is a pipe address\n",
-					val);
+			DEBUG(5) debugf("alias: '%s' is a pipe address\n", val);
 			alias_addr = create_recipient_pipe(val);
 			DEBUG(6) debugf("alias:     pipe generated: %s\n",
 			                alias_addr->address->local_part);

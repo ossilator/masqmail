@@ -34,8 +34,7 @@ fail_msg(message *msg, const gchar *template, GList *failed_rcpts, const gchar *
 		FILE *file;
 		GList *var_table = var_table_conf(var_table_msg(NULL, msg));
 
-		var_table = g_list_prepend(var_table,
-				create_pair("err_msg", err_msg));
+		var_table = g_list_prepend(var_table, create_pair("err_msg", err_msg));
 
 		if ((file = fopen(template, "r"))) {
 			FILE *out;

@@ -43,19 +43,15 @@ connect_hostlist(int *psockfd, gint port, GList *addr_list)
 		/* clumsy, but makes compiler happy: */
 		saddr.sin_addr = *(struct in_addr *) (&(addr->ip));
 
-		DEBUG(5) debugf("  trying ip %s port %d\n",
-				inet_ntoa(saddr.sin_addr), port);
+		DEBUG(5) debugf("  trying ip %s port %d\n", inet_ntoa(saddr.sin_addr), port);
 
-		if (connect(*psockfd, (struct sockaddr *) &saddr,
-				sizeof(saddr))==0) {
-			DEBUG(5) debugf("  connected to %s\n",
-					inet_ntoa(saddr.sin_addr));
+		if (connect(*psockfd, (struct sockaddr *) &saddr, sizeof(saddr))==0) {
+			DEBUG(5) debugf("  connected to %s\n", inet_ntoa(saddr.sin_addr));
 			return addr;
 		}
 
 		saved_errno = errno;
-		logerrno(LOG_WARNING, "connection to %s failed",
-		         inet_ntoa(saddr.sin_addr));
+		logerrno(LOG_WARNING, "connection to %s failed", inet_ntoa(saddr.sin_addr));
 		close(*psockfd);
 		errno = saved_errno;
 

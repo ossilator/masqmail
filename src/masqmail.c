@@ -294,8 +294,7 @@ manipulate_queue(const char *cmd, const char * const id[])
 		fprintf(stderr, "id: %s\n", *id);
 
 		if (!msg->ident) {
-			fprintf(stderr, "message %s does not have an ident\n",
-					*id);
+			fprintf(stderr, "message %s does not have an ident\n", *id);
 			continue;
 		}
 		if (strcmp(pw->pw_name, msg->ident) != 0) {
@@ -304,8 +303,7 @@ manipulate_queue(const char *cmd, const char * const id[])
 		}
 
 		if (msg->received_host || (msg->received_prot != PROT_LOCAL)) {
-			fprintf(stderr, "message %s was not received "
-					"locally\n", *id);
+			fprintf(stderr, "message %s was not received locally\n", *id);
 			continue;
 		}
 
@@ -443,8 +441,7 @@ main(int argc, const char * const argv[])
 
 		} else if (strncmp(opt, "d", 1) == 0) {
 			if (getuid() != 0) {
-				fprintf(stderr, "only root may set the "
-						"debug level.\n");
+				fprintf(stderr, "only root may set the debug level.\n");
 				exit(1);
 			}
 			const char *lvl = get_optarg(argv, &arg, opt+1);
@@ -599,8 +596,7 @@ main(int argc, const char * const argv[])
 
 	conf.debug_level = debug_level;  /* for debuggin during read_conf() */
 	if (!read_conf()) {
-		logwrite(LOG_ERR, "SHUTTING DOWN due to problems reading "
-				"config\n");
+		logwrite(LOG_ERR, "SHUTTING DOWN due to problems reading config\n");
 		exit(5);
 	}
 
@@ -708,8 +704,7 @@ main(int argc, const char * const argv[])
 		{
 			guint accept_flags = 0;
 			accept_flags |= (opt_t ? ACC_RCPT_FROM_HEAD : 0);
-			accept_flags |= (opt_i ?
-					ACC_DOT_IGNORE : ACC_NODOT_RELAX);
+			accept_flags |= (opt_i ? ACC_DOT_IGNORE : ACC_NODOT_RELAX);
 			mode_accept(return_path, full_sender_name,
 					accept_flags, argv + arg, argc - arg);
 			exit(0);

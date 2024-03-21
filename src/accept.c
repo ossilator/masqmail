@@ -54,8 +54,7 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 	*line = '\0';
 
 	while (1) {
-		int len = read_sockline1(in, &line, &line_size, 5 * 60,
-				READSOCKL_CVT_CRLF);
+		int len = read_sockline1(in, &line, &line_size, 5 * 60, READSOCKL_CVT_CRLF);
 		line1 = line;
 
 		if ((*line == '.') && (!(flags & ACC_DOT_IGNORE))) {
@@ -72,8 +71,7 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 			if (len1 > 0 && line1[len1-1] != '\n') {
 				line1[len1] = '\n';
 				line1[len1+1] = '\0';
-				msg->data_list = g_list_prepend(msg->data_list,
-						g_strdup(line1));
+				msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
 				data_size += strlen(line1);
 				line_cnt++;
 			}
@@ -104,11 +102,8 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 			if (*line1 == ' ' || *line1 == '\t') {
 				/* continuation of 'folded' header: */
 				if (hdr) {
-					char *cp;
-					cp = g_strconcat(hdr->header, line1,
-							NULL);
-					hdr->value = cp + (hdr->value -
-							hdr->header);
+					char *cp = g_strconcat(hdr->header, line1, NULL);
+					hdr->value = cp + (hdr->value - hdr->header);
 					free(hdr->header);
 					hdr->header = cp;
 				}
@@ -127,13 +122,11 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 				**  not add an empty line after the headers.
 				*/
 				in_headers = FALSE;
-				msg->data_list = g_list_prepend(msg->data_list,
-						g_strdup(line1));
+				msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
 			}
 		} else {
 			/* message body */
-			msg->data_list = g_list_prepend(msg->data_list,
-					g_strdup(line1));
+			msg->data_list = g_list_prepend(msg->data_list, g_strdup(line1));
 			data_size += strlen(line1);
 			line_cnt++;
 		}
@@ -195,10 +188,10 @@ scan_headers(message *msg, guint flags)
 		case HEAD_BCC:
 			if (flags & ACC_RCPT_FROM_HEAD) {
 				/* -t option (see comment above) */
-				DEBUG(5) debugf("hdr->value = %s\n",
-						hdr->value);
+				DEBUG(5) debugf("hdr->value = %s\n", hdr->value);
 				if (*hdr->value) {
-					msg->rcpt_list = addr_list_append_rfc822(msg->rcpt_list, hdr->value, conf.host_name);
+					msg->rcpt_list = addr_list_append_rfc822(
+							msg->rcpt_list, hdr->value, conf.host_name);
 				}
 			}
 			if (hdr->id == HEAD_BCC) {
@@ -211,9 +204,8 @@ scan_headers(message *msg, guint flags)
 			if (flags & ACC_SAVE_ENVELOPE_TO) {
 				DEBUG(3) debugf("creating 'X-Orig-Envelope-To' header\n");
 				msg->hdr_list = g_list_prepend(msg->hdr_list,
-						create_header(HEAD_UNKNOWN,
-						"X-Orig-Envelope-To: %s",
-						hdr->value));
+						create_header(HEAD_UNKNOWN, "X-Orig-Envelope-To: %s",
+						              hdr->value));
 			}
 			DEBUG(3) debugf("removing 'Envelope-To' header\n");
 			msg->hdr_list = g_list_delete_link(msg->hdr_list, hdr_node);
@@ -251,21 +243,18 @@ scan_headers(message *msg, guint flags)
 		DEBUG(3) debugf("no To: or Cc: header, hence adding "
 				"`To: undisclosed recipients:;'\n");
 		msg->hdr_list = g_list_append(msg->hdr_list,
-				create_header(HEAD_TO,
-				"To: undisclosed-recipients:;\n"));
+				create_header(HEAD_TO, "To: undisclosed-recipients:;\n"));
 	}
 	if (!has_date) {
 		DEBUG(3) debugf("adding 'Date:' header\n");
 		msg->hdr_list = g_list_append(msg->hdr_list,
-				create_header(HEAD_DATE, "Date: %s\n",
-				rec_timestamp()));
+				create_header(HEAD_DATE, "Date: %s\n", rec_timestamp()));
 	}
 	if (!has_id) {
 		DEBUG(3) debugf("adding 'Message-ID:' header\n");
 		msg->hdr_list = g_list_append(msg->hdr_list,
-				create_header(HEAD_MESSAGE_ID,
-				"Message-ID: <%s@%s>\n",
-				msg->uid, conf.host_name));
+				create_header(HEAD_MESSAGE_ID, "Message-ID: <%s@%s>\n",
+				              msg->uid, conf.host_name));
 	}
 
 	return AERR_OK;

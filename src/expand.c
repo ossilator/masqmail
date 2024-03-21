@@ -29,17 +29,13 @@ var_table_msg(GList *var_table, const message *msg)
 	var_table = g_list_prepend(var_table,
 			create_pair("uid", msg->uid));
 	var_table = g_list_prepend(var_table,
-			create_pair("received_host",
-			msg->received_host ? msg->received_host : ""));
+			create_pair("received_host", msg->received_host ? msg->received_host : ""));
 	var_table = g_list_prepend(var_table,
-			create_pair("ident",
-			msg->ident ? msg->ident : ""));
+			create_pair("ident", msg->ident ? msg->ident : ""));
 	var_table = g_list_prepend(var_table,
-			create_pair("return_path_local",
-			ret_path->local_part));
+			create_pair("return_path_local", ret_path->local_part));
 	var_table = g_list_prepend(var_table,
-			create_pair("return_path_domain",
-			ret_path->domain));
+			create_pair("return_path_domain", ret_path->domain));
 	var_table = g_list_prepend(var_table,
 			create_pair("return_path", ret_path->address));
 
