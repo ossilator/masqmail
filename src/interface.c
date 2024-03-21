@@ -10,40 +10,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-/* define if you get problems... */
-/* #define SOCKADDR_OLD 1 */
-
 gboolean
 init_sockaddr(struct sockaddr_in *name, interface *iface)
 {
 	struct hostent *he;
 	struct in_addr ia;
 
-#ifdef SOCKADDR_OLD
-	/* here I tried to be intelligent and failed. */
-	if (isalpha(*iface->address)) {
-		if ((he = gethostbyname(iface->address)) == NULL) {
-			logwrite(LOG_ALERT, "local address '%s' unknown. "
-					"(deleting)\n", iface->address);
-			return FALSE;
-		}
-		memcpy(&(name->sin_addr), he->h_addr, sizeof(name->sin_addr));
-	} else if (isdigit(*iface->address)) {
-		if (inet_aton(iface->address, &ia)) {
-			memcpy(&(name->sin_addr), &ia, sizeof(name->sin_addr));
-		} else {
-			logwrite(LOG_ALERT, "invalid address '%s': "
-					"inet_aton() failed (deleting)\n",
-					iface->address);
-			return FALSE;
-		}
-	} else {
-		logwrite(LOG_ALERT, "invalid address '%s', should begin with "
-				"a aphanumeric (deleting)\n", iface->address);
-		return FALSE;
-	}
-#else
-	/* this is how others to it. I follow the crowd... */
 	if (inet_aton(iface->address, &ia) != 0) {
 		/* IP address */
 		memcpy(&(name->sin_addr), &ia, sizeof(name->sin_addr));
@@ -55,7 +27,6 @@ init_sockaddr(struct sockaddr_in *name, interface *iface)
 		}
 		memcpy(&(name->sin_addr), he->h_addr, sizeof(name->sin_addr));
 	}
-#endif
 	name->sin_family = AF_INET;
 	name->sin_port = htons(iface->port);
 
