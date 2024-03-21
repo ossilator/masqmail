@@ -92,7 +92,7 @@ makedir(char *dir, gboolean reown)
 }
 
 static gboolean
-write_pidfile(void)
+write_pidfile(pid_t pid)
 {
 	FILE *fptr;
 	gboolean ok = FALSE;
@@ -101,7 +101,7 @@ write_pidfile(void)
 	makedir(conf.pid_dir, FALSE);
 	gchar *name = g_strdup_printf("%s/masqmail.pid", conf.pid_dir);
 	if ((fptr = fopen(name, "wt"))) {
-		fprintf(fptr, "%d\n", getpid());
+		fprintf(fptr, "%d\n", pid);
 		fclose(fptr);
 		pidfile = name;
 		ok = TRUE;
@@ -130,15 +130,17 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 	if (getppid() != 1) {
 		pid_t pid;
 		if ((pid = fork()) > 0) {
+			write_pidfile(pid);
 			exit(0);
 		} else if (pid < 0) {
 			logerrno(LOG_ERR, "could not fork");
 			exit(1);
 		}
+	} else {
+		write_pidfile(getpid());
 	}
 
 	signal(SIGTERM, sigterm_handler);
-	write_pidfile();
 
 	null_stdio();
 
