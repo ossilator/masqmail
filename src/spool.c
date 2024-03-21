@@ -88,8 +88,10 @@ spool_read_data(message *msg)
 	in = fopen(spool_file, "r");
 	if (!in) {
 		logerrno(LOG_ERR, "could not open spool data file %s", spool_file);
+		g_free(spool_file);
 		return FALSE;
 	}
+	g_free(spool_file);
 
 	char buf[MAX_DATALINE];
 
@@ -117,8 +119,10 @@ spool_read_header(message *msg)
 	in = fopen(spool_file, "r");
 	if (!in) {
 		logerrno(LOG_ERR, "could not open spool header file %s", spool_file);
+		g_free(spool_file);
 		return FALSE;
 	}
+	g_free(spool_file);
 
 	header *hdr = NULL;
 	char buf[MAX_DATALINE];
