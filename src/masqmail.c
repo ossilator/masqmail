@@ -243,6 +243,8 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 			addr_string(msg->return_path), prot_names[PROT_LOCAL]);
 
 	deliver(msg);
+
+	destroy_message(msg);
 }
 
 /*
