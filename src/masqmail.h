@@ -204,6 +204,7 @@ typedef enum _header_id {
 } header_id;
 
 typedef struct _header {
+	int ref_count;
 	header_id id;
 	gchar *header;
 	gchar *value;
@@ -239,7 +240,6 @@ typedef struct _msg_out {
 	GList *rcpt_list;
 
 	GList *hdr_list;
-	GList *xtra_hdr_list;  /* rewritten headers */
 } msg_out;
 
 typedef struct _msgout_perhost {
@@ -362,6 +362,7 @@ header *create_header(header_id id, gchar *fmt, ...) G_GNUC_PRINTF(2, 3);
 header *create_header_raw(header_id id, gchar *txt, int offset);
 void destroy_header(header *hdr);
 void destroy_header_list(GList *hdr_list);
+GList *copy_header_list(GList *hdr_list);
 header *get_header(gchar *line);
 
 /* smtp_in.c */

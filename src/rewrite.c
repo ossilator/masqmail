@@ -83,7 +83,8 @@ map_address_header(header *hdr, GList *table)
 void
 rewrite_headers(msg_out *msgout, const connect_route *route)
 {
-	msgout->hdr_list = g_list_copy(msgout->msg->hdr_list);
+	msgout->hdr_list = copy_header_list(msgout->msg->hdr_list);
+	gboolean changed = FALSE;
 
 	GList *hdr_node;
 	foreach (msgout->hdr_list, hdr_node) {
@@ -107,14 +108,13 @@ rewrite_headers(msg_out *msgout, const connect_route *route)
 		if (!new_hdr) {
 			continue;
 		}
+		hdr->ref_count--;
 		hdr_node->data = new_hdr;
-		// we need this list only to carefully free the extra headers:
-		msgout->xtra_hdr_list = g_list_append(msgout->xtra_hdr_list, new_hdr);
+		changed = TRUE;
 	}
 
-	if (msgout->xtra_hdr_list == NULL) {
-		// nothing was changed
-		g_list_free(msgout->hdr_list);
+	if (!changed) {
+		destroy_header_list(msgout->hdr_list);
 		msgout->hdr_list = NULL;
 	}
 	DEBUG(5) debugf("rewrite_headers() returning\n");

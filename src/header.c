@@ -77,6 +77,7 @@ header*
 create_header_raw(header_id id, gchar *txt, int offset)
 {
 	header *hdr = g_malloc(sizeof(header));
+	hdr->ref_count = 1;
 	hdr->id = id;
 	hdr->header = txt;
 	hdr->value = txt + offset;
@@ -110,7 +111,7 @@ create_header(header_id id, gchar *fmt, ...)
 void
 destroy_header(header *hdr)
 {
-	if (hdr) {
+	if (hdr && !--hdr->ref_count) {
 		g_free(hdr->header);
 		g_free(hdr);
 	}
@@ -120,6 +121,19 @@ void
 destroy_header_list(GList *hdr_list)
 {
 	g_list_free_full(hdr_list, (GDestroyNotify) destroy_header);
+}
+
+static header*
+ref_header(header *hdr, G_GNUC_UNUSED gpointer ctx)
+{
+	hdr->ref_count++;
+	return hdr;
+}
+
+GList *
+copy_header_list(GList *hdr_list)
+{
+	return g_list_copy_deep(hdr_list, (GCopyFunc) ref_header, NULL);
 }
 
 header*

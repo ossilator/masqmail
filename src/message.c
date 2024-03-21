@@ -131,12 +131,7 @@ clone_msg_out(msg_out *msgout_orig)
 	msg_out *msgout = create_msg_out(msgout_orig->msg);
 	if (msgout_orig->return_path)
 		msgout->return_path = copy_address(msgout_orig->return_path);
-	if (msgout_orig->hdr_list)
-		msgout->hdr_list = g_list_copy(msgout_orig->hdr_list);
-	/* FIXME: if this lives longer than the original
-	   and we access one of the xtra hdrs, we will segfault
-	   or cause some weird bugs: */
-	msgout->xtra_hdr_list = NULL;
+	msgout->hdr_list = copy_header_list(msgout_orig->hdr_list);
 	msgout->rcpt_list = copy_recipient_list(msgout_orig->rcpt_list);
 	return msgout;
 }
@@ -148,8 +143,7 @@ destroy_msg_out(msg_out *msgout)
 		if (msgout->return_path)
 			destroy_address(msgout->return_path);
 		destroy_recipient_list(msgout->rcpt_list);
-		g_list_free(msgout->hdr_list);
-		destroy_header_list(msgout->xtra_hdr_list);
+		destroy_header_list(msgout->hdr_list);
 		g_free(msgout);
 	}
 }
