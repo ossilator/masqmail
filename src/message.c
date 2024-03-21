@@ -99,7 +99,8 @@ destroy_message(message *msg)
 	g_free(msg->ident);
 	destroy_address(msg->return_path);
 
-	destroy_ptr_list(msg->rcpt_list);
+	destroy_recipient_list(msg->rcpt_list);
+	destroy_recipient_list(msg->non_rcpt_list);
 	destroy_header_list(msg->hdr_list);
 
 	msg_free_data(msg);
@@ -136,8 +137,7 @@ clone_msg_out(msg_out *msgout_orig)
 	   and we access one of the xtra hdrs, we will segfault
 	   or cause some weird bugs: */
 	msgout->xtra_hdr_list = NULL;
-	if (msgout_orig->rcpt_list)
-		msgout->rcpt_list = g_list_copy(msgout_orig->rcpt_list);
+	msgout->rcpt_list = copy_recipient_list(msgout_orig->rcpt_list);
 	return msgout;
 }
 
@@ -147,6 +147,7 @@ destroy_msg_out(msg_out *msgout)
 	if (msgout) {
 		if (msgout->return_path)
 			destroy_address(msgout->return_path);
+		destroy_recipient_list(msgout->rcpt_list);
 		g_list_free(msgout->hdr_list);
 		destroy_header_list(msgout->xtra_hdr_list);
 		g_free(msgout);

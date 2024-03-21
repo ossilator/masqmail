@@ -38,6 +38,7 @@ create_recipient_raw(const gchar *local_part, const gchar *domain)
 {
 	recipient *rcpt = (recipient *) create_address_rawest(
 			sizeof(recipient), g_strdup(local_part), g_strdup(domain));
+	rcpt->ref_count = 1;
 	return rcpt;
 }
 
@@ -104,6 +105,9 @@ create_recipient(const gchar *path, const gchar *domain)
 {
 	recipient *rcpt = (recipient *) _create_address(
 			sizeof(recipient), path, NULL, A_RFC821, domain);
+	if (rcpt) {
+		rcpt->ref_count = 1;
+	}
 	return rcpt;
 }
 
@@ -115,7 +119,21 @@ create_recipient_pipe(const gchar *path)
 	addr->address->address = g_strdup(path);
 	addr->address->local_part = g_strdup(path);
 	addr->address->domain = g_strdup("localhost");  /* quick hack */
+	addr->ref_count = 1;
 	return addr;
+}
+
+static recipient*
+ref_recipient(recipient *rcpt, G_GNUC_UNUSED gpointer ctx)
+{
+	rcpt->ref_count++;
+	return rcpt;
+}
+
+GList *
+copy_recipient_list(GList *rcpt_list)
+{
+	return g_list_copy_deep(rcpt_list, (GCopyFunc) ref_recipient, NULL);
 }
 
 static void
@@ -136,8 +154,17 @@ destroy_address(address *addr)
 void
 destroy_recipient(recipient *addr)
 {
-	_destroy_address(addr->address);
-	g_free(addr);
+	if (!--addr->ref_count) {
+		destroy_recipient_list(addr->children);
+		_destroy_address(addr->address);
+		g_free(addr);
+	}
+}
+
+void
+destroy_recipient_list(GList *rcpt_list)
+{
+	g_list_free_full(rcpt_list, (GDestroyNotify) destroy_recipient);
 }
 
 gboolean
@@ -233,6 +260,7 @@ addr_list_append_rfc822(GList *addr_list, const gchar *string, const gchar *doma
 #endif
 
 		addr_list = g_list_append(addr_list, addr);
+		addr->ref_count = 1;
 
 		p = end;
 		while (*p == ',' || isspace(*p)) {

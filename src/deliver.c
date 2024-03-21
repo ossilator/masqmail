@@ -532,9 +532,10 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 			if (!addr_is_finished(rcpt) &&
 					!(rcpt->flags & ADDR_FLAG_LAST_ROUTE)){
 				rcpt_list_non_delivered = g_list_append(rcpt_list_non_delivered, rcpt);
+				rcpt->ref_count++;
 			}
 		}
-		g_list_free(msgout_cloned->rcpt_list);
+		destroy_recipient_list(msgout_cloned->rcpt_list);
 		msgout_cloned->rcpt_list = rcpt_list_non_delivered;
 
 		if (!msgout_cloned->rcpt_list) {
@@ -617,6 +618,7 @@ update_non_rcpt_list(msg_out *msgout)
 		if (addr_is_finished(rcpt)) {
 			msg->non_rcpt_list = g_list_append(msg->non_rcpt_list,
 					rcpt);
+			rcpt->ref_count++;
 		}
 	}
 }
@@ -778,7 +780,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 		}
 		DEBUG(5) debugf("spool_lock(%s)\n", msgout->msg->uid);
 
-		rcpt_list = g_list_copy(msgout->msg->rcpt_list);
+		rcpt_list = copy_recipient_list(msgout->msg->rcpt_list);
 		if (conf.log_user) {
 			recipient *addr = create_recipient(conf.log_user, conf.host_name);
 			if (addr) {
@@ -792,7 +794,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 		alias_expand(globalias_table, alias_table, rcpt_list);
 
 		split_rcpts(rcpt_list, msgout->msg->non_rcpt_list, &local_rcpt_list, &other_rcpt_list);
-		g_list_free(rcpt_list);
+		destroy_recipient_list(rcpt_list);
 
 		/* local recipients */
 		if ((flags & DLVR_LOCAL) && local_rcpt_list) {
@@ -801,7 +803,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 			local_msgout_list = g_list_append(local_msgout_list,
 					local_msgout);
 		} else {
-			g_list_free(local_rcpt_list);
+			destroy_recipient_list(local_rcpt_list);
 		}
 
 		/* remote recipients, requires online delivery  */
@@ -811,7 +813,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 			remote_msgout_list = g_list_append(remote_msgout_list,
 					remote_msgout);
 		} else {
-			g_list_free(other_rcpt_list);
+			destroy_recipient_list(other_rcpt_list);
 		}
 	}
 

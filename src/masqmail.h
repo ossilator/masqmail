@@ -41,6 +41,7 @@ typedef struct _recipient {
 	struct _recipient *parent;
 	GList *children;
 	gint flags;
+	gint ref_count;
 } recipient;
 
 #define addr_mark_delivered(addr) { addr->flags |= ADDR_FLAG_DELIVERED; }
@@ -342,6 +343,8 @@ recipient *create_recipient(const gchar *path, const gchar *domain);
 recipient *create_recipient_raw(const gchar *local_part, const gchar *domain);
 recipient *create_recipient_pipe(const gchar *path);
 void destroy_recipient(recipient *addr);
+GList *copy_recipient_list(GList *rcpt_list);
+void destroy_recipient_list(GList *rcpt_list);
 GList *addr_list_append_rfc822(GList *addr_list, const gchar *string, const gchar *domain);
 gboolean addr_isequal_parent(recipient *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
 recipient *addr_find_ancestor(recipient *addr);

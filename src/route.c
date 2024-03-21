@@ -118,9 +118,10 @@ filter_rcpts(GList *patterns, gboolean keep_matching, GList **rcpt_list)
 		}
 		if (matched == keep_matching) {
 			out_list = g_list_append(out_list, rcpt);
+			rcpt->ref_count++;
 		}
 	}
-	g_list_free(*rcpt_list);
+	destroy_recipient_list(*rcpt_list);
 	*rcpt_list = out_list;
 }
 
@@ -173,8 +174,10 @@ split_rcpts(GList *rcpt_list, GList *non_rcpt_list,
 			// omit already delivered addresses
 		} else if (addr_is_local(rcpt->address)) {
 			*local_rcpts = g_list_append(*local_rcpts, rcpt);
+			rcpt->ref_count++;
 		} else {
 			*remote_rcpts = g_list_append(*remote_rcpts, rcpt);
+			rcpt->ref_count++;
 		}
 	}
 }

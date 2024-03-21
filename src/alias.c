@@ -179,6 +179,7 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 			/* loop detected, ignore this path */
 			logwrite(LOG_ERR, "alias: detected loop, hence ignoring '%s'\n",
 			         alias_addr->address->address);
+			destroy_recipient(alias_addr);
 			continue;
 		}
 
@@ -188,6 +189,7 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 		DEBUG(6) debugf("alias: <<\n");
 
 	  append:
+		// this also "claims" the initial refcount of the object
 		addr->children = g_list_append(addr->children, alias_addr);
 		alias_addr->parent = addr;
 	}
