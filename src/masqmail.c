@@ -185,7 +185,6 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 	accept_error err;
 	message *msg = create_message();
 	gint i;
-	pid_t pid;
 
 	if (return_path) {
 		verify_privileged_user("setting return path");
@@ -249,13 +248,7 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 	}
 
 	/* deliver at once */
-	if ((pid = fork()) < 0) {
-		logerrno(LOG_ERR, "could not fork for delivery");
-	} else if (pid == 0) {
-		null_stdio();
-		deliver(msg);
-		exit(0);
-	}
+	deliver(msg);
 }
 
 /*

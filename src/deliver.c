@@ -905,7 +905,21 @@ deliver_msg_list(GList *msg_list, guint flags)
 void
 deliver(message *msg)
 {
+	pid_t pid = fork();
+	if (pid < 0) {
+		logerrno(LOG_ERR, "could not fork for delivery");
+		return;
+	}
+	if (pid != 0) {
+		// parent
+		return;
+	}
+	// child
+	null_stdio();
+
 	GList *msg_list = g_list_append(NULL, msg);
 	deliver_msg_list(msg_list, DLVR_ALL);
 	g_list_free(msg_list);
+
+	exit(0);
 }

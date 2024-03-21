@@ -307,7 +307,6 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 				smtp_printf(out, "451 Could not write spool file\r\n");
 				return;
 			}
-			pid_t pid;
 			smtp_printf(out, "250 OK id=%s\r\n", msg->uid);
 
 			if (remote_host != NULL) {
@@ -323,13 +322,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 			if (conf.do_queue) {
 				DEBUG(1) debugf("queuing forced by configuration or option.\n");
 			} else {
-				pid = fork();
-				if (pid < 0) {
-					logerrno(LOG_ERR, "could not fork for delivery");
-				} else if (pid == 0) {
-					deliver(msg);
-					exit(0);
-				}
+				deliver(msg);
 			}
 			psc->rcpt_seen = psc->from_seen = FALSE;
 			destroy_message(msg);
