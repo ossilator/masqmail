@@ -692,7 +692,6 @@ read_route(gchar *filename, gboolean is_perma)
 				(strcmp(lval, "auth_secret")==0)) {
 			logwrite(LOG_WARNING, "%s ignored: not compiled with "
 					"auth support.\n", lval);
-		}
 #endif
 		} else if (strcmp(lval, "pipe")==0) {
 			route->pipe = g_strdup(rval);
