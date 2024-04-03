@@ -60,6 +60,13 @@ message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 		goto fail;
 	}
 
+	if (fflush(out) == EOF) {
+		goto fail;
+	}
+	if (fdatasync(fileno(out)) && errno != EINVAL) {
+		goto fail;
+	}
+
 	return TRUE;
 
   fail:
