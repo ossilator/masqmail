@@ -20,31 +20,51 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 
-static void
+static gboolean
 message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 {
 	time_t now = time(NULL);
 	GList *node;
 
 	if (flags & MSGSTR_FROMLINE) {
-		fprintf(out, "From %s@%s %s", msg->return_path->local_part,
-				msg->return_path->domain, ctime(&now));
+		if (fprintf(out, "From %s@%s %s", msg->return_path->local_part,
+		            msg->return_path->domain, ctime(&now)) < 0) {
+			goto fail;
+		}
 	}
 
 	foreach(hdr_list, node) {
 		header *hdr = (header *) (node->data);
-		fputs(hdr->header, out);
+		if (fputs(hdr->header, out) == EOF) {
+			goto fail;
+		}
 	}
-	putc('\n', out);
+	if (putc('\n', out) == EOF) {
+		goto fail;
+	}
+
 	foreach(msg->data_list, node) {
 		/* From hack: */
 		if (flags & MSGSTR_FROMHACK) {
-			if (strncmp(node->data, "From ", 5) == 0)
-				putc('>', out);
+			if (strncmp(node->data, "From ", 5) == 0) {
+				if (putc('>', out) == EOF) {
+					goto fail;
+				}
+			}
 		}
-		fputs(node->data, out);
+		if (fputs(node->data, out) == EOF) {
+			goto fail;
+		}
 	}
-	putc('\n', out);
+	if (putc('\n', out) == EOF) {
+		goto fail;
+	}
+
+	return TRUE;
+
+  fail:
+	logerrno(LOG_ERR, "could not write message %s", msg->uid);
+	return FALSE;
 }
 
 gboolean
@@ -101,9 +121,7 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 		if (fcntl(fileno(out), F_SETLK, &lock) != -1) {
 #endif
 			fchmod(fileno(out), 0600);
-			message_stream(out, msg, hdr_list,
-					MSGSTR_FROMLINE | MSGSTR_FROMHACK);
-			ok = TRUE;
+			ok = message_stream(out, msg, hdr_list, MSGSTR_FROMLINE | MSGSTR_FROMHACK);
 
 			/* close when still user */
 			fclose(out);
@@ -185,7 +203,7 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 	if (!out) {
 		logerrno(LOG_ERR, "could not open pipe '%s'", cmd);
 	} else {
-		message_stream(out, msg, hdr_list, flags);
+		ok = message_stream(out, msg, hdr_list, flags);
 
 		fclose(out);
 
@@ -196,13 +214,13 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 			logwrite(LOG_ERR, "process '%s' returned %d (%s)\n",
 			         cmd, exstat, sysexit_str(exstat));
 			errno = (exstat == EX_TEMPFAIL) ? EAGAIN : ECANCELED;
+			ok = FALSE;
 		} else if (WIFSIGNALED(status)) {
 			logwrite(LOG_ERR, "process '%s' got signal %d\n",
 			         cmd, WTERMSIG(status));
 			errno = ECANCELED;
-		} else
-			ok = TRUE;
-
+			ok = FALSE;
+		}
 	}
 
 	signal(SIGCHLD, old_signal);
