@@ -7,6 +7,19 @@ bin_PROGRAMS=mservdetect
 
 install-exec-hook:
 	chmod u+s $(DESTDIR)@sbindir@/masqmail
+	cd $(DESTDIR)@sbindir@ && \
+		$(LN_S) -f masqmail sendmail && \
+		$(LN_S) -f masqmail mailq && \
+		$(LN_S) -f masqmail mailrm && \
+		$(LN_S) -f masqmail runq && \
+		$(LN_S) -f masqmail in.smtpd
+
+uninstall-hook:
+	-rm -f $(DESTDIR)@sbindir@/sendmail \
+		$(DESTDIR)@sbindir@/mailq \
+		$(DESTDIR)@sbindir@/mailrm \
+		$(DESTDIR)@sbindir@/runq \
+		$(DESTDIR)@sbindir@/in.smtpd
 
 masqmail_SOURCES=\
 	dotlock.h\

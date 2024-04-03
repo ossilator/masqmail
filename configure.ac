@@ -14,6 +14,8 @@ dnl Checks for programs.
 
 AC_PROG_CC
 
+AC_PROG_LN_S
+
 dnl Checks for libraries.
 
 PKG_CHECK_MODULES(GLIB, glib-2.0)
