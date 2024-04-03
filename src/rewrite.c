@@ -79,3 +79,27 @@ map_address_header(header *hdr, GList *table)
 
 	return did_change;
 }
+
+void
+rewrite_return_path(msg_out *msgout, const connect_route *route)
+{
+	const message *msg = msgout->msg;
+	DEBUG(5) debugf("considering return path '%s' for rewriting\n",
+	                msg->return_path->address);
+	if (!route->map_return_path_addresses) {
+		DEBUG(5) debugf("=> no rules\n");
+		return;
+	}
+	const address *ret_path = table_find_fnmatch(
+			route->map_return_path_addresses, msg->return_path->local_part);
+	if (!ret_path) {
+		DEBUG(5) debugf("=> no match\n");
+		return;
+	}
+	DEBUG(5) debugf("=> replacement '%s'\n", ret_path->address);
+	msgout->return_path = create_address_raw(
+			ret_path->local_part,
+			ret_path->domain[0] ?
+					ret_path->domain :
+					msg->return_path->domain);
+}

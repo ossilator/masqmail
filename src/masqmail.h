@@ -426,6 +426,7 @@ void drop_root(void);
 
 /* rewrite.c */
 gboolean map_address_header(header *hdr, GList *table);
+void rewrite_return_path(msg_out *msgout, const connect_route *route);
 
 /* route.c */
 void destroy_msgout_perhost(msgout_perhost *mo_ph);

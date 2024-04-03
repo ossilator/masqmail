@@ -214,41 +214,24 @@ route_from_hdr_is_allowed(connect_route *route, address *addr)
 	return TRUE;
 }
 
-
 msg_out*
 route_prepare_msgout(connect_route *route, msg_out *msgout)
 {
-	message *msg = msgout->msg;
 	GList *rcpt_list = msgout->rcpt_list;
 
 	if (rcpt_list != NULL) {
 		/* found a few */
 		DEBUG(5) {
 			GList *node;
-			debugf("rcpts for routed delivery, route = %s, id = %s\n", route->name, msg->uid);
+			debugf("rcpts for routed delivery, route = %s, id = %s\n",
+			       route->name, msgout->msg->uid);
 			foreach(rcpt_list, node) {
 				recipient *rcpt = node->data;
 				debugf("  rcpt for routed delivery: <%s>\n", rcpt->address->address);
 			}
 		}
 
-		/*
-		**  rewrite return path if there is a table, use that
-		**  if an address is found and if it has a domain, use that
-		*/
-		if (route->map_return_path_addresses) {
-			address *ret_path = NULL;
-			DEBUG(5) debugf("looking up %s in map_return_path_addresses\n", msg->return_path->local_part);
-			ret_path = (address *) table_find_fnmatch(route->map_return_path_addresses, msg->return_path->local_part);
-			if (ret_path) {
-				DEBUG(5) debugf("found <%s>\n", ret_path->address);
-				msgout->return_path = create_address_raw(
-						ret_path->local_part,
-						ret_path->domain[0] ?
-								ret_path->domain :
-								msg->return_path->domain);
-			}
-		}
+		rewrite_return_path(msgout, route);
 		rewrite_headers(msgout, route);
 
 		return msgout;
