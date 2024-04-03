@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.71])
 AC_INIT(
-	[MasqMail], [0.3.6-dev],
+	[MasqMail], m4_esyscmd_s([$(dirname "$0")/version.sh]),
 	[https://github.com/ossilator/masqmail/issues],
 	[masqmail], [https://github.com/ossilator/masqmail])
 AC_CONFIG_MACRO_DIR([m4])
