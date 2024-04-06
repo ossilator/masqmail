@@ -913,6 +913,11 @@ do_deliver(message *msg)
 void
 deliver(message *msg)
 {
+	if (conf.do_queue) {
+		DEBUG(1) debugf("queuing forced by configuration or option.\n");
+		return;
+	}
+
 	if (!conf.do_background) {
 		do_deliver(msg);
 		return;

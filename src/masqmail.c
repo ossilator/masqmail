@@ -242,12 +242,6 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 	logwrite(LOG_INFO, "%s <= %s with %s\n", msg->uid,
 			addr_string(msg->return_path), prot_names[PROT_LOCAL]);
 
-	if (conf.do_queue) {
-		/* we're finished as we only need to queue it */
-		return;
-	}
-
-	/* deliver at once */
 	deliver(msg);
 }
 

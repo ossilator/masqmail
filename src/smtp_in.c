@@ -319,11 +319,8 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 				         prot_names[psc->prot]);
 			}
 
-			if (conf.do_queue) {
-				DEBUG(1) debugf("queuing forced by configuration or option.\n");
-			} else {
-				deliver(msg);
-			}
+			deliver(msg);
+
 			psc->rcpt_seen = psc->from_seen = FALSE;
 			destroy_message(msg);
 			msg = NULL;
