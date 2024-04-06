@@ -9,7 +9,6 @@
 
 #include <assert.h>
 #include <fnmatch.h>
-#include <sysexits.h>
 #include <netdb.h>
 
 static void deliver_finish(msg_out *msgout);
@@ -106,7 +105,7 @@ deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt,
 		return TRUE;
 	}
 
-	if ((errno != (1024 + EX_TEMPFAIL)) && (errno != EAGAIN)) {
+	if (errno != EAGAIN) {
 		addr_mark_failed(rcpt);
 	} else {
 		addr_mark_defered(rcpt);
@@ -138,7 +137,7 @@ deliver_local_mda(message *msg, GList *hdr_list, address *rcpt)
 				msg->uid, rcpt->local_part, rcpt->domain, cmd);
 		addr_mark_delivered(rcpt);
 		ok = TRUE;
-	} else if ((errno != (1024 + EX_TEMPFAIL)) && (errno != EAGAIN)) {
+	} else if (errno != EAGAIN) {
 		addr_mark_failed(rcpt);
 	} else {
 		addr_mark_defered(rcpt);

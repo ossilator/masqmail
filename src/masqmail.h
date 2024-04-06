@@ -375,7 +375,7 @@ gboolean append_file(message *msg, GList *hdr_list, gchar *user);
 gboolean pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags);
 
 /* log.c */
-gchar *ext_strerror(int err);
+gchar *sysexit_str(int err);
 void ensure_stdio(void);
 void null_stdio(void);
 void logopen(void);

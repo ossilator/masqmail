@@ -16,6 +16,7 @@
 #endif
 
 #include <pwd.h>
+#include <sysexits.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 
@@ -193,11 +194,12 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 		if (WEXITSTATUS(status) != 0) {
 			int exstat = WEXITSTATUS(status);
 			logwrite(LOG_ERR, "process '%s' returned %d (%s)\n",
-			         cmd, exstat, ext_strerror(1024 + exstat));
-			errno = 1024 + exstat;
+			         cmd, exstat, sysexit_str(exstat));
+			errno = (exstat == EX_TEMPFAIL) ? EAGAIN : ECANCELED;
 		} else if (WIFSIGNALED(status)) {
 			logwrite(LOG_ERR, "process '%s' got signal %d\n",
 			         cmd, WTERMSIG(status));
+			errno = ECANCELED;
 		} else
 			ok = TRUE;
 
