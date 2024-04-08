@@ -99,11 +99,10 @@ parse_list(gchar *line)
 }
 
 static void
-expand_one(GList *alias_table, recipient *addr, int doglob)
+expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 {
 	GList *val_list;
 	GList *val_node;
-	char *addrstr;
 
 	if (!addr_is_local(addr->address)) {
 		DEBUG(5) debugf("alias: '%s' is non-local, hence completed\n",
@@ -111,36 +110,32 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 		return;
 	}
 
-	addrstr = doglob ? addr->address->address : addr->address->local_part;
-
 	/* expand the local alias */
 	DEBUG(6) debugf("alias: '%s' is local and will get expanded\n",
-			addrstr);
+	                addr->address->address);
 
 	gchar *repl;
 	if (conf.localpartcmp == strcasecmp ||
 	    // postmaster must always be matched caselessly, see RFCs 5321 and 5322
 	    strcasecmp(addr->address->local_part, "postmaster") == 0) {
-		if (doglob) {
-			repl = table_find_fnmatch_casefold(alias_table, addrstr);
-		} else {
-			repl = table_find_casefold(alias_table, addrstr);
+		repl = table_find_fnmatch_casefold(globalias_table, addr->address->address);
+		if (!repl) {
+			repl = table_find_casefold(alias_table, addr->address->local_part);
 		}
 	} else {
-		if (doglob) {
-			// FIXME: the domain is matched case-sensitively as well
-			repl = table_find_fnmatch(alias_table, addrstr);
-		} else {
-			repl = table_find(alias_table, addrstr);
+		// FIXME: the domain is matched case-sensitively as well
+		repl = table_find_fnmatch(globalias_table, addr->address->address);
+		if (!repl) {
+			repl = table_find(alias_table, addr->address->local_part);
 		}
 	}
 	if (!repl) {
-		DEBUG(5) debugf("alias: '%s' is fully expanded, hence "
-				"completed\n", addrstr);
+		DEBUG(5) debugf("alias: '%s' is fully expanded, hence completed\n",
+		                addr->address->address);
 		return;
 	}
 
-	DEBUG(5) debugf("alias: '%s' -> '%s'\n", addrstr, repl);
+	DEBUG(5) debugf("alias: '%s' -> '%s'\n", addr->address->address, repl);
 	addr_mark_alias(addr);
 
 	val_list = parse_list(repl);
@@ -189,7 +184,7 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 
 		/* recurse */
 		DEBUG(6) debugf("alias: >>\n");
-		expand_one(alias_table, alias_addr, doglob);
+		expand_one(globalias_table, alias_table, alias_addr);
 		DEBUG(6) debugf("alias: <<\n");
 
 	  append:
@@ -200,14 +195,13 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 }
 
 void
-alias_expand(GList *alias_table, GList *rcpt_list,
-             int doglob)
+alias_expand(GList *globalias_table, GList *alias_table, GList *rcpt_list)
 {
 	GList *rcpt_node = NULL;
 
 	for (rcpt_node = rcpt_list; rcpt_node;
 			rcpt_node=g_list_next(rcpt_node)) {
 		recipient *addr = rcpt_node->data;
-		expand_one(alias_table, addr, doglob);
+		expand_one(globalias_table, alias_table, addr);
 	}
 }

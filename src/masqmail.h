@@ -298,8 +298,7 @@ typedef struct _smtp_connection {
 
 /* alias.c*/
 gboolean addr_is_local(address *addr);
-void alias_expand(GList *alias_table, GList *rcpt_list,
-		int doglob);
+void alias_expand(GList *globalias_table, GList *alias_table, GList *rcpt_list);
 
 /* child.c */
 int child(const char *command);

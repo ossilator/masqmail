@@ -789,18 +789,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 						conf.log_user);
 			}
 		}
-		if (globalias_table) {
-			DEBUG(5) debugf("Doing globalias expansion\n");
-			alias_expand(globalias_table,
-					rcpt_list,
-					1);
-		}
-		if (alias_table) {
-			DEBUG(5) debugf("Doing alias expansion\n");
-			alias_expand(alias_table,
-					rcpt_list,
-					0);
-		}
+		alias_expand(globalias_table, alias_table, rcpt_list);
 
 		split_rcpts(rcpt_list, msgout->msg->non_rcpt_list, &local_rcpt_list, &other_rcpt_list);
 		g_list_free(rcpt_list);
