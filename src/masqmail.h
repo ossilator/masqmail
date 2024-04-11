@@ -91,6 +91,8 @@ typedef struct _masqmail_conf {
 
 	gboolean run_as_user;
 
+	const gchar *exe_file;
+
 	gchar *mail_dir;
 	gchar *lock_dir;
 	gchar *spool_dir;

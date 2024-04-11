@@ -203,7 +203,6 @@ AX_RECURSIVE_EVAL([${bindir}], [xbindir])
 AC_SUBST(xbindir)
 
 AX_RECURSIVE_EVAL([${sbindir}], [xsbindir])
-AC_DEFINE_UNQUOTED(SBINDIR, "$xsbindir", [The sbin directory])
 AC_SUBST(xsbindir)
 
 RELEASE_DATE=`date -r "$0" +%F`

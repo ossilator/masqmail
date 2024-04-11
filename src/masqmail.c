@@ -6,6 +6,7 @@
 */
 
 #include "masqmail.h"
+#include "whereami.h"
 
 #include <pwd.h>
 #include <netinet/in.h>
@@ -576,6 +577,16 @@ main(int argc, char *argv[])
 	}
 
 	init_conf();
+
+	int exe_len = wai_getExecutablePath(NULL, 0, NULL);
+	if (exe_len < 0) {
+		fprintf(stderr, "cannot determine own executable filepath.\n");
+		exit(1);
+	}
+	char *exe_file = g_malloc(exe_len + 1);
+	wai_getExecutablePath(exe_file, exe_len, NULL);
+	exe_file[exe_len] = '\0';
+	conf.exe_file = exe_file;
 
 	/*
 	**  if we are not privileged, and the config file was changed we

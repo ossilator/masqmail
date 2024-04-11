@@ -10,6 +10,9 @@ Oswald Buddenhagen <oswald.buddenhagen@gmx.de>
 
 Contributed code:
 
+src/whereami.*
+by Gregory Pakosz (MIT license)
+
 admin/rmail
 by luciano l. mannucci and Wietse Venema (no license applies)
 

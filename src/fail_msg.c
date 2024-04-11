@@ -52,7 +52,8 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt,
 			gchar *cmd;
 			pid_t pid;
 
-			cmd = g_strdup_printf(SBINDIR "/masqmail -oi -f <> %s@%s", ret_path->local_part, ret_path->domain);
+			cmd = g_strdup_printf("%s -oi -f <> %s@%s",
+			                      conf.exe_file, ret_path->local_part, ret_path->domain);
 			if (!(out = peopen(cmd, "w", environ, &pid))) {
 				logerrno(LOG_ERR, "peopen failed");
 			} else {

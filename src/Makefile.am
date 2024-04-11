@@ -58,7 +58,9 @@ masqmail_SOURCES=\
 	smtp_out.c\
 	spool.c\
 	tables.c\
-	timeival.c
+	timeival.c\
+	whereami.h\
+	whereami.c
 
 mservdetect_SOURCES=\
 	masqmail.h\
