@@ -252,6 +252,8 @@ verify_remote_delivery()
 	eval_delivery $num $count "$box"
 }
 
+ERROR='^Sorry, but your mail could not be delivered to all recipients'
+
 verify_content()
 {
 	local count=${2:-1}
