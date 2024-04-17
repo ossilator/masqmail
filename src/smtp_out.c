@@ -870,6 +870,11 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 void
 smtp_out_quit(smtp_base *psb)
 {
+	if (psb->error == smtp_timeout || psb->error == smtp_eof) {
+		// connection is already dead anyway.
+		return;
+	}
+
 	fprintf(psb->out, "QUIT\r\n");
 	fflush(psb->out);
 
@@ -895,9 +900,7 @@ smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg,
 		/* initiate connection, send message and quit: */
 		if (smtp_out_init(psb, FALSE)) {
 			smtp_out_msg(psb, msg, return_path, rcpt_list, NULL);
-			if (psb->error == smtp_ok || (psb->error == smtp_fail) || (psb->error == smtp_trylater)
-			    || (psb->error == smtp_syntax) || (psb->error == smtp_cancel))
-				smtp_out_quit(psb);
+			smtp_out_quit(psb);
 		}
 
 		err = psb->error;

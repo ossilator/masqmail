@@ -417,9 +417,9 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 #endif
 	if (!smtp_out_init(psb, route->instant_helo)) {
 		/* smtp_out_init() failed */
+		smtp_out_quit(psb);
 		if ((psb->error==smtp_fail) || (psb->error==smtp_trylater) ||
 				(psb->error==smtp_syntax)) {
-			smtp_out_quit(psb);
 
 			foreach(msgout_list, msgout_node) {
 				msg_out *msgout =
@@ -487,11 +487,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 			deliver_finish(msgout);
 		}
 	}
-	if (psb->error == smtp_ok || (psb->error == smtp_fail) ||
-			(psb->error == smtp_trylater) ||
-			(psb->error == smtp_syntax)) {
-		smtp_out_quit(psb);
-	}
+	smtp_out_quit(psb);
 	destroy_smtpbase(psb);
 	return ok;
 }
