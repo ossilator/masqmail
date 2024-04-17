@@ -858,6 +858,4 @@ smtp_out_quit(smtp_base *psb)
 	}
 
 	smtp_cmd(psb, "QUIT");
-
-	signal(SIGALRM, SIG_DFL);
 }
