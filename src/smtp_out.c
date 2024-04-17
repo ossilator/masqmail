@@ -158,6 +158,12 @@ check_response(smtp_base *psb, gboolean after_data)
 	}
 }
 
+static gboolean
+read_check_response(smtp_base *psb, int timeout, gboolean after_data)
+{
+	return read_response(psb, timeout) && check_response(psb, after_data);
+}
+
 static gchar*
 get_response_arg(gchar *response)
 {
@@ -187,7 +193,7 @@ check_helo_response(smtp_base *psb)
 		logwrite(LOG_NOTICE, "received a 220 greeting after sending EHLO,\n");
 		logwrite(LOG_NOTICE, "please remove `instant_helo' from your route config\n");
 		/* read the next response, cause that's the actual helo response */
-		if (!read_response(psb, SMTP_CMD_TIMEOUT) || !check_response(psb, FALSE)) {
+		if (!read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE)) {
 			return FALSE;
 		}
 	}
@@ -492,9 +498,9 @@ smtp_out_rset(smtp_base *psb)
 {
 	smtp_cmd(psb, "RSET");
 
-	if (read_response(psb, SMTP_CMD_TIMEOUT))
-		if (check_response(psb, FALSE))
-			return TRUE;
+	if (read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE)) {
+		return TRUE;
+	}
 
 	smtp_out_log_failure(psb, NULL);
 
@@ -507,7 +513,7 @@ static gboolean
 smtp_out_auth_cram_md5(smtp_base *psb)
 {
 	smtp_cmd(psb, "AUTH CRAM-MD5");
-	if (!read_response(psb, SMTP_CMD_TIMEOUT) || !check_response(psb, TRUE)) {
+	if (!read_check_response(psb, SMTP_CMD_TIMEOUT, TRUE)) {
 		return FALSE;
 	}
 
@@ -538,14 +544,14 @@ smtp_out_auth_cram_md5(smtp_base *psb)
 	g_free(chall);
 	g_free(chall64);
 
-	return read_response(psb, SMTP_CMD_TIMEOUT) && check_response(psb, FALSE);
+	return read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE);
 }
 
 static gboolean
 smtp_out_auth_login(smtp_base *psb)
 {
 	smtp_cmd(psb, "AUTH LOGIN");
-	if (!read_response(psb, SMTP_CMD_TIMEOUT) || !check_response(psb, TRUE)) {
+	if (!read_check_response(psb, SMTP_CMD_TIMEOUT, TRUE)) {
 		return FALSE;
 	}
 
@@ -567,7 +573,7 @@ smtp_out_auth_login(smtp_base *psb)
 	smtp_cmd(psb, "%s", reply64);
 	g_free(reply64);
 
-	if (!read_response(psb, SMTP_CMD_TIMEOUT) || !check_response(psb, TRUE)) {
+	if (!read_check_response(psb, SMTP_CMD_TIMEOUT, TRUE)) {
 		return FALSE;
 	}
 	DEBUG(5) {
@@ -583,7 +589,7 @@ smtp_out_auth_login(smtp_base *psb)
 	smtp_cmd(psb, "%s", reply64);
 	g_free(reply64);
 
-	return read_response(psb, SMTP_CMD_TIMEOUT) && check_response(psb, FALSE);
+	return read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE);
 }
 
 static gboolean
@@ -618,7 +624,7 @@ smtp_out_init(smtp_base *psb, gboolean instant_helo)
 	DEBUG(1) debugf("smtp_out_init(): instant_helo=%d\n", instant_helo);
 
 	if (!instant_helo) {
-		if (!read_response(psb, SMTP_INITIAL_TIMEOUT) || !check_response(psb, FALSE)) {
+		if (!read_check_response(psb, SMTP_INITIAL_TIMEOUT, FALSE)) {
 			goto fail;
 		}
 	}
@@ -705,7 +711,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 	// just in case the size calculation is buggy
 	smtp_cmd_mailfrom(psb, return_path, psb->use_size ? size + SMTP_SIZE_ADD : 0);
 	if (!psb->use_pipelining) {
-		if (!read_response(psb, SMTP_CMD_TIMEOUT) || !check_response(psb, FALSE)) {
+		if (!read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE)) {
 			goto fail;
 		}
 	}
@@ -734,12 +740,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		// DATA, whose response can be handled by the 'normal' code.
 		// all commands in between were RCPT TO:
 		/* response to MAIL FROM: */
-		if (!read_response(psb, SMTP_CMD_TIMEOUT)) {
-			DEBUG(5) debugf("read_response failed after MAIL FROM\n");
-			goto fail;
-		}
-		if (!check_response(psb, FALSE)) {
-			DEBUG(5) debugf("check_response failed after MAIL FROM\n");
+		if (!read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE)) {
 			goto fail;
 		}
 		for (i = 0; i < rcpt_cnt; i++) {
@@ -754,13 +755,13 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 	}
 
 	/* response to the DATA cmd */
-	if (!read_response(psb, SMTP_DATA_TIMEOUT) || !check_response(psb, TRUE)) {
+	if (!read_check_response(psb, SMTP_DATA_TIMEOUT, TRUE)) {
 		goto fail;
 	}
 	send_header(psb, hdr_list);
 	send_data(psb, msg);
 
-	if (!read_response(psb, SMTP_FINAL_TIMEOUT) || !check_response(psb, FALSE)) {
+	if (!read_check_response(psb, SMTP_FINAL_TIMEOUT, FALSE)) {
 		goto fail;
 	}
 
