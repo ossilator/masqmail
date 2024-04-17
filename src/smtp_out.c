@@ -515,9 +515,9 @@ smtp_out_auth_cram_md5(smtp_base *psb)
 {
 	gboolean ok = FALSE;
 
-	fprintf(psb->out, "C: AUTH CRAM-MD5\r\n");
+	fprintf(psb->out, "AUTH CRAM-MD5\r\n");
 	fflush(psb->out);
-	DEBUG(4) debugf("AUTH CRAM-MD5\n");
+	DEBUG(4) debugf("C: AUTH CRAM-MD5\n");
 	if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
 		if ((ok = check_response(psb, TRUE))) {
 			gchar *chall64 = get_response_arg(&(psb->buffer[4]));
