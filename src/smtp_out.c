@@ -452,23 +452,22 @@ smtp_out_open(gchar *host, gint port, GList *resolve_list)
 
 	DEBUG(5) debugf("smtp_out_open entered, host = %s\n", host);
 
-	if ((addr = connect_resolvelist(&sock, host, port, resolve_list))) {
-		/* create structure to hold status data: */
-		psb = create_smtpbase(sock);
-		psb->remote_host = addr->name;
-		addr->name = NULL;
-		destroy_mxip_addr(addr);
-
-		DEBUG(5) {
-			struct sockaddr_in name;
-			socklen_t len = sizeof(struct sockaddr);
-			getsockname(sock, (struct sockaddr *) (&name), &len);
-			debugf("socket: name.sin_addr = %s\n", inet_ntoa(name.sin_addr));
-		}
-		return psb;
+	if (!(addr = connect_resolvelist(&sock, host, port, resolve_list))) {
+		return NULL;
 	}
 
-	return NULL;
+	psb = create_smtpbase(sock);
+	psb->remote_host = addr->name;
+	addr->name = NULL;
+	destroy_mxip_addr(addr);
+
+	DEBUG(5) {
+		struct sockaddr_in name;
+		socklen_t len = sizeof(struct sockaddr);
+		getsockname(sock, (struct sockaddr *) &name, &len);
+		debugf("socket: name.sin_addr = %s\n", inet_ntoa(name.sin_addr));
+	}
+	return psb;
 }
 
 smtp_base*
@@ -507,97 +506,84 @@ smtp_out_rset(smtp_base *psb)
 static gboolean
 smtp_out_auth_cram_md5(smtp_base *psb)
 {
-	gboolean ok = FALSE;
-
 	smtp_cmd(psb, "AUTH CRAM-MD5");
-	if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
-		if ((ok = check_response(psb, TRUE))) {
-			gchar *chall64 = get_response_arg(&(psb->buffer[4]));
-			gsize chall_size;
-			guchar *chall = g_base64_decode(chall64, &chall_size);
-			gchar *reply64, *reply;
-			gchar *digest_string;
-
-			DEBUG(5) debugf("smtp_out_auth_cram_md5():\n");
-			DEBUG(5) debugf("  encoded challenge = %s\n", chall64);
-			DEBUG(5) debugf("  decoded challenge = %.*s, size = %" G_GSIZE_FORMAT "\n",
-			                (int) chall_size, chall, chall_size);
-			DEBUG(5) debugf("  secret = %s\n", psb->auth_secret);
-
-			digest_string = g_compute_hmac_for_data(G_CHECKSUM_MD5,
-					(guchar*) psb->auth_secret, strlen(psb->auth_secret),
-					chall, chall_size);
-
-			DEBUG(5) debugf("  digest = %s\n", digest_string);
-
-			reply = g_strdup_printf("%s %s", psb->auth_login, digest_string);
-			DEBUG(5) debugf("  unencoded reply = %s\n", reply);
-
-			g_free(digest_string);
-
-			reply64 = g_base64_encode((guchar*) reply, strlen(reply));
-			DEBUG(5) debugf("  encoded reply = %s\n", reply64);
-
-			smtp_cmd(psb, "%s", reply64);
-
-			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
-				ok = check_response(psb, FALSE);
-
-			g_free(reply64);
-			g_free(reply);
-			g_free(chall);
-			g_free(chall64);
-		}
+	if (!read_response(psb, SMTP_CMD_TIMEOUT) || !check_response(psb, TRUE)) {
+		return FALSE;
 	}
-	return ok;
+
+	gchar *chall64 = get_response_arg(&(psb->buffer[4]));
+	gsize chall_size;
+	guchar *chall = g_base64_decode(chall64, &chall_size);
+	gchar *reply64, *reply;
+	gchar *digest_string;
+	DEBUG(5) {
+		debugf("smtp_out_auth_cram_md5():\n");
+		debugf("  encoded challenge = %s\n", chall64);
+		debugf("  decoded challenge = %.*s, size = %" G_GSIZE_FORMAT "\n",
+		       (int) chall_size, chall, chall_size);
+		debugf("  secret = %s\n", psb->auth_secret);
+	}
+	digest_string = g_compute_hmac_for_data(G_CHECKSUM_MD5,
+			(guchar*) psb->auth_secret, strlen(psb->auth_secret),
+			chall, chall_size);
+	DEBUG(5) debugf("  digest = %s\n", digest_string);
+	reply = g_strdup_printf("%s %s", psb->auth_login, digest_string);
+	DEBUG(5) debugf("  unencoded reply = %s\n", reply);
+	g_free(digest_string);
+	reply64 = g_base64_encode((guchar*) reply, strlen(reply));
+	DEBUG(5) debugf("  encoded reply = %s\n", reply64);
+	smtp_cmd(psb, "%s", reply64);
+	g_free(reply64);
+	g_free(reply);
+	g_free(chall);
+	g_free(chall64);
+
+	return read_response(psb, SMTP_CMD_TIMEOUT) && check_response(psb, FALSE);
 }
 
 static gboolean
 smtp_out_auth_login(smtp_base *psb)
 {
-	gboolean ok = FALSE;
 	smtp_cmd(psb, "AUTH LOGIN");
-	if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
-		if ((ok = check_response(psb, TRUE))) {
-			gchar *resp64;
-			guchar *resp;
-			gsize resp_size;
-			gchar *reply64;
-
-			DEBUG(5) {
-				debugf("smtp_out_auth_login():\n");
-				resp64 = get_response_arg(&(psb->buffer[4]));
-				debugf("  encoded response = `%s'\n", resp64);
-				resp = g_base64_decode(resp64, &resp_size);
-				g_free(resp64);
-				debugf("  decoded response = `%.*s', size = %" G_GSIZE_FORMAT "\n",
-				       (int) resp_size, resp, resp_size);
-				g_free(resp);
-			}
-			reply64 = g_base64_encode((guchar*) psb->auth_login, strlen(psb->auth_login));
-			smtp_cmd(psb, "%s", reply64);
-			g_free(reply64);
-			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
-				if ((ok = check_response(psb, TRUE))) {
-					DEBUG(5) {
-						resp64 = get_response_arg(&(psb->buffer[4]));
-						debugf("  encoded response = `%s'\n", resp64);
-						resp = g_base64_decode(resp64, &resp_size);
-						g_free(resp64);
-						debugf("  decoded response = `%.*s', size = %" G_GSIZE_FORMAT "\n",
-						       (int) resp_size, resp, resp_size);
-						g_free(resp);
-					}
-					reply64 = g_base64_encode((guchar*) psb->auth_secret, strlen(psb->auth_secret));
-					smtp_cmd(psb, "%s", reply64);
-					g_free(reply64);
-					if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
-						ok = check_response(psb, FALSE);
-				}
-			}
-		}
+	if (!read_response(psb, SMTP_CMD_TIMEOUT) || !check_response(psb, TRUE)) {
+		return FALSE;
 	}
-	return ok;
+
+	gchar *resp64;
+	guchar *resp;
+	gsize resp_size;
+	gchar *reply64;
+	DEBUG(5) {
+		debugf("smtp_out_auth_login():\n");
+		resp64 = get_response_arg(&(psb->buffer[4]));
+		debugf("  encoded response = `%s'\n", resp64);
+		resp = g_base64_decode(resp64, &resp_size);
+		g_free(resp64);
+		debugf("  decoded response = `%.*s', size = %" G_GSIZE_FORMAT "\n",
+		       (int) resp_size, resp, resp_size);
+		g_free(resp);
+	}
+	reply64 = g_base64_encode((guchar*) psb->auth_login, strlen(psb->auth_login));
+	smtp_cmd(psb, "%s", reply64);
+	g_free(reply64);
+
+	if (!read_response(psb, SMTP_CMD_TIMEOUT) || !check_response(psb, TRUE)) {
+		return FALSE;
+	}
+	DEBUG(5) {
+		resp64 = get_response_arg(&(psb->buffer[4]));
+		debugf("  encoded response = `%s'\n", resp64);
+		resp = g_base64_decode(resp64, &resp_size);
+		g_free(resp64);
+		debugf("  decoded response = `%.*s', size = %" G_GSIZE_FORMAT "\n",
+		       (int) resp_size, resp, resp_size);
+		g_free(resp);
+	}
+	reply64 = g_base64_encode((guchar*) psb->auth_secret, strlen(psb->auth_secret));
+	smtp_cmd(psb, "%s", reply64);
+	g_free(reply64);
+
+	return read_response(psb, SMTP_CMD_TIMEOUT) && check_response(psb, FALSE);
 }
 
 static gboolean
@@ -629,33 +615,30 @@ smtp_out_auth(smtp_base *psb)
 gboolean
 smtp_out_init(smtp_base *psb, gboolean instant_helo)
 {
-	gboolean ok;
-
 	DEBUG(1) debugf("smtp_out_init(): instant_helo=%d\n", instant_helo);
 
 	if (!instant_helo) {
-		if ((ok = read_response(psb, SMTP_INITIAL_TIMEOUT))) {
-			ok = check_response(psb, FALSE);
-		}
-		if (!ok) {
-			smtp_out_log_failure(psb, NULL);
-			return ok;
+		if (!read_response(psb, SMTP_INITIAL_TIMEOUT) || !check_response(psb, FALSE)) {
+			goto fail;
 		}
 	}
 
-	if ((ok = smtp_helo(psb, psb->helo_name))) {
-#ifdef ENABLE_AUTH
-		if (psb->auth_name && psb->use_auth) {
-			/* we completely disregard the response of server here. If
-			   authentication fails, the server will complain later
-			   anyway. I know, this is not polite... */
-			smtp_out_auth(psb);
-		}
-#endif
+	if (!smtp_helo(psb, psb->helo_name)) {
+		goto fail;
 	}
-	if (!ok)
-		smtp_out_log_failure(psb, NULL);
-	return ok;
+#ifdef ENABLE_AUTH
+	if (psb->auth_name && psb->use_auth) {
+		// we completely disregard the server's response here.
+		// if authentication fails, the server will complain
+		// later anyway. i know, this is not polite...
+		smtp_out_auth(psb);
+	}
+#endif
+	return TRUE;
+
+  fail:
+	smtp_out_log_failure(psb, NULL);
+	return FALSE;
 }
 
 static gboolean
@@ -693,7 +676,6 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 {
 	gint i;
 	gssize size;
-	gboolean ok = TRUE;
 	int rcpt_cnt;
 	int rcpt_accept = 0;
 
@@ -716,113 +698,87 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		                      "fixed maximum message size of server (%" G_GSSIZE_FORMAT ")",
 		         msg->uid, psb->remote_host, size, psb->max_size);
 		psb->error = smtp_cancel;
-		ok = FALSE;
+		goto fail;
 	}
 
-	if (ok) {
-		/*
-		**  pretend the message is a bit larger,
-		**  just in case the size calculation is buggy
-		*/
-		smtp_cmd_mailfrom(psb, return_path, psb->use_size ? size+SMTP_SIZE_ADD : 0);
+	// pretend the message is a bit larger,
+	// just in case the size calculation is buggy
+	smtp_cmd_mailfrom(psb, return_path, psb->use_size ? size + SMTP_SIZE_ADD : 0);
+	if (!psb->use_pipelining) {
+		if (!read_response(psb, SMTP_CMD_TIMEOUT) || !check_response(psb, FALSE)) {
+			goto fail;
+		}
+	}
 
+	GList *rcpt_node;
+	for (rcpt_node = g_list_first(rcpt_list); rcpt_node != NULL; rcpt_node = g_list_next(rcpt_node)) {
+		address *rcpt = (address *) (rcpt_node->data);
+		smtp_cmd_rcptto(psb, rcpt);
 		if (!psb->use_pipelining) {
-			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
-				ok = check_response(psb, FALSE);
-		}
-	}
-	if (ok) {
-		GList *rcpt_node;
-		rcpt_accept = 0;
-
-		for (rcpt_node = g_list_first(rcpt_list); rcpt_node != NULL; rcpt_node = g_list_next(rcpt_node)) {
-			address *rcpt = (address *) (rcpt_node->data);
-			smtp_cmd_rcptto(psb, rcpt);
-			if (!psb->use_pipelining) {
-				if (!(ok = smtp_out_rcptto_resp(psb, msg, rcpt, &rcpt_accept))) {
-					break;
-				}
-			}
-		}
-
-		/*
-		**  There is no point in going on if no recp.s were accpted.
-		**  But we can check that at this point only if not pipelining:
-		*/
-		ok = (ok && (psb->use_pipelining || (rcpt_accept > 0)));
-		if (ok) {
-
-			smtp_cmd(psb, "DATA");
-
-			if (psb->use_pipelining) {
-				/*
-				**  the first pl'ed command was MAIL FROM
-				**  the last was DATA, whose response can be
-				**  handled by the 'normal' code all in
-				**  between were RCPT TO:
-				*/
-				/* response to MAIL FROM: */
-				if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
-					if ((ok = check_response(psb, FALSE))) {
-						for (i = 0; i < rcpt_cnt; i++) {
-							address *rcpt = g_list_nth_data(rcpt_list, i);
-							if (!(ok = smtp_out_rcptto_resp(psb, msg, rcpt, &rcpt_accept))) {
-								break;
-							}
-						}
-						if (rcpt_accept == 0)
-							ok = FALSE;
-					} else {
-						DEBUG(5) debugf("check_response failed after MAIL FROM\n");
-					}
-				} else {
-					DEBUG(5)
-						debugf("read_response failed after MAIL FROM\n");
-				}
-			}
-
-			/* if(psb->use_pipelining) */
-			/* response to the DATA cmd */
-			if (ok) {
-				if (read_response(psb, SMTP_DATA_TIMEOUT)) {
-					if (check_response(psb, TRUE)) {
-						send_header(psb, hdr_list);
-						send_data(psb, msg);
-
-						if (read_response(psb, SMTP_FINAL_TIMEOUT))
-							ok = check_response(psb, FALSE);
-					}
-				}
+			if (!smtp_out_rcptto_resp(psb, msg, rcpt, &rcpt_accept)) {
+				goto fail;
 			}
 		}
 	}
 
-	DEBUG(5) {
-		debugf("smtp_out_msg():\n");
-		debugf("  psb->error = %u\n", psb->error);
-		debugf("  ok = %d\n", ok);
-		debugf("  rcpt_accept = %d\n", rcpt_accept);
+	// there is no point in going on if no recipients were accepted.
+	// but we can check that at this point only if not pipelining:
+	if (!psb->use_pipelining && !rcpt_accept) {
+		goto fail;
 	}
 
-	if (psb->error == smtp_ok) {
-		GList *rcpt_node;
-		for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
-			address *rcpt = (address *) (rcpt_node->data);
-			if (addr_is_delivered(rcpt))
-				logwrite(LOG_INFO, "%s => %s host=%s\n",
-				         msg->uid, addr_string(rcpt), psb->remote_host);
+	smtp_cmd(psb, "DATA");
+
+	if (psb->use_pipelining) {
+		// the first pipelined command was MAIL FROM. the last was
+		// DATA, whose response can be handled by the 'normal' code.
+		// all commands in between were RCPT TO:
+		/* response to MAIL FROM: */
+		if (!read_response(psb, SMTP_CMD_TIMEOUT)) {
+			DEBUG(5) debugf("read_response failed after MAIL FROM\n");
+			goto fail;
 		}
-	} else {
-		/*
-		**  if something went wrong,
-		**  we have to unmark the rcpts prematurely marked as
-		**  delivered and mark the status
-		*/
-		smtp_out_mark_rcpts(psb, rcpt_list);
-
-		/* log the failure: */
-		smtp_out_log_failure(psb, msg);
+		if (!check_response(psb, FALSE)) {
+			DEBUG(5) debugf("check_response failed after MAIL FROM\n");
+			goto fail;
+		}
+		for (i = 0; i < rcpt_cnt; i++) {
+			address *rcpt = g_list_nth_data(rcpt_list, i);
+			if (!smtp_out_rcptto_resp(psb, msg, rcpt, &rcpt_accept)) {
+				goto fail;
+			}
+		}
+		if (!rcpt_accept) {
+			goto fail;
+		}
 	}
+
+	/* response to the DATA cmd */
+	if (!read_response(psb, SMTP_DATA_TIMEOUT) || !check_response(psb, TRUE)) {
+		goto fail;
+	}
+	send_header(psb, hdr_list);
+	send_data(psb, msg);
+
+	if (!read_response(psb, SMTP_FINAL_TIMEOUT) || !check_response(psb, FALSE)) {
+		goto fail;
+	}
+
+	for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
+		address *rcpt = (address *) (rcpt_node->data);
+		if (addr_is_delivered(rcpt)) {
+			logwrite(LOG_INFO, "%s => %s host=%s\n",
+			         msg->uid, addr_string(rcpt), psb->remote_host);
+		}
+	}
+	return;
+
+  fail:
+	// if something went wrong, we have to unmark the recipients prematurely
+	// marked as delivered, and set the actual status instead.
+	smtp_out_mark_rcpts(psb, rcpt_list);
+
+	smtp_out_log_failure(psb, msg);
 }
 
 void
