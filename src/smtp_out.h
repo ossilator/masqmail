@@ -59,7 +59,7 @@ smtp_base *smtp_out_open_child(gchar *cmd);
 gboolean smtp_out_rset(smtp_base *psb);
 gboolean smtp_out_init(smtp_base *psb, gboolean instant_helo);
 gint smtp_out_msg(smtp_base *psb, message *msg, address *return_path, GList *rcpt_list, GList *hdr_list);
-gboolean smtp_out_quit(smtp_base *psb);
+void smtp_out_quit(smtp_base *psb);
 void smtp_out_mark_rcpts(smtp_base *psb, GList *rcpt_list);
 
 gint smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg, address *return_path, GList *rcpt_list);

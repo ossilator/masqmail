@@ -867,7 +867,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 	return rcpt_accept;
 }
 
-gboolean
+void
 smtp_out_quit(smtp_base *psb)
 {
 	fprintf(psb->out, "QUIT\r\n");
@@ -876,8 +876,6 @@ smtp_out_quit(smtp_base *psb)
 	DEBUG(4) debugf("C: QUIT\n");
 
 	signal(SIGALRM, SIG_DFL);
-
-	return TRUE;
 }
 
 gint
