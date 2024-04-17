@@ -479,12 +479,10 @@ read_conf(void)
 		} else if (strcmp(lval, "max_defer_time")==0) {
 			gint ival = time_interval(rval);
 			if (ival < 0) {
-				logwrite(LOG_WARNING, "invalid time interval "
-						"for 'max_defer_time': %s\n",
-						rval);
-			} else {
-				conf.max_defer_time = ival;
+				logwrite(LOG_ERR, "invalid time interval for 'max_defer_time': %s\n", rval);
+				return FALSE;
 			}
+			conf.max_defer_time = ival;
 		} else if (strcmp(lval, "log_user")==0) {
 			conf.log_user = g_strdup(rval);
 		} else if(strcmp(lval, "max_msg_size")==0) {
