@@ -382,17 +382,13 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 	if (!smtp_out_init(psb, route->instant_helo, &err_msg)) {
 		/* smtp_out_init() failed */
 		smtp_out_quit(psb);
-		if ((psb->error==smtp_fail) || (psb->error==smtp_trylater) ||
-				(psb->error==smtp_syntax)) {
+		foreach (msgout_list, msgout_node) {
+			msg_out *msgout =
+					(msg_out *)(msgout_node->data);
+			smtp_out_mark_rcpts(psb, msgout->rcpt_list);
 
-			foreach(msgout_list, msgout_node) {
-				msg_out *msgout =
-						(msg_out *)(msgout_node->data);
-				smtp_out_mark_rcpts(psb, msgout->rcpt_list);
-
-				if (delivery_failures(msgout->msg, msgout->rcpt_list, err_msg)) {
-					deliver_finish(msgout);
-				}
+			if (delivery_failures(msgout->msg, msgout->rcpt_list, err_msg)) {
+				deliver_finish(msgout);
 			}
 		}
 		g_free(err_msg);
