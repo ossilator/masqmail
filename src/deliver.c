@@ -354,7 +354,6 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 					rcpt_node;
 					rcpt_node = g_list_next(rcpt_node)) {
 				address *rcpt = (address *) (rcpt_node->data);
-				gboolean ret = FALSE;
 
 				addr_unmark_delivered(rcpt);
 				if (route->connect_error_fail) {
@@ -362,10 +361,9 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 				} else {
 					addr_mark_defered(rcpt);
 				}
-				ret = delivery_failures(msgout->msg, msgout->rcpt_list, err_msg);
-				if (ret) {
-					deliver_finish(msgout);
-				}
+			}
+			if (delivery_failures(msgout->msg, msgout->rcpt_list, err_msg)) {
+				deliver_finish(msgout);
 			}
 		}
 		g_free(err_msg);
