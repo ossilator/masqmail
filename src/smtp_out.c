@@ -203,12 +203,9 @@ check_helo_response(smtp_base *psb)
 				psb->max_size = atoi(arg);
 				g_free(arg);
 			}
-		}
-
-		if (strncasecmp(&(ptr[4]), "PIPELINING", 10) == 0)
+		} else if (strncasecmp(&(ptr[4]), "PIPELINING", 10) == 0) {
 			psb->use_pipelining = TRUE;
-
-		if (strncasecmp(&(ptr[4]), "AUTH", 4) == 0) {
+		} else if (strncasecmp(&(ptr[4]), "AUTH", 4) == 0) {
 			if ((ptr[8] == ' ') || (ptr[8] == '=') || (ptr[8] == '\t')) {  /* not sure about '\t' */
 				gchar *arg;
 				psb->use_auth = TRUE;
