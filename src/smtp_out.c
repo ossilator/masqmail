@@ -104,7 +104,7 @@ create_smtpbase(gint sock)
 }
 
 static gboolean
-read_response(smtp_base *psb, int timeout)
+read_response(smtp_base *psb, int timeout, const char *cmd)
 {
 	gint buf_pos = 0;
 	gchar code[5];
@@ -114,13 +114,13 @@ read_response(smtp_base *psb, int timeout)
 		len = read_sockline(psb->in, &(psb->buffer[buf_pos]), SMTP_BUF_LEN - buf_pos, timeout, READSOCKL_CHUG);
 		if (len == -3) {
 			psb->error = smtp_timeout;
-			return FALSE;
+			goto fail;
 		} else if (len == -2) {
 			psb->error = smtp_syntax;
-			return FALSE;
+			goto fail;
 		} else if (len == -1) {
 			psb->error = smtp_eof;
-			return FALSE;
+			goto fail;
 		}
 		for (i = 0; i < 4; i++)
 			code[i] = psb->buffer[buf_pos + i];
@@ -135,16 +135,22 @@ read_response(smtp_base *psb, int timeout)
 	}
 
 	return TRUE;
+
+  fail:
+	// a more informative info message is logged later.
+	DEBUG(5) debugf("read_response() failed after %s\n", cmd);
+	return FALSE;
 }
 
 static gboolean
-check_response(smtp_base *psb, gboolean after_data)
+check_response(smtp_base *psb, gboolean after_data, const char *cmd)
 {
 	char c = psb->buffer[0];
 
 	if (((c == '2') && !after_data) || ((c == '3') && after_data)) {
 		psb->error = smtp_ok;
-		DEBUG(6) debugf("response OK:'%s' after_data = %d\n", psb->buffer, (int) after_data);
+		DEBUG(6) debugf("response to %s OK: '%s' after_data = %d\n",
+		                cmd, psb->buffer, (int) after_data);
 		return TRUE;
 	} else {
 		if (c == '4')
@@ -153,15 +159,16 @@ check_response(smtp_base *psb, gboolean after_data)
 			psb->error = smtp_fail;
 		else
 			psb->error = smtp_syntax;
-		DEBUG(6) debugf("response failure:'%s' after_data = %d\n", psb->buffer, (int) after_data);
+		DEBUG(6) debugf("response to %s bad: '%s' after_data = %d\n",
+		                cmd, psb->buffer, (int) after_data);
 		return FALSE;
 	}
 }
 
 static gboolean
-read_check_response(smtp_base *psb, int timeout, gboolean after_data)
+read_check_response(smtp_base *psb, int timeout, gboolean after_data, const char *cmd)
 {
-	return read_response(psb, timeout) && check_response(psb, after_data);
+	return read_response(psb, timeout, cmd) && check_response(psb, after_data, cmd);
 }
 
 static gchar*
@@ -182,18 +189,18 @@ get_response_arg(gchar *response)
 }
 
 static gboolean
-check_helo_response(smtp_base *psb)
+check_helo_response(smtp_base *psb, const char *cmd)
 {
 	gchar *ptr;
 
-	if (!check_response(psb, FALSE))
+	if (!check_response(psb, FALSE, cmd))
 		return FALSE;
 
 	if (psb->last_code == 220) {
 		logwrite(LOG_NOTICE, "received a 220 greeting after sending EHLO,\n");
 		logwrite(LOG_NOTICE, "please remove `instant_helo' from your route config\n");
 		/* read the next response, cause that's the actual helo response */
-		if (!read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE)) {
+		if (!read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE, cmd)) {
 			return FALSE;
 		}
 	}
@@ -283,10 +290,10 @@ smtp_helo(smtp_base *psb, gchar *helo)
 {
 	smtp_cmd(psb, "EHLO %s", helo);
 
-	if (!read_response(psb, SMTP_CMD_TIMEOUT)) {
+	if (!read_response(psb, SMTP_CMD_TIMEOUT, "EHLO")) {
 		return FALSE;
 	}
-	if (check_helo_response(psb)) {
+	if (check_helo_response(psb, "EHLO")) {
 		DEBUG(4) debugf("uses esmtp\n");
 		return TRUE;
 	}
@@ -301,10 +308,10 @@ smtp_helo(smtp_base *psb, gchar *helo)
 	*/
 	smtp_cmd(psb, "HELO %s", helo);
 
-	if (!read_response(psb, SMTP_CMD_TIMEOUT)) {
+	if (!read_response(psb, SMTP_CMD_TIMEOUT, "HELO")) {
 		return FALSE;
 	}
-	if (check_helo_response(psb)) {
+	if (check_helo_response(psb, "HELO")) {
 		DEBUG(4) debugf("uses smtp\n");
 		return TRUE;
 	}
@@ -498,7 +505,7 @@ smtp_out_rset(smtp_base *psb)
 {
 	smtp_cmd(psb, "RSET");
 
-	if (read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE)) {
+	if (read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE, "RSET")) {
 		return TRUE;
 	}
 
@@ -513,7 +520,7 @@ static gboolean
 smtp_out_auth_cram_md5(smtp_base *psb)
 {
 	smtp_cmd(psb, "AUTH CRAM-MD5");
-	if (!read_check_response(psb, SMTP_CMD_TIMEOUT, TRUE)) {
+	if (!read_check_response(psb, SMTP_CMD_TIMEOUT, TRUE, "AUTH CRAM-MD5")) {
 		return FALSE;
 	}
 
@@ -544,14 +551,14 @@ smtp_out_auth_cram_md5(smtp_base *psb)
 	g_free(chall);
 	g_free(chall64);
 
-	return read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE);
+	return read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE, "AUTH CRAM-MD5 (cont)");
 }
 
 static gboolean
 smtp_out_auth_login(smtp_base *psb)
 {
 	smtp_cmd(psb, "AUTH LOGIN");
-	if (!read_check_response(psb, SMTP_CMD_TIMEOUT, TRUE)) {
+	if (!read_check_response(psb, SMTP_CMD_TIMEOUT, TRUE, "AUTH LOGIN")) {
 		return FALSE;
 	}
 
@@ -573,7 +580,7 @@ smtp_out_auth_login(smtp_base *psb)
 	smtp_cmd(psb, "%s", reply64);
 	g_free(reply64);
 
-	if (!read_check_response(psb, SMTP_CMD_TIMEOUT, TRUE)) {
+	if (!read_check_response(psb, SMTP_CMD_TIMEOUT, TRUE, "AUTH LOGIN (cont 1)")) {
 		return FALSE;
 	}
 	DEBUG(5) {
@@ -589,7 +596,7 @@ smtp_out_auth_login(smtp_base *psb)
 	smtp_cmd(psb, "%s", reply64);
 	g_free(reply64);
 
-	return read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE);
+	return read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE, "AUTH LOGIN (cont 2)");
 }
 
 static gboolean
@@ -624,7 +631,7 @@ smtp_out_init(smtp_base *psb, gboolean instant_helo)
 	DEBUG(1) debugf("smtp_out_init(): instant_helo=%d\n", instant_helo);
 
 	if (!instant_helo) {
-		if (!read_check_response(psb, SMTP_INITIAL_TIMEOUT, FALSE)) {
+		if (!read_check_response(psb, SMTP_INITIAL_TIMEOUT, FALSE, "connect")) {
 			goto fail;
 		}
 	}
@@ -654,16 +661,14 @@ smtp_out_rcptto_resp(smtp_base *psb, message *msg, address *rcpt, int *rcpt_acce
 	// try the others. but if it is a timeout, eof or unexpected
 	// response, it is more serious and we should give up.
 
-	if (!read_response(psb, SMTP_CMD_TIMEOUT)) {
-		DEBUG(5) debugf("read_response failed after RCPT TO\n");
+	if (!read_response(psb, SMTP_CMD_TIMEOUT, "RCPT TO")) {
 		return FALSE;
 	}
-	if (check_response(psb, FALSE)) {
+	if (check_response(psb, FALSE, "RCPT TO")) {
 		(*rcpt_accept)++;
 		addr_mark_delivered(rcpt);
 		return TRUE;
 	}
-	DEBUG(5) debugf("check_response failed after RCPT TO\n");
 	if (psb->error == smtp_trylater) {
 		addr_mark_defered(rcpt);
 	} else if (psb->error == smtp_fail) {
@@ -711,7 +716,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 	// just in case the size calculation is buggy
 	smtp_cmd_mailfrom(psb, return_path, psb->use_size ? size + SMTP_SIZE_ADD : 0);
 	if (!psb->use_pipelining) {
-		if (!read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE)) {
+		if (!read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE, "MAIL FROM")) {
 			goto fail;
 		}
 	}
@@ -739,8 +744,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		// the first pipelined command was MAIL FROM. the last was
 		// DATA, whose response can be handled by the 'normal' code.
 		// all commands in between were RCPT TO:
-		/* response to MAIL FROM: */
-		if (!read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE)) {
+		if (!read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE, "MAIL FROM")) {
 			goto fail;
 		}
 		for (i = 0; i < rcpt_cnt; i++) {
@@ -754,14 +758,13 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		}
 	}
 
-	/* response to the DATA cmd */
-	if (!read_check_response(psb, SMTP_DATA_TIMEOUT, TRUE)) {
+	if (!read_check_response(psb, SMTP_DATA_TIMEOUT, TRUE, "DATA")) {
 		goto fail;
 	}
 	send_header(psb, hdr_list);
 	send_data(psb, msg);
 
-	if (!read_check_response(psb, SMTP_FINAL_TIMEOUT, FALSE)) {
+	if (!read_check_response(psb, SMTP_FINAL_TIMEOUT, FALSE, "DATA (cont)")) {
 		goto fail;
 	}
 
