@@ -246,6 +246,22 @@ check_helo_response(smtp_base *psb)
 	return TRUE;
 }
 
+#ifdef __GNUC__
+# define smtp_cmd(psb, fmt, ...) \
+	do { \
+		DEBUG(4) debugf("C: " fmt "\n", ##__VA_ARGS__); \
+		fprintf(psb->out, fmt "\r\n", ##__VA_ARGS__); \
+		fflush(psb->out); \
+	} while (0)
+#else  // hope for C23
+# define smtp_cmd(psb, fmt, ...) \
+	do { \
+		DEBUG(4) debugf("C: " fmt "\n" __VA_OPT__(,) __VA_ARGS__); \
+		fprintf(psb->out, fmt "\r\n" __VA_OPT__(,) __VA_ARGS__); \
+		fflush(psb->out); \
+	} while (0)
+#endif
+
 /*
 **  We first try EHLO, but if it fails HELO in a second fall back try.
 **  This is what is requested by RFC 2821 (sec 3.2):
@@ -265,9 +281,7 @@ check_helo_response(smtp_base *psb)
 static gboolean
 smtp_helo(smtp_base *psb, gchar *helo)
 {
-	fprintf(psb->out, "EHLO %s\r\n", helo);
-	fflush(psb->out);
-	DEBUG(4) debugf("C: EHLO %s\r\n", helo);
+	smtp_cmd(psb, "EHLO %s", helo);
 
 	if (!read_response(psb, SMTP_CMD_TIMEOUT)) {
 		return FALSE;
@@ -285,10 +299,7 @@ smtp_helo(smtp_base *psb, gchar *helo)
 	**  our guess that server understands EHLO could have been wrong,
 	**  try again with HELO
 	*/
-
-	fprintf(psb->out, "HELO %s\r\n", helo);
-	fflush(psb->out);
-	DEBUG(4) debugf("C: HELO %s\r\n", helo);
+	smtp_cmd(psb, "HELO %s", helo);
 
 	if (!read_response(psb, SMTP_CMD_TIMEOUT)) {
 		return FALSE;
@@ -306,25 +317,16 @@ static void
 smtp_cmd_mailfrom(smtp_base *psb, address *return_path, guint size)
 {
 	if (psb->use_size) {
-		fprintf(psb->out, "MAIL FROM:%s SIZE=%d\r\n", addr_string(return_path), size);
-		fflush(psb->out);
-
-		DEBUG(4) debugf("C: MAIL FROM:%s SIZE=%d\r\n", addr_string(return_path), size);
-
+		smtp_cmd(psb, "MAIL FROM:%s SIZE=%d", addr_string(return_path), size);
 	} else {
-		fprintf(psb->out, "MAIL FROM:%s\r\n", addr_string(return_path));
-		fflush(psb->out);
-
-		DEBUG(4) debugf("C: MAIL FROM:%s\r\n", addr_string(return_path));
+		smtp_cmd(psb, "MAIL FROM:%s", addr_string(return_path));
 	}
 }
 
 static void
 smtp_cmd_rcptto(smtp_base *psb, address *rcpt)
 {
-	fprintf(psb->out, "RCPT TO:%s\r\n", addr_string(rcpt));
-	fflush(psb->out);
-	DEBUG(4) debugf("C: RCPT TO:%s\n", addr_string(rcpt));
+	smtp_cmd(psb, "RCPT TO:%s", addr_string(rcpt));
 }
 
 static void
@@ -402,9 +404,7 @@ send_data(smtp_base *psb, message *msg)
 
 	DEBUG(4) debugf("sent %d lines of data\n", num_lines);
 
-	fprintf(psb->out, ".\r\n");
-	fflush(psb->out);
-	DEBUG(4) debugf("C: .\n");
+	smtp_cmd(psb, ".");
 }
 
 void
@@ -495,9 +495,7 @@ smtp_out_open_child(gchar *cmd)
 gboolean
 smtp_out_rset(smtp_base *psb)
 {
-	fprintf(psb->out, "RSET\r\n");
-	fflush(psb->out);
-	DEBUG(4) debugf("C: RSET\n");
+	smtp_cmd(psb, "RSET");
 
 	if (read_response(psb, SMTP_CMD_TIMEOUT))
 		if (check_response(psb, FALSE))
@@ -515,9 +513,7 @@ smtp_out_auth_cram_md5(smtp_base *psb)
 {
 	gboolean ok = FALSE;
 
-	fprintf(psb->out, "AUTH CRAM-MD5\r\n");
-	fflush(psb->out);
-	DEBUG(4) debugf("C: AUTH CRAM-MD5\n");
+	smtp_cmd(psb, "AUTH CRAM-MD5");
 	if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
 		if ((ok = check_response(psb, TRUE))) {
 			gchar *chall64 = get_response_arg(&(psb->buffer[4]));
@@ -546,9 +542,7 @@ smtp_out_auth_cram_md5(smtp_base *psb)
 			reply64 = g_base64_encode((guchar*) reply, strlen(reply));
 			DEBUG(5) debugf("  encoded reply = %s\n", reply64);
 
-			fprintf(psb->out, "%s\r\n", reply64);
-			fflush(psb->out);
-			DEBUG(6) debugf("C: %s\n", reply64);
+			smtp_cmd(psb, "%s", reply64);
 
 			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
 				ok = check_response(psb, FALSE);
@@ -566,9 +560,7 @@ static gboolean
 smtp_out_auth_login(smtp_base *psb)
 {
 	gboolean ok = FALSE;
-	fprintf(psb->out, "AUTH LOGIN\r\n");
-	fflush(psb->out);
-	DEBUG(4) debugf("C: AUTH LOGIN\r\n");
+	smtp_cmd(psb, "AUTH LOGIN");
 	if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
 		if ((ok = check_response(psb, TRUE))) {
 			gchar *resp64;
@@ -587,9 +579,7 @@ smtp_out_auth_login(smtp_base *psb)
 				g_free(resp);
 			}
 			reply64 = g_base64_encode((guchar*) psb->auth_login, strlen(psb->auth_login));
-			fprintf(psb->out, "%s\r\n", reply64);
-			fflush(psb->out);
-			DEBUG(6) debugf("C: %s\n", reply64);
+			smtp_cmd(psb, "%s", reply64);
 			g_free(reply64);
 			if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
 				if ((ok = check_response(psb, TRUE))) {
@@ -603,9 +593,7 @@ smtp_out_auth_login(smtp_base *psb)
 						g_free(resp);
 					}
 					reply64 = g_base64_encode((guchar*) psb->auth_secret, strlen(psb->auth_secret));
-					fprintf(psb->out, "%s\r\n", reply64);
-					fflush(psb->out);
-					DEBUG(6) debugf("C: %s\n", reply64);
+					smtp_cmd(psb, "%s", reply64);
 					g_free(reply64);
 					if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
 						ok = check_response(psb, FALSE);
@@ -758,10 +746,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		ok = (ok && (psb->use_pipelining || (rcpt_accept > 0)));
 		if (ok) {
 
-			fprintf(psb->out, "DATA\r\n");
-			fflush(psb->out);
-
-			DEBUG(4) debugf("C: DATA\r\n");
+			smtp_cmd(psb, "DATA");
 
 			if (psb->use_pipelining) {
 				/*
@@ -876,10 +861,7 @@ smtp_out_quit(smtp_base *psb)
 		return;
 	}
 
-	fprintf(psb->out, "QUIT\r\n");
-	fflush(psb->out);
-
-	DEBUG(4) debugf("C: QUIT\n");
+	smtp_cmd(psb, "QUIT");
 
 	signal(SIGALRM, SIG_DFL);
 }
