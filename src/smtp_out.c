@@ -658,6 +658,35 @@ smtp_out_init(smtp_base *psb, gboolean instant_helo)
 	return ok;
 }
 
+static gboolean
+smtp_out_rcptto_resp(smtp_base *psb, message *msg, address *rcpt, int *rcpt_accept)
+{
+	// if the server returned an error for one rcpt we may still
+	// try the others. but if it is a timeout, eof or unexpected
+	// response, it is more serious and we should give up.
+
+	if (!read_response(psb, SMTP_CMD_TIMEOUT)) {
+		DEBUG(5) debugf("read_response failed after RCPT TO\n");
+		return FALSE;
+	}
+	if (check_response(psb, FALSE)) {
+		(*rcpt_accept)++;
+		addr_mark_delivered(rcpt);
+		return TRUE;
+	}
+	DEBUG(5) debugf("check_response failed after RCPT TO\n");
+	if (psb->error == smtp_trylater) {
+		addr_mark_defered(rcpt);
+	} else if (psb->error == smtp_fail) {
+		addr_mark_failed(rcpt);
+	} else {
+		return FALSE;
+	}
+	logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s\n",
+	         msg->uid, addr_string(rcpt), psb->remote_host, psb->buffer);
+	return TRUE;
+}
+
 void
 smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		GList *rcpt_list, GList *hdr_list)
@@ -710,29 +739,9 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 			address *rcpt = (address *) (rcpt_node->data);
 			smtp_cmd_rcptto(psb, rcpt);
 			if (!psb->use_pipelining) {
-				if ((ok = read_response(psb, SMTP_CMD_TIMEOUT)))
-					if (check_response(psb, FALSE)) {
-						rcpt_accept++;
-						addr_mark_delivered(rcpt);
-					} else {
-						/* if server returned an error for one recp. we
-						   may still try the others. But if it is a timeout, eof
-						   or unexpected response, it is more serious and we should
-						   give up. */
-						if ((psb->error != smtp_trylater) && (psb->error != smtp_fail)) {
-							ok = FALSE;
-							break;
-						} else {
-							logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s\n",
-							         msg->uid, addr_string(rcpt), psb->remote_host, psb->buffer);
-							if (psb->error == smtp_trylater) {
-								addr_mark_defered(rcpt);
-							} else {
-								addr_mark_failed(rcpt);
-							}
-						}
-				} else
+				if (!(ok = smtp_out_rcptto_resp(psb, msg, rcpt, &rcpt_accept))) {
 					break;
+				}
 			}
 		}
 
@@ -755,42 +764,9 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 				/* response to MAIL FROM: */
 				if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
 					if ((ok = check_response(psb, FALSE))) {
-
-						/*
-						**  response(s) to RCPT TO:
-						**  this is very similar to
-						**  the sequence above for no
-						**  pipeline
-						*/
 						for (i = 0; i < rcpt_cnt; i++) {
-							if ((ok = read_response(psb, SMTP_CMD_TIMEOUT))) {
-								address *rcpt = g_list_nth_data(rcpt_list, i);
-								if (check_response(psb, FALSE)) {
-									rcpt_accept++;
-									addr_mark_delivered(rcpt);
-								} else {
-									/*
-									** if server returned an error 4xx or 5xx for one recp. we
-									**  may still try the others. But if it is a timeout, eof
-									**  or unexpected response, it is more serious and we
-									**  should give up.
-									*/
-									if ((psb->error != smtp_trylater) &&
-										(psb->error != smtp_fail)) {
-										ok = FALSE;
-										break;
-									} else {
-										logwrite(LOG_NOTICE, "%s == %s host=%s failed: %s\n", msg->uid,
-										         addr_string(rcpt), psb->remote_host, psb->buffer);
-										if (psb->error == smtp_trylater) {
-											addr_mark_defered(rcpt);
-										} else {
-											addr_mark_failed(rcpt);
-										}
-									}
-								}
-							} else {
-								DEBUG(5) debugf("check_response failed after RCPT TO\n");
+							address *rcpt = g_list_nth_data(rcpt_list, i);
+							if (!(ok = smtp_out_rcptto_resp(psb, msg, rcpt, &rcpt_accept))) {
 								break;
 							}
 						}
