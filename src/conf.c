@@ -373,6 +373,7 @@ read_conf(void)
 	FILE *in;
 	gchar lval[256], rval[2048];
 	GList *listen_addrs_tmp = NULL;
+	GList *warn_intervals_tmp = NULL;
 
 	conf.do_relay = TRUE;
 	conf.localpartcmp = strcmp;
@@ -475,7 +476,7 @@ read_conf(void)
 		} else if (strcmp(lval, "warnmsg_file")==0) {
 			conf.warnmsg_file = g_strdup(rval);
 		} else if (strcmp(lval, "warn_intervals")==0) {
-			conf.warn_intervals = parse_list(rval, TRUE);
+			warn_intervals_tmp = parse_list(rval, TRUE);
 		} else if (strcmp(lval, "max_defer_time")==0) {
 			gint ival = time_interval(rval);
 			if (ival < 0) {
@@ -511,10 +512,21 @@ read_conf(void)
 	if (!conf.mbox_default) {
 		conf.mbox_default = g_strdup("mbox");
 	}
-	if (!conf.warn_intervals) {
+	if (!warn_intervals_tmp) {
 		static char def_ivals[] = "1h;4h;8h;1d;2d;3d";  // not const!
-		conf.warn_intervals = parse_list(def_ivals, TRUE);
+		warn_intervals_tmp = parse_list(def_ivals, TRUE);
 	}
+	GList *node;
+	foreach (warn_intervals_tmp, node) {
+		gchar *str_ival = node->data;
+		gint ival = time_interval(str_ival);
+		if (ival < 0) {
+			logwrite(LOG_ERR, "invalid time interval for 'warn_intervals': %s\n", str_ival);
+			return FALSE;
+		}
+		conf.warn_intervals = g_list_append(conf.warn_intervals, (gpointer) (gintptr) ival);
+	}
+	destroy_ptr_list(warn_intervals_tmp);
 	if (!conf.local_hosts) {
 		char *shortname = strdup(conf.host_name);
 		char *p = strchr(shortname, '.');

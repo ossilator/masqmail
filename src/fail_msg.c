@@ -136,19 +136,13 @@ warn_msg_is_due(message *msg)
 	GList *node;
 	for (node = g_list_last(conf.warn_intervals); node;
 			node = g_list_previous(node)) {
-		gchar *str_ival = (gchar *) (node->data);
-		gint ival = time_interval(str_ival);
-		if (ival < 0) {
-			logwrite(LOG_WARNING, "invalid time interval: %s\n",
-					str_ival);
-		} else {
-			DEBUG(5) debugf("ival = %d\n", ival);
-			if (pending > ival) {
-				if (warned < ival) {
-					return TRUE;
-				}
-				DEBUG(5) debugf("warned too recently\n");
+		gint ival = (gint) (gintptr) node->data;
+		DEBUG(5) debugf("ival = %d\n", ival);
+		if (pending > ival) {
+			if (warned < ival) {
+				return TRUE;
 			}
+			DEBUG(5) debugf("warned too recently\n");
 		}
 	}
 	return FALSE;
