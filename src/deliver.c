@@ -30,9 +30,12 @@ delivery_failures(message *msg, GList *rcpt_list, gchar *err_msg)
 		address *rcpt = (address *) (rcpt_node->data);
 
 		if (addr_is_defered(rcpt)) {
-			if ((now - msg->received_time) >= conf.max_defer_time){
+			time_t pending = now - msg->received_time;
+			if (pending >= conf.max_defer_time) {
 				addr_mark_failed(rcpt);
 			} else {
+				DEBUG(5) debugf("not failing %s yet; %ld < %d\n",
+				                msg->uid, (long) pending, conf.max_defer_time);
 				defered_list = g_list_prepend(defered_list,
 						rcpt);
 			}
