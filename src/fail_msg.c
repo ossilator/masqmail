@@ -138,10 +138,8 @@ warn_msg_is_due(message *msg)
 	DEBUG(5) debugf("checking if warning is due for %s; pending = %ld; warned = %ld\n",
 	                msg->uid, (long) pending, (long) warned);
 
-	GList *node;
-	for (node = g_list_last(conf.warn_intervals); node;
-			node = g_list_previous(node)) {
-		gint ival = (gint) (gintptr) node->data;
+	foreach (gpointer ival_ptr, conf.warn_intervals) {
+		gint ival = (gint) (gintptr) ival_ptr;
 		DEBUG(5) debugf("ival = %d\n", ival);
 		if (pending > ival) {
 			if (warned < ival) {

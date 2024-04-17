@@ -538,7 +538,7 @@ read_conf(void)
 			logwrite(LOG_ERR, "invalid time interval for 'warn_intervals': %s\n", str_ival);
 			return FALSE;
 		}
-		conf.warn_intervals = g_list_append(conf.warn_intervals, (gpointer) (gintptr) ival);
+		conf.warn_intervals = g_list_prepend(conf.warn_intervals, (gpointer) (gintptr) ival);
 	}
 	destroy_ptr_list(warn_intervals_tmp);
 	if (!conf.local_hosts) {
