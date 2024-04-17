@@ -29,9 +29,6 @@ typedef struct _smtp_base {
 	FILE *in;
 	FILE *out;
 
-	gint sock;
-	gint dup_sock;
-
 	gchar *remote_host;
 	gchar *helo_name;
 

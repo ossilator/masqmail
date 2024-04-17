@@ -27,8 +27,6 @@ destroy_smtpbase(smtp_base *psb)
 	fclose(psb->in);
 	fclose(psb->out);
 
-	close(psb->sock);
-
 	if (psb->helo_name)
 		g_free(psb->helo_name);
 	if (psb->buffer)
@@ -52,7 +50,7 @@ set_heloname(smtp_base *psb, gchar *default_name, gboolean do_correct)
 	struct hostent *host_entry;
 
 	if (do_correct) {
-		getsockname(psb->sock, (struct sockaddr *) (&sname), &len);
+		getsockname(fileno(psb->out), (struct sockaddr *) (&sname), &len);
 		DEBUG(5) debugf("socket: name.sin_addr = %s\n", inet_ntoa(sname.sin_addr));
 		host_entry = gethostbyaddr((const char *) &(sname.sin_addr), sizeof(sname.sin_addr), AF_INET);
 		if (host_entry) {
@@ -98,8 +96,6 @@ create_smtpbase(gint sock)
 	gint dup_sock;
 
 	smtp_base *psb = g_malloc0(sizeof(smtp_base));
-
-	psb->sock = sock;
 
 	psb->buffer = (gchar *) g_malloc(SMTP_BUF_LEN);
 
