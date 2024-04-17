@@ -14,6 +14,7 @@ TESTS = \
 	t201-stdin-with-oi.sh \
 	t210-stdin-t.sh \
 	t300-direct-bounce.sh \
+	t310-warn-bounce.sh \
 	t400-aliases.sh \
 	t420-aliases-partially-delayed.sh \
 	t500-rewriting.sh

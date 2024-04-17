@@ -255,6 +255,7 @@ verify_remote_delivery()
 	eval_delivery $num $count "$box"
 }
 
+WARNING='^Sorry, but your mail could not yet be delivered to all recipients'
 ERROR='^Sorry, but your mail could not be delivered to all recipients'
 
 verify_content()
