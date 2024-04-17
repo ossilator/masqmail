@@ -658,7 +658,7 @@ smtp_out_init(smtp_base *psb, gboolean instant_helo)
 	return ok;
 }
 
-gint
+void
 smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		GList *rcpt_list, GList *hdr_list)
 {
@@ -847,7 +847,6 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		/* log the failure: */
 		smtp_out_log_failure(psb, msg);
 	}
-	return rcpt_accept;
 }
 
 void
