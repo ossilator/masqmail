@@ -97,28 +97,15 @@ create_smtpbase(gint sock)
 {
 	gint dup_sock;
 
-	smtp_base *psb = (smtp_base *) g_malloc(sizeof(smtp_base));
+	smtp_base *psb = g_malloc0(sizeof(smtp_base));
 
 	psb->sock = sock;
-
-	psb->use_size = FALSE;
-	psb->use_pipelining = FALSE;
-	psb->use_auth = FALSE;
-
-	psb->max_size = 0;
-	psb->auth_names = NULL;
 
 	psb->buffer = (gchar *) g_malloc(SMTP_BUF_LEN);
 
 	dup_sock = dup(sock);
 	psb->out = fdopen(sock, "w");
 	psb->in = fdopen(dup_sock, "r");
-
-	psb->error = smtp_ok;
-
-	psb->helo_name = NULL;
-
-	psb->auth_name = psb->auth_login = psb->auth_secret = NULL;
 
 	return psb;
 }
