@@ -285,13 +285,12 @@ add_received_hdr(message *msg)
 {
 	gchar *for_string = NULL;
 	header *hdr = NULL;
-	address *addr;
 
 	DEBUG(3) debugf("adding 'Received:' header\n");
 	if (g_list_length(msg->rcpt_list) == 1) {
 		/* The `for' part only if exactly one rcpt is present */
-		addr = (address *) (g_list_first(msg->rcpt_list)->data);
-		for_string = g_strdup_printf("\n\tfor <%s>", addr->address);
+		recipient *addr = msg->rcpt_list->data;
+		for_string = g_strdup_printf("\n\tfor <%s>", addr->address->address);
 	}
 	if (!msg->received_host) {
 		/* received locally */

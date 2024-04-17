@@ -419,7 +419,7 @@ smtp_out_mark_rcpts(smtp_base *psb, GList *rcpt_list)
 {
 	GList *rcpt_node;
 	for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
-		address *rcpt = (address *) (rcpt_node->data);
+		recipient *rcpt = rcpt_node->data;
 
 		addr_unmark_delivered(rcpt);
 
@@ -671,7 +671,7 @@ smtp_out_init(smtp_base *psb, gboolean instant_helo, gchar **err_msg)
 }
 
 static gboolean
-smtp_out_rcptto_resp(smtp_base *psb, message *msg, address *rcpt, int *rcpt_accept)
+smtp_out_rcptto_resp(smtp_base *psb, message *msg, recipient *rcpt, int *rcpt_accept)
 {
 	// if the server returned an error for one rcpt we may still
 	// try the others. but if it is a timeout, eof or unexpected
@@ -693,7 +693,7 @@ smtp_out_rcptto_resp(smtp_base *psb, message *msg, address *rcpt, int *rcpt_acce
 		return FALSE;
 	}
 	logwrite(LOG_NOTICE, "%s == <%s> host=%s failed: %s\n",
-	         msg->uid, rcpt->address, psb->remote_host, psb->buffer);
+	         msg->uid, rcpt->address->address, psb->remote_host, psb->buffer);
 	return TRUE;
 }
 
@@ -739,8 +739,8 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 
 	GList *rcpt_node;
 	for (rcpt_node = g_list_first(rcpt_list); rcpt_node != NULL; rcpt_node = g_list_next(rcpt_node)) {
-		address *rcpt = (address *) (rcpt_node->data);
-		smtp_cmd_rcptto(psb, rcpt);
+		recipient *rcpt = rcpt_node->data;
+		smtp_cmd_rcptto(psb, rcpt->address);
 		if (!psb->use_pipelining) {
 			if (!smtp_out_rcptto_resp(psb, msg, rcpt, &rcpt_accept)) {
 				goto fail;
@@ -764,7 +764,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 			goto fail;
 		}
 		for (i = 0; i < rcpt_cnt; i++) {
-			address *rcpt = g_list_nth_data(rcpt_list, i);
+			recipient *rcpt = g_list_nth_data(rcpt_list, i);
 			if (!smtp_out_rcptto_resp(psb, msg, rcpt, &rcpt_accept)) {
 				goto fail;
 			}
@@ -785,10 +785,10 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 	}
 
 	for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
-		address *rcpt = (address *) (rcpt_node->data);
+		recipient *rcpt = rcpt_node->data;
 		if (addr_is_delivered(rcpt)) {
 			logwrite(LOG_INFO, "%s => <%s> host=%s\n",
-			         msg->uid, rcpt->address, psb->remote_host);
+			         msg->uid, rcpt->address->address, psb->remote_host);
 		}
 	}
 	return;

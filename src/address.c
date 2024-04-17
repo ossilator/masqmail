@@ -9,14 +9,14 @@
 #include <stdlib.h>
 
 static address*
-create_address_rawest(gchar *local_part, gchar *domain)
+create_address_rawest(size_t sz, gchar *local_part, gchar *domain)
 {
 	if (!domain) {
 		logwrite(LOG_ALERT, "Ooops: null domain in address %s\n", local_part);
 		abort();
 	}
 
-	address *addr = g_malloc0(sizeof(address));
+	address *addr = g_malloc0(sz);
 	addr->local_part = local_part;
 	addr->domain = domain;
 	// pedantically, the local part may need quoting/escaping,
@@ -29,7 +29,16 @@ create_address_rawest(gchar *local_part, gchar *domain)
 address*
 create_address_raw(const gchar *local_part, const gchar *domain)
 {
-	return create_address_rawest(g_strdup(local_part), g_strdup(domain));
+	return create_address_rawest(
+			sizeof(address), g_strdup(local_part), g_strdup(domain));
+}
+
+recipient*
+create_recipient_raw(const gchar *local_part, const gchar *domain)
+{
+	recipient *rcpt = (recipient *) create_address_rawest(
+			sizeof(recipient), g_strdup(local_part), g_strdup(domain));
+	return rcpt;
 }
 
 /*
@@ -41,7 +50,7 @@ create_address_raw(const gchar *local_part, const gchar *domain)
 **  parses both rfc 821 and rfc 822 addresses, depending on requested type.
 */
 static address*
-_create_address(const gchar *string, const gchar **end,
+_create_address(size_t sz, const gchar *string, const gchar **end,
                 addr_type_t addr_type, const gchar *def_domain)
 {
 	const gchar *loc_beg, *loc_end;
@@ -75,7 +84,7 @@ _create_address(const gchar *string, const gchar **end,
 	} else {
 		domain = g_strdup(def_domain);
 	}
-	address *addr = create_address_rawest(local_part, domain);
+	address *addr = create_address_rawest(sz, local_part, domain);
 
 	DEBUG(6) debugf("_create_address(): '%s' @ '%s'\n",
 	                addr->local_part, addr->domain);
@@ -86,26 +95,48 @@ _create_address(const gchar *string, const gchar **end,
 address*
 create_address(const gchar *path, addr_type_t addr_type, const gchar *domain)
 {
-	return _create_address(path, NULL, addr_type, domain);
+	return _create_address(
+			sizeof(address), path, NULL, addr_type, domain);
+}
+
+recipient*
+create_recipient(const gchar *path, const gchar *domain)
+{
+	recipient *rcpt = (recipient *) _create_address(
+			sizeof(recipient), path, NULL, A_RFC821, domain);
+	return rcpt;
 }
 
 /* nothing special about pipes here, but its only called for that purpose */
-address*
-create_address_pipe(const gchar *path)
+recipient*
+create_recipient_pipe(const gchar *path)
 {
-	address *addr = g_malloc0(sizeof(address));
-	addr->address = g_strdup(path);
-	addr->local_part = g_strdup(addr->address);
-	addr->domain = g_strdup("localhost");  /* quick hack */
+	recipient *addr = g_malloc0(sizeof(recipient));
+	addr->address->address = g_strdup(path);
+	addr->address->local_part = g_strdup(path);
+	addr->address->domain = g_strdup("localhost");  /* quick hack */
 	return addr;
+}
+
+static void
+_destroy_address(address *addr)
+{
+	g_free(addr->address);
+	g_free(addr->local_part);
+	g_free(addr->domain);
 }
 
 void
 destroy_address(address *addr)
 {
-	g_free(addr->address);
-	g_free(addr->local_part);
-	g_free(addr->domain);
+	_destroy_address(addr);
+	g_free(addr);
+}
+
+void
+destroy_recipient(recipient *addr)
+{
+	_destroy_address(addr->address);
 	g_free(addr);
 }
 
@@ -119,13 +150,13 @@ addr_isequal(address *addr1, address *addr2,
 
 /* searches in ancestors of addr1 */
 gboolean
-addr_isequal_parent(address *addr1, address *addr2,
+addr_isequal_parent(recipient *addr1, address *addr2,
 		int (*cmpfunc) (const char*, const char*))
 {
-	address *addr;
+	recipient *addr;
 
 	for (addr = addr1; addr; addr = addr->parent) {
-		if (addr_isequal(addr, addr2, cmpfunc)) {
+		if (addr_isequal(addr->address, addr2, cmpfunc)) {
 			return TRUE;
 		}
 	}
@@ -135,7 +166,7 @@ addr_isequal_parent(address *addr1, address *addr2,
 /* careful, this is recursive */
 /* returns TRUE if ALL children have been delivered */
 gboolean
-addr_is_delivered_children(address *addr)
+addr_is_delivered_children(recipient *addr)
 {
 	GList *addr_node;
 
@@ -143,7 +174,7 @@ addr_is_delivered_children(address *addr)
 		return addr_is_delivered(addr);
 	}
 	foreach(addr->children, addr_node) {
-		address *child = (address *) (addr_node->data);
+		recipient *child = addr_node->data;
 		if (!addr_is_delivered_children(child)) {
 			return FALSE;
 		}
@@ -154,7 +185,7 @@ addr_is_delivered_children(address *addr)
 /* careful, this is recursive */
 /* returns TRUE if ALL children have been either delivered or have failed */
 gboolean
-addr_is_finished_children(address *addr)
+addr_is_finished_children(recipient *addr)
 {
 	GList *addr_node;
 
@@ -162,7 +193,7 @@ addr_is_finished_children(address *addr)
 		return (addr_is_failed(addr) || addr_is_delivered(addr));
 	}
 	foreach(addr->children, addr_node) {
-		address *child = (address *) (addr_node->data);
+		recipient *child = addr_node->data;
 		if (!addr_is_finished_children(child)) {
 			return FALSE;
 		}
@@ -171,8 +202,8 @@ addr_is_finished_children(address *addr)
 }
 
 /* find original address */
-address*
-addr_find_ancestor(address *addr)
+recipient*
+addr_find_ancestor(recipient *addr)
 {
 	while (addr->parent) {
 		addr = addr->parent;
@@ -191,13 +222,14 @@ addr_list_append_rfc822(GList *addr_list, const gchar *string, const gchar *doma
 		g_print("string: %s\n", p);
 #endif
 
-		address *addr = _create_address(p, &end, A_RFC822, domain);
+		recipient *addr = (recipient *) _create_address(
+				sizeof(recipient), p, &end, A_RFC822, domain);
 		if (!addr) {
 			break;
 		}
 
 #ifdef PARSE_TEST
-		g_print("addr: %s", addr->address);
+		g_print("addr: %s", addr->address->address);
 #endif
 
 		addr_list = g_list_append(addr_list, addr);

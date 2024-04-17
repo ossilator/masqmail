@@ -161,12 +161,12 @@ queue_list()
 		g_free(ident_str);
 
 		foreach(msg->rcpt_list, rcpt_node) {
-			address *rcpt = (address *) (rcpt_node->data);
+			recipient *rcpt = rcpt_node->data;
 
 			printf("              %s <%s>\n",
 			       addr_is_delivered(rcpt)
 			          ? "=>" : (addr_is_failed(rcpt)
-			                       ? "!=" : "=="), rcpt->address);
+			                       ? "!=" : "=="), rcpt->address->address);
 		}
 		destroy_message(msg);
 	}

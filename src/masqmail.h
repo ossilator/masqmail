@@ -24,19 +24,23 @@ typedef struct _interface {
 	gint port;
 } interface;
 
+typedef struct {
+	gchar *address;     // full addr-spec: meillo@marmaro.de
+	gchar *local_part;  // in this example: meillo
+	gchar *domain;      // in this example: marmaro.de
+} address;
+
 #define ADDR_FLAG_DELIVERED 0x01
 #define ADDR_FLAG_DEFERED 0x02
 #define ADDR_FLAG_FAILED 0x04
 #define ADDR_FLAG_LAST_ROUTE 0x40
 
-typedef struct _address {
-	gchar *address;  /* full addr-spec: `meillo@marmaro.de' */
-	gchar *local_part;  /* in this example: `meillo' */
-	gchar *domain;  /* in this example: `marmaro.de' */
-	gint flags;
+typedef struct _recipient {
+	address address[1];  // must be first member
+	struct _recipient *parent;
 	GList *children;
-	struct _address *parent;
-} address;
+	gint flags;
+} recipient;
 
 #define addr_mark_delivered(addr) { addr->flags |= ADDR_FLAG_DELIVERED; }
 #define addr_unmark_delivered(addr) { addr->flags &= ~ADDR_FLAG_DELIVERED; }
@@ -324,15 +328,19 @@ void destroy_ptr_list(GList *list);
 typedef enum { A_RFC821, A_RFC822 } addr_type_t;
 address *create_address(const gchar *path, addr_type_t addr_type, const gchar *domain);
 address *create_address_raw(const gchar *local_part, const gchar *domain);
-address *create_address_pipe(const gchar *path);
 void destroy_address(address *addr);
 #define copy_address(addr) create_address_raw(addr->local_part, addr->domain)
-GList *addr_list_append_rfc822(GList *addr_list, const gchar *string, const gchar *domain);
 gboolean addr_isequal(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
-gboolean addr_isequal_parent(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
-address *addr_find_ancestor(address *addr);
-gboolean addr_is_delivered_children(address *addr);
-gboolean addr_is_finished_children(address *addr);
+
+recipient *create_recipient(const gchar *path, const gchar *domain);
+recipient *create_recipient_raw(const gchar *local_part, const gchar *domain);
+recipient *create_recipient_pipe(const gchar *path);
+void destroy_recipient(recipient *addr);
+GList *addr_list_append_rfc822(GList *addr_list, const gchar *string, const gchar *domain);
+gboolean addr_isequal_parent(recipient *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
+recipient *addr_find_ancestor(recipient *addr);
+gboolean addr_is_delivered_children(recipient *addr);
+gboolean addr_is_finished_children(recipient *addr);
 
 /* accept.c */
 accept_error accept_message(FILE *in, message *msg, guint flags);
@@ -380,7 +388,7 @@ int make_server_socket(interface *iface);
 
 /* local.c */
 gboolean append_file(message *msg, GList *hdr_list, gchar *user);
-gboolean pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags);
+gboolean pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags);
 
 /* log.c */
 gchar *sysexit_str(int err);

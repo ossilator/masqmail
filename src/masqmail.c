@@ -195,7 +195,7 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 	msg->received_prot = PROT_LOCAL;
 
 	for (i = 0; i < addr_cnt; i++) {
-		address *addr = create_address(addresses[i], A_RFC821, conf.host_name);
+		recipient *addr = create_recipient(addresses[i], conf.host_name);
 		if (!addr) {
 			fprintf(stderr, "invalid recipient address '%s': %s\n",
 			        addresses[i], parse_error);

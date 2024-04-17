@@ -27,7 +27,7 @@ delivery_failures(message *msg, GList *rcpt_list, gchar *err_msg)
 	GList *failed_list = NULL, *defered_list = NULL, *rcpt_node;
 
 	foreach(rcpt_list, rcpt_node) {
-		address *rcpt = (address *) (rcpt_node->data);
+		recipient *rcpt = rcpt_node->data;
 
 		if (addr_is_defered(rcpt)) {
 			time_t pending = now - msg->received_time;
@@ -62,17 +62,18 @@ _g_list_strcasecmp(gconstpointer a, gconstpointer b)
 }
 
 static gboolean
-deliver_local_mbox(message *msg, GList *hdr_list, address *rcpt,
-		address *env_addr)
+deliver_local_mbox(message *msg, GList *hdr_list, recipient *rcpt,
+                   recipient *env_addr)
 {
 	DEBUG(1) debugf("attempting to deliver %s with mbox\n", msg->uid);
-	if (append_file(msg, hdr_list, rcpt->local_part)) {
+	if (append_file(msg, hdr_list, rcpt->address->local_part)) {
 		if (env_addr != rcpt) {
 			logwrite(LOG_INFO, "%s => %s <%s> with mbox\n",
-			         msg->uid, rcpt->address, env_addr->address);
+			         msg->uid, rcpt->address->address,
+			         env_addr->address->address);
 		} else {
 			logwrite(LOG_INFO, "%s => <%s> with mbox\n",
-			         msg->uid, rcpt->address);
+			         msg->uid, rcpt->address->address);
 		}
 		addr_mark_delivered(rcpt);
 		return TRUE;
@@ -88,8 +89,8 @@ deliver_local_mbox(message *msg, GList *hdr_list, address *rcpt,
 }
 
 static gboolean
-deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt,
-		address *env_addr)
+deliver_local_pipe(message *msg, GList *hdr_list, recipient *rcpt,
+                   recipient *env_addr)
 {
 	guint flags = 0;
 
@@ -97,9 +98,9 @@ deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt,
 
 	flags |= (conf.pipe_fromline) ? MSGSTR_FROMLINE : 0;
 	flags |= (conf.pipe_fromhack) ? MSGSTR_FROMHACK : 0;
-	if (pipe_out(msg, hdr_list, rcpt, &(rcpt->local_part[1]), flags)) {
+	if (pipe_out(msg, hdr_list, rcpt, &(rcpt->address->local_part[1]), flags)) {
 		logwrite(LOG_INFO, "%s => %s <%s> with pipe\n",
-		         msg->uid, rcpt->local_part, env_addr->address);
+		         msg->uid, rcpt->address->local_part, env_addr->address->address);
 		addr_mark_delivered(rcpt);
 		return TRUE;
 	}
@@ -114,10 +115,11 @@ deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt,
 }
 
 static gboolean
-deliver_local_mda(message *msg, GList *hdr_list, address *rcpt)
+deliver_local_mda(message *msg, GList *hdr_list, recipient *rcpt)
 {
 	gboolean ok = FALSE;
-	GList *var_table = var_table_rcpt(var_table_msg(NULL, msg), rcpt);
+	GList *var_table = var_table_rcpt(var_table_msg(NULL, msg),
+	                                  rcpt->address);
 	guint flags = 0;
 	gchar cmd[256];
 
@@ -132,7 +134,7 @@ deliver_local_mda(message *msg, GList *hdr_list, address *rcpt)
 	flags |= (conf.mda_fromhack) ? MSGSTR_FROMHACK : 0;
 	if (pipe_out(msg, hdr_list, rcpt, cmd, flags)) {
 		logwrite(LOG_INFO, "%s => %s with mda (cmd = '%s')\n",
-		         msg->uid, rcpt->address, cmd);
+		         msg->uid, rcpt->address->address, cmd);
 		addr_mark_delivered(rcpt);
 		ok = TRUE;
 	} else if (errno != EAGAIN) {
@@ -167,8 +169,8 @@ deliver_local(msg_out *msgout)
 	for (rcpt_node = g_list_first(rcpt_list); rcpt_node;
 			rcpt_node = g_list_next(rcpt_node)) {
 		GList *hdr_list;
-		address *rcpt = (address *) (rcpt_node->data);
-		address *env_addr = addr_find_ancestor(rcpt);
+		recipient *rcpt = rcpt_node->data;
+		recipient *env_addr = addr_find_ancestor(rcpt);
 		address *ret_path = msg->return_path;
 		header *retpath_hdr, *envto_hdr;
 
@@ -179,14 +181,14 @@ deliver_local(msg_out *msgout)
 		*/
 		hdr_list = g_list_copy(msg->hdr_list);
 		retpath_hdr = create_header(HEAD_ENVELOPE_TO,
-				"Envelope-to: <%s>\n", env_addr->address);
+				"Envelope-to: <%s>\n", env_addr->address->address);
 		envto_hdr = create_header(HEAD_RETURN_PATH,
 				"Return-path: <%s>\n", ret_path->address);
 
 		hdr_list = g_list_prepend(hdr_list, envto_hdr);
 		hdr_list = g_list_prepend(hdr_list, retpath_hdr);
 
-		if (*rcpt->local_part == '|') {
+		if (rcpt->address->local_part[0] == '|') {
 			/*
 			**  probably for expanded aliases, but why not done
 			**  like with the mda? //meillo 2010-12-06
@@ -198,7 +200,7 @@ deliver_local(msg_out *msgout)
 		} else {
 			/* figure out which mailbox type should be used
 			** for this user */
-			gchar *user = rcpt->local_part;
+			gchar *user = rcpt->address->local_part;
 			gchar *mbox_type = conf.mbox_default;
 
 			if (g_list_find_custom(conf.mbox_users, user,
@@ -269,13 +271,13 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 
 		ok = FALSE;
 		foreach(rcpt_list, rcpt_node) {
-			address *rcpt = (address *) (rcpt_node->data);
+			recipient *rcpt = rcpt_node->data;
 			gchar cmd[256];
-			GList *var_table = var_table_rcpt(var_table_msg(NULL,
-					msg), rcpt);
+			GList *var_table = var_table_rcpt(var_table_msg(NULL, msg),
+			                                  rcpt->address);
 
 			DEBUG(1) debugf("attempting to deliver %s to %s "
-			                "with pipe\n", msg->uid, rcpt->address);
+			                "with pipe\n", msg->uid, rcpt->address->address);
 
 			if (!expand(var_table, route->pipe, cmd, 256)) {
 				logwrite(LOG_ERR, "could not expand string `%s'\n", route->pipe);
@@ -285,7 +287,7 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 			if (pipe_out(msg, msg->hdr_list, rcpt, cmd, (route->pipe_fromline ? MSGSTR_FROMLINE : 0)
 			    | (route->pipe_fromhack ? MSGSTR_FROMHACK : 0))) {
 				logwrite(LOG_INFO, "%s => %s with pipe (cmd = '%s')\n",
-				         msg->uid, rcpt->address, cmd);
+				         msg->uid, rcpt->address->address, cmd);
 				addr_mark_delivered(rcpt);
 				ok = TRUE;
 			} else {
@@ -351,7 +353,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 			for (rcpt_node = g_list_first(msgout->rcpt_list);
 					rcpt_node;
 					rcpt_node = g_list_next(rcpt_node)) {
-				address *rcpt = (address *) (rcpt_node->data);
+				recipient *rcpt = rcpt_node->data;
 
 				addr_unmark_delivered(rcpt);
 				if (route->connect_error_fail) {
@@ -522,7 +524,7 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 		**  previous route may have delivered to it
 		*/
 		foreach(msgout_cloned->rcpt_list, rcpt_node) {
-			address *rcpt = (address *) (rcpt_node->data);
+			recipient *rcpt = rcpt_node->data;
 			/*
 			**  failed addresses already have been bounced;
 			**  there should be a better way to handle those.
@@ -585,7 +587,7 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 		if (route->last_route) {
 			GList *rcpt_node;
 			foreach(msgout_cloned->rcpt_list, rcpt_node) {
-				address *rcpt = (address *) (rcpt_node->data);
+				recipient *rcpt = rcpt_node->data;
 				rcpt->flags |= ADDR_FLAG_LAST_ROUTE;
 			}
 		}
@@ -612,7 +614,7 @@ update_non_rcpt_list(msg_out *msgout)
 	message *msg = msgout->msg;
 
 	foreach(msgout->rcpt_list, rcpt_node) {
-		address *rcpt = (address *) (rcpt_node->data);
+		recipient *rcpt = rcpt_node->data;
 		if (addr_is_delivered(rcpt) || addr_is_failed(rcpt)) {
 			msg->non_rcpt_list = g_list_append(msg->non_rcpt_list,
 					rcpt);
@@ -638,11 +640,11 @@ deliver_finish(msg_out *msgout)
 	update_non_rcpt_list(msgout);
 
 	/*
-	**  we NEVER made copies of the addresses, flags affecting addresses
-	**  were always set on the original address structs
+	**  we NEVER made copies of the recipients, flags affecting recipients
+	**  were always set on the original recipient structs
 	*/
 	foreach(msg->rcpt_list, rcpt_node) {
-		address *rcpt = (address *) (rcpt_node->data);
+		recipient *rcpt = rcpt_node->data;
 		if (!addr_is_finished_children(rcpt)) {
 			finished = FALSE;
 		} else {
@@ -779,8 +781,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 
 		rcpt_list = g_list_copy(msgout->msg->rcpt_list);
 		if (conf.log_user) {
-			address *addr = create_address(conf.log_user,
-					A_RFC821, conf.host_name);
+			recipient *addr = create_recipient(conf.log_user, conf.host_name);
 			if (addr) {
 				rcpt_list = g_list_prepend(rcpt_list, addr);
 			} else {

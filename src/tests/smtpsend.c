@@ -118,7 +118,7 @@ main(int argc, char *argv[])
 
 		while (optind < argc) {
 			char *addr_str = argv[optind++];
-			address *addr = create_address(addr_str, A_RFC821, conf.host_name);
+			recipient *addr = create_recipient(addr_str, conf.host_name);
 			if (!addr) {
 				fprintf(stderr, "invalid recipient address '%s': %s\n",
 				        addr_str, parse_error);

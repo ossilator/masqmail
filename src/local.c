@@ -165,7 +165,7 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 }
 
 gboolean
-pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
+pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags)
 {
 	gchar *envp[40];
 	FILE *out;
@@ -174,7 +174,7 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 	pid_t pid;
 	void (*old_signal) (int);
 	int status;
-	address *ancestor = addr_find_ancestor(rcpt);
+	recipient *ancestor = addr_find_ancestor(rcpt);
 
 	/* set environment */
 	n = 0;
@@ -188,12 +188,10 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 	envp[n++] = g_strdup_printf("RECEIVED_HOST=%s",
 			msg->received_host ? msg->received_host : "");
 
-	envp[n++] = g_strdup_printf("DOMAIN=%s",
-			ancestor->domain);
-
-	envp[n++] = g_strdup_printf("LOCAL_PART=%s", ancestor->local_part);
-	envp[n++] = g_strdup_printf("USER=%s", ancestor->local_part);
-	envp[n++] = g_strdup_printf("LOGNAME=%s", ancestor->local_part);
+	envp[n++] = g_strdup_printf("DOMAIN=%s", ancestor->address->domain);
+	envp[n++] = g_strdup_printf("LOCAL_PART=%s", ancestor->address->local_part);
+	envp[n++] = g_strdup_printf("USER=%s", ancestor->address->local_part);
+	envp[n++] = g_strdup_printf("LOGNAME=%s", ancestor->address->local_part);
 
 	envp[n++] = g_strdup_printf("MESSAGE_ID=%s", msg->uid);
 	envp[n++] = g_strdup_printf("QUALIFY_DOMAIN=%s", conf.host_name);

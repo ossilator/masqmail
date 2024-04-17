@@ -228,7 +228,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 		case SMTP_RCPT_TO:
 			{
 				char buf[MAX_ADDRESS];
-				address *addr;
+				recipient *addr;
 	
 				if (!psc->helo_seen) {
 					smtp_printf(out, "503 need HELO or EHLO.\r\n");
@@ -243,30 +243,34 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 					break;
 				}
 	
-				addr = create_address(buf, A_RFC821, remote_host ? NULL : conf.host_name);
+				addr = create_recipient(buf, remote_host ? NULL : conf.host_name);
 				if (!addr) {
 					smtp_printf(out, "501 %s: %s\r\n", buf, parse_error);
 					break;
 				}
-				if (!addr->local_part[0]) {
+				if (!addr->address->local_part[0]) {
 					smtp_printf(out, "501 empty recipient address\r\n");
-					destroy_address(addr);
+					destroy_recipient(addr);
 					break;
 				}
-				if (!addr->domain[0]) {
+				if (!addr->address->domain[0]) {
 					/* TODO: ``postmaster'' may be unqualified */
 					smtp_printf(out, "501 recipient address must be qualified.\r\n");
-					destroy_address(addr);
+					destroy_recipient(addr);
 					break;
 				}
-				if (!(conf.do_relay || addr_is_local(msg->return_path) || addr_is_local(addr))) {
-					smtp_printf(out, "550 relaying to <%s> denied.\r\n", addr->address);
-					destroy_address(addr);
+				if (!(conf.do_relay ||
+				      addr_is_local(msg->return_path) ||
+				      addr_is_local(addr->address))) {
+					smtp_printf(out, "550 relaying to <%s> denied.\r\n",
+					            addr->address->address);
+					destroy_recipient(addr);
 					break;
 				}
 				psc->rcpt_seen = TRUE;
 				msg->rcpt_list = g_list_append(msg->rcpt_list, addr);
-				smtp_printf(out, "250 OK %s is our friend.\r\n", addr->address);
+				smtp_printf(out, "250 OK %s is our friend.\r\n",
+				            addr->address->address);
 			}
 			break;
 
