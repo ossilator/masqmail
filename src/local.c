@@ -58,15 +58,23 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 	if (!hdr_list)
 		hdr_list = msg->hdr_list;
 
-	if (!(pw = getpwnam(user))) {
-		logwrite(LOG_ERR, "could not find password entry for user %s\n", user);
-		errno = ENOENT;  /* getpwnam does not set errno correctly */
-		return FALSE;
-	}
-
 	if (!conf.run_as_user) {
+		if (!(pw = getpwnam(user))) {
+			logwrite(LOG_ERR, "could not find password entry for user %s\n", user);
+			errno = ENOENT;  /* getpwnam does not set errno correctly */
+			return FALSE;
+		}
+
 		if (seteuid(pw->pw_uid) != 0) {
 			logerrno(LOG_ERR, "could not set uid %u for local delivery", pw->pw_uid);
+			return FALSE;
+		}
+	} else {
+		// We allow arbitrary mailboxes, but we still need to
+		// prevent escape from the designated directory.
+		if (strchr(user, '/')) {
+			logwrite(LOG_ERR, "invalid user name '%s'\n", user);
+			errno = EINVAL;
 			return FALSE;
 		}
 	}
