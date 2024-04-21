@@ -12,7 +12,7 @@
 #include <sysexits.h>
 #include <netdb.h>
 
-static gboolean deliver_finish(msg_out *msgout);
+static void deliver_finish(msg_out *msgout);
 
 /*
 **  collect failed/defered rcpts for failure/warning messages
@@ -673,7 +673,7 @@ update_non_rcpt_list(msg_out *msgout)
 **
 **  returns TRUE if all went well.
 */
-static gboolean
+static void
 deliver_finish(msg_out *msgout)
 {
 	GList *rcpt_node;
@@ -708,18 +708,18 @@ deliver_finish(msg_out *msgout)
 	if (finished) {
 		spool_delete_all(msg);
 		logwrite(LOG_INFO, "%s completed.\n", msg->uid);
-		return TRUE;
+		return;
 	}
 
 	/* one not delivered address was found */
 	if (!spool_write(msg, FALSE)) {
 		logwrite(LOG_ERR, "could not write back spool header "
 				"for %s\n", msg->uid);
-		return FALSE;
+		return;
 	}
 
 	DEBUG(2) debugf("spool header for %s written back.\n", msg->uid);
-	return TRUE;
+	return;
 }
 
 static int
