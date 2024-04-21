@@ -92,6 +92,7 @@ typedef struct _masqmail_conf {
 	gboolean run_as_user;
 
 	const gchar *exe_file;
+	const gchar *conf_file;
 
 	gchar *mail_dir;
 	gchar *lock_dir;
@@ -289,7 +290,7 @@ int child(const char *command);
 
 /* conf.c */
 void init_conf(void);
-gboolean read_conf(gchar *filename);
+gboolean read_conf(void);
 GList *read_route_list(GList *rf_list);
 void destroy_route(connect_route *r);
 void destroy_route_list(GList *list);

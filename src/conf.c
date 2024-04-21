@@ -370,7 +370,7 @@ read_statement(FILE *in, gchar *lval, gint lsize, gchar *rval, gint rsize)
 }
 
 gboolean
-read_conf(gchar *filename)
+read_conf(void)
 {
 	FILE *in;
 	gchar lval[256], rval[2048];
@@ -386,8 +386,8 @@ read_conf(gchar *filename)
 	conf.spool_dir = SPOOL_DIR;
 	conf.mail_dir = "/var/mail";
 
-	if (!(in = fopen(filename, "r"))) {
-		logerrno(LOG_ERR, "could not open config file %s", filename);
+	if (!(in = fopen(conf.conf_file, "r"))) {
+		logerrno(LOG_ERR, "could not open config file %s", conf.conf_file);
 		return FALSE;
 	}
 

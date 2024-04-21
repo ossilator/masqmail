@@ -452,9 +452,14 @@ main(int argc, char *argv[])
 			get_optarg(argv, &arg, opt+1);
 
 		} else if (strncmp(opt, "C", 1) == 0) {
-			conf_file = get_optarg(argv, &arg, opt+1);
-			if (!conf_file) {
+			const char *cfg = get_optarg(argv, &arg, opt+1);
+			if (!cfg) {
 				fprintf(stderr, "-C requires filename arg.\n");
+				exit(1);
+			}
+			conf_file = realpath(cfg, NULL);
+			if (!conf_file) {
+				fprintf(stderr, "specified config file '%s' is invalid.\n", cfg);
 				exit(1);
 			}
 
@@ -588,6 +593,8 @@ main(int argc, char *argv[])
 	exe_file[exe_len] = '\0';
 	conf.exe_file = exe_file;
 
+	conf.conf_file = conf_file;
+
 	/*
 	**  if we are not privileged, and the config file was changed we
 	**  implicetely set the the run_as_user flag and give up all
@@ -610,7 +617,7 @@ main(int argc, char *argv[])
 	}
 
 	conf.debug_level = debug_level;  /* for debuggin during read_conf() */
-	if (!read_conf(conf_file)) {
+	if (!read_conf()) {
 		logwrite(LOG_ERR, "SHUTTING DOWN due to problems reading "
 				"config\n");
 		exit(5);
