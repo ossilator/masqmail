@@ -327,8 +327,8 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 				if (pid < 0) {
 					logerrno(LOG_ERR, "could not fork for delivery");
 				} else if (pid == 0) {
-					/* FIXME: most likely inverted exit code */
-					_exit(deliver(msg));
+					deliver(msg);
+					exit(0);
 				}
 			}
 			psc->rcpt_seen = psc->from_seen = FALSE;

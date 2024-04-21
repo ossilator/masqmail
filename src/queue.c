@@ -74,40 +74,32 @@ read_queue(void)
 	return msg_list;
 }
 
-gboolean
+void
 queue_run()
 {
 	GList *msg_list;
-	gboolean ok = TRUE;
 
 	logwrite(LOG_INFO, "Starting queue run.\n");
 	msg_list = read_queue();
 	if (msg_list) {
-		ok = deliver_msg_list(msg_list, DLVR_ALL);
-		DEBUG(5) debugf("  deliver_msg_list() returned: %d\n", ok);
+		deliver_msg_list(msg_list, DLVR_ALL);
 		destroy_msg_list(msg_list);
 	}
 	logwrite(LOG_INFO, "Finished queue run.\n");
-
-	return ok;
 }
 
-gboolean
+void
 queue_run_online()
 {
 	GList *msg_list;
-	gboolean ok = TRUE;
 
 	logwrite(LOG_INFO, "Starting online queue run.\n");
 	msg_list = read_queue();
 	if (msg_list) {
-		ok = deliver_msg_list(msg_list, DLVR_ONLINE);
-		DEBUG(5) debugf("  deliver_msg_list() returned: %d\n", ok);
+		deliver_msg_list(msg_list, DLVR_ONLINE);
 		destroy_msg_list(msg_list);
 	}
 	logwrite(LOG_INFO, "Finished online queue run.\n");
-
-	return ok;
 }
 
 static gchar*

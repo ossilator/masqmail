@@ -253,18 +253,8 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 		logerrno(LOG_ERR, "could not fork for delivery");
 	} else if (pid == 0) {
 		null_stdio();
-		if (deliver(msg)) {
-			exit(0);
-		} else {
-			/*
-			**  TODO: Should we really fail here? Because the
-			**  mail is queued already. If we fail the client
-			**  might submit it again.  If at-once-delivery
-			**  is seen as an additional best-effort service,
-			**  then we should still exit successful here.
-			*/
-			exit(1);
-		}
+		deliver(msg);
+		exit(0);
 	}
 }
 
@@ -331,21 +321,18 @@ manipulate_queue(char *cmd, char *id[])
 }
 
 /* -qo, -q (without argument), or called as runq */
-static int
+static void
 run_queue(gboolean do_runq_online, char *route_name)
 {
-	int ret;
-
 	/* queue runs */
 	verify_privileged_user("queue run");
 
 	if (!do_runq_online) {
-		ret = queue_run();
+		queue_run();
 	} else {
 		conf.online_query = g_strdup_printf("/bin/echo %s", route_name);
-		ret = queue_run_online();
+		queue_run_online();
 	}
-	return ret;
 }
 
 /* -bV or default mode if neither addr arg nor -t */
@@ -705,7 +692,7 @@ main(int argc, char *argv[])
 		break;
 
 	case MODE_RUNQUEUE:
-		exit(run_queue(do_runq_online, route_name) ? 0 : 1);
+		run_queue(do_runq_online, route_name);
 		break;
 
 	case MODE_SMTP:

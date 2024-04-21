@@ -154,7 +154,7 @@ deliver_local_mda(message *msg, GList *hdr_list, address *rcpt)
 	return ok;
 }
 
-static gboolean
+static void
 deliver_local(msg_out *msgout)
 {
 	message *msg = msgout->msg;
@@ -168,7 +168,7 @@ deliver_local(msg_out *msgout)
 	if (flag && !spool_read_data(msg)) {
 		logwrite(LOG_ERR, "could not open data spool file for %s\n",
 				msg->uid);
-		return FALSE;
+		return;
 	}
 
 	for (rcpt_node = g_list_first(rcpt_list); rcpt_node;
@@ -250,8 +250,6 @@ deliver_local(msg_out *msgout)
 	if (ok || ok_fail) {
 		deliver_finish(msgout);
 	}
-
-	return ok;
 }
 
 static gboolean
@@ -499,10 +497,9 @@ deliver_msglist_host(connect_route *route, GList *msgout_list, gchar *host,
 /*
 ** delivers messages in msgout_list using route
 */
-static gboolean
+static void
 deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 {
-	gboolean ok = FALSE;
 	GList *mo_ph_list;
 	GList *mo_ph_node;
 
@@ -511,8 +508,8 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 
 	if (route->mail_host) {
 		/* easy: deliver everything to a smart host for relay */
-		return deliver_msglist_host(route, msgout_list, NULL,
-				route->resolve_list);
+		deliver_msglist_host(route, msgout_list, NULL, route->resolve_list);
+		return;
 	}
 
 	/* this is not easy... */
@@ -520,7 +517,7 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 	mo_ph_list = route_msgout_list(msgout_list);
 	/* okay, now we have ordered our messages by the hosts. */
 	if (!mo_ph_list) {
-		return FALSE;
+		return;
 	}
 
 	/*
@@ -531,13 +528,9 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 	*/
 	foreach(mo_ph_list, mo_ph_node) {
 		msgout_perhost *mo_ph = (msgout_perhost *) (mo_ph_node->data);
-		if (deliver_msglist_host(route, mo_ph->msgout_list,
-				mo_ph->host, route->resolve_list)) {
-			ok = TRUE;
-		}
+		deliver_msglist_host(route, mo_ph->msgout_list, mo_ph->host, route->resolve_list);
 	}
 	g_list_free_full(mo_ph_list, (GDestroyNotify) destroy_msgout_perhost);
-	return ok;
 }
 
 /*
@@ -545,12 +538,11 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 ** delivers messages in msg_list using route by calling
 ** deliver_route_msgout_list()
 */
-static gboolean
+static void
 deliver_route_msg_list(connect_route *route, GList *msgout_list)
 {
 	GList *msgout_list_deliver = NULL;
 	GList *msgout_node;
-	gboolean ok = TRUE;
 
 	DEBUG(6) debugf("deliver_route_msg_list()\n");
 
@@ -638,12 +630,9 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 	}
 
 	if (msgout_list_deliver) {
-		if (deliver_route_msgout_list(route, msgout_list_deliver)) {
-			ok = TRUE;
-		}
+		deliver_route_msgout_list(route, msgout_list_deliver);
 		destroy_msg_out_list(msgout_list_deliver);
 	}
-	return ok;
 }
 
 /*
@@ -722,17 +711,16 @@ deliver_finish(msg_out *msgout)
 	return;
 }
 
-static int
+static void
 deliver_remote(GList *remote_msgout_list)
 {
-	int ok = TRUE;
 	GList *route_list = NULL;
 	GList *route_node;
 	GList *rf_list = NULL;
 	gchar *connect_name = NULL;
 
 	if (!remote_msgout_list) {
-		return FALSE;
+		return;
 	}
 
 	/* perma routes */
@@ -743,10 +731,7 @@ deliver_remote(GList *remote_msgout_list)
 		foreach(route_list, route_node) {
 			connect_route *route =
 					(connect_route *) (route_node->data);
-			if (!deliver_route_msg_list(route,
-					remote_msgout_list)) {
-				ok = FALSE;
-			}
+			deliver_route_msg_list(route, remote_msgout_list);
 		}
 		destroy_route_list(route_list);
 	}
@@ -755,7 +740,7 @@ deliver_remote(GList *remote_msgout_list)
 	connect_name = online_query();
 	if (!connect_name) {
 		DEBUG(5) debugf("online query returned false\n");
-		return FALSE;
+		return;
 	}
 
 	/* we are online! */
@@ -767,31 +752,28 @@ deliver_remote(GList *remote_msgout_list)
 	if (!rf_list) {
 		logwrite(LOG_ERR, "route list with name '%s' not found.\n",
 				connect_name);
-		return FALSE;
+		return;
 	}
 
 	route_list = read_route_list(rf_list);
 	if (!route_list) {
 		logwrite(LOG_ERR, "could not read route list '%s'\n",
 				connect_name);
-		return FALSE;
+		return;
 	}
 
 	foreach(route_list, route_node) {
 		connect_route *route = (connect_route *) (route_node->data);
-		/* TODO: ok gets overwritten */
-		ok = deliver_route_msg_list(route, remote_msgout_list);
+		deliver_route_msg_list(route, remote_msgout_list);
 	}
 	destroy_route_list(route_list);
-
-	return ok;
 }
 
 /*
 **  This function splits the list of rcpt addresses
 **  into local and remote addresses and processes them accordingly.
 */
-gboolean
+void
 deliver_msg_list(GList *msg_list, guint flags)
 {
 	GList *msgout_list = NULL;
@@ -801,7 +783,6 @@ deliver_msg_list(GList *msg_list, guint flags)
 	GList *msgout_node;
 	GList *alias_table = NULL;
 	GList *globalias_table = NULL;
-	gboolean ok = TRUE;
 
 	/* create msgout_list */
 	foreach(msg_list, msg_node) {
@@ -895,9 +876,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 		DEBUG(5) debugf("local_msgout_list\n");
 		foreach(local_msgout_list, msgout_node) {
 			msg_out *msgout = (msg_out *) (msgout_node->data);
-			if (!deliver_local(msgout)) {
-				ok = FALSE;
-			}
+			deliver_local(msgout);
 		}
 		destroy_msg_out_list(local_msgout_list);
 	}
@@ -915,8 +894,6 @@ deliver_msg_list(GList *msg_list, guint flags)
 		spool_unlock(msgout->msg->uid);
 	}
 	destroy_msg_out_list(msgout_list);
-
-	return ok;
 }
 
 /*
@@ -925,14 +902,10 @@ deliver_msg_list(GList *msg_list, guint flags)
 **  (neither -odq nor do_queue). Only this one message will be tried to
 **  deliver then.
 */
-gboolean
+void
 deliver(message *msg)
 {
-	gboolean ok;
 	GList *msg_list = g_list_append(NULL, msg);
-
-	ok = deliver_msg_list(msg_list, DLVR_ALL);
+	deliver_msg_list(msg_list, DLVR_ALL);
 	g_list_free(msg_list);
-
-	return ok;
 }

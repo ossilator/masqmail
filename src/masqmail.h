@@ -357,8 +357,8 @@ GList *addr_list_append_rfc822(GList *addr_list, gchar *string, gchar *domain);
 mxip_addr *connect_resolvelist(int *psockfd, gchar *host, gint port, GList *res_funcs);
 
 /* deliver.c */
-gboolean deliver_msg_list(GList *msg_list, guint flags);
-gboolean deliver(message *msg);
+void deliver_msg_list(GList *msg_list, guint flags);
+void deliver(message *msg);
 
 /* fail_msg.c */
 gboolean fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_fmt, va_list args);
@@ -391,8 +391,8 @@ void spool_unlock(gchar *uid);
 void spool_delete_all(message *msg);
 
 /* queue.c */
-gboolean queue_run(void);
-gboolean queue_run_online(void);
+void queue_run(void);
+void queue_run_online(void);
 void queue_list(void);
 gboolean queue_delete(gchar *uid);
 
