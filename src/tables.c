@@ -108,7 +108,7 @@ table_read(gchar *fname, gchar delim)
 	gchar buf[256];
 
 	if (!(fptr = fopen(fname, "rt"))) {
-		logerrno(LOG_ALERT, "could not open table file %s", fname);
+		logerrno(LOG_ERR, "could not open table file %s", fname);
 		return NULL;
 	}
 

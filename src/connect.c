@@ -122,7 +122,7 @@ connect_resolvelist(int *psockfd, gchar *host, guint port,
 			}
 			g_list_free(addr_list);
 		} else if (!g_list_next(res_node)) {
-			logwrite(LOG_ALERT, "could not resolve %s: %s\n",
+			logwrite(LOG_ERR, "could not resolve %s: %s\n",
 					host, hstrerror(h_errno));
 		}
 	}

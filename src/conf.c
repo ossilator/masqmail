@@ -73,7 +73,7 @@ parse_list_file(const gchar *fname)
 	gchar buf[256];
 
 	if (!(fptr = fopen(fname, "rt"))) {
-		logerrno(LOG_ALERT, "could not open %s for reading", fname);
+		logerrno(LOG_ERR, "could not open %s for reading", fname);
 		exit(1);
 	}
 	while (fgets(buf, sizeof buf, fptr)) {
@@ -176,7 +176,7 @@ parse_resolve_list(gchar *line)
 			res_list = g_list_append(res_list, resolve_dns_mx);
 #endif
 		} else {
-			logwrite(LOG_ALERT, "unknown resolver %s\n", item);
+			logwrite(LOG_ERR, "unknown resolver %s\n", item);
 			exit(1);
 		}
 		g_free(item);
@@ -387,7 +387,7 @@ read_conf(gchar *filename)
 	conf.mail_dir = "/var/mail";
 
 	if (!(in = fopen(filename, "r"))) {
-		logerrno(LOG_ALERT, "could not open config file %s", filename);
+		logerrno(LOG_ERR, "could not open config file %s", filename);
 		return FALSE;
 	}
 
@@ -414,7 +414,7 @@ read_conf(gchar *filename)
 				char buf[256];
 				FILE *fptr = fopen(rval, "rt");
 				if (!fptr) {
-					logerrno(LOG_ALERT, "could not open %s", rval);
+					logerrno(LOG_ERR, "could not open %s", rval);
 					return FALSE;
 				}
 				fgets(buf, sizeof buf, fptr);
@@ -500,7 +500,7 @@ read_conf(gchar *filename)
 	fclose(in);
 
 	if (!conf.host_name) {
-		logwrite(LOG_ALERT, "`host_name' MUST be set in "
+		logwrite(LOG_ERR, "`host_name' MUST be set in "
 				"masqmail.conf. See man page\n");
 		return FALSE;
 	}
@@ -558,7 +558,7 @@ read_route(gchar *filename)
 	DEBUG(5) debugf("read_route, filename = %s\n", filename);
 
 	if (!(in = fopen(filename, "r"))) {
-		logerrno(LOG_ALERT, "could not open route file %s", filename);
+		logerrno(LOG_ERR, "could not open route file %s", filename);
 		return NULL;
 	}
 

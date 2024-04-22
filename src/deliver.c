@@ -71,12 +71,12 @@ deliver_local_mbox(message *msg, GList *hdr_list, address *rcpt,
 	DEBUG(1) debugf("attempting to deliver %s with mbox\n", msg->uid);
 	if (append_file(msg, hdr_list, rcpt->local_part)) {
 		if (env_addr != rcpt) {
-			logwrite(LOG_NOTICE, "%s => %s@%s <%s@%s> with mbox\n",
+			logwrite(LOG_INFO, "%s => %s@%s <%s@%s> with mbox\n",
 					msg->uid, rcpt->local_part,
 					rcpt->domain, env_addr->local_part,
 					env_addr->domain);
 		} else {
-			logwrite(LOG_NOTICE, "%s => <%s@%s> with mbox\n",
+			logwrite(LOG_INFO, "%s => <%s@%s> with mbox\n",
 					msg->uid, rcpt->local_part,
 					rcpt->domain);
 		}
@@ -104,7 +104,7 @@ deliver_local_pipe(message *msg, GList *hdr_list, address *rcpt,
 	flags |= (conf.pipe_fromline) ? MSGSTR_FROMLINE : 0;
 	flags |= (conf.pipe_fromhack) ? MSGSTR_FROMHACK : 0;
 	if (pipe_out(msg, hdr_list, rcpt, &(rcpt->local_part[1]), flags)) {
-		logwrite(LOG_NOTICE, "%s => %s <%s@%s> with pipe\n",
+		logwrite(LOG_INFO, "%s => %s <%s@%s> with pipe\n",
 				msg->uid, rcpt->local_part,
 				env_addr->local_part, env_addr->domain);
 		addr_mark_delivered(rcpt);
@@ -131,7 +131,7 @@ deliver_local_mda(message *msg, GList *hdr_list, address *rcpt)
 	DEBUG(1) debugf("attempting to deliver %s with mda\n", msg->uid);
 
 	if (!expand(var_table, conf.mda, cmd, 256)) {
-		logwrite(LOG_ALERT, "could not expand string %s\n", conf.mda);
+		logwrite(LOG_ERR, "could not expand string %s\n", conf.mda);
 		destroy_table(var_table);
 		return FALSE;
 	}
@@ -139,7 +139,7 @@ deliver_local_mda(message *msg, GList *hdr_list, address *rcpt)
 	flags |= (conf.mda_fromline) ? MSGSTR_FROMLINE : 0;
 	flags |= (conf.mda_fromhack) ? MSGSTR_FROMHACK : 0;
 	if (pipe_out(msg, hdr_list, rcpt, cmd, flags)) {
-		logwrite(LOG_NOTICE, "%s => %s@%s with mda (cmd = '%s')\n",
+		logwrite(LOG_INFO, "%s => %s@%s with mda (cmd = '%s')\n",
 				msg->uid, rcpt->local_part, rcpt->domain, cmd);
 		addr_mark_delivered(rcpt);
 		ok = TRUE;
@@ -166,7 +166,7 @@ deliver_local(msg_out *msgout)
 
 	flag = (msg->data_list == NULL);
 	if (flag && !spool_read_data(msg)) {
-		logwrite(LOG_ALERT, "could not open data spool file for %s\n",
+		logwrite(LOG_ERR, "could not open data spool file for %s\n",
 				msg->uid);
 		return FALSE;
 	}
@@ -227,15 +227,12 @@ deliver_local(msg_out *msgout)
 						ok = TRUE;
 					}
 				} else {
-					logwrite(LOG_ALERT, "mbox type is "
-							"mda, but no mda "
-							"command given in "
-							"configuration\n");
+					logwrite(LOG_ERR, "mbox type is mda, but no mda "
+					         "command given in configuration\n");
 				}
 
 			} else {
-				logwrite(LOG_ALERT, "unknown mbox type '%s'\n",
-						mbox_type);
+				logwrite(LOG_ERR, "unknown mbox type '%s'\n", mbox_type);
 			}
 		}
 
@@ -276,8 +273,7 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 
 		flag = (msg->data_list == NULL);
 		if (flag && !spool_read_data(msg)) {
-			logwrite(LOG_ALERT, "could not open data spool file "
-					"for %s\n", msg->uid);
+			logwrite(LOG_ERR, "could not open data spool file for %s\n", msg->uid);
 			continue;
 		}
 
@@ -293,14 +289,14 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 					rcpt->local_part, rcpt->domain);
 
 			if (!expand(var_table, route->pipe, cmd, 256)) {
-				logwrite(LOG_ALERT, "could not expand string `%s'\n", route->pipe);
+				logwrite(LOG_ERR, "could not expand string `%s'\n", route->pipe);
 				destroy_table(var_table);
 				continue;
 			}
 
 			if (pipe_out(msg, msg->hdr_list, rcpt, cmd, (route->pipe_fromline ? MSGSTR_FROMLINE : 0)
 			    | (route->pipe_fromhack ? MSGSTR_FROMHACK : 0))) {
-				logwrite(LOG_NOTICE, "%s => %s@%s with pipe (cmd = '%s')\n",
+				logwrite(LOG_INFO, "%s => %s@%s with pipe (cmd = '%s')\n",
 					 msg->uid, rcpt->local_part, rcpt->domain, cmd);
 				addr_mark_delivered(rcpt);
 				ok = TRUE;
@@ -448,8 +444,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 		** and remember if we did */
 		flag = (msg->data_list == NULL);
 		if (flag && !spool_read_data(msg)) {
-			logwrite(LOG_ALERT, "could not open data spool "
-					"file %s\n", msg->uid);
+			logwrite(LOG_ERR, "could not open data spool file %s\n", msg->uid);
 			break;
 		}
 
@@ -621,8 +616,7 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 			}
 		}
 
-		logwrite(LOG_NOTICE, "%s using '%s'\n", msgout->msg->uid,
-				route->name);
+		logwrite(LOG_INFO, "%s using '%s'\n", msgout->msg->uid, route->name);
 
 		g_list_free(msgout_cloned->rcpt_list);
 		msgout_cloned->rcpt_list = rcpt_list_allowed;
@@ -710,7 +704,7 @@ deliver_finish(msg_out *msgout)
 
 	if (finished) {
 		if (spool_delete_all(msg)) {
-			logwrite(LOG_NOTICE, "%s completed.\n", msg->uid);
+			logwrite(LOG_INFO, "%s completed.\n", msg->uid);
 			return TRUE;
 		}
 		return FALSE;
@@ -718,7 +712,7 @@ deliver_finish(msg_out *msgout)
 
 	/* one not delivered address was found */
 	if (!spool_write(msg, FALSE)) {
-		logwrite(LOG_ALERT, "could not write back spool header "
+		logwrite(LOG_ERR, "could not write back spool header "
 				"for %s\n", msg->uid);
 		return FALSE;
 	}
@@ -765,19 +759,19 @@ deliver_remote(GList *remote_msgout_list)
 
 	/* we are online! */
 	DEBUG(5) debugf("processing query_routes\n");
-	logwrite(LOG_NOTICE, "detected online configuration `%s'\n",
+	logwrite(LOG_INFO, "detected online configuration `%s'\n",
 			connect_name);
 
 	rf_list = (GList *) table_find(conf.query_routes, connect_name);
 	if (!rf_list) {
-		logwrite(LOG_ALERT, "route list with name '%s' not found.\n",
+		logwrite(LOG_ERR, "route list with name '%s' not found.\n",
 				connect_name);
 		return FALSE;
 	}
 
 	route_list = read_route_list(rf_list);
 	if (!route_list) {
-		logwrite(LOG_ALERT, "could not read route list '%s'\n",
+		logwrite(LOG_ERR, "could not read route list '%s'\n",
 				connect_name);
 		return FALSE;
 	}
@@ -842,7 +836,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 			if (addr) {
 				rcpt_list = g_list_prepend(rcpt_list, addr);
 			} else {
-				logwrite(LOG_ALERT, "invalid log_user "
+				logwrite(LOG_ERR, "invalid log_user "
 						"address `%s', ignoring\n",
 						conf.log_user);
 			}

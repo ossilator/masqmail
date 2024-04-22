@@ -21,7 +21,7 @@ init_sockaddr(struct sockaddr_in *name, interface *iface)
 		memcpy(&(name->sin_addr), &ia, sizeof(name->sin_addr));
 	} else {
 		if ((he = gethostbyname(iface->address)) == NULL) {
-			logwrite(LOG_ALERT, "local address '%s' unknown. "
+			logwrite(LOG_ERR, "local address '%s' unknown. "
 					"(deleting)\n", iface->address);
 			return FALSE;
 		}
@@ -44,7 +44,7 @@ make_server_socket(interface *iface)
 	/* Create the socket. */
 	sock = socket(PF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
-		logerrno(LOG_ALERT, "socket");
+		logerrno(LOG_ERR, "socket");
 		return -1;
 	}
 
@@ -56,7 +56,7 @@ make_server_socket(interface *iface)
 		/* bind the socket */
 		if (bind(sock, (struct sockaddr *) &server,
 				sizeof(server)) < 0) {
-			logerrno(LOG_ALERT, "bind");
+			logerrno(LOG_ERR, "bind");
 			if (need_root) {
 				drop_root();
 			}

@@ -442,9 +442,9 @@ smtp_out_log_failure(smtp_base *psb, message *msg)
 		err_str = g_strdup_printf("failed: %s\n", psb->buffer);
 
 	if (msg == NULL)
-		logwrite(LOG_NOTICE, "host=%s %s\n", psb->remote_host, err_str);
+		logwrite(LOG_INFO, "host=%s %s\n", psb->remote_host, err_str);
 	else
-		logwrite(LOG_NOTICE, "%s == host=%s %s\n", msg->uid, psb->remote_host, err_str);
+		logwrite(LOG_INFO, "%s == host=%s %s\n", msg->uid, psb->remote_host, err_str);
 
 	g_free(err_str);
 }
@@ -647,7 +647,7 @@ smtp_out_init(smtp_base *psb, gboolean instant_helo)
 {
 	gboolean ok;
 
-	logwrite(LOG_INFO, "smtp_out_init(): instant_helo:%d\n", instant_helo);
+	DEBUG(1) debugf("smtp_out_init(): instant_helo=%d\n", instant_helo);
 
 	if (!instant_helo) {
 		if ((ok = read_response(psb, SMTP_INITIAL_TIMEOUT))) {
@@ -851,7 +851,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
 			address *rcpt = (address *) (rcpt_node->data);
 			if (addr_is_delivered(rcpt))
-				logwrite(LOG_NOTICE, "%s => %s host=%s\n",
+				logwrite(LOG_INFO, "%s => %s host=%s\n",
 				         msg->uid, addr_string(rcpt), psb->remote_host);
 		}
 	} else {

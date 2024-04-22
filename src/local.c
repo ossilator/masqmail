@@ -59,15 +59,14 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 		hdr_list = msg->hdr_list;
 
 	if (!(pw = getpwnam(user))) {
-		logwrite(LOG_ALERT, "could not find password entry for "
-				"user %s\n", user);
+		logwrite(LOG_ERR, "could not find password entry for user %s\n", user);
 		errno = ENOENT;  /* getpwnam does not set errno correctly */
 		return FALSE;
 	}
 
 	if (!conf.run_as_user) {
 		if (seteuid(pw->pw_uid) != 0) {
-			logerrno(LOG_ALERT, "could not set uid %d for local delivery", pw->pw_uid);
+			logerrno(LOG_ERR, "could not set uid %d for local delivery", pw->pw_uid);
 			return FALSE;
 		}
 	}
@@ -76,7 +75,7 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 
 	filename = g_strdup_printf("%s/%s", conf.mail_dir, user);
 	if (!(out = fopen(filename, "a"))) {
-		logerrno(LOG_ALERT, "could not open file %s", filename);
+		logerrno(LOG_ERR, "could not open file %s", filename);
 	} else {
 #ifdef USE_LIBLOCKFILE
 		gint err;
@@ -122,7 +121,7 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 		**  this message will not be finished, so the user will get
 		**  the message again next time a delivery is attempted...
 		*/
-		logerrno(LOG_ALERT, "could not set back uid after local delivery");
+		logerrno(LOG_ERR, "could not set back uid after local delivery");
 		DEBUG(1) debugf("uid=%d, euid=%d, want = %d\n",
 		                getuid(), geteuid(), conf.mail_uid);
 		exit(1);
@@ -173,7 +172,7 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 
 	out = peopen(cmd, "w", envp, &pid);
 	if (!out) {
-		logerrno(LOG_ALERT, "could not open pipe '%s'", cmd);
+		logerrno(LOG_ERR, "could not open pipe '%s'", cmd);
 	} else {
 		message_stream(out, msg, hdr_list, flags);
 
@@ -183,11 +182,11 @@ pipe_out(message *msg, GList *hdr_list, address *rcpt, gchar *cmd, guint flags)
 
 		if (WEXITSTATUS(status) != 0) {
 			int exstat = WEXITSTATUS(status);
-			logwrite(LOG_ALERT, "process '%s' returned %d (%s)\n",
+			logwrite(LOG_ERR, "process '%s' returned %d (%s)\n",
 			         cmd, exstat, ext_strerror(1024 + exstat));
 			errno = 1024 + exstat;
 		} else if (WIFSIGNALED(status)) {
-			logwrite(LOG_ALERT, "process '%s' got signal %d\n",
+			logwrite(LOG_ERR, "process '%s' got signal %d\n",
 			         cmd, WTERMSIG(status));
 		} else
 			ok = TRUE;

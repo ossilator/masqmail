@@ -87,7 +87,7 @@ spool_read_data(message *msg)
 	DEBUG(5) debugf("reading data spool file '%s'\n", spool_file);
 	in = fopen(spool_file, "r");
 	if (!in) {
-		logerrno(LOG_ALERT, "could not open spool data file %s", spool_file);
+		logerrno(LOG_ERR, "could not open spool data file %s", spool_file);
 		return FALSE;
 	}
 
@@ -116,7 +116,7 @@ spool_read_header(message *msg)
 	spool_file = g_strdup_printf("%s/%s-H", conf.spool_dir, msg->uid);
 	in = fopen(spool_file, "r");
 	if (!in) {
-		logerrno(LOG_ALERT, "could not open spool header file %s", spool_file);
+		logerrno(LOG_ERR, "could not open spool header file %s", spool_file);
 		return FALSE;
 	}
 
@@ -266,7 +266,7 @@ spool_write_header(message *msg)
 			g_free(spool_file);
 		}
 	} else {
-		logerrno(LOG_ALERT, "could not open temporary header spool file '%s'",
+		logerrno(LOG_ERR, "could not open temporary header spool file '%s'",
 		         tmp_file);
 		DEBUG(1) debugf("euid = %d, egid = %d\n", geteuid(), getegid());
 		ok = FALSE;
@@ -317,7 +317,7 @@ spool_write(message *msg, gboolean do_write_data)
 				g_free(spool_file);
 			}
 		} else {
-			logerrno(LOG_ALERT, "could not open temporary data spool file '%s'",
+			logerrno(LOG_ERR, "could not open temporary data spool file '%s'",
 			         tmp_file);
 			ok = FALSE;
 		}
@@ -371,14 +371,14 @@ spool_delete_all(message *msg)
 	/* header spool: */
 	spool_file = g_strdup_printf("%s/%s-H", conf.spool_dir, msg->uid);
 	if (unlink(spool_file) != 0) {
-		logerrno(LOG_ALERT, "could not delete spool file %s", spool_file);
+		logerrno(LOG_ERR, "could not delete spool file %s", spool_file);
 	}
 	g_free(spool_file);
 
 	/* data spool: */
 	spool_file = g_strdup_printf("%s/%s-D", conf.spool_dir, msg->uid);
 	if (unlink(spool_file) != 0) {
-		logerrno(LOG_ALERT, "could not delete spool file %s", spool_file);
+		logerrno(LOG_ERR, "could not delete spool file %s", spool_file);
 	}
 	g_free(spool_file);
 

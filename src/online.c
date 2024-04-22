@@ -29,7 +29,7 @@ online_query()
 
 	in = peopen(pipe, "r", environ, &pid);
 	if (!in) {
-		logerrno(LOG_ALERT, "could not open pipe '%s'", pipe);
+		logerrno(LOG_ERR, "could not open pipe '%s'", pipe);
 		signal(SIGCHLD, old_signal);
 		return NULL;
 	}
@@ -38,13 +38,13 @@ online_query()
 	if (fgets(output, 255, in)) {
 		g_strchomp(g_strchug(output));
 		if (strlen(output) == 0) {
-			logwrite(LOG_ALERT, "only whitespace connection name\n");
+			logwrite(LOG_ERR, "only whitespace connection name\n");
 			name = NULL;
 		} else {
 			name = g_strdup(output);
 		}
 	} else {
-		logwrite(LOG_ALERT, "nothing read from pipe %s\n", pipe);
+		logwrite(LOG_ERR, "nothing read from pipe %s\n", pipe);
 		name = NULL;
 	}
 	fclose(in);
