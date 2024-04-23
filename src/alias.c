@@ -226,13 +226,12 @@ expand_one(GList *alias_table, recipient *addr, int doglob)
 }
 
 GList*
-alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
-		int doglob)
+alias_expand(GList *alias_table, GList *rcpt_list,
+             int doglob)
 {
 	GList *rcpt_node = NULL;
 	GList *alias_list = NULL;
 	GList *done_list = NULL;
-	GList *rcpt_node_next = NULL;
 
 	for (rcpt_node = rcpt_list; rcpt_node;
 			rcpt_node=g_list_next(rcpt_node)) {
@@ -252,34 +251,5 @@ alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
 		}
 	}
 
-	/* we're done if we don't have to remove rcpts */
-	if (!non_rcpt_list) {
-		return done_list;
-	}
-
-	/* delete addresses of non_rcpt_list from done_list */
-	for (rcpt_node = g_list_first(done_list); rcpt_node;
-			rcpt_node = rcpt_node_next) {
-		recipient *addr = rcpt_node->data;
-		GList *non_node;
-
-		rcpt_node_next = g_list_next(rcpt_node);
-		foreach(non_rcpt_list, non_node) {
-			recipient *non_addr = non_node->data;
-			if (addr_isequal(addr->address, non_addr->address,
-			                 conf.localpartcmp)) {
-				done_list = g_list_remove_link(done_list,
-						rcpt_node);
-				g_list_free_1(rcpt_node);
-				/*
-				**  this address is still in the children
-				**  lists of the original address, simply
-				**  mark them delivered
-				*/
-				addr_mark_delivered(addr);
-				break;
-			}
-		}
-	}
 	return done_list;
 }

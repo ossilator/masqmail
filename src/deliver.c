@@ -795,7 +795,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 			DEBUG(5) debugf("Doing globalias expansion\n");
 			globaliased_rcpt_list = alias_expand(globalias_table,
 					rcpt_list,
-					msgout->msg->non_rcpt_list, 1);
+					1);
 			g_list_free(rcpt_list);
 			rcpt_list = globaliased_rcpt_list;
 		}
@@ -805,12 +805,12 @@ deliver_msg_list(GList *msg_list, guint flags)
 			DEBUG(5) debugf("Doing alias expansion\n");
 			aliased_rcpt_list = alias_expand(alias_table,
 					rcpt_list,
-					msgout->msg->non_rcpt_list, 0);
+					0);
 			g_list_free(rcpt_list);
 			rcpt_list = aliased_rcpt_list;
 		}
 
-		split_rcpts(rcpt_list, &local_rcpt_list, &other_rcpt_list);
+		split_rcpts(rcpt_list, msgout->msg->non_rcpt_list, &local_rcpt_list, &other_rcpt_list);
 		g_list_free(rcpt_list);
 
 		/* local recipients */

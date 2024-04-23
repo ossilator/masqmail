@@ -293,7 +293,7 @@ typedef struct _smtp_connection {
 
 /* alias.c*/
 gboolean addr_is_local(address *addr);
-GList *alias_expand(GList *alias_table, GList *rcpt_list, GList *non_rcpt_list,
+GList *alias_expand(GList *alias_table, GList *rcpt_list,
 		int doglob);
 
 /* child.c */
@@ -432,7 +432,8 @@ void rewrite_return_path(msg_out *msgout, const connect_route *route);
 
 /* route.c */
 void destroy_msgout_perhost(msgout_perhost *mo_ph);
-void split_rcpts(GList *rcpt_list, GList **local_rcpts, GList **remote_rcpts);
+void split_rcpts(GList *rcpt_list, GList *non_rcpt_list,
+                 GList **local_rcpts, GList **remote_rcpts);
 void route_filter_rcpts(connect_route *route, GList **rcpt_list);
 msg_out *route_prepare_msgout(connect_route *route, msg_out *msgout);
 GList *route_msgout_list(GList *msgout_list);

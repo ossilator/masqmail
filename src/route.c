@@ -145,14 +145,30 @@ route_filter_rcpts(connect_route *route, GList **rcpt_list)
 	}
 }
 
+static gboolean
+is_non_recipient(recipient *addr, GList *non_rcpt_list)
+{
+	GList *non_node;
+	foreach (non_rcpt_list, non_node) {
+		recipient *non_addr = non_node->data;
+		if (addr_isequal(addr->address, non_addr->address, conf.localpartcmp)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 void
-split_rcpts(GList *rcpt_list, GList **local_rcpts, GList **remote_rcpts)
+split_rcpts(GList *rcpt_list, GList *non_rcpt_list,
+            GList **local_rcpts, GList **remote_rcpts)
 {
 	GList *rcpt_node;
 
 	foreach(rcpt_list, rcpt_node) {
 		recipient *rcpt = rcpt_node->data;
-		if (addr_is_local(rcpt->address)) {
+		if (is_non_recipient(rcpt, non_rcpt_list)) {
+			// omit already delivered addresses
+		} else if (addr_is_local(rcpt->address)) {
 			*local_rcpts = g_list_append(*local_rcpts, rcpt);
 		} else {
 			*remote_rcpts = g_list_append(*remote_rcpts, rcpt);
