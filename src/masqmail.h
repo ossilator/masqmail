@@ -346,6 +346,7 @@ void destroy_address(address *addr);
 #define copy_address(addr) create_address_raw(addr->local_part, addr->domain)
 gboolean addr_isequal(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
 gboolean addr_is_local(address *addr);
+gboolean domain_is_local(const gchar *domain);
 
 recipient *create_recipient(const gchar *path, const gchar *domain);
 recipient *create_recipient_raw(const gchar *local_part, const gchar *domain);

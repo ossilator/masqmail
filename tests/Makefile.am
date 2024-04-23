@@ -20,7 +20,8 @@ TESTS = \
 	t420-aliases-partially-delayed.sh \
 	t500-rewriting.sh \
 	t501-domain-rewriting.sh \
-	t502-combined-rewriting.sh
+	t502-combined-rewriting.sh \
+	t503-not-rewriting.sh
 
 EXTRA_DIST = \
 	lib.sh \

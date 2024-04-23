@@ -8,6 +8,25 @@
 #include "masqmail.h"
 #endif
 
+// this does not examine conf.{not_,}local_addresses, because
+// matching local parts of addresses that only pretend to be
+// local would make a mess in rewrite rules.
+// the sender must set such an address rather deliberately,
+// so they can set the final address just as well. thus we
+// don't need to support rewriting these in the first place.
+static gboolean
+addr_is_really_local(const gchar *dom_beg, const gchar *dom_end)
+{
+	if (!dom_beg) {
+		return TRUE;
+	}
+
+	gchar *domain = g_strndup(dom_beg, dom_end - dom_beg);
+	gboolean ret = domain_is_local(domain);
+	g_free(domain);
+	return ret;
+}
+
 static replacement *
 map_local_part(gchar *local_part, GList *table, GList *table2)
 {
@@ -20,10 +39,17 @@ map_local_part(gchar *local_part, GList *table, GList *table2)
 
 static replacement *
 map_address(const gchar *loc_beg, const gchar *loc_end,
+            const gchar *dom_beg, const gchar *dom_end,
             GList *table, GList *table2)
 {
-	DEBUG(5) debugf("considering '%.*s' for rewrite\n",
-	                (int)(loc_end - loc_beg), loc_beg);
+	DEBUG(5) debugf("considering '%.*s@%.*s' for rewrite\n",
+	                (int)(loc_end - loc_beg), loc_beg,
+	                dom_beg ? (int)(dom_end - dom_beg) : 6,
+	                dom_beg ? dom_beg : "(null)");
+	if (!addr_is_really_local(dom_beg, dom_end)) {
+		DEBUG(5) debugf("=> not local\n");
+		return NULL;
+	}
 	gchar *local_part = g_strndup(loc_beg, loc_end - loc_beg);
 	replacement *ret = map_local_part(local_part, table, table2);
 	g_free(local_part);
@@ -61,7 +87,7 @@ map_address_header(header *hdr, GList *table, GList *table2)
 			return FALSE;
 		}
 
-		replacement *rewr = map_address(loc_beg, loc_end, table, table2);
+		replacement *rewr = map_address(loc_beg, loc_end, dom_beg, dom_end, table, table2);
 
 		gchar *newer_hdr;
 		if (rewr) {
@@ -159,6 +185,10 @@ rewrite_return_path(msg_out *msgout, const connect_route *route)
 	                msg->return_path->address);
 	if (!route->map_return_path_addresses && !route->map_outgoing_addresses) {
 		DEBUG(5) debugf("=> no rules\n");
+		return;
+	}
+	if (!domain_is_local(msg->return_path->domain)) {
+		DEBUG(5) debugf("=> not local\n");
 		return;
 	}
 	const replacement *ret_path = map_local_part(msg->return_path->local_part,

@@ -364,7 +364,9 @@ Default is false.
 Address rewrite rules for \(lqFrom:\(rq headers.
 This is a semicolon-separated list of colon-separated key-value pairs.
 The keys may contain glob patterns and are matched against the local
-parts of email addresses.
+parts of local email addresses (those without a domain or with one in
+.BR local_hosts "; " local_addresses
+are *not* considered).
 The values are full RFC 822 compliant email addresses.
 These may include angle brackets and a display name.
 
