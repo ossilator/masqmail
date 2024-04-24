@@ -51,7 +51,6 @@ typedef struct _connect_route {
 	gchar *name;
 	gchar *filename;
 
-	gboolean is_perma;
 	gboolean last_route;
 
 	GList *allowed_senders;
@@ -288,7 +287,7 @@ int child(const char *command);
 /* conf.c */
 void init_conf();
 gboolean read_conf(gchar *filename);
-GList *read_route_list(GList *rf_list, gboolean is_perma);
+GList *read_route_list(GList *rf_list);
 void destroy_route(connect_route *r);
 void destroy_route_list(GList *list);
 

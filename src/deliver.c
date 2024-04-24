@@ -751,7 +751,7 @@ deliver_remote(GList *remote_msgout_list)
 	if (conf.perma_routes) {
 		DEBUG(5) debugf("processing perma_routes\n");
 
-		route_list = read_route_list(conf.perma_routes, TRUE);
+		route_list = read_route_list(conf.perma_routes);
 		foreach(route_list, route_node) {
 			connect_route *route =
 					(connect_route *) (route_node->data);
@@ -782,7 +782,7 @@ deliver_remote(GList *remote_msgout_list)
 		return FALSE;
 	}
 
-	route_list = read_route_list(rf_list, FALSE);
+	route_list = read_route_list(rf_list);
 	if (!route_list) {
 		logwrite(LOG_ALERT, "could not read route list '%s'\n",
 				connect_name);

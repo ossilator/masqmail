@@ -556,7 +556,7 @@ read_conf(gchar *filename)
 }
 
 static connect_route*
-read_route(gchar *filename, gboolean is_perma)
+read_route(gchar *filename)
 {
 	FILE *in;
 	connect_route *route;
@@ -573,7 +573,6 @@ read_route(gchar *filename, gboolean is_perma)
 	route = g_malloc0(sizeof(connect_route));
 	route->filename = g_strdup(filename);
 	route->name = route->filename;  /* quick hack */
-	route->is_perma = is_perma;
 	route->do_pipelining = TRUE;
 
 	while (read_statement(in, lval, sizeof lval, rval, sizeof rval)) {
@@ -755,7 +754,7 @@ destroy_route(connect_route *r)
 }
 
 GList*
-read_route_list(GList *rf_list, gboolean is_perma)
+read_route_list(GList *rf_list)
 {
 	GList *list = NULL;
 	GList *node;
@@ -766,7 +765,7 @@ read_route_list(GList *rf_list, gboolean is_perma)
 	}
 	foreach(rf_list, node) {
 		gchar *fname = (gchar *) (node->data);
-		connect_route *route = read_route(fname, is_perma);
+		connect_route *route = read_route(fname);
 		if (route) {
 			list = g_list_append(list, route);
 		} else {
