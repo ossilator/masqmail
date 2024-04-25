@@ -333,7 +333,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 	gboolean ok = FALSE;
 	GList *msgout_node;
 	smtp_base *psb;
-	gint port = 25;
+	gint port = route->smtp_port;
 
 	assert(msgout_list);
 

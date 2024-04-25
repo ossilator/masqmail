@@ -64,6 +64,7 @@ typedef struct _connect_route {
 	gboolean connect_error_fail;
 	GList *resolve_list;
 	gchar *helo_name;
+	gint smtp_port;
 	gboolean do_correct_helo;
 	gboolean instant_helo;
 	gboolean do_pipelining;

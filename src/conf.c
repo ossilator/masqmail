@@ -568,6 +568,7 @@ read_route(gchar *filename)
 	route->filename = g_strdup(filename);
 	route->name = route->filename;  /* quick hack */
 	route->do_pipelining = TRUE;
+	route->smtp_port = 25;
 
 	while (read_statement(in, lval, sizeof lval, rval, sizeof rval)) {
 		if (strcmp(lval, "mail_host")==0) {
@@ -576,6 +577,8 @@ read_route(gchar *filename)
 			route->helo_name = g_strdup(rval);
 		} else if (strcmp(lval, "wrapper")==0) {
 			route->wrapper = g_strdup(rval);
+		} else if (strcmp(lval, "smtp_port")==0) {
+			route->smtp_port = atol(rval);
 		} else if (strcmp(lval, "connect_error_fail")==0) {
 			route->connect_error_fail = parse_boolean(rval);
 		} else if (strcmp(lval, "do_correct_helo")==0) {

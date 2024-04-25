@@ -263,6 +263,14 @@ Your account name for ESMTP AUTH authentication.
 Your secret for ESMTP AUTH authentication.
 
 .TP
+.BI "smtp_port = " port
+
+Set the port for outgoing SMTP connections.
+This option exists for debugging purposes only.
+
+Default: 25
+
+.TP
 .BI "wrapper = " command
 
 If set, instead of opening a connection to a remote server,
