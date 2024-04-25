@@ -142,6 +142,15 @@ permanent_routes = "$ROUTE"
 EOF
 }
 
+configure_direct_relay()
+{
+	configure_route <<EOF
+smtp_port = $SERVER_PORT
+resolve_list = byname
+do_pipelining = true
+EOF
+}
+
 configure_mailhost_relay()
 {
 	configure_route <<EOF
