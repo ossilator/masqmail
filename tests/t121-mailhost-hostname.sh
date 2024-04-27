@@ -2,7 +2,9 @@
 
 . "$(dirname "$0")/lib.sh"
 
-make_config
+launch_server
+
+make_config LOCAL
 configure_mailhost_relay
 configure_relay_all
 

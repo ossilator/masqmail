@@ -8,6 +8,9 @@ set -e
 TEST_NAME=${0##*/}
 TEST_NAME=${TEST_NAME%.sh}
 
+TEST_IDX=${TEST_NAME%%-*}
+TEST_IDX=${TEST_IDX#t}
+
 TEST_DIR=$(cd "$(dirname "$0")"; pwd)
 TOP_SRC_DIR=${TEST_DIR%/*}
 
@@ -24,6 +27,7 @@ HOST_NAME=$(hostname)
 RELAY_HOST="MASQMAIL-TEST"
 
 SERVER_HOST=${SERVER_HOST:-$HOST_NAME}
+SERVER_PORT=$((40000 + $TEST_IDX))
 
 RECV_USER=${RECV_USER:-$LOGNAME}
 RECV_HOST=${RECV_HOST:-$HOST_NAME}
@@ -32,6 +36,8 @@ RECV_ADDR=$RECV_USER@$RECV_HOST
 SEND_USER=${SEND_USER:-$LOGNAME}
 SEND_HOST=${SEND_HOST:-$RECV_HOST}
 SEND_ADDR=$SEND_USER@$SEND_HOST
+
+BACKOFF=".1 .2 .4 .8 1.6 3.2"
 
 run_masqmail()
 {
@@ -85,6 +91,47 @@ mail_dir = "$dir"
 EOF
 }
 
+configure_server()
+{
+	cat >> "$SERVER_CONFIG" <<EOF
+
+listen_addresses = $SERVER_HOST:$SERVER_PORT$1
+
+pid_dir = "$SERVER_DIR"
+EOF
+}
+
+prepare_server()
+{
+	make_config SERVER
+	configure_sink
+	configure_server
+}
+
+shutdown_server()
+{
+	kill $SERVER_PID
+	for i in $BACKOFF; do
+		sleep $i
+		kill -0 $SERVER_PID 2> /dev/null || return 0
+	done
+	kill -9 $SERVER_PID 2> /dev/null || return 0
+	sleep .1
+}
+
+start_server()
+{
+	run_masqmail "$SERVER_CONFIG" -bd "$@"
+	SERVER_PID=$(cat "$SERVER_DIR/masqmail.pid")
+	trap shutdown_server EXIT
+}
+
+launch_server()
+{
+	prepare_server
+	start_server "$@"
+}
+
 configure_route()
 {
 	ROUTE=$LOCAL_DIR/test.route
@@ -98,7 +145,7 @@ EOF
 configure_mailhost_relay()
 {
 	configure_route <<EOF
-mail_host = "$SERVER_HOST"
+mail_host = "$SERVER_HOST:$SERVER_PORT"
 resolve_list = byname
 EOF
 }
