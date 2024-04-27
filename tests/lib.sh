@@ -66,6 +66,8 @@ log_dir = "$dir"
 spool_dir = "$dir/spool"
 lock_dir = "$dir/locks"
 do_queue = false
+
+host_name = "$HOST_NAME"
 EOF
 }
 
@@ -78,8 +80,6 @@ configure_sink()
 	mkdir "$dir"
 	touch "$CURR_BOX"
 	cat >> "$cfg" <<EOF
-
-host_name = "$HOST_NAME"
 
 mail_dir = "$dir"
 EOF
@@ -107,8 +107,9 @@ configure_relay_all()
 {
 	cat >> "$LOCAL_CONFIG" <<EOF
 
-# identify with some name that is *not* the one of our machine.
-host_name = "$RELAY_HOST"
+# all mail should go through the route. thus we counter-factually
+# declare that our host is not local.
+local_hosts = "$RELAY_HOST"
 EOF
 }
 
