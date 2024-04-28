@@ -1,2 +1,0 @@
-mail_host = "localhost"
-resolve_list = byname

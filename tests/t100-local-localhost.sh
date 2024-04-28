@@ -1,0 +1,10 @@
+#!/bin/sh
+
+RECV_HOST=localhost
+
+. "$(dirname "$0")/lib.sh"
+
+make_config
+configure_sink
+
+send_generic_mail $RECV_ADDR
