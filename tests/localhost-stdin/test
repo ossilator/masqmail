@@ -67,12 +67,8 @@ To: $hto
 Subject: $hsubject
 
 Hallo Fritz!
-..
-there is a dot above.
 
 command was: $cmd
-
-Fritz
 .
 
 EOF
