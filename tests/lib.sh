@@ -49,6 +49,11 @@ send_mail()
 	run_masqmail "$LOCAL_CONFIG" "$@"
 }
 
+run_queue()
+{
+	run_masqmail "$LOCAL_CONFIG" -q
+}
+
 make_config()
 {
 	CURR=${1:-LOCAL}
@@ -194,6 +199,20 @@ send_generic_mail()
 $(make_generic_head)
 $(make_generic_body)
 EOF
+}
+
+verify_queue()
+{
+	local count=${2:-1}
+	SPOOLED=$(echo "$LOCAL_DIR"/spool/*-H)
+	if ! [ -s "$SPOOLED" ]; then
+		echo "Expected queued message not found." >&2
+		return 1
+	fi
+	local num=$(grep -c "$1" "$SPOOLED" || true)
+	[ $num -eq $count ] && return 0
+	echo "Got $num instead of $count occurrence(s) of '$1' in ${SPOOLED#$LOCAL_DIR/}." >&2
+	return 1
 }
 
 eval_delivery()
