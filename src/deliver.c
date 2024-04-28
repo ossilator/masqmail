@@ -791,7 +791,9 @@ deliver_msg_list(GList *msg_list, guint flags)
 						conf.log_user);
 			}
 		}
-		alias_expand(globalias_table, alias_table, rcpt_list);
+		if (!alias_expand(globalias_table, alias_table, rcpt_list)) {
+			delivery_failures(msgout->msg, rcpt_list, "Alias expansion failed");
+		}
 
 		split_rcpts(rcpt_list, msgout->msg->non_rcpt_list, &local_rcpt_list, &other_rcpt_list);
 		destroy_recipient_list(rcpt_list);

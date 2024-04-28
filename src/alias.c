@@ -98,7 +98,7 @@ parse_list(gchar *line)
 	return list;
 }
 
-static void
+static gboolean
 expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 {
 	GList *val_list;
@@ -107,7 +107,7 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 	if (!addr_is_local(addr->address)) {
 		DEBUG(5) debugf("alias: '%s' is non-local, hence completed\n",
 		                addr->address->address);
-		return;
+		return TRUE;
 	}
 
 	/* expand the local alias */
@@ -132,12 +132,13 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 	if (!repl) {
 		DEBUG(5) debugf("alias: '%s' is fully expanded, hence completed\n",
 		                addr->address->address);
-		return;
+		return TRUE;
 	}
 
 	DEBUG(5) debugf("alias: '%s' -> '%s'\n", addr->address->address, repl);
 	addr_mark_alias(addr);
 
+	gboolean ok = TRUE;
 	val_list = parse_list(repl);
 	foreach(val_list, val_node) {
 		gchar *val = val_node->data;
@@ -152,6 +153,7 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 			if (!alias_addr) {
 				logwrite(LOG_ERR, "alias '%s' expands to invalid address '%s': %s\n",
 				         addr->address->address, val + 1, parse_error);
+				ok = FALSE;
 				continue;
 			}
 			DEBUG(6) debugf("alias:     address generated: '%s'\n",
@@ -172,6 +174,7 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 		if (!alias_addr) {
 			logwrite(LOG_ERR, "alias '%s' expands to invalid address '%s': %s\n",
 			         addr->address->address, val, parse_error);
+			ok = FALSE;
 			continue;
 		}
 
@@ -180,12 +183,18 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 			logwrite(LOG_ERR, "alias: detected loop, hence ignoring '%s'\n",
 			         alias_addr->address->address);
 			destroy_recipient(alias_addr);
+			ok = FALSE;
 			continue;
 		}
 
 		/* recurse */
 		DEBUG(6) debugf("alias: >>\n");
-		expand_one(globalias_table, alias_table, alias_addr);
+		if (!expand_one(globalias_table, alias_table, alias_addr)) {
+			DEBUG(6) debugf("alias: <<\n");
+			destroy_recipient(alias_addr);
+			ok = FALSE;
+			continue;
+		}
 		DEBUG(6) debugf("alias: <<\n");
 
 	  append:
@@ -194,16 +203,26 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 		alias_addr->parent = addr;
 	}
 	destroy_ptr_list(val_list);
+
+	return ok;
 }
 
-void
+gboolean
 alias_expand(GList *globalias_table, GList *alias_table, GList *rcpt_list)
 {
+	gboolean ok = TRUE;
 	GList *rcpt_node = NULL;
 
 	for (rcpt_node = rcpt_list; rcpt_node;
 			rcpt_node=g_list_next(rcpt_node)) {
 		recipient *addr = rcpt_node->data;
-		expand_one(globalias_table, alias_table, addr);
+		if (!expand_one(globalias_table, alias_table, addr)) {
+			// while the problem would be fixable, realistically it won't be
+			// noticed in time. so we fail immediately rather than deferring.
+			addr_mark_failed(addr);
+			ok = FALSE;
+		}
 	}
+
+	return ok;
 }

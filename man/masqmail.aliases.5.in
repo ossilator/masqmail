@@ -57,7 +57,8 @@ command.
 The command will run under the user id and group id masqmail is running as.
 If quotes are needed, the pipe symbol must appear within the quotes.
 
-Loops will be detected, the offending address will be ignored.
+Syntax errors and loops are detected, and cause affected mails to be
+bounced.
 
 Aliases are read at delivery time.
 This means that if there is a message still in the queue and you change

@@ -16,6 +16,7 @@ TESTS = \
 	t300-direct-bounce.sh \
 	t310-warn-bounce.sh \
 	t400-aliases.sh \
+	t410-botched-aliases.sh \
 	t420-aliases-partially-delayed.sh \
 	t500-rewriting.sh
 
