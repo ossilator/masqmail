@@ -122,7 +122,6 @@ void
 queue_list()
 {
 	GList *msg_list;
-	GList *msg_node;
 
 	msg_list = read_queue();
 
@@ -131,9 +130,7 @@ queue_list()
 		return;
 	}
 
-	foreach(msg_list, msg_node) {
-		message *msg = (message *) (msg_node->data);
-		GList *rcpt_node;
+	foreach (message *msg, msg_list) {
 		gchar *size_str = NULL;
 		gchar *time_str = NULL;
 		gchar *host_str = NULL;
@@ -160,9 +157,7 @@ queue_list()
 		g_free(host_str);
 		g_free(ident_str);
 
-		foreach(msg->rcpt_list, rcpt_node) {
-			recipient *rcpt = rcpt_node->data;
-
+		foreach (recipient *rcpt, msg->rcpt_list) {
 			printf("              %s <%s>\n",
 			       addr_is_delivered(rcpt)
 			          ? "=>" : (addr_is_failed(rcpt)

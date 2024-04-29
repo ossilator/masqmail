@@ -24,11 +24,9 @@ delivery_failures(message *msg, GList *rcpt_list, gchar *err_msg)
 	gboolean ok_fail = TRUE, ok_warn = TRUE;
 	time_t now = time(NULL);
 
-	GList *failed_list = NULL, *defered_list = NULL, *rcpt_node;
+	GList *failed_list = NULL, *defered_list = NULL;
 
-	foreach(rcpt_list, rcpt_node) {
-		recipient *rcpt = rcpt_node->data;
-
+	foreach (recipient *rcpt, rcpt_list) {
 		if (addr_is_defered(rcpt)) {
 			time_t pending = now - msg->received_time;
 			if (pending >= conf.max_defer_time) {
@@ -165,7 +163,6 @@ deliver_local(msg_out *msgout)
 {
 	message *msg = msgout->msg;
 	GList *rcpt_list = msgout->rcpt_list;
-	GList *rcpt_node;
 	gboolean ok = FALSE, flag = FALSE, ok_fail = FALSE;
 
 	DEBUG(5) debugf("deliver_local entered\n");
@@ -177,10 +174,8 @@ deliver_local(msg_out *msgout)
 		return;
 	}
 
-	for (rcpt_node = g_list_first(rcpt_list); rcpt_node;
-			rcpt_node = g_list_next(rcpt_node)) {
+	foreach (recipient *rcpt, rcpt_list) {
 		GList *hdr_list;
-		recipient *rcpt = rcpt_node->data;
 		recipient *env_addr = addr_find_ancestor(rcpt);
 		address *ret_path = msg->return_path;
 		header *retpath_hdr, *envto_hdr;
@@ -261,15 +256,13 @@ static gboolean
 deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 {
 	gboolean ok = TRUE;
-	GList *msgout_node;
 
 	DEBUG(5) debugf("deliver_msglist_host_pipe entered\n");
 
-	foreach(msgout_list, msgout_node) {
-		msg_out *msgout = (msg_out *) (msgout_node->data);
+	foreach (msg_out *msgout, msgout_list) {
 		gboolean flag, ok_fail = FALSE;
 		message *msg = msgout->msg;
-		GList *rcpt_node, *rcpt_list = msgout->rcpt_list;
+		GList *rcpt_list = msgout->rcpt_list;
 
 		DEBUG(1) debugf("attempting to deliver %s with pipe\n",
 				msg->uid);
@@ -281,8 +274,7 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 		}
 
 		ok = FALSE;
-		foreach(rcpt_list, rcpt_node) {
-			recipient *rcpt = rcpt_node->data;
+		foreach (recipient *rcpt, rcpt_list) {
 			GList *var_table = var_table_rcpt(var_table_msg(NULL, msg),
 			                                  rcpt->address);
 
@@ -339,7 +331,6 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 		gchar *host, GList *res_list)
 {
 	gboolean ok = FALSE;
-	GList *msgout_node;
 	smtp_base *psb;
 	gint port = route->smtp_port;
 
@@ -360,15 +351,8 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 
 	if (!psb) {
 		/* smtp_out_open() failed */
-		foreach(msgout_list, msgout_node) {
-			msg_out *msgout = (msg_out *) (msgout_node->data);
-			GList *rcpt_node;
-
-			for (rcpt_node = g_list_first(msgout->rcpt_list);
-					rcpt_node;
-					rcpt_node = g_list_next(rcpt_node)) {
-				recipient *rcpt = rcpt_node->data;
-
+		foreach (msg_out *msgout, msgout_list) {
+			foreach (recipient *rcpt, msgout->rcpt_list) {
 				addr_unmark_delivered(rcpt);
 				if (route->connect_error_fail) {
 					addr_mark_failed(rcpt);
@@ -396,9 +380,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 	if (!smtp_out_init(psb, route->instant_helo, &err_msg)) {
 		/* smtp_out_init() failed */
 		smtp_out_quit(psb);
-		foreach (msgout_list, msgout_node) {
-			msg_out *msgout =
-					(msg_out *)(msgout_node->data);
+		foreach (msg_out *msgout, msgout_list) {
 			smtp_out_mark_rcpts(psb, msgout->rcpt_list);
 
 			if (delivery_failures(msgout->msg, msgout->rcpt_list, err_msg)) {
@@ -414,8 +396,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 		psb->use_pipelining = FALSE;
 	}
 
-	foreach(msgout_list, msgout_node) {
-		msg_out *msgout = (msg_out *) (msgout_node->data);
+	foreach (msg_out *msgout, msgout_node, msgout_list) {
 		gboolean flag, ok_msg = FALSE, ok_fail = FALSE;
 		message *msg = msgout->msg;
 
@@ -439,7 +420,7 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 			/* connection lost */
 			break;
 		} else if (psb->error != smtp_ok) {
-			if (g_list_next(msgout_node) && !smtp_out_rset(psb)) {
+			if (msgout_node->next && !smtp_out_rset(psb)) {
 				break;
 			}
 		}
@@ -482,7 +463,6 @@ static void
 deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 {
 	GList *mo_ph_list;
-	GList *mo_ph_node;
 
 	DEBUG(5) debugf("deliver_route_msgout_list entered, route->name=%s\n",
 			route->name);
@@ -507,8 +487,7 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 	**  messages. Threads could be a solution because they use the same
 	**  memory. But we are not thread safe yet...
 	*/
-	foreach(mo_ph_list, mo_ph_node) {
-		msgout_perhost *mo_ph = (msgout_perhost *) (mo_ph_node->data);
+	foreach (msgout_perhost *mo_ph, mo_ph_list) {
 		deliver_msglist_host(route, mo_ph->msgout_list, mo_ph->host, route->resolve_list);
 	}
 	g_list_free_full(mo_ph_list, (GDestroyNotify) destroy_msgout_perhost);
@@ -523,22 +502,18 @@ static void
 deliver_route_msg_list(connect_route *route, GList *msgout_list)
 {
 	GList *msgout_list_deliver = NULL;
-	GList *msgout_node;
 
 	DEBUG(6) debugf("deliver_route_msg_list()\n");
 
-	foreach(msgout_list, msgout_node) {
-		msg_out *msgout = (msg_out *) (msgout_node->data);
+	foreach (msg_out *msgout, msgout_list) {
 		msg_out *msgout_cloned = clone_msg_out(msgout);
 		GList *rcpt_list_non_delivered = NULL;
-		GList *rcpt_node;
 
 		/*
 		**  we have to delete already delivered rcpt's because a
 		**  previous route may have delivered to it
 		*/
-		foreach(msgout_cloned->rcpt_list, rcpt_node) {
-			recipient *rcpt = rcpt_node->data;
+		foreach (recipient *rcpt, msgout_cloned->rcpt_list) {
 			/*
 			**  failed addresses already have been bounced;
 			**  there should be a better way to handle those.
@@ -599,9 +574,7 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 		logwrite(LOG_INFO, "%s using '%s'\n", msgout->msg->uid, route->name);
 
 		if (route->last_route) {
-			GList *rcpt_node;
-			foreach(msgout_cloned->rcpt_list, rcpt_node) {
-				recipient *rcpt = rcpt_node->data;
+			foreach (recipient *rcpt, msgout_cloned->rcpt_list) {
 				rcpt->flags |= ADDR_FLAG_LAST_ROUTE;
 			}
 		}
@@ -624,11 +597,9 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 static void
 update_non_rcpt_list(msg_out *msgout)
 {
-	GList *rcpt_node;
 	message *msg = msgout->msg;
 
-	foreach(msgout->rcpt_list, rcpt_node) {
-		recipient *rcpt = rcpt_node->data;
+	foreach (recipient *rcpt, msgout->rcpt_list) {
 		if (addr_is_finished(rcpt)) {
 			msg->non_rcpt_list = g_list_append(msg->non_rcpt_list,
 					rcpt);
@@ -648,7 +619,6 @@ update_non_rcpt_list(msg_out *msgout)
 static void
 deliver_finish(msg_out *msgout)
 {
-	GList *rcpt_node;
 	message *msg = msgout->msg;
 	gboolean finished = TRUE;
 
@@ -658,8 +628,7 @@ deliver_finish(msg_out *msgout)
 	**  we NEVER made copies of the recipients, flags affecting recipients
 	**  were always set on the original recipient structs
 	*/
-	foreach(msg->rcpt_list, rcpt_node) {
-		recipient *rcpt = rcpt_node->data;
+	foreach (recipient *rcpt, msg->rcpt_list) {
 		if (!addr_is_finished_children(rcpt)) {
 			finished = FALSE;
 		} else {
@@ -698,7 +667,6 @@ static void
 deliver_remote(GList *remote_msgout_list)
 {
 	GList *route_list = NULL;
-	GList *route_node;
 	GList *rf_list = NULL;
 	gchar *connect_name = NULL;
 
@@ -711,9 +679,7 @@ deliver_remote(GList *remote_msgout_list)
 		DEBUG(5) debugf("processing perma_routes\n");
 
 		route_list = read_route_list(conf.perma_routes);
-		foreach(route_list, route_node) {
-			connect_route *route =
-					(connect_route *) (route_node->data);
+		foreach (connect_route *route, route_list) {
 			deliver_route_msg_list(route, remote_msgout_list);
 		}
 		destroy_route_list(route_list);
@@ -745,8 +711,7 @@ deliver_remote(GList *remote_msgout_list)
 		return;
 	}
 
-	foreach(route_list, route_node) {
-		connect_route *route = (connect_route *) (route_node->data);
+	foreach (connect_route *route, route_list) {
 		deliver_route_msg_list(route, remote_msgout_list);
 	}
 	destroy_route_list(route_list);
@@ -760,16 +725,13 @@ void
 deliver_msg_list(GList *msg_list, guint flags)
 {
 	GList *msgout_list = NULL;
-	GList *msg_node;
 	GList *local_msgout_list = NULL;
 	GList *remote_msgout_list = NULL;
-	GList *msgout_node;
 	GList *alias_table = NULL;
 	GList *globalias_table = NULL;
 
 	/* create msgout_list */
-	foreach(msg_list, msg_node) {
-		message *msg = (message *) msg_node->data;
+	foreach (message *msg, msg_list) {
 		msgout_list = g_list_append(msgout_list, create_msg_out(msg));
 	}
 
@@ -781,8 +743,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 	}
 
 	/* sort messages for different deliveries */
-	foreach(msgout_list, msgout_node) {
-		msg_out *msgout = (msg_out *) (msgout_node->data);
+	foreach (msg_out *msgout, msgout_list) {
 		GList *rcpt_list;
 		GList *local_rcpt_list = NULL;
 		GList *other_rcpt_list = NULL;
@@ -834,8 +795,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 
 	if (local_msgout_list) {
 		DEBUG(5) debugf("local_msgout_list\n");
-		foreach(local_msgout_list, msgout_node) {
-			msg_out *msgout = (msg_out *) (msgout_node->data);
+		foreach (msg_out *msgout, local_msgout_list) {
 			deliver_local(msgout);
 		}
 		destroy_msg_out_list(local_msgout_list);
@@ -848,8 +808,7 @@ deliver_msg_list(GList *msg_list, guint flags)
 	}
 
 	/* unlock spool files */
-	foreach(msgout_list, msgout_node) {
-		msg_out *msgout = (msg_out *) (msgout_node->data);
+	foreach (msg_out *msgout, msgout_list) {
 		DEBUG(5) debugf("spool_unlock(%s)\n", msgout->msg->uid);
 		spool_unlock(msgout->msg->uid);
 	}

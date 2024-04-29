@@ -11,6 +11,7 @@
 
 #include <ctype.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <netinet/in.h>
 #include <syslog.h>  // for log levels
 
@@ -480,10 +481,32 @@ gint time_interval(gchar *str);
 
 /* other things */
 
-#define foreach(list, node)\
-for((node) = g_list_first(list);\
-    (node);\
-    (node) = g_list_next(node))
+// the control variable makes 'break' work. idea stolen from Qt.
+#define foreach_4_(var, ctl, node, list) \
+	for (const GList *node = list, *ctl = (GList *)1; \
+	     ctl && node; \
+	     node = node->next, ctl = (GList *) ((uintptr_t) ctl ^ 1)) \
+		for (var = node->data; ctl; ctl = 0)
+
+#define foreach_3_(var, node, list) \
+	foreach_4_ (var, node##_ctl, node, list)
+
+#define foreach_2_(var, list) \
+	foreach_4_ (var, G_PASTE(node_ctl_, __LINE__), G_PASTE(node_, __LINE__), list)
+
+// macro overloading taken from https://stackoverflow.com/a/11763277/3685191
+#define foreach_sel_(_1, _2, _3, x, ...) x
+#define foreach(...) \
+	foreach_sel_(__VA_ARGS__, foreach_3_, foreach_2_, NO_foreach_1)(__VA_ARGS__)
+
+#define foreach_mut_5_(var, ctl, node, node_next, list) \
+	for (GList *node, *node_next = list, *ctl = (GList *)1; \
+	     ctl && (node = node_next) && (node_next = node->next, 1); \
+	     ctl = (GList *) ((uintptr_t) ctl ^ 1)) \
+		for (var = node->data; ctl; ctl = 0)
+
+#define foreach_mut(var, node, list) \
+	foreach_mut_5_ (var, node##_ctl, node, node##_next, list)
 
 #ifdef ENABLE_DEBUG
 #define DEBUG(level) if(level <= conf.debug_level)

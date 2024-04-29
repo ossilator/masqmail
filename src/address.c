@@ -203,10 +203,9 @@ domain_is_local(const gchar *domain)
 		return TRUE;
 	}
 
-	GList *dom_node;
-	foreach (conf.local_hosts, dom_node) {
+	foreach (gchar *loc_host, conf.local_hosts) {
 		// Note: FNM_CASEFOLD is a GNU extension
-		if (!fnmatch(dom_node->data, domain, FNM_CASEFOLD)) {
+		if (!fnmatch(loc_host, domain, FNM_CASEFOLD)) {
 			return TRUE;
 		}
 	}
@@ -216,17 +215,13 @@ domain_is_local(const gchar *domain)
 gboolean
 addr_is_local(address *addr)
 {
-	GList *addr_node;
-	address *a;
-
 	if (!addr->domain[0]) {
 		return TRUE;
 	}
 	if (domain_is_local(addr->domain)) {
 		// in local_hosts
 
-		foreach (conf.not_local_addresses, addr_node) {
-			a = addr_node->data;
+		foreach (address *a, conf.not_local_addresses) {
 			if (addr_isequal(a, addr, conf.localpartcmp)) {
 				// also in not_local_addresses
 				return FALSE;
@@ -234,8 +229,7 @@ addr_is_local(address *addr)
 		}
 		return TRUE;
 	}
-	foreach (conf.local_addresses, addr_node) {
-		a = addr_node->data;
+	foreach (address *a, conf.local_addresses) {
 		if (addr_isequal(a, addr, conf.localpartcmp)) {
 			// in local_addresses
 			return TRUE;
@@ -264,13 +258,10 @@ addr_isequal_parent(recipient *addr1, address *addr2,
 gboolean
 addr_is_delivered_children(recipient *addr)
 {
-	GList *addr_node;
-
 	if (!addr->children) {
 		return addr_is_delivered(addr);
 	}
-	foreach(addr->children, addr_node) {
-		recipient *child = addr_node->data;
+	foreach (recipient *child, addr->children) {
 		if (!addr_is_delivered_children(child)) {
 			return FALSE;
 		}
@@ -283,13 +274,10 @@ addr_is_delivered_children(recipient *addr)
 gboolean
 addr_is_finished_children(recipient *addr)
 {
-	GList *addr_node;
-
 	if (!addr->children) {
 		return addr_is_finished(addr);
 	}
-	foreach(addr->children, addr_node) {
-		recipient *child = addr_node->data;
+	foreach (recipient *child, addr->children) {
 		if (!addr_is_finished_children(child)) {
 			return FALSE;
 		}

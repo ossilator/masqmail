@@ -171,13 +171,8 @@ scan_headers(message *msg, guint flags)
 	gboolean has_sender = FALSE;
 	gboolean has_from = FALSE;
 	gboolean has_to_or_cc = FALSE;
-	GList *hdr_node, *hdr_node_next;
-	header *hdr;
 
-	for (hdr_node = g_list_first(msg->hdr_list); hdr_node;
-			hdr_node = hdr_node_next) {
-		hdr_node_next = g_list_next(hdr_node);
-		hdr = ((header *) (hdr_node->data));
+	foreach_mut (header *hdr, hdr_node, msg->hdr_list) {
 		DEBUG(5) debugf("scanning headers: %s", hdr->header);
 		switch (hdr->id) {
 		case HEAD_MESSAGE_ID:

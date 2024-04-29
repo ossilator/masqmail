@@ -36,15 +36,11 @@ destroy_msgout_perhost(msgout_perhost *mo_ph)
 static void
 filter_rcpts(GList *patterns, gboolean keep_matching, GList **rcpt_list)
 {
-	GList *rcpt_node;
 	GList *out_list = NULL;
 
-	foreach (*rcpt_list, rcpt_node) {
-		recipient *rcpt = rcpt_node->data;
+	foreach (recipient *rcpt, *rcpt_list) {
 		gboolean matched = FALSE;
-		GList *pat_node = NULL;
-		foreach (patterns, pat_node) {
-			address *pat = (address *) (pat_node->data);
+		foreach (address *pat, patterns) {
 			if (!fnmatch(pat->domain, rcpt->address->domain, FNM_CASEFOLD) &&
 			    !fnmatch(pat->local_part, rcpt->address->local_part, 0)) {  /* TODO: match local_part caseless? */
 				matched = TRUE;
@@ -84,9 +80,7 @@ route_filter_rcpts(connect_route *route, GList **rcpt_list)
 static gboolean
 is_non_recipient(recipient *addr, GList *non_rcpt_list)
 {
-	GList *non_node;
-	foreach (non_rcpt_list, non_node) {
-		recipient *non_addr = non_node->data;
+	foreach (recipient *non_addr, non_rcpt_list) {
 		if (addr_isequal(addr->address, non_addr->address, conf.localpartcmp)) {
 			return TRUE;
 		}
@@ -98,10 +92,7 @@ void
 split_rcpts(GList *rcpt_list, GList *non_rcpt_list,
             GList **local_rcpts, GList **remote_rcpts)
 {
-	GList *rcpt_node;
-
-	foreach(rcpt_list, rcpt_node) {
-		recipient *rcpt = rcpt_node->data;
+	foreach (recipient *rcpt, rcpt_list) {
 		if (addr_is_finished(rcpt)) {
 			// broken alias expansion
 		} else if (addr_is_alias(rcpt)) {
@@ -181,11 +172,9 @@ route_prepare_msgout(connect_route *route, msg_out *msgout)
 	if (rcpt_list != NULL) {
 		/* found a few */
 		DEBUG(5) {
-			GList *node;
 			debugf("rcpts for routed delivery, route = %s, id = %s\n",
 			       route->name, msgout->msg->uid);
-			foreach(rcpt_list, node) {
-				recipient *rcpt = node->data;
+			foreach (recipient *rcpt, rcpt_list) {
 				debugf("  rcpt for routed delivery: <%s>\n", rcpt->address->address);
 			}
 		}
@@ -206,26 +195,20 @@ GList*
 route_msgout_list(GList *msgout_list)
 {
 	GList *mo_ph_list = NULL;
-	GList *msgout_node;
 
-	foreach(msgout_list, msgout_node) {
-		msg_out *msgout = (msg_out *) (msgout_node->data);
+	foreach (msg_out *msgout, msgout_list) {
 		msg_out *msgout_new;
 		GList *rcpt_list = msgout->rcpt_list;
-		GList *rcpt_node;
-
-		foreach(rcpt_list, rcpt_node) {
-			recipient *rcpt = rcpt_node->data;
+		foreach (recipient *rcpt, rcpt_list) {
 			msgout_perhost *mo_ph = NULL;
-			GList *mo_ph_node = NULL;
-
 			/* search host in mo_ph_list */
-			foreach(mo_ph_list, mo_ph_node) {
-				mo_ph = (msgout_perhost *) (mo_ph_node->data);
-				if (strcasecmp(mo_ph->host, rcpt->address->domain) == 0)
+			foreach (msgout_perhost *tmp_mo_ph, mo_ph_list) {
+				if (!strcasecmp(tmp_mo_ph->host, rcpt->address->domain)) {
+					mo_ph = tmp_mo_ph;
 					break;
+				}
 			}
-			if (mo_ph_node != NULL) {
+			if (mo_ph != NULL) {
 				/* there is already a rcpt for this host */
 				msg_out *msgout_last = (msg_out *) ((g_list_last(mo_ph->msgout_list))->data);
 				if (msgout_last->msg == msgout->msg) {
@@ -255,8 +238,8 @@ route_msgout_list(GList *msgout_list)
 			/* It is the 1st rcpt for this msg to this host, therefore we safely give NULL */
 			msgout_new->rcpt_list = g_list_append(NULL, rcpt);
 			mo_ph->msgout_list = g_list_append(mo_ph->msgout_list, msgout_new);
-		}  /* foreach(rcpt_list, ... */
-	}  /* foreach(msgout_list, ... */
+		}  // foreach rcpt_list
+	}  // foreach msgout_list
 
 	return mo_ph_list;
 }

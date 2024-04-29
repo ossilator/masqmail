@@ -56,7 +56,6 @@ static gboolean
 expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 {
 	GList *val_list;
-	GList *val_node;
 
 	if (!addr_is_local(addr->address)) {
 		DEBUG(5) debugf("alias: '%s' is non-local, hence completed\n",
@@ -94,8 +93,7 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 
 	gboolean ok = TRUE;
 	val_list = parse_list(repl);
-	foreach(val_list, val_node) {
-		gchar *val = val_node->data;
+	foreach (gchar *val, val_list) {
 		recipient *alias_addr;
 	
 		DEBUG(6) debugf("alias: processing '%s'\n", val);
@@ -165,11 +163,8 @@ gboolean
 alias_expand(GList *globalias_table, GList *alias_table, GList *rcpt_list)
 {
 	gboolean ok = TRUE;
-	GList *rcpt_node = NULL;
 
-	for (rcpt_node = rcpt_list; rcpt_node;
-			rcpt_node=g_list_next(rcpt_node)) {
-		recipient *addr = rcpt_node->data;
+	foreach (recipient *addr, rcpt_list) {
 		if (!expand_one(globalias_table, alias_table, addr)) {
 			// while the problem would be fixable, realistically it won't be
 			// noticed in time. so we fail immediately rather than deferring.

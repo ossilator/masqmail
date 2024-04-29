@@ -370,12 +370,10 @@ send_data_line(smtp_base *psb, gchar *data)
 static void
 send_header(smtp_base *psb, GList *hdr_list)
 {
-	GList *node;
 	gint num_hdrs = 0;
 
 	/* header */
-	foreach (hdr_list, node) {
-		header *hdr = (header *) (node->data);
+	foreach (header *hdr, hdr_list) {
 		send_data_line(psb, hdr->header);
 		num_hdrs++;
 	}
@@ -390,12 +388,11 @@ send_header(smtp_base *psb, GList *hdr_list)
 static void
 send_data(smtp_base *psb, message *msg)
 {
-	GList *node;
 	gint num_lines = 0;
 
 	/* data */
-	for (node = g_list_first(msg->data_list); node; node = g_list_next(node)) {
-		send_data_line(psb, node->data);
+	foreach (gchar *line, msg->data_list) {
+		send_data_line(psb, line);
 		num_lines++;
 	}
 
@@ -407,10 +404,7 @@ send_data(smtp_base *psb, message *msg)
 void
 smtp_out_mark_rcpts(smtp_base *psb, GList *rcpt_list)
 {
-	GList *rcpt_node;
-	for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
-		recipient *rcpt = rcpt_node->data;
-
+	foreach (recipient *rcpt, rcpt_list) {
 		addr_unmark_delivered(rcpt);
 
 		if ((psb->error == smtp_trylater) || (psb->error == smtp_timeout) || (psb->error == smtp_eof)) {
@@ -712,9 +706,7 @@ void
 smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
              GList *rcpt_list, GList *hdr_list, gchar **err_msg)
 {
-	gint i;
 	gssize size;
-	int rcpt_cnt;
 	int rcpt_accept = 0;
 
 	DEBUG(5) debugf("smtp_out_msg entered\n");
@@ -726,7 +718,6 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		hdr_list = msg->hdr_list;
 	if (rcpt_list == NULL)
 		rcpt_list = msg->rcpt_list;
-	rcpt_cnt = g_list_length(rcpt_list);
 
 	size = msg_calc_size(msg, TRUE);
 
@@ -748,9 +739,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		}
 	}
 
-	GList *rcpt_node;
-	for (rcpt_node = g_list_first(rcpt_list); rcpt_node != NULL; rcpt_node = g_list_next(rcpt_node)) {
-		recipient *rcpt = rcpt_node->data;
+	foreach (recipient *rcpt, rcpt_list) {
 		smtp_cmd_rcptto(psb, rcpt->address);
 		if (!psb->use_pipelining) {
 			if (!smtp_out_rcptto_resp(psb, msg, rcpt, &rcpt_accept)) {
@@ -774,8 +763,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		if (!read_check_response(psb, SMTP_CMD_TIMEOUT, FALSE, "MAIL FROM")) {
 			goto fail;
 		}
-		for (i = 0; i < rcpt_cnt; i++) {
-			recipient *rcpt = g_list_nth_data(rcpt_list, i);
+		foreach (recipient *rcpt, rcpt_list) {
 			if (!smtp_out_rcptto_resp(psb, msg, rcpt, &rcpt_accept)) {
 				goto fail;
 			}
@@ -795,8 +783,7 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		goto fail;
 	}
 
-	for (rcpt_node = g_list_first(rcpt_list); rcpt_node; rcpt_node = g_list_next(rcpt_node)) {
-		recipient *rcpt = rcpt_node->data;
+	foreach (recipient *rcpt, rcpt_list) {
 		if (addr_is_delivered(rcpt)) {
 			logwrite(LOG_INFO, "%s => <%s> host=%s\n",
 			         msg->uid, rcpt->address->address, psb->remote_host);

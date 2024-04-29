@@ -29,15 +29,12 @@ resolve_ip(gchar *ip)
 static mxip_addr*
 connect_hostlist(int *psockfd, gint port, GList *addr_list)
 {
-	GList *addr_node;
 	struct sockaddr_in saddr;
 	int saved_errno;
 
 	DEBUG(5) debugf("connect_hostlist entered\n");
 
-	for (addr_node = g_list_first(addr_list); addr_node;
-			addr_node = g_list_next(addr_node)) {
-		mxip_addr *addr = (mxip_addr *) (addr_node->data);
+	foreach (mxip_addr *addr, addr_list) {
 		*psockfd = socket(PF_INET, SOCK_STREAM, 0);
 
 		memset(&saddr, 0, sizeof(saddr));
@@ -82,7 +79,6 @@ mxip_addr*
 connect_resolvelist(int *psockfd, gchar *host, gint port,
 		GList *res_func_list, gchar **err_msg)
 {
-	GList *res_node;
 	GList *addr_list;
 
 	DEBUG(5) debugf("connect_resolvelist entered\n");
@@ -98,11 +94,9 @@ connect_resolvelist(int *psockfd, gchar *host, gint port,
 	}
 
 	assert(res_func_list);
-	foreach(res_func_list, res_node) {
-		resolve_func res_func;
+	foreach (resolve_func res_func, res_func_list) {
 		DEBUG(6) debugf("  foreach() body\n");
 
-		res_func = (resolve_func) res_node->data;
 		assert(res_func);
 
 		if ((addr_list = res_func(host))) {

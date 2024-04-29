@@ -90,7 +90,6 @@ GList*
 resolve_dns_mx(gchar *domain)
 {
 	GList *list = NULL;
-	GList *node;
 	int cnt = 0;
 	ns_rr rr;
 	ns_msg nsmsg;
@@ -128,8 +127,7 @@ resolve_dns_mx(gchar *domain)
 		*/
 		tmp_list = g_list_sort(tmp_list, _mx_sort_func);
 
-		foreach (tmp_list, node) {
-			mxip_addr *p_mxip = (mxip_addr *) (node->data);
+		foreach (mxip_addr *p_mxip, tmp_list) {
 			list = resolve_dns_a(list, p_mxip->name, FALSE, p_mxip->pref);
 			if (!list)
 				break;

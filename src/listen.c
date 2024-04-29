@@ -90,14 +90,10 @@ queue_cb(G_GNUC_UNUSED gpointer user_data)
 void
 listen_port(GList *iface_list, gint qival)
 {
-	GList *node, *node_next;
-
 	/* Create the sockets and set them up to accept connections. */
-	for (node = g_list_first(iface_list); node; node = node_next) {
-		interface *iface = (interface *) (node->data);
+	foreach_mut (interface *iface, node, iface_list) {
 		int sock;
 
-		node_next = g_list_next(node);
 		if ((sock = make_server_socket(iface)) < 0) {
 			iface_list = g_list_delete_link(iface_list, node);
 			continue;

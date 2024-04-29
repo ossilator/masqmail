@@ -140,9 +140,7 @@ rewrite_headers(msg_out *msgout, const connect_route *route)
 	msgout->hdr_list = copy_header_list(msgout->msg->hdr_list);
 	gboolean changed = FALSE;
 
-	GList *hdr_node;
-	foreach (msgout->hdr_list, hdr_node) {
-		header *hdr = hdr_node->data;
+	foreach_mut (header *hdr, hdr_node, msgout->hdr_list) {
 		GList *table;
 		if (hdr->id == HEAD_FROM) {
 			table = route->map_h_from_addresses;

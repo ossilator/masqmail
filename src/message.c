@@ -33,13 +33,11 @@ create_message()
 gssize
 msg_calc_size(message *msg, gboolean is_smtp)
 {
-	GList *node;
 	gint l_cnt = 0;  /* line count (we need to add so many '\r' for SMTP) */
 	gssize c_cnt = 0;  /* character count */
 
 	/* message header size */
-	for (node = g_list_first(msg->hdr_list); node; node = g_list_next(node)) {
-		header *hdr = (header *) (node->data);
+	foreach (header *hdr, msg->hdr_list) {
 		char *p = hdr->header;
 		while (*p) {
 			if (*p++ == '\n')
@@ -53,8 +51,7 @@ msg_calc_size(message *msg, gboolean is_smtp)
 	l_cnt++;
 
 	/* message data size */
-	for (node = g_list_first(msg->data_list); node; node = g_list_next(node)) {
-		char *p = node->data;
+	foreach (gchar *p, msg->data_list) {
 		while (*p) {
 			if (*p++ == '\n')
 				l_cnt++;

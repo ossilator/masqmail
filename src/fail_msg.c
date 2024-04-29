@@ -17,12 +17,8 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg)
 
 	/* do not bounce bounces, send to postmaster instead */
 	if (msg->return_path->local_part[0] == '\0') {
-		GList *node;
-
 		ret_path = create_address_raw("postmaster", conf.host_name);
-		foreach(failed_rcpts, node) {
-			recipient *addr = node->data;
-
+		foreach (recipient *addr, failed_rcpts) {
 			if (addr_isequal_parent(addr, ret_path, strcasecmp)) {
 				logwrite(LOG_ERR, "%s == <%s>: postmaster address failed\n",
 				         msg->uid, ret_path->address);
@@ -72,15 +68,12 @@ WARNING_POP
 				out = fdopen(stdin_fd, "w");
 				while (read_sockline(file, fmt, 256, 0, 0) > 0) {
 					if (fmt[0] == '@') {
-						GList *node;
 						if (strncmp(fmt, "@failed_rcpts", 13) == 0) {
-							foreach(failed_rcpts, node) {
-								recipient *rcpt = node->data;
+							foreach (recipient *rcpt, failed_rcpts) {
 								fprintf(out, "\t<%s>\n", rcpt->address->address);
 							}
 						} else if (strncmp(fmt, "@msg_headers", 12) == 0) {
-							foreach(msg->hdr_list, node) {
-								header *hdr = (header *) (node->data);
+							foreach (header *hdr, msg->hdr_list) {
 								fputs(hdr->header, out);
 							}
 						} else if (strncmp(fmt, "@msg_body", 9) == 0) {
@@ -89,8 +82,7 @@ WARNING_POP
 							if (flag) {
 								spool_read_data(msg);
 							}
-							foreach(msg->data_list, node) {
-								gchar *line = (gchar *) (node->data);
+							foreach (gchar *line, msg->data_list) {
 								fputs(line, out);
 							}
 							if (flag)

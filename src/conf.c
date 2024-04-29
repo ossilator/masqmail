@@ -128,11 +128,9 @@ static GList*
 parse_address_glob_list(gchar *line)
 {
 	GList *plain_list = parse_list(line, TRUE);
-	GList *node;
 	GList *list = NULL;
 
-	foreach(plain_list, node) {
-		gchar *item = (gchar *) (node->data);
+	foreach (gchar *item, plain_list) {
 		char *at;
 		address *addr;
 
@@ -157,16 +155,13 @@ static GList*
 parse_resolve_list(gchar *line)
 {
 	GList *list;
-	GList *list_node;
 	GList *res_list = NULL;
-	gchar *item;
 
 	list = parse_list(line, TRUE);
 	if (!list) {
 		return NULL;
 	}
-	foreach(list, list_node) {
-		item = (gchar *) list_node->data;
+	foreach (gchar *item, list) {
 		if (strcmp(item, "byname")==0) {
 			res_list = g_list_append(res_list, resolve_byname);
 #ifdef ENABLE_RESOLVER
@@ -205,10 +200,8 @@ static GList *
 finalize_address_list(GList *addrs, const gchar *what)
 {
 	GList *out = NULL;
-	GList *node;
 
-	foreach (addrs, node) {
-		gchar *item = node->data;
+	foreach (gchar *item, addrs) {
 		address *a = create_address(item, A_RFC821, conf.host_name);
 		if (!a) {
 			logwrite(LOG_ERR, "invalid address '%s' in %s: %s\n",
@@ -539,9 +532,7 @@ read_conf(void)
 		static char def_ivals[] = "1h;4h;8h;1d;2d;3d";  // not const!
 		warn_intervals_tmp = parse_list(def_ivals, TRUE);
 	}
-	GList *node;
-	foreach (warn_intervals_tmp, node) {
-		gchar *str_ival = node->data;
+	foreach (gchar *str_ival, warn_intervals_tmp) {
 		gint ival = time_interval(str_ival);
 		if (ival < 0) {
 			logwrite(LOG_ERR, "invalid time interval for 'warn_intervals': %s\n", str_ival);
@@ -576,13 +567,10 @@ read_conf(void)
 		conf.listen_addresses = g_list_append(NULL,
 				parse_interface("localhost", 25));
 	} else {
-		GList *node;
-
-		foreach(listen_addrs_tmp, node) {
+		foreach (gchar *line, listen_addrs_tmp) {
 			conf.listen_addresses =
 					g_list_append(conf.listen_addresses,
-					parse_interface((gchar *) node->data,
-					25));
+			                      parse_interface(line, 25));
 		}
 		destroy_ptr_list(listen_addrs_tmp);
 	}
@@ -593,12 +581,11 @@ read_conf(void)
 static gboolean
 parse_rewrite_map(gchar *rval, GList **out, addr_type_t addr_type)
 {
-	GList *list, *node;
+	GList *list;
 	gboolean ret = TRUE;
 
 	list = parse_list(rval, TRUE);
-	foreach(list, node) {
-		gchar *item = node->data;
+	foreach (gchar *item, list) {
 		table_pair *pair = parse_table_pair(item, ':');
 		gchar *repl = pair->value;
 		replacement *addr;
@@ -801,11 +788,9 @@ GList*
 read_route_list(GList *rf_list)
 {
 	GList *list = NULL;
-	GList *node;
 
 	acquire_root();
-	foreach(rf_list, node) {
-		gchar *fname = (gchar *) (node->data);
+	foreach (gchar *fname, rf_list) {
 		connect_route *route = read_route(fname);
 		if (route) {
 			list = g_list_append(list, route);

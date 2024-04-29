@@ -31,7 +31,7 @@ debugf(const char *fmt, ...)
 int
 main(int argc, char *argv[])
 {
-	GList *addr_list = NULL, *node;
+	GList *addr_list = NULL;
 
 	conf.debug_level = -1;  /* no debug messages */
 
@@ -46,8 +46,7 @@ main(int argc, char *argv[])
 	}
 
 	addr_list = resolve_dns_mx(argv[1]);
-	foreach(addr_list, node) {
-		mxip_addr *p_mxip = (mxip_addr *) (node->data);
+	foreach (mxip_addr *p_mxip, addr_list) {
 		printf("%s  \t%s  %d\n", p_mxip->name,
 		       inet_ntoa(*(struct in_addr *) &(p_mxip->ip)), p_mxip->pref);
 	}

@@ -62,10 +62,7 @@ rec_timestamp()
 header *
 find_header(GList *hdr_list, header_id id)
 {
-	GList *node;
-
-	foreach(hdr_list, node) {
-		header *hdr = (header *) (node->data);
+	foreach (header *hdr, hdr_list) {
 		if (hdr->id == id) {
 			return hdr;
 		}

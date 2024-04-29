@@ -23,7 +23,6 @@ static gboolean
 message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 {
 	time_t now = time(NULL);
-	GList *node;
 
 	if (flags & MSGSTR_FROMLINE) {
 		if (fprintf(out, "From %s %s", msg->return_path->address, ctime(&now)) < 0) {
@@ -31,8 +30,7 @@ message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 		}
 	}
 
-	foreach(hdr_list, node) {
-		header *hdr = (header *) (node->data);
+	foreach (header *hdr, hdr_list) {
 		if (fputs(hdr->header, out) == EOF) {
 			goto fail;
 		}
@@ -41,16 +39,16 @@ message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 		goto fail;
 	}
 
-	foreach(msg->data_list, node) {
+	foreach (gchar *line, msg->data_list) {
 		/* From hack: */
 		if (flags & MSGSTR_FROMHACK) {
-			if (strncmp(node->data, "From ", 5) == 0) {
+			if (strncmp(line, "From ", 5) == 0) {
 				if (putc('>', out) == EOF) {
 					goto fail;
 				}
 			}
 		}
-		if (fputs(node->data, out) == EOF) {
+		if (fputs(line, out) == EOF) {
 			goto fail;
 		}
 	}

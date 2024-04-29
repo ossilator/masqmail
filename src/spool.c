@@ -228,7 +228,6 @@ msg_spool_read(gchar *uid)
 static gboolean
 spool_write_header(message *msg)
 {
-	GList *node;
 	gchar *spool_file, *tmp_file;
 	FILE *out;
 	gboolean ok = TRUE;
@@ -240,12 +239,10 @@ spool_write_header(message *msg)
 		fprintf(out, "%s\n", msg->uid);
 		fprintf(out, "MF:<%s>\n", msg->return_path->address);
 
-		foreach(msg->rcpt_list, node) {
-			recipient *rcpt = node->data;
+		foreach (recipient *rcpt, msg->rcpt_list) {
 			spool_write_rcpt(out, rcpt);
 		}
-		foreach(msg->non_rcpt_list, node) {
-			recipient *rcpt = node->data;
+		foreach (recipient *rcpt, msg->non_rcpt_list) {
 			spool_write_rcpt(out, rcpt);
 		}
 		fprintf(out, "PR:%s\n", prot_names[msg->received_prot]);
@@ -266,8 +263,7 @@ spool_write_header(message *msg)
 
 		fprintf(out, "\n");
 
-		foreach(msg->hdr_list, node) {
-			header *hdr = (header *) (node->data);
+		foreach (header *hdr, msg->hdr_list) {
 			fprintf(out, "HD:%s", hdr->header);
 		}
 		if (fflush(out) == EOF)
@@ -298,7 +294,6 @@ spool_write_header(message *msg)
 gboolean
 spool_write(message *msg, gboolean do_write_data)
 {
-	GList *list;
 	gchar *spool_file, *tmp_file;
 	FILE *out;
 	gboolean ok = TRUE;
@@ -315,8 +310,8 @@ spool_write(message *msg, gboolean do_write_data)
 
 		if ((out = fopen(tmp_file, "w"))) {
 			fprintf(out, "%s\n", msg->uid);
-			for (list = g_list_first(msg->data_list); list != NULL; list = g_list_next(list)) {
-				fprintf(out, "%s", (gchar *) (list->data));
+			foreach (gchar *line, msg->data_list) {
+				fprintf(out, "%s", line);
 			}
 
 			/* possibly paranoid ;-) */
