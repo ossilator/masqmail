@@ -187,6 +187,53 @@ $(make_generic_body)
 EOF
 }
 
+eval_delivery()
+{
+	if [ $1 -lt $2 ]; then
+		echo "Mail was not delivered correctly to ${3#$TEST_DIR/}." >&2
+		return 1
+	fi
+	if [ $1 -gt $2 ]; then
+		echo "Excess mail delivered to ${3#$TEST_DIR/}." >&2
+		return 1
+	fi
+	CURR_BOX=$3
+	return 0
+}
+
+verify_local_delivery()
+{
+	local count=${1:-1}
+	local box=${2:-$LOCAL_BOX}
+	local num=$(grep -c "^$GREETING\$" "$box" || true)
+	eval_delivery $num $count "$box"
+}
+
+verify_remote_delivery()
+{
+	local count=${1:-1}
+	local box=${2:-$SERVER_BOX}
+	local got=false
+	for i in $BACKOFF; do
+		sleep $i
+		local num=$(grep -c "^$GREETING\$" "$box" || true)
+		[ $num -gt $count ] && break
+		$got && break
+		[ $num -ge 1 ] && got=true
+	done
+	eval_delivery $num $count "$box"
+}
+
+verify_content()
+{
+	local count=${2:-1}
+	local box=${3:-$CURR_BOX}
+	local num=$(grep -c "$1" "$box" || true)
+	[ $num -eq $count ] && return 0
+	echo "Got $num instead of $count occurrence(s) of '$1' in ${box#$TEST_DIR/}." >&2
+	return 1
+}
+
 if [ ! -d "$OUT_BASE" ]; then
 	tmp=$(mktemp -d)
 	# we race with other instances here

@@ -9,3 +9,5 @@ configure_mailhost_relay
 configure_relay_all
 
 send_generic_mail $RECV_ADDR
+
+verify_remote_delivery

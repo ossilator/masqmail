@@ -14,3 +14,6 @@ there is a dot above.
 
 Fritz
 EOF
+
+verify_local_delivery
+verify_content '^\.$'
