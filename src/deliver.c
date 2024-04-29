@@ -126,8 +126,7 @@ deliver_local_mda(message *msg, GList *hdr_list, address *rcpt)
 
 	if (!expand(var_table, conf.mda, cmd, 256)) {
 		logwrite(LOG_ERR, "could not expand string %s\n", conf.mda);
-		destroy_table(var_table);
-		return FALSE;
+		goto fail;
 	}
 
 	flags |= (conf.mda_fromline) ? MSGSTR_FROMLINE : 0;
@@ -138,6 +137,7 @@ deliver_local_mda(message *msg, GList *hdr_list, address *rcpt)
 		addr_mark_delivered(rcpt);
 		ok = TRUE;
 	} else if (errno != EAGAIN) {
+	  fail:
 		addr_mark_failed(rcpt);
 	} else {
 		addr_mark_defered(rcpt);
@@ -281,8 +281,7 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 
 			if (!expand(var_table, route->pipe, cmd, 256)) {
 				logwrite(LOG_ERR, "could not expand string `%s'\n", route->pipe);
-				destroy_table(var_table);
-				continue;
+				goto fail;
 			}
 
 			if (pipe_out(msg, msg->hdr_list, rcpt, cmd, (route->pipe_fromline ? MSGSTR_FROMLINE : 0)
@@ -293,6 +292,7 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 				ok = TRUE;
 			} else {
 				if (route->connect_error_fail) {
+				  fail:
 					addr_mark_failed(rcpt);
 				} else {
 					addr_mark_defered(rcpt);
