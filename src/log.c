@@ -40,7 +40,6 @@ ext_strerror(int err)
 	return "unknown error";
 }
 
-static FILE *logfile = NULL;
 #ifdef ENABLE_DEBUG
 static FILE *debugfile = NULL;
 #endif
@@ -54,12 +53,14 @@ void logopen()
 		openlog(PACKAGE, LOG_PID, LOG_MAIL);
 	} else {
 		filename = g_strdup_printf("%s/masqmail.log", conf.log_dir);
-		logfile = fopen(filename, "a");
-		if (!logfile) {
+		int logfd = open(filename, O_WRONLY | O_APPEND | O_CREAT, 0666);
+		if (logfd < 0) {
 			fprintf(stderr, "could not open log '%s': %s\n", filename, strerror(errno));
 			exit(1);
 		}
 		g_free(filename);
+		dup2(logfd, 2);
+		close(logfd);
 	}
 
 #ifdef ENABLE_DEBUG
@@ -81,8 +82,6 @@ logclose()
 {
 	if (conf.use_syslog)
 		closelog();
-	else if (logfile)
-		fclose(logfile);
 #ifdef ENABLE_DEBUG
 	if (debugfile)
 		fclose(debugfile);
@@ -96,16 +95,14 @@ vlogwrite(int pri, const char *fmt, va_list args)
 		vsyslog(pri, fmt, args);
 		return;
 	}
-	FILE *file = logfile ? logfile : stderr;
 	time_t now = time(NULL);
 	struct tm *t = localtime(&now);
 	gchar buf[24];
 
 	strftime(buf, 24, "%Y-%m-%d %H:%M:%S", t);
-	fprintf(file, "%s [%d] ", buf, getpid());
+	fprintf(stderr, "%s [%d] ", buf, getpid());
 
-	vfprintf(file, fmt, args);
-	fflush(file);
+	vfprintf(stderr, fmt, args);
 }
 
 #ifdef ENABLE_DEBUG
