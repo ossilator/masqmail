@@ -382,6 +382,7 @@ read_conf(gchar *filename)
 	conf.localpartcmp = strcmp;
 	conf.max_defer_time = 86400 * 4;  /* 4 days */
 	conf.max_msg_size = 0; /* no limit on msg size */
+	conf.log_dir = LOG_DIR;
 	conf.lock_dir = LOCK_DIR;
 	conf.spool_dir = SPOOL_DIR;
 	conf.mail_dir = "/var/mail";
