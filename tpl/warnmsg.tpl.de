@@ -10,18 +10,18 @@ This is a MIME-encapsulated message.
 --${uid}/${host_name}
 Content-Description: Notification
 Content-Type: text/plain;
-  charset=iso-8859-1
+  charset=utf-8
 
 Diese Nachricht wurde Ihnen von dem Mail Agenten
 (${package} ${version}) auf ${host_name} geschickt.
 (This message was sent to you by the mailer daemon (${package} ${version})
 at ${host_name}.)
 
-Bedauerlicherweise konnte Ihre Mail noch nicht an alle Empfänger
+Bedauerlicherweise konnte Ihre Mail noch nicht an alle EmpfÃ¤nger
 zugestellt werden.
 (Sorry, but your mail could not yet be delivered to all recipients.)
 
-Die Mail konnte bis jetzt zu folgenden Empfängern nicht zugestellt werden:
+Die Mail konnte bis jetzt zu folgenden EmpfÃ¤ngern nicht zugestellt werden:
 (Delivery to the following recipients has been defered:)
 
 @failed_rcpts
@@ -33,13 +33,13 @@ Ihnen eine Fehlermeldung zugestellt.
 timeout has been reached. If the latter happens, you will get a
 delivery failure notice.)
 
-Diese Fehlermeldung könnte einen Hinweis über die Ursache geben:
+Diese Fehlermeldung kÃ¶nnte einen Hinweis Ã¼ber die Ursache geben:
 (This error message may give you a hint about what caused the
 delay:)
 
 ${err_msg}
 
-Für weitere Hilfe, schreiben Sie an <postmaster@${host_name}>.
+FÃ¼r weitere Hilfe, schreiben Sie an <postmaster@${host_name}>.
 (If you need help, write to <postmaster@${host_name}>.)
 
 Die header Ihrer Mail folgen im Anhang:

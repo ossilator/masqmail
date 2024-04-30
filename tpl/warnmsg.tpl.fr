@@ -11,34 +11,34 @@ This is a MIME-encapsulated message.
 --${uid}/${host_name}
 Content-Description: Notification
 Content-Type: text/plain;
-  charset=iso-8859-1
+  charset=utf-8
 
 [ENGLISH BELOW]
 
 ------------------------------[ FRANCAIS ]------------------------------
 
-Ce message vous a été envoyé par le serveur de messagerie
+Ce message vous a Ã©tÃ© envoyÃ© par le serveur de messagerie
 (${package} ${version}) sur ${host_name}.
 
-J'ai le regret de vous informer que votre courrier n'a pas pu être transmis
-à tous ses destinataires. L'expédition vers les destinataires suivants a été
-différée:
+J'ai le regret de vous informer que votre courrier n'a pas pu Ãªtre transmis
+Ã  tous ses destinataires. L'expÃ©dition vers les destinataires suivants a Ã©tÃ©
+diffÃ©rÃ©e:
 
 @failed_rcpts
 
-D'autres tentatives d'envoi vont être effectuées, jusqu'à ce que cela
-réussisse ou dépasse une certaine limite dans le temps. Dans ce cas, vous
-recevrez une notification d'échec d'expédition.
+D'autres tentatives d'envoi vont Ãªtre effectuÃ©es, jusqu'Ã  ce que cela
+rÃ©ussisse ou dÃ©passe une certaine limite dans le temps. Dans ce cas, vous
+recevrez une notification d'Ã©chec d'expÃ©dition.
 
 
-Ce message d'erreur peut peut-être vous aider à déterminer l'origine du
-délai:
+Ce message d'erreur peut peut-Ãªtre vous aider Ã  dÃ©terminer l'origine du
+dÃ©lai:
 
 ${err_msg}
 
-Si vous avez besoin d'aide, écrivez à <postmaster@${host_name}>.
+Si vous avez besoin d'aide, Ã©crivez Ã  <postmaster@${host_name}>.
 
-Les entêtes de votre message sont inclus en pièce jointe.
+Les entÃªtes de votre message sont inclus en piÃ¨ce jointe.
 
 
 ------------------------------[ ENGLISH ]------------------------------

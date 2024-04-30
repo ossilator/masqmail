@@ -11,31 +11,31 @@ This is a MIME-encapsulated message.
 --${uid}/${host_name}
 Content-Description: Notification
 Content-Type: text/plain;
-  charset=iso-8859-1
+  charset=utf-8
 
 Diese Nachricht wurde Ihnen von dem Mail Agenten
 (${package} ${version}) auf ${host_name} geschickt.
 (This message was sent to you by the mailer daemon (${package} ${version})
 at ${host_name}.)
 
-Bedauerlicherweise konnte Ihre Mail nicht an alle Empfänger weitergeleitet
+Bedauerlicherweise konnte Ihre Mail nicht an alle EmpfÃ¤nger weitergeleitet
 werden.
 (Sorry, but your mail could not be delivered to all recipients.)
 
-Die Zustellung zu den folgenden Empfängern ist permanent
+Die Zustellung zu den folgenden EmpfÃ¤ngern ist permanent
 fehlgeschlagen. Es wird kein weiterer Versuch unternommen:
 (Delivery to the following recipients failed permanently and has been given
 up:)
 
 @failed_rcpts
 
-Diese Fehlermeldung könnte einen Hinweis über die Ursache geben:
+Diese Fehlermeldung kÃ¶nnte einen Hinweis Ã¼ber die Ursache geben:
 (This error message may give you a hint about what caused the
 failure:)
 
 ${err_msg}
 
-Für weitere Hilfe, schreiben Sie an <postmaster@${host_name}>.
+FÃ¼r weitere Hilfe, schreiben Sie an <postmaster@${host_name}>.
 (If you need help, write to <postmaster@${host_name}>.)
 
 Ihre Nachricht folgt im Anhang, einschliesslich aller Header:

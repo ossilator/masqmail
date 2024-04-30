@@ -11,34 +11,34 @@ This is a MIME-encapsulated message.
 --${uid}/${host_name}
 Content-Description: Notification
 Content-Type: text/plain;
-  charset=iso-8859-1
+  charset=utf-8
 
-Ce message vous a été envoyé par le serveur de messagerie
+Ce message vous a Ã©tÃ© envoyÃ© par le serveur de messagerie
 (${package} ${version}) sur ${host_name}.
 (This message was sent to you by the mailer daemon (${package} ${version})
 at ${host_name}.)
 
-J'ai le regret de vous informer que votre courrier n'a pas pu être transmis à
+J'ai le regret de vous informer que votre courrier n'a pas pu Ãªtre transmis Ã 
 tous ses destinataires.
 (Sorry, but your mail could not be delivered to all recipients.)
 
-L'expédition vers les destinataires suivants a échoué et a été définitivement
-abandonnée:
+L'expÃ©dition vers les destinataires suivants a Ã©chouÃ© et a Ã©tÃ© dÃ©finitivement
+abandonnÃ©e:
 (Delivery to the following recipients failed permanently and has been given
 up:)
 
 @failed_rcpts
 
-Ce message d'erreur peut vous aider à déterminer la cause de l'échec:
+Ce message d'erreur peut vous aider Ã  dÃ©terminer la cause de l'Ã©chec:
 (This error message may give you a hint about what caused the
 failure:)
 
 ${err_msg}
 
-Si vous avez besoin d'aide, veuillez écrire à <postmaster@${host_name}>.
+Si vous avez besoin d'aide, veuillez Ã©crire Ã  <postmaster@${host_name}>.
 (If you need help, write to <postmaster@${host_name}>.)
 
-Votre message original est attaché, avec tous ces entêtes:
+Votre message original est attachÃ©, avec tous ces entÃªtes:
 (Your message follows attached, including all headers:)
 
 --${uid}/${host_name}
