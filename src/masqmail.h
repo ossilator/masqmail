@@ -407,7 +407,10 @@ int make_server_socket(interface *iface);
 
 /* local.c */
 gboolean append_file(message *msg, GList *hdr_list, gchar *user);
-gboolean pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags);
+gboolean prepare_pipe(const gchar *cmd, const gchar *what, GList *var_table,
+                      gchar ***argv, gchar **out_cmd);
+gboolean pipe_out(message *msg, GList *hdr_list, recipient *rcpt,
+                  gchar **argv, gchar *cmd, guint flags);
 
 /* log.c */
 gchar *sysexit_str(int err);

@@ -92,26 +92,35 @@ static gboolean
 deliver_local_pipe(message *msg, GList *hdr_list, recipient *rcpt,
                    recipient *env_addr)
 {
+	gboolean ok = FALSE;
 	guint flags = 0;
 
 	DEBUG(1) debugf("attempting to deliver %s with pipe\n", msg->uid);
 
-	flags |= (conf.pipe_fromline) ? MSGSTR_FROMLINE : 0;
-	flags |= (conf.pipe_fromhack) ? MSGSTR_FROMHACK : 0;
-	if (pipe_out(msg, hdr_list, rcpt, &(rcpt->address->local_part[1]), flags)) {
-		logwrite(LOG_INFO, "%s => %s <%s> with pipe\n",
-		         msg->uid, rcpt->address->local_part, env_addr->address->address);
-		addr_mark_delivered(rcpt);
-		return TRUE;
+	gchar **argv = NULL, *cmd = NULL;
+	if (!prepare_pipe(&rcpt->address->local_part[1], "alias", NULL, &argv, &cmd)) {
+		goto fail;
 	}
 
-	if (errno != EAGAIN) {
+	flags |= (conf.pipe_fromline) ? MSGSTR_FROMLINE : 0;
+	flags |= (conf.pipe_fromhack) ? MSGSTR_FROMHACK : 0;
+	if (pipe_out(msg, hdr_list, rcpt, argv, cmd, flags)) {
+		logwrite(LOG_INFO, "%s => %s <%s> with pipe (cmd = %s)\n",
+		         msg->uid, rcpt->address->local_part, env_addr->address->address, cmd);
+		addr_mark_delivered(rcpt);
+		ok = TRUE;
+	} else if (errno != EAGAIN) {
+	  fail:
 		addr_mark_failed(rcpt);
 	} else {
 		addr_mark_defered(rcpt);
 		/* has no effect yet, except that mail remains in spool */
 	}
-	return FALSE;
+
+	g_free(cmd);
+	g_strfreev(argv);
+
+	return ok;
 }
 
 static gboolean
@@ -121,19 +130,18 @@ deliver_local_mda(message *msg, GList *hdr_list, recipient *rcpt)
 	GList *var_table = var_table_rcpt(var_table_msg(NULL, msg),
 	                                  rcpt->address);
 	guint flags = 0;
-	gchar cmd[256];
 
 	DEBUG(1) debugf("attempting to deliver %s with mda\n", msg->uid);
 
-	if (!expand(var_table, conf.mda, cmd, 256)) {
-		logwrite(LOG_ERR, "could not expand string %s\n", conf.mda);
+	gchar **argv = NULL, *cmd = NULL;
+	if (!prepare_pipe(conf.mda, "MDA", var_table, &argv, &cmd)) {
 		goto fail;
 	}
 
 	flags |= (conf.mda_fromline) ? MSGSTR_FROMLINE : 0;
 	flags |= (conf.mda_fromhack) ? MSGSTR_FROMHACK : 0;
-	if (pipe_out(msg, hdr_list, rcpt, cmd, flags)) {
-		logwrite(LOG_INFO, "%s => %s with mda (cmd = '%s')\n",
+	if (pipe_out(msg, hdr_list, rcpt, argv, cmd, flags)) {
+		logwrite(LOG_INFO, "%s => %s with mda (cmd = %s)\n",
 		         msg->uid, rcpt->address->address, cmd);
 		addr_mark_delivered(rcpt);
 		ok = TRUE;
@@ -144,6 +152,9 @@ deliver_local_mda(message *msg, GList *hdr_list, recipient *rcpt)
 		addr_mark_defered(rcpt);
 		/* has no effect yet, except that mail remains in spool */
 	}
+
+	g_free(cmd);
+	g_strfreev(argv);
 
 	destroy_table(var_table);
 	return ok;
@@ -272,21 +283,21 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 		ok = FALSE;
 		foreach(rcpt_list, rcpt_node) {
 			recipient *rcpt = rcpt_node->data;
-			gchar cmd[256];
 			GList *var_table = var_table_rcpt(var_table_msg(NULL, msg),
 			                                  rcpt->address);
 
 			DEBUG(1) debugf("attempting to deliver %s to %s "
 			                "with pipe\n", msg->uid, rcpt->address->address);
 
-			if (!expand(var_table, route->pipe, cmd, 256)) {
-				logwrite(LOG_ERR, "could not expand string `%s'\n", route->pipe);
+			gchar **argv = NULL, *cmd = NULL;
+			if (!prepare_pipe(route->pipe, "host", var_table, &argv, &cmd)) {
 				goto fail;
 			}
 
-			if (pipe_out(msg, msg->hdr_list, rcpt, cmd, (route->pipe_fromline ? MSGSTR_FROMLINE : 0)
-			    | (route->pipe_fromhack ? MSGSTR_FROMHACK : 0))) {
-				logwrite(LOG_INFO, "%s => %s with pipe (cmd = '%s')\n",
+			if (pipe_out(msg, msg->hdr_list, rcpt, argv, cmd,
+			             (route->pipe_fromline ? MSGSTR_FROMLINE : 0) |
+			             (route->pipe_fromhack ? MSGSTR_FROMHACK : 0))) {
+				logwrite(LOG_INFO, "%s => %s with pipe (cmd = %s)\n",
 				         msg->uid, rcpt->address->address, cmd);
 				addr_mark_delivered(rcpt);
 				ok = TRUE;
@@ -298,6 +309,9 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 					addr_mark_defered(rcpt);
 				}
 			}
+
+			g_free(cmd);
+			g_strfreev(argv);
 
 			destroy_table(var_table);
 		}

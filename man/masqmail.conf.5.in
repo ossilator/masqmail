@@ -498,6 +498,12 @@ If you need to quote something, remember to add an additional level
 of backslashes, as the option value is de-quoted.
 
 .IP \(bu 2
+Variables are expanded
+.I after
+the command is split.
+Therefore, it is not necessary to quote them.
+
+.IP \(bu 2
 For the MDA, as for pipe commands,
 a few environment variables will be set as well.
 See

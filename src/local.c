@@ -163,19 +163,79 @@ append_file(message *msg, GList *hdr_list, gchar *user)
 	return ok;
 }
 
+static gboolean
+has_shell_meta(const gchar *str)
+{
+	return strpbrk(str, "\\\"'`~*?{}<>()&|;#! \t") != NULL;
+}
+
+static void
+free_str_arr(gchar **arr, guint n)
+{
+	for (guint i = 0; i < n; i++) {
+		g_free(arr[i]);
+	}
+}
+
+static gchar *
+join_argv(gchar **argv, guint l)
+{
+	gchar **qargv = g_alloca((l + 1) * sizeof(gchar *));
+	for (guint i = 0; i < l; i++) {
+		if (has_shell_meta(argv[i])) {
+			qargv[i] = g_shell_quote(argv[i]);
+		} else {
+			qargv[i] = g_strdup(argv[i]);
+		}
+	}
+	qargv[l] = NULL;
+	gchar *ret = g_strjoinv(" ", qargv);
+	free_str_arr(qargv, l);
+	return ret;
+}
+
 gboolean
-pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags)
+prepare_pipe(const gchar *cmd, const gchar *what, GList *var_table,
+             gchar ***argv, gchar **out_cmd)
+{
+	GError *gerr = NULL;
+	if (!g_shell_parse_argv(cmd, NULL, argv, &gerr)) {
+		loggerror(LOG_ERR, gerr, "failed to parse %s pipe command", what);
+		return FALSE;
+	}
+	guint l = g_strv_length(*argv);
+	if (var_table) {
+		for (guint i = 0; i < l; i++) {
+			gchar buf[256];
+			if (!expand(var_table, (*argv)[i], buf, 256)) {
+				logwrite(LOG_ERR, "could not expand string `%s'\n", (*argv)[i]);
+				g_strfreev(*argv);
+				*argv = NULL;
+				return FALSE;
+			}
+			if (strcmp(buf, (*argv)[i])) {
+				g_free((*argv)[i]);
+				(*argv)[i] = g_strdup(buf);
+			}
+		}
+	}
+	*out_cmd = join_argv(*argv, l);
+	return TRUE;
+}
+
+gboolean
+pipe_out(message *msg, GList *hdr_list, recipient *rcpt,
+         gchar **argv, gchar *cmd, guint flags)
 {
 	gchar *envp[40];
 	FILE *out;
 	gboolean ok = FALSE;
-	gint i, n;
 	pid_t pid;
 	int status;
 	recipient *ancestor = addr_find_ancestor(rcpt);
 
 	/* set environment */
-	n = 0;
+	gint n = 0;
 	envp[n++] = g_strdup_printf("RETURN_PATH=%s", msg->return_path->address);
 	envp[n++] = g_strdup_printf("SENDER=%s",
 			msg->return_path->address);
@@ -196,12 +256,7 @@ pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags
 
 	envp[n] = NULL;
 
-	gchar **argv;
 	GError *gerr = NULL;
-	if (!g_shell_parse_argv(cmd, NULL, &argv, &gerr)) {
-		loggerror(LOG_ERR, gerr, "failed to parse pipe command");
-		goto fail;
-	}
 	int stdin_fd;
 	gboolean cldok = g_spawn_async_with_pipes(
 			NULL /* workdir */, argv, envp,
@@ -210,7 +265,7 @@ pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags
 			NULL, NULL, /* child setup */
 			&pid, &stdin_fd, NULL /* out */, NULL /* err */, &gerr);
 	if (!cldok) {
-		loggerror(LOG_ERR, gerr, "failed to launch pipe command '%s'", cmd);
+		loggerror(LOG_ERR, gerr, "failed to launch pipe command %s", cmd);
 	} else {
 		out = fdopen(stdin_fd, "w");
 		ok = message_stream(out, msg, hdr_list, flags);
@@ -221,23 +276,19 @@ pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags
 
 		if (WEXITSTATUS(status) != 0) {
 			int exstat = WEXITSTATUS(status);
-			logwrite(LOG_ERR, "process '%s' returned %d (%s)\n",
+			logwrite(LOG_ERR, "process `%s` returned %d (%s)\n",
 			         cmd, exstat, sysexit_str(exstat));
 			errno = (exstat == EX_TEMPFAIL) ? EAGAIN : ECANCELED;
 			ok = FALSE;
 		} else if (WIFSIGNALED(status)) {
-			logwrite(LOG_ERR, "process '%s' got signal %d\n",
+			logwrite(LOG_ERR, "process `%s` got signal %d\n",
 			         cmd, WTERMSIG(status));
 			errno = ECANCELED;
 			ok = FALSE;
 		}
 	}
 
-  fail:
-	/* free environment */
-	for (i = 0; i < n; i++) {
-		g_free(envp[i]);
-	}
+	free_str_arr(envp, n);
 
 	return ok;
 }
