@@ -45,8 +45,7 @@ static FILE *logfile = NULL;
 static FILE *debugfile = NULL;
 #endif
 
-gboolean
-logopen()
+void logopen()
 {
 	gchar *filename;
 	mode_t saved_mode = umask(066);
@@ -58,7 +57,7 @@ logopen()
 		logfile = fopen(filename, "a");
 		if (!logfile) {
 			fprintf(stderr, "could not open log '%s': %s\n", filename, strerror(errno));
-			return FALSE;
+			exit(1);
 		}
 		g_free(filename);
 	}
@@ -69,13 +68,12 @@ logopen()
 		debugfile = fopen(filename, "a");
 		if (!debugfile) {
 			fprintf(stderr, "could not open debug log '%s'\n", filename);
-			return FALSE;
+			exit(1);
 		}
 		g_free(filename);
 	}
 #endif
 	umask(saved_mode);
-	return TRUE;
 }
 
 void

@@ -638,9 +638,7 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (!logopen()) {
-		exit(1);
-	}
+	logopen();
 
 	DEBUG(1) debugf("----STARTING---- masqmail %s\n", VERSION);
 
