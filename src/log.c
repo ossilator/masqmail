@@ -40,41 +40,41 @@ ext_strerror(int err)
 	return "unknown error";
 }
 
+static int
+open_log(const gchar *name)
+{
+	mode_t saved_mode = umask(066);
+	gchar *filename = g_strdup_printf("%s/%s.log", conf.log_dir, name);
+	int logfd = open(filename, O_WRONLY | O_APPEND | O_CREAT, 0666);
+	if (logfd < 0) {
+		fprintf(stderr, "could not open '%s': %s\n", filename, strerror(errno));
+		exit(1);
+	}
+	g_free(filename);
+	umask(saved_mode);
+	return logfd;
+}
+
 #ifdef ENABLE_DEBUG
 static FILE *debugfile = NULL;
 #endif
 
 void logopen()
 {
-	gchar *filename;
-	mode_t saved_mode = umask(066);
-
 	if (conf.use_syslog) {
 		openlog(PACKAGE, LOG_PID, LOG_MAIL);
 	} else {
-		filename = g_strdup_printf("%s/masqmail.log", conf.log_dir);
-		int logfd = open(filename, O_WRONLY | O_APPEND | O_CREAT, 0666);
-		if (logfd < 0) {
-			fprintf(stderr, "could not open log '%s': %s\n", filename, strerror(errno));
-			exit(1);
-		}
-		g_free(filename);
+		int logfd = open_log("masqmail");
 		dup2(logfd, 2);
 		close(logfd);
 	}
 
 #ifdef ENABLE_DEBUG
 	if (conf.debug_level > 0) {
-		filename = g_strdup_printf("%s/debug.log", conf.log_dir);
-		debugfile = fopen(filename, "a");
-		if (!debugfile) {
-			fprintf(stderr, "could not open debug log '%s'\n", filename);
-			exit(1);
-		}
-		g_free(filename);
+		int dbgfd = open_log("debug");
+		debugfile = fdopen(dbgfd, "a");
 	}
 #endif
-	umask(saved_mode);
 }
 
 void
