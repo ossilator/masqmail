@@ -10,7 +10,7 @@
 #include <fnmatch.h>
 
 static msgout_perhost*
-create_msgout_perhost(gchar *host)
+create_msgout_perhost(const gchar *host)
 {
 	msgout_perhost *mo_ph = g_malloc(sizeof(msgout_perhost));
 	mo_ph->host = host;
@@ -34,13 +34,13 @@ destroy_msgout_perhost(msgout_perhost *mo_ph)
 }
 
 static void
-filter_rcpts(GList *patterns, gboolean keep_matching, GList **rcpt_list)
+filter_rcpts(const GList *patterns, gboolean keep_matching, GList **rcpt_list)
 {
 	GList *out_list = NULL;
 
 	foreach (recipient *rcpt, *rcpt_list) {
 		gboolean matched = FALSE;
-		foreach (address *pat, patterns) {
+		foreach (const address *pat, patterns) {
 			if (!fnmatch(pat->domain, rcpt->address->domain, FNM_CASEFOLD) &&
 			    !fnmatch(pat->local_part, rcpt->address->local_part, 0)) {  /* TODO: match local_part caseless? */
 				matched = TRUE;
@@ -58,7 +58,7 @@ filter_rcpts(GList *patterns, gboolean keep_matching, GList **rcpt_list)
 
 // Local domains are NOT regarded here, these should be sorted out earlier.
 void
-route_filter_rcpts(connect_route *route, GList **rcpt_list)
+route_filter_rcpts(const connect_route *route, GList **rcpt_list)
 {
 	// sort out those domains that can be sent over this connection:
 	if (route->allowed_recipients) {
@@ -78,9 +78,9 @@ route_filter_rcpts(connect_route *route, GList **rcpt_list)
 }
 
 static gboolean
-is_non_recipient(recipient *addr, GList *non_rcpt_list)
+is_non_recipient(const recipient *addr, const GList *non_rcpt_list)
 {
-	foreach (recipient *non_addr, non_rcpt_list) {
+	foreach (const recipient *non_addr, non_rcpt_list) {
 		if (addr_isequal(addr->address, non_addr->address, conf.localpartcmp)) {
 			return TRUE;
 		}
@@ -89,7 +89,7 @@ is_non_recipient(recipient *addr, GList *non_rcpt_list)
 }
 
 void
-split_rcpts(GList *rcpt_list, GList *non_rcpt_list,
+split_rcpts(GList *rcpt_list, const GList *non_rcpt_list,
             GList **local_rcpts, GList **remote_rcpts)
 {
 	foreach (recipient *rcpt, rcpt_list) {
@@ -114,8 +114,8 @@ static gint
 _g_list_addrcmp(gconstpointer pattern, gconstpointer addr)
 {
 	int res;
-	address *patternaddr = (address*) pattern;
-	address *stringaddr = (address*) addr;
+	const address *patternaddr = pattern;
+	const address *stringaddr = addr;
 
 	DEBUG(6) debugf("_g_list_addrcmp: pattern `%s' `%s' on string `%s' `%s'\n",
 	                patternaddr->local_part, patternaddr->domain,
@@ -132,7 +132,7 @@ _g_list_addrcmp(gconstpointer pattern, gconstpointer addr)
 }
 
 gboolean
-route_sender_is_allowed(connect_route *route, address *ret_path)
+route_sender_is_allowed(const connect_route *route, const address *ret_path)
 {
 	if (route->denied_senders && g_list_find_custom(route->denied_senders, ret_path, _g_list_addrcmp)) {
 		return FALSE;
@@ -148,7 +148,7 @@ route_sender_is_allowed(connect_route *route, address *ret_path)
 }
 
 gboolean
-route_from_hdr_is_allowed(connect_route *route, address *addr)
+route_from_hdr_is_allowed(const connect_route *route, const address *addr)
 {
 	if (route->denied_from_hdrs && g_list_find_custom(route->denied_from_hdrs, addr, _g_list_addrcmp)) {
 		return FALSE;
@@ -165,16 +165,16 @@ route_from_hdr_is_allowed(connect_route *route, address *addr)
 }
 
 msg_out*
-route_prepare_msgout(connect_route *route, msg_out *msgout)
+route_prepare_msgout(const connect_route *route, msg_out *msgout)
 {
-	GList *rcpt_list = msgout->rcpt_list;
+	const GList *rcpt_list = msgout->rcpt_list;
 
 	if (rcpt_list != NULL) {
 		/* found a few */
 		DEBUG(5) {
 			debugf("rcpts for routed delivery, route = %s, id = %s\n",
 			       route->name, msgout->msg->uid);
-			foreach (recipient *rcpt, rcpt_list) {
+			foreach (const recipient *rcpt, rcpt_list) {
 				debugf("  rcpt for routed delivery: <%s>\n", rcpt->address->address);
 			}
 		}

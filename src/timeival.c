@@ -7,10 +7,11 @@
 #include "masqmail.h"
 
 gint
-time_interval(gchar *str)
+time_interval(const gchar *str)
 {
+	const gchar *p = str;
 	gchar buf[16];
-	gchar *p = str, *q = buf;
+	gchar *q = buf;
 	gint factor = 1, val;
 
 	while (*p && isdigit(*p) && (q < buf+sizeof(buf)-1)) {

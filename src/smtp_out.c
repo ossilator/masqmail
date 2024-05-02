@@ -40,7 +40,7 @@ destroy_smtpbase(smtp_base *psb)
 }
 
 gchar*
-set_heloname(smtp_base *psb, gchar *default_name, gboolean do_correct)
+set_heloname(smtp_base *psb, const gchar *default_name, gboolean do_correct)
 {
 	struct sockaddr_in sname;
 	socklen_t len = sizeof(struct sockaddr_in);
@@ -73,7 +73,7 @@ set_heloname(smtp_base *psb, gchar *default_name, gboolean do_correct)
 #ifdef ENABLE_AUTH
 
 gboolean
-set_auth(smtp_base *psb, gchar *name, gchar *login, gchar *secret)
+set_auth(smtp_base *psb, const gchar *name, const gchar *login, const gchar *secret)
 {
 	if ((strcasecmp(name, "CRAM-MD5") == 0) || (strcasecmp(name, "LOGIN") == 0)) {
 		psb->auth_name = g_strdup(name);
@@ -172,10 +172,11 @@ read_check_response(smtp_base *psb, int timeout, gboolean after_data, const char
 }
 
 static gchar*
-get_response_arg(gchar *response)
+get_response_arg(const gchar *response)
 {
+	const gchar *p = response;
 	gchar buf[SMTP_BUF_LEN];
-	gchar *p = response, *q = buf;
+	gchar *q = buf;
 
 	while (*p && (*p != '\n') && isspace(*p))
 		p++;
@@ -191,7 +192,7 @@ get_response_arg(gchar *response)
 static gboolean
 check_helo_response(smtp_base *psb, const char *cmd)
 {
-	gchar *ptr;
+	const gchar *ptr;
 
 	if (!check_response(psb, FALSE, cmd))
 		return FALSE;
@@ -286,7 +287,7 @@ check_helo_response(smtp_base *psb, const char *cmd)
 **  greeting messages.
 */
 static gboolean
-smtp_helo(smtp_base *psb, gchar *helo)
+smtp_helo(smtp_base *psb, const gchar *helo)
 {
 	smtp_cmd(psb, "EHLO %s", helo);
 
@@ -321,7 +322,7 @@ smtp_helo(smtp_base *psb, gchar *helo)
 }
 
 static void
-smtp_cmd_mailfrom(smtp_base *psb, address *return_path, gssize size)
+smtp_cmd_mailfrom(smtp_base *psb, const address *return_path, gssize size)
 {
 	if (psb->use_size) {
 		smtp_cmd(psb, "MAIL FROM:<%s> SIZE=%" G_GSSIZE_FORMAT, return_path->address, size);
@@ -331,20 +332,20 @@ smtp_cmd_mailfrom(smtp_base *psb, address *return_path, gssize size)
 }
 
 static void
-smtp_cmd_rcptto(smtp_base *psb, address *rcpt)
+smtp_cmd_rcptto(smtp_base *psb, const address *rcpt)
 {
 	smtp_cmd(psb, "RCPT TO:<%s>", rcpt->address);
 }
 
 static void
-send_data_line(smtp_base *psb, gchar *data)
+send_data_line(smtp_base *psb, const gchar *data)
 {
 	/*
 	**  According to RFC 821 each line should be terminated with CRLF.
 	**  Since a dot on a line itself marks the end of data, each line
 	**  beginning with a dot is prepended with another dot.
 	*/
-	gchar *ptr;
+	const gchar *ptr;
 	gboolean new_line = TRUE;  /* previous versions assumed that each item was exactly one line.  This is no longer the case */
 
 	ptr = data;
@@ -368,12 +369,12 @@ send_data_line(smtp_base *psb, gchar *data)
 }
 
 static void
-send_header(smtp_base *psb, GList *hdr_list)
+send_header(smtp_base *psb, const GList *hdr_list)
 {
 	gint num_hdrs = 0;
 
 	/* header */
-	foreach (header *hdr, hdr_list) {
+	foreach (const header *hdr, hdr_list) {
 		send_data_line(psb, hdr->header);
 		num_hdrs++;
 	}
@@ -386,12 +387,12 @@ send_header(smtp_base *psb, GList *hdr_list)
 }
 
 static void
-send_data(smtp_base *psb, message *msg)
+send_data(smtp_base *psb, const message *msg)
 {
 	gint num_lines = 0;
 
 	/* data */
-	foreach (gchar *line, msg->data_list) {
+	foreach (const gchar *line, msg->data_list) {
 		send_data_line(psb, line);
 		num_lines++;
 	}
@@ -416,7 +417,7 @@ smtp_out_mark_rcpts(smtp_base *psb, GList *rcpt_list)
 }
 
 static void
-smtp_out_log_failure(smtp_base *psb, message *msg, gchar **err_msg)
+smtp_out_log_failure(smtp_base *psb, const message *msg, gchar **err_msg)
 {
 	const gchar *wrap_str = psb->is_wrapped ? " (via wrapper)" : "";
 
@@ -452,7 +453,7 @@ smtp_out_log_failure(smtp_base *psb, message *msg, gchar **err_msg)
 }
 
 smtp_base*
-smtp_out_open(gchar *host, gint port, GList *resolve_list, gchar **err_msg)
+smtp_out_open(const gchar *host, gint port, const GList *resolve_list, gchar **err_msg)
 {
 	smtp_base *psb;
 	gint sock;
@@ -479,7 +480,7 @@ smtp_out_open(gchar *host, gint port, GList *resolve_list, gchar **err_msg)
 }
 
 smtp_base*
-smtp_out_open_child(const gchar *host, gchar *cmd, gchar **err_msg)
+smtp_out_open_child(const gchar *host, const gchar *cmd, gchar **err_msg)
 {
 	smtp_base *psb;
 
@@ -703,8 +704,8 @@ smtp_out_rcptto_resp(smtp_base *psb, message *msg, recipient *rcpt, int *rcpt_ac
 }
 
 void
-smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
-             GList *rcpt_list, GList *hdr_list, gchar **err_msg)
+smtp_out_msg(smtp_base *psb, message *msg, const address *return_path,
+             GList *rcpt_list, const GList *hdr_list, gchar **err_msg)
 {
 	gssize size;
 	int rcpt_accept = 0;

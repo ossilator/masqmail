@@ -31,14 +31,14 @@ create_message()
 **  internal format. Dot-stuffing is ignored in the size.
 */
 gssize
-msg_calc_size(message *msg, gboolean is_smtp)
+msg_calc_size(const message *msg, gboolean is_smtp)
 {
 	gint l_cnt = 0;  /* line count (we need to add so many '\r' for SMTP) */
 	gssize c_cnt = 0;  /* character count */
 
 	/* message header size */
-	foreach (header *hdr, msg->hdr_list) {
-		char *p = hdr->header;
+	foreach (const header *hdr, msg->hdr_list) {
+		const char *p = hdr->header;
 		while (*p) {
 			if (*p++ == '\n')
 				l_cnt++;
@@ -51,7 +51,7 @@ msg_calc_size(message *msg, gboolean is_smtp)
 	l_cnt++;
 
 	/* message data size */
-	foreach (gchar *p, msg->data_list) {
+	foreach (const gchar *p, msg->data_list) {
 		while (*p) {
 			if (*p++ == '\n')
 				l_cnt++;
@@ -110,7 +110,7 @@ create_msg_out(message *msg)
 }
 
 msg_out*
-clone_msg_out(msg_out *msgout_orig)
+clone_msg_out(const msg_out *msgout_orig)
 {
 	if (!msgout_orig) {
 		return NULL;

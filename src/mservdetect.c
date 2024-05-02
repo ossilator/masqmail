@@ -13,7 +13,7 @@
 #include <arpa/inet.h>
 
 static gboolean
-init_sockaddr2(struct sockaddr_in *name, gchar *addr, int port)
+init_sockaddr2(struct sockaddr_in *name, const gchar *addr, int port)
 {
 	struct hostent *he;
 	struct in_addr ia;
@@ -36,7 +36,7 @@ init_sockaddr2(struct sockaddr_in *name, gchar *addr, int port)
 
 
 static gchar*
-mserver_detect_online(gchar *addr, int port)
+mserver_detect_online(const gchar *addr, int port)
 {
 	struct sockaddr_in saddr;
 	gchar *ret = NULL;
@@ -117,9 +117,9 @@ mserver_detect_online(gchar *addr, int port)
 
 
 int
-main(int argc, char *argv[])
+main(int argc, const char * const argv[])
 {
-	gchar *addr;
+	const gchar *addr;
 	int port;
 	gchar *name;
 

@@ -59,10 +59,10 @@ rec_timestamp()
 	return buf;
 }
 
-header *
-find_header(GList *hdr_list, header_id id)
+const header *
+find_header(const GList *hdr_list, header_id id)
 {
-	foreach (header *hdr, hdr_list) {
+	foreach (const header *hdr, hdr_list) {
 		if (hdr->id == id) {
 			return hdr;
 		}
@@ -82,7 +82,7 @@ create_header_raw(header_id id, gchar *txt, int offset)
 }
 
 header*
-create_header(header_id id, gchar *fmt, ...)
+create_header(header_id id, const gchar *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -134,9 +134,9 @@ copy_header_list(GList *hdr_list)
 }
 
 header*
-get_header(gchar *line)
+get_header(const gchar *line)
 {
-	gchar *p = strchr(line, ':');
+	const gchar *p = strchr(line, ':');
 	if (!p) {
 		return NULL;
 	}

@@ -11,7 +11,7 @@
 #include <arpa/inet.h>
 
 static GList*
-resolve_ip(gchar *ip)
+resolve_ip(const gchar *ip)
 {
 	struct in_addr ia;
 	mxip_addr mxip;
@@ -76,8 +76,8 @@ connect_hostlist(int *psockfd, gint port, GList *addr_list)
 **  the next address is tried.
 */
 mxip_addr*
-connect_resolvelist(int *psockfd, gchar *host, gint port,
-		GList *res_func_list, gchar **err_msg)
+connect_resolvelist(int *psockfd, const gchar *host, gint port,
+                    const GList *res_func_list, gchar **err_msg)
 {
 	GList *addr_list;
 
@@ -94,7 +94,7 @@ connect_resolvelist(int *psockfd, gchar *host, gint port,
 	}
 
 	assert(res_func_list);
-	foreach (resolve_func res_func, res_func_list) {
+	foreach (const resolve_func res_func, res_func_list) {
 		DEBUG(6) debugf("  foreach() body\n");
 
 		assert(res_func);

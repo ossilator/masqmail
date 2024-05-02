@@ -60,8 +60,8 @@ _g_list_strcasecmp(gconstpointer a, gconstpointer b)
 }
 
 static gboolean
-deliver_local_mbox(message *msg, GList *hdr_list, recipient *rcpt,
-                   recipient *env_addr)
+deliver_local_mbox(const message *msg, const GList *hdr_list, recipient *rcpt,
+                   const recipient *env_addr)
 {
 	DEBUG(1) debugf("attempting to deliver %s with mbox\n", msg->uid);
 	if (append_file(msg, hdr_list, rcpt->address->local_part)) {
@@ -87,8 +87,8 @@ deliver_local_mbox(message *msg, GList *hdr_list, recipient *rcpt,
 }
 
 static gboolean
-deliver_local_pipe(message *msg, GList *hdr_list, recipient *rcpt,
-                   recipient *env_addr)
+deliver_local_pipe(message *msg, const GList *hdr_list, recipient *rcpt,
+                   const recipient *env_addr)
 {
 	gboolean ok = FALSE;
 	guint flags = 0;
@@ -122,7 +122,7 @@ deliver_local_pipe(message *msg, GList *hdr_list, recipient *rcpt,
 }
 
 static gboolean
-deliver_local_mda(message *msg, GList *hdr_list, recipient *rcpt)
+deliver_local_mda(message *msg, const GList *hdr_list, recipient *rcpt)
 {
 	gboolean ok = FALSE;
 	GList *var_table = var_table_rcpt(var_table_msg(NULL, msg),
@@ -176,8 +176,8 @@ deliver_local(msg_out *msgout)
 
 	foreach (recipient *rcpt, rcpt_list) {
 		GList *hdr_list;
-		recipient *env_addr = addr_find_ancestor(rcpt);
-		address *ret_path = msg->return_path;
+		const recipient *env_addr = addr_find_ancestor(rcpt);
+		const address *ret_path = msg->return_path;
 		header *retpath_hdr, *envto_hdr;
 
 		/*
@@ -206,8 +206,8 @@ deliver_local(msg_out *msgout)
 		} else {
 			/* figure out which mailbox type should be used
 			** for this user */
-			gchar *user = rcpt->address->local_part;
-			gchar *mbox_type = conf.mbox_default;
+			const gchar *user = rcpt->address->local_part;
+			const gchar *mbox_type = conf.mbox_default;
 
 			if (g_list_find_custom(conf.mbox_users, user,
 					_g_list_strcasecmp)) {
@@ -253,7 +253,7 @@ deliver_local(msg_out *msgout)
 }
 
 static gboolean
-deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
+deliver_msglist_host_pipe(const connect_route *route, GList *msgout_list)
 {
 	gboolean ok = TRUE;
 
@@ -327,8 +327,8 @@ deliver_msglist_host_pipe(connect_route *route, GList *msgout_list)
 **  Returns TRUE if at least one msg was delivered to at least one rcpt.
 */
 static gboolean
-deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
-		gchar *host, GList *res_list)
+deliver_msglist_host_smtp(const connect_route *route, GList *msgout_list,
+                          const gchar *host, const GList *res_list)
 {
 	gboolean ok = FALSE;
 	smtp_base *psb;
@@ -442,8 +442,8 @@ deliver_msglist_host_smtp(connect_route *route, GList *msgout_list,
 }
 
 static gboolean
-deliver_msglist_host(connect_route *route, GList *msgout_list, gchar *host,
-		GList *res_list)
+deliver_msglist_host(const connect_route *route, GList *msgout_list,
+                     const gchar *host, const GList *res_list)
 {
 
 	if (route->pipe) {
@@ -460,7 +460,7 @@ deliver_msglist_host(connect_route *route, GList *msgout_list, gchar *host,
 ** delivers messages in msgout_list using route
 */
 static void
-deliver_route_msgout_list(connect_route *route, GList *msgout_list)
+deliver_route_msgout_list(const connect_route *route, GList *msgout_list)
 {
 	GList *mo_ph_list;
 
@@ -499,7 +499,7 @@ deliver_route_msgout_list(connect_route *route, GList *msgout_list)
 ** deliver_route_msgout_list()
 */
 static void
-deliver_route_msg_list(connect_route *route, GList *msgout_list)
+deliver_route_msg_list(const connect_route *route, GList *msgout_list)
 {
 	GList *msgout_list_deliver = NULL;
 
@@ -550,7 +550,7 @@ deliver_route_msg_list(connect_route *route, GList *msgout_list)
 
 		/* filter by allowed from header */
 		if (route->denied_from_hdrs || route->allowed_from_hdrs) {
-			header *from_hdr = find_header(msgout->msg->hdr_list, HEAD_FROM);
+			const header *from_hdr = find_header(msgout->msg->hdr_list, HEAD_FROM);
 			if (from_hdr) {
 				address *addr = create_address(
 						from_hdr->value, A_RFC822, conf.host_name);
@@ -667,7 +667,6 @@ static void
 deliver_remote(GList *remote_msgout_list)
 {
 	GList *route_list = NULL;
-	GList *rf_list = NULL;
 	gchar *connect_name = NULL;
 
 	if (!remote_msgout_list) {
@@ -679,7 +678,7 @@ deliver_remote(GList *remote_msgout_list)
 		DEBUG(5) debugf("processing perma_routes\n");
 
 		route_list = read_route_list(conf.perma_routes);
-		foreach (connect_route *route, route_list) {
+		foreach (const connect_route *route, route_list) {
 			deliver_route_msg_list(route, remote_msgout_list);
 		}
 		destroy_route_list(route_list);
@@ -697,7 +696,7 @@ deliver_remote(GList *remote_msgout_list)
 	logwrite(LOG_INFO, "detected online configuration `%s'\n",
 			connect_name);
 
-	rf_list = (GList *) table_find(conf.query_routes, connect_name);
+	const GList *rf_list = table_find(conf.query_routes, connect_name);
 	if (!rf_list) {
 		logwrite(LOG_ERR, "route list with name '%s' not found.\n",
 				connect_name);
@@ -711,7 +710,7 @@ deliver_remote(GList *remote_msgout_list)
 		return;
 	}
 
-	foreach (connect_route *route, route_list) {
+	foreach (const connect_route *route, route_list) {
 		deliver_route_msg_list(route, remote_msgout_list);
 	}
 	destroy_route_list(route_list);

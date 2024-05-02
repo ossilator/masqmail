@@ -27,20 +27,20 @@ addr_is_really_local(const gchar *dom_beg, const gchar *dom_end)
 	return ret;
 }
 
-static replacement *
-map_local_part(gchar *local_part, GList *table, GList *table2)
+static const replacement *
+map_local_part(const gchar *local_part, const GList *table, const GList *table2)
 {
-	replacement *ret = table_find_fnmatch(table, local_part);
+	const replacement *ret = table_find_fnmatch(table, local_part);
 	if (!ret) {
 		ret = table_find_fnmatch(table2, local_part);
 	}
 	return ret;
 }
 
-static replacement *
+static const replacement *
 map_address(const gchar *loc_beg, const gchar *loc_end,
             const gchar *dom_beg, const gchar *dom_end,
-            GList *table, GList *table2)
+            const GList *table, const GList *table2)
 {
 	DEBUG(5) debugf("considering '%.*s@%.*s' for rewrite\n",
 	                (int)(loc_end - loc_beg), loc_beg,
@@ -51,7 +51,7 @@ map_address(const gchar *loc_beg, const gchar *loc_end,
 		return NULL;
 	}
 	gchar *local_part = g_strndup(loc_beg, loc_end - loc_beg);
-	replacement *ret = map_local_part(local_part, table, table2);
+	const replacement *ret = map_local_part(local_part, table, table2);
 	g_free(local_part);
 	DEBUG(5) {
 		if (ret) {
@@ -64,7 +64,7 @@ map_address(const gchar *loc_beg, const gchar *loc_end,
 }
 
 static header *
-map_address_header(header *hdr, GList *table, GList *table2)
+map_address_header(header *hdr, const GList *table, const GList *table2)
 {
 	const gchar *op = hdr->header;
 	const gchar *p = hdr->value;
@@ -87,7 +87,8 @@ map_address_header(header *hdr, GList *table, GList *table2)
 			return FALSE;
 		}
 
-		replacement *rewr = map_address(loc_beg, loc_end, dom_beg, dom_end, table, table2);
+		const replacement *rewr = map_address(
+				loc_beg, loc_end, dom_beg, dom_end, table, table2);
 
 		gchar *newer_hdr;
 		if (rewr) {

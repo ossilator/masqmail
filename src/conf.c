@@ -34,18 +34,18 @@ init_conf()
 	conf.mail_gid = group->gr_gid;
 }
 
-static gchar *true_strings[] = {
+static const gchar * const true_strings[] = {
 	"yes", "on", "true", NULL
 };
 
-static gchar *false_strings[] = {
+static const gchar * const false_strings[] = {
 	"no", "off", "false", NULL
 };
 
 static gboolean
-parse_boolean(gchar *rval)
+parse_boolean(const gchar *rval)
 {
-	gchar **str;
+	const gchar * const *str;
 
 	DEBUG(9) fprintf(stderr, "parse_boolean: %s\n", rval);
 	for (str = true_strings; *str; str++) {
@@ -161,7 +161,7 @@ parse_resolve_list(gchar *line)
 	if (!list) {
 		return NULL;
 	}
-	foreach (gchar *item, list) {
+	foreach (const gchar *item, list) {
 		if (strcmp(item, "byname")==0) {
 			res_list = g_list_append(res_list, resolve_byname);
 #ifdef ENABLE_RESOLVER
@@ -201,7 +201,7 @@ finalize_address_list(GList *addrs, const gchar *what)
 {
 	GList *out = NULL;
 
-	foreach (gchar *item, addrs) {
+	foreach (const gchar *item, addrs) {
 		address *a = create_address(item, A_RFC821, conf.host_name);
 		if (!a) {
 			logwrite(LOG_ERR, "invalid address '%s' in %s: %s\n",
@@ -532,7 +532,7 @@ read_conf(void)
 		static char def_ivals[] = "1h;4h;8h;1d;2d;3d";  // not const!
 		warn_intervals_tmp = parse_list(def_ivals, TRUE);
 	}
-	foreach (gchar *str_ival, warn_intervals_tmp) {
+	foreach (const gchar *str_ival, warn_intervals_tmp) {
 		gint ival = time_interval(str_ival);
 		if (ival < 0) {
 			logwrite(LOG_ERR, "invalid time interval for 'warn_intervals': %s\n", str_ival);
@@ -567,7 +567,7 @@ read_conf(void)
 		conf.listen_addresses = g_list_append(NULL,
 				parse_interface("localhost", 25));
 	} else {
-		foreach (gchar *line, listen_addrs_tmp) {
+		foreach (const gchar *line, listen_addrs_tmp) {
 			conf.listen_addresses =
 					g_list_append(conf.listen_addresses,
 			                      parse_interface(line, 25));
@@ -585,7 +585,7 @@ parse_rewrite_map(gchar *rval, GList **out, addr_type_t addr_type)
 	gboolean ret = TRUE;
 
 	list = parse_list(rval, TRUE);
-	foreach (gchar *item, list) {
+	foreach (const gchar *item, list) {
 		table_pair *pair = parse_table_pair(item, ':');
 		gchar *repl = pair->value;
 		replacement *addr;
@@ -616,7 +616,7 @@ parse_rewrite_map(gchar *rval, GList **out, addr_type_t addr_type)
 }
 
 static connect_route*
-read_route(gchar *filename)
+read_route(const gchar *filename)
 {
 	FILE *in;
 	gboolean ok = TRUE;
@@ -785,12 +785,12 @@ destroy_route(connect_route *r)
 }
 
 GList*
-read_route_list(GList *rf_list)
+read_route_list(const GList *rf_list)
 {
 	GList *list = NULL;
 
 	acquire_root();
-	foreach (gchar *fname, rf_list) {
+	foreach (const gchar *fname, rf_list) {
 		connect_route *route = read_route(fname);
 		if (route) {
 			list = g_list_append(list, route);

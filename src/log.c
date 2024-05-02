@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <sysexits.h>
 
-static char *_sysexit_strings[] = {
+static const char * const _sysexit_strings[] = {
 	"command line usage error",
 	"data format error",
 	"cannot open input",
@@ -33,7 +33,7 @@ static_assert(EX__MAX - EX__BASE + 1 == G_N_ELEMENTS(_sysexit_strings),
 static_assert(EX_USAGE == EX__BASE && EX_CONFIG == EX__MAX,
               "unexpected numbering of sysexits");
 
-gchar*
+const gchar*
 sysexit_str(int err)
 {
 	if (err >= EX__BASE && err <= EX__MAX)

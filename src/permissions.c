@@ -16,7 +16,7 @@ is_ingroup(uid_t uid, gid_t gid)
 {
 	struct group *grent = getgrgid(gid);
 	struct passwd *pwent = getpwuid(uid);
-	char *entry;
+	const char *entry;
 	int i = 0;
 
 	if (!grent) {
@@ -58,7 +58,7 @@ is_privileged_user(void)
 }
 
 void
-verify_privileged_user(gchar *task_name)
+verify_privileged_user(const gchar *task_name)
 {
 	if (!conf.run_as_user && !is_privileged_user()) {
 		fprintf(stderr, "must be root, %s or in group %s for %s.\n", DEF_MAIL_USER, DEF_MAIL_GROUP, task_name);

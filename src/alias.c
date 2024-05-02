@@ -10,13 +10,13 @@
 #include <fnmatch.h>
 
 static GList*
-parse_list(gchar *line)
+parse_list(const gchar *line)
 {
 	GList *list = NULL;
 	gchar buf[256];
-	gchar *p, *q;
+	gchar *q;
 
-	p = line;
+	const gchar *p = line;
 	while (*p) {
 		q = buf;
 		while (isspace(*p)) {
@@ -53,7 +53,7 @@ parse_list(gchar *line)
 }
 
 static gboolean
-expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
+expand_one(const GList *globalias_table, const GList *alias_table, recipient *addr)
 {
 	GList *val_list;
 
@@ -67,7 +67,7 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 	DEBUG(6) debugf("alias: '%s' is local and will get expanded\n",
 	                addr->address->address);
 
-	gchar *repl;
+	const gchar *repl;
 	if (conf.localpartcmp == strcasecmp ||
 	    // postmaster must always be matched caselessly, see RFCs 5321 and 5322
 	    strcasecmp(addr->address->local_part, "postmaster") == 0) {
@@ -93,7 +93,7 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 
 	gboolean ok = TRUE;
 	val_list = parse_list(repl);
-	foreach (gchar *val, val_list) {
+	foreach (const gchar *val, val_list) {
 		recipient *alias_addr;
 	
 		DEBUG(6) debugf("alias: processing '%s'\n", val);
@@ -160,7 +160,7 @@ expand_one(GList *globalias_table, GList *alias_table, recipient *addr)
 }
 
 gboolean
-alias_expand(GList *globalias_table, GList *alias_table, GList *rcpt_list)
+alias_expand(const GList *globalias_table, const GList *alias_table, GList *rcpt_list)
 {
 	gboolean ok = TRUE;
 

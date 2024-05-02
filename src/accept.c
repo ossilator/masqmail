@@ -11,7 +11,7 @@
 #include <pwd.h>
 
 /* must match PROT_* in masqmail.h */
-gchar *prot_names[] = {
+const gchar * const prot_names[] = {
 	"local",
 	"SMTP",
 	"ESMTP",
@@ -21,7 +21,8 @@ gchar *prot_names[] = {
 static gchar*
 string_base62(gchar *res, guint value, gchar len)
 {
-	static gchar base62_chars[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	static const gchar base62_chars[] =
+			"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 			"abcdefghijklmnopqrstuvwxyz";
 	gchar *p = res + len;
 	*p = '\0';
@@ -279,7 +280,7 @@ add_received_hdr(message *msg)
 	DEBUG(3) debugf("adding 'Received:' header\n");
 	if (g_list_length(msg->rcpt_list) == 1) {
 		/* The `for' part only if exactly one rcpt is present */
-		recipient *addr = msg->rcpt_list->data;
+		const recipient *addr = msg->rcpt_list->data;
 		for_string = g_strdup_printf("\n\tfor <%s>", addr->address->address);
 	}
 	if (!msg->received_host) {

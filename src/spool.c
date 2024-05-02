@@ -37,7 +37,7 @@ read_line(FILE *in, gchar *buf, gint buf_len)
 }
 
 static void
-spool_write_rcpt(FILE *out, recipient *rcpt)
+spool_write_rcpt(FILE *out, const recipient *rcpt)
 {
 	gchar dlvrd_char = addr_is_delivered(rcpt) ? 'X' : (addr_is_failed(rcpt) ? 'F' : ' ');
 
@@ -49,7 +49,7 @@ spool_write_rcpt(FILE *out, recipient *rcpt)
 }
 
 static recipient*
-spool_scan_rcpt(gchar *line)
+spool_scan_rcpt(const gchar *line)
 {
 	recipient *rcpt = NULL;
 
@@ -202,7 +202,7 @@ spool_read_header(message *msg)
 }
 
 message*
-msg_spool_read(gchar *uid)
+msg_spool_read(const gchar *uid)
 {
 	message *msg;
 	gboolean ok = FALSE;
@@ -226,7 +226,7 @@ msg_spool_read(gchar *uid)
 **  mail ids. Better call spool_write(msg, FALSE).
 */
 static gboolean
-spool_write_header(message *msg)
+spool_write_header(const message *msg)
 {
 	gchar *spool_file, *tmp_file;
 	FILE *out;
@@ -239,10 +239,10 @@ spool_write_header(message *msg)
 		fprintf(out, "%s\n", msg->uid);
 		fprintf(out, "MF:<%s>\n", msg->return_path->address);
 
-		foreach (recipient *rcpt, msg->rcpt_list) {
+		foreach (const recipient *rcpt, msg->rcpt_list) {
 			spool_write_rcpt(out, rcpt);
 		}
-		foreach (recipient *rcpt, msg->non_rcpt_list) {
+		foreach (const recipient *rcpt, msg->non_rcpt_list) {
 			spool_write_rcpt(out, rcpt);
 		}
 		fprintf(out, "PR:%s\n", prot_names[msg->received_prot]);
@@ -263,7 +263,7 @@ spool_write_header(message *msg)
 
 		fprintf(out, "\n");
 
-		foreach (header *hdr, msg->hdr_list) {
+		foreach (const header *hdr, msg->hdr_list) {
 			fprintf(out, "HD:%s", hdr->header);
 		}
 		if (fflush(out) == EOF)
@@ -292,7 +292,7 @@ spool_write_header(message *msg)
 }
 
 gboolean
-spool_write(message *msg, gboolean do_write_data)
+spool_write(const message *msg, gboolean do_write_data)
 {
 	gchar *spool_file, *tmp_file;
 	FILE *out;
@@ -345,7 +345,7 @@ spool_write(message *msg, gboolean do_write_data)
 #define MAX_LOCKAGE 300
 
 gboolean
-spool_lock(gchar *uid)
+spool_lock(const gchar *uid)
 {
 	gchar *hitch_name;
 	gchar *lock_name;
@@ -365,7 +365,7 @@ spool_lock(gchar *uid)
 }
 
 void
-spool_unlock(gchar *uid)
+spool_unlock(const gchar *uid)
 {
 	gchar *lock_name;
 
@@ -375,7 +375,7 @@ spool_unlock(gchar *uid)
 }
 
 void
-spool_delete_all(message *msg)
+spool_delete_all(const message *msg)
 {
 	gchar *spool_file;
 

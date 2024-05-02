@@ -138,7 +138,7 @@ copy_recipient_list(GList *rcpt_list)
 }
 
 replacement*
-create_replacement(gchar *path, addr_type_t addr_type)
+create_replacement(const gchar *path, addr_type_t addr_type)
 {
 	replacement *repl = (replacement *) _create_address(
 			sizeof(replacement), path, NULL, addr_type, NULL);
@@ -189,7 +189,7 @@ destroy_replacement(replacement *addr)
 }
 
 gboolean
-addr_isequal(address *addr1, address *addr2,
+addr_isequal(const address *addr1, const address *addr2,
 		int (*cmpfunc) (const char*, const char*))
 {
 	return (cmpfunc(addr1->local_part, addr2->local_part)==0) &&
@@ -203,7 +203,7 @@ domain_is_local(const gchar *domain)
 		return TRUE;
 	}
 
-	foreach (gchar *loc_host, conf.local_hosts) {
+	foreach (const gchar *loc_host, conf.local_hosts) {
 		// Note: FNM_CASEFOLD is a GNU extension
 		if (!fnmatch(loc_host, domain, FNM_CASEFOLD)) {
 			return TRUE;
@@ -213,7 +213,7 @@ domain_is_local(const gchar *domain)
 }
 
 gboolean
-addr_is_local(address *addr)
+addr_is_local(const address *addr)
 {
 	if (!addr->domain[0]) {
 		return TRUE;
@@ -221,7 +221,7 @@ addr_is_local(address *addr)
 	if (domain_is_local(addr->domain)) {
 		// in local_hosts
 
-		foreach (address *a, conf.not_local_addresses) {
+		foreach (const address *a, conf.not_local_addresses) {
 			if (addr_isequal(a, addr, conf.localpartcmp)) {
 				// also in not_local_addresses
 				return FALSE;
@@ -229,7 +229,7 @@ addr_is_local(address *addr)
 		}
 		return TRUE;
 	}
-	foreach (address *a, conf.local_addresses) {
+	foreach (const address *a, conf.local_addresses) {
 		if (addr_isequal(a, addr, conf.localpartcmp)) {
 			// in local_addresses
 			return TRUE;
@@ -240,10 +240,10 @@ addr_is_local(address *addr)
 
 /* searches in ancestors of addr1 */
 gboolean
-addr_isequal_parent(recipient *addr1, address *addr2,
+addr_isequal_parent(const recipient *addr1, const address *addr2,
 		int (*cmpfunc) (const char*, const char*))
 {
-	recipient *addr;
+	const recipient *addr;
 
 	for (addr = addr1; addr; addr = addr->parent) {
 		if (addr_isequal(addr->address, addr2, cmpfunc)) {
@@ -256,12 +256,12 @@ addr_isequal_parent(recipient *addr1, address *addr2,
 /* careful, this is recursive */
 /* returns TRUE if ALL children have been delivered */
 gboolean
-addr_is_delivered_children(recipient *addr)
+addr_is_delivered_children(const recipient *addr)
 {
 	if (!addr->children) {
 		return addr_is_delivered(addr);
 	}
-	foreach (recipient *child, addr->children) {
+	foreach (const recipient *child, addr->children) {
 		if (!addr_is_delivered_children(child)) {
 			return FALSE;
 		}
@@ -272,12 +272,12 @@ addr_is_delivered_children(recipient *addr)
 /* careful, this is recursive */
 /* returns TRUE if ALL children have been either delivered or have failed */
 gboolean
-addr_is_finished_children(recipient *addr)
+addr_is_finished_children(const recipient *addr)
 {
 	if (!addr->children) {
 		return addr_is_finished(addr);
 	}
-	foreach (recipient *child, addr->children) {
+	foreach (const recipient *child, addr->children) {
 		if (!addr_is_finished_children(child)) {
 			return FALSE;
 		}
@@ -286,8 +286,8 @@ addr_is_finished_children(recipient *addr)
 }
 
 /* find original address */
-recipient*
-addr_find_ancestor(recipient *addr)
+const recipient*
+addr_find_ancestor(const recipient *addr)
 {
 	while (addr->parent) {
 		addr = addr->parent;

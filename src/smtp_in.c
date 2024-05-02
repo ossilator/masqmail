@@ -44,9 +44,9 @@ get_id(const gchar *line)
 }
 
 static gboolean
-get_size(gchar *line, gssize *msize)
+get_size(const gchar *line, gssize *msize)
 {
-	gchar *s = NULL;
+	const gchar *s = NULL;
 
 	/* hope we need not to handle cases like SiZe= ...*/
 	s = strstr(line, "SIZE=");
@@ -72,9 +72,9 @@ get_size(gchar *line, gssize *msize)
 **  Return false if address is too long.
 */
 static gboolean
-get_address(gchar *line, gchar *addr)
+get_address(const gchar *line, gchar *addr)
 {
-	gchar *p = line;
+	const gchar *p = line;
 	gchar *q = addr;
 
 	/* skip MAIL FROM: and RCPT TO: */
@@ -112,7 +112,7 @@ init_base(smtp_connection *base)
 }
 
 static void G_GNUC_PRINTF(2, 3)
-smtp_printf(FILE *out, gchar *fmt, ...)
+smtp_printf(FILE *out, const gchar *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -135,7 +135,7 @@ smtp_printf(FILE *out, gchar *fmt, ...)
 }
 
 void
-smtp_in(FILE *in, FILE *out, gchar *remote_host)
+smtp_in(FILE *in, FILE *out, const gchar *remote_host)
 {
 	smtp_cmd_id cmd_id;
 	message *msg = NULL;

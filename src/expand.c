@@ -9,7 +9,7 @@
 #define MAX_VAR 50
 
 GList*
-var_table_rcpt(GList *var_table, address *rcpt)
+var_table_rcpt(GList *var_table, const address *rcpt)
 {
 	var_table = g_list_prepend(var_table,
 			create_pair("rcpt_local", rcpt->local_part));
@@ -22,7 +22,7 @@ var_table_rcpt(GList *var_table, address *rcpt)
 }
 
 GList*
-var_table_msg(GList *var_table, message *msg)
+var_table_msg(GList *var_table, const message *msg)
 {
 	address *ret_path = msg->return_path;
 
@@ -60,16 +60,17 @@ var_table_conf(GList *var_table)
 }
 
 gint
-expand(GList *var_list, gchar *format, gchar *result, gint result_len)
+expand(const GList *var_list, const gchar *format, gchar *result, gint result_len)
 {
-	gchar *p = format, *q = result;
+	const gchar *p = format;
+	gchar *q = result;
 	gchar *vq;
 	gint i = 0;
 	gboolean escape = FALSE;
 
 	while (*p && (i < (result_len - 1))) {
 		if ((*p == '$') && !escape) {
-			gchar *value;
+			const gchar *value;
 			gchar var[MAX_VAR + 1];
 			int j = 0;
 
@@ -96,9 +97,9 @@ expand(GList *var_list, gchar *format, gchar *result, gint result_len)
 
 			if (j < MAX_VAR) {
 				/* search var */
-				value = (gchar *) table_find(var_list, var);
+				value = table_find(var_list, var);
 				if (value) {
-					gchar *vp = value;
+					const gchar *vp = value;
 					while (*vp && (i < (result_len - 1))) {
 						*(q++) = *(vp++);
 						i++;

@@ -157,7 +157,7 @@ queue_list()
 		g_free(host_str);
 		g_free(ident_str);
 
-		foreach (recipient *rcpt, msg->rcpt_list) {
+		foreach (const recipient *rcpt, msg->rcpt_list) {
 			printf("              %s <%s>\n",
 			       addr_is_delivered(rcpt)
 			          ? "=>" : (addr_is_failed(rcpt)
@@ -168,7 +168,7 @@ queue_list()
 }
 
 gboolean
-queue_delete(gchar *uid)
+queue_delete(const gchar *uid)
 {
 	gboolean hdr_ok = TRUE;
 	gboolean dat_ok = TRUE;

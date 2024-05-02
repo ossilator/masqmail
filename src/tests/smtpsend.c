@@ -57,7 +57,7 @@ debugf(const char *fmt, ...)
 }
 
 static gint
-smtp_deliver(gchar *host, gint port, GList *resolve_list, message *msg)
+smtp_deliver(const gchar *host, gint port, const GList *resolve_list, message *msg)
 {
 	DEBUG(5) debugf("smtp_deliver entered\n");
 

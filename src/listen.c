@@ -91,7 +91,7 @@ void
 listen_port(GList *iface_list, gint qival)
 {
 	/* Create the sockets and set them up to accept connections. */
-	foreach_mut (interface *iface, node, iface_list) {
+	foreach_mut (const interface *iface, node, iface_list) {
 		int sock;
 
 		if ((sock = make_server_socket(iface)) < 0) {

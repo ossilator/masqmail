@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 
 gboolean
-fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg)
+fail_msg(message *msg, const gchar *template, GList *failed_rcpts, const gchar *err_msg)
 {
 	gboolean ok = FALSE;
 	address *ret_path = NULL;
@@ -69,11 +69,11 @@ WARNING_POP
 				while (read_sockline(file, fmt, 256, 0, 0) > 0) {
 					if (fmt[0] == '@') {
 						if (strncmp(fmt, "@failed_rcpts", 13) == 0) {
-							foreach (recipient *rcpt, failed_rcpts) {
+							foreach (const recipient *rcpt, failed_rcpts) {
 								fprintf(out, "\t<%s>\n", rcpt->address->address);
 							}
 						} else if (strncmp(fmt, "@msg_headers", 12) == 0) {
-							foreach (header *hdr, msg->hdr_list) {
+							foreach (const header *hdr, msg->hdr_list) {
 								fputs(hdr->header, out);
 							}
 						} else if (strncmp(fmt, "@msg_body", 9) == 0) {
@@ -82,7 +82,7 @@ WARNING_POP
 							if (flag) {
 								spool_read_data(msg);
 							}
-							foreach (gchar *line, msg->data_list) {
+							foreach (const gchar *line, msg->data_list) {
 								fputs(line, out);
 							}
 							if (flag)
@@ -130,7 +130,7 @@ WARNING_POP
 **  result: |nnnyyyynnnnyyyyyyyyyynnnnnnn
 */
 static gboolean
-warn_msg_is_due(message *msg)
+warn_msg_is_due(const message *msg)
 {
 	time_t now = time(NULL);
 	time_t pending = now - msg->received_time;
@@ -138,7 +138,7 @@ warn_msg_is_due(message *msg)
 	DEBUG(5) debugf("checking if warning is due for %s; pending = %ld; warned = %ld\n",
 	                msg->uid, (long) pending, (long) warned);
 
-	foreach (gpointer ival_ptr, conf.warn_intervals) {
+	foreach (gconstpointer ival_ptr, conf.warn_intervals) {
 		gint ival = (gint) (gintptr) ival_ptr;
 		DEBUG(5) debugf("ival = %d\n", ival);
 		if (pending > ival) {
@@ -152,7 +152,7 @@ warn_msg_is_due(message *msg)
 }
 
 gboolean
-warn_msg(message *msg, gchar *template, GList *defered_rcpts, gchar *err_msg)
+warn_msg(message *msg, const gchar *template, GList *defered_rcpts, const gchar *err_msg)
 {
 	time_t now = time(NULL);
 

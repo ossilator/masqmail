@@ -15,7 +15,7 @@
 #ifdef ENABLE_RESOLVER
 
 static int
-dns_resolve(char *domain, int type, gboolean do_search,
+dns_resolve(const char *domain, int type, gboolean do_search,
             guchar *nsbuf, ns_msg *nsmsg)
 {
 	int resp_len;
@@ -44,7 +44,7 @@ dns_resolve(char *domain, int type, gboolean do_search,
 }
 
 static GList*
-resolve_dns_a(GList *list, gchar *domain, gboolean do_search, int pref)
+resolve_dns_a(GList *list, const gchar *domain, gboolean do_search, int pref)
 {
 	ns_rr rr;
 	ns_msg nsmsg;
@@ -77,8 +77,8 @@ resolve_dns_a(GList *list, gchar *domain, gboolean do_search, int pref)
 static gint
 _mx_sort_func(gconstpointer aa, gconstpointer bb)
 {
-	const mxip_addr *a = (mxip_addr *) aa;
-	const mxip_addr *b = (mxip_addr *) bb;
+	const mxip_addr *a = aa;
+	const mxip_addr *b = bb;
 
 	if (a->pref == b->pref)
 		return a->ip - b->ip;
@@ -87,7 +87,7 @@ _mx_sort_func(gconstpointer aa, gconstpointer bb)
 }
 
 GList*
-resolve_dns_mx(gchar *domain)
+resolve_dns_mx(const gchar *domain)
 {
 	GList *list = NULL;
 	int cnt = 0;
@@ -127,7 +127,7 @@ resolve_dns_mx(gchar *domain)
 		*/
 		tmp_list = g_list_sort(tmp_list, _mx_sort_func);
 
-		foreach (mxip_addr *p_mxip, tmp_list) {
+		foreach (const mxip_addr *p_mxip, tmp_list) {
 			list = resolve_dns_a(list, p_mxip->name, FALSE, p_mxip->pref);
 			if (!list)
 				break;
@@ -146,7 +146,7 @@ resolve_dns_mx(gchar *domain)
 /* now something completely different... */
 
 GList*
-resolve_byname(gchar *domain)
+resolve_byname(const gchar *domain)
 {
 	GList *list = NULL;
 	struct hostent *hent;

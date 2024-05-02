@@ -11,7 +11,7 @@
 #include <fnmatch.h>
 
 table_pair*
-create_pair_base(gchar *key, gpointer value)
+create_pair_base(const gchar *key, gpointer value)
 {
 	table_pair *pair;
 
@@ -23,20 +23,19 @@ create_pair_base(gchar *key, gpointer value)
 }
 
 table_pair*
-create_pair(gchar *key, gchar *value)
+create_pair(const gchar *key, const gchar *value)
 {
 	return create_pair_base(key, g_strdup(value));
 }
 
 table_pair*
-parse_table_pair(gchar *line, char delim)
+parse_table_pair(const gchar *line, char delim)
 {
 	gchar buf[256];
-	gchar *p, *q;
 	table_pair *pair;
 
-	p = line;
-	q = buf;
+	const gchar *p = line;
+	gchar *q = buf;
 	while (*p && (*p != delim) && q < buf + 255) {
 		*(q++) = *(p++);
 	}
@@ -55,11 +54,11 @@ parse_table_pair(gchar *line, char delim)
 	return pair;
 }
 
-gpointer
-table_find_func(GList *table_list, gchar *key,
+gconstpointer
+table_find_func(const GList *table_list, const gchar *key,
 		int (*cmp_func) (const char *, const char *))
 {
-	foreach (table_pair *pair, table_list) {
+	foreach (const table_pair *pair, table_list) {
 		if (cmp_func(pair->key, key) == 0) {
 			return pair->value;
 		}
@@ -67,14 +66,14 @@ table_find_func(GList *table_list, gchar *key,
 	return NULL;
 }
 
-gpointer
-table_find(GList *table_list, gchar *key)
+gconstpointer
+table_find(const GList *table_list, const gchar *key)
 {
 	return table_find_func(table_list, key, strcmp);
 }
 
-gpointer
-table_find_casefold(GList *table_list, gchar *key)
+gconstpointer
+table_find_casefold(const GList *table_list, const gchar *key)
 {
 	return table_find_func(table_list, key, strcasecmp);
 }
@@ -85,8 +84,8 @@ fnmatch0(const char *pattern, const char *string)
 	return fnmatch(pattern, string, 0);
 }
 
-gpointer
-table_find_fnmatch(GList *table_list, gchar *key)
+gconstpointer
+table_find_fnmatch(const GList *table_list, const gchar *key)
 {
 	return table_find_func(table_list, key, fnmatch0);
 }
@@ -97,14 +96,14 @@ fnmatch_casefold(const char *pattern, const char *string)
 	return fnmatch(pattern, string, FNM_CASEFOLD);
 }
 
-gpointer
-table_find_fnmatch_casefold(GList *table_list, gchar *key)
+gconstpointer
+table_find_fnmatch_casefold(const GList *table_list, const gchar *key)
 {
 	return table_find_func(table_list, key, fnmatch_casefold);
 }
 
 GList*
-table_read(gchar *fname, gchar delim)
+table_read(const gchar *fname, gchar delim)
 {
 	GList *list = NULL;
 	FILE *fptr;

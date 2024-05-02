@@ -20,7 +20,7 @@
 #include <sys/stat.h>
 
 static gboolean
-message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
+message_stream(FILE *out, const message *msg, const GList *hdr_list, guint flags)
 {
 	time_t now = time(NULL);
 
@@ -30,7 +30,7 @@ message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 		}
 	}
 
-	foreach (header *hdr, hdr_list) {
+	foreach (const header *hdr, hdr_list) {
 		if (fputs(hdr->header, out) == EOF) {
 			goto fail;
 		}
@@ -39,7 +39,7 @@ message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 		goto fail;
 	}
 
-	foreach (gchar *line, msg->data_list) {
+	foreach (const gchar *line, msg->data_list) {
 		/* From hack: */
 		if (flags & MSGSTR_FROMHACK) {
 			if (strncmp(line, "From ", 5) == 0) {
@@ -71,7 +71,7 @@ message_stream(FILE *out, message *msg, GList *hdr_list, guint flags)
 }
 
 gboolean
-append_file(message *msg, GList *hdr_list, gchar *user)
+append_file(const message *msg, const GList *hdr_list, const gchar *user)
 {
 	struct passwd *pw;
 	gboolean ok = FALSE;
@@ -193,7 +193,7 @@ join_argv(gchar **argv, guint l)
 }
 
 gboolean
-prepare_pipe(const gchar *cmd, const gchar *what, GList *var_table,
+prepare_pipe(const gchar *cmd, const gchar *what, const GList *var_table,
              gchar ***argv, gchar **out_cmd)
 {
 	GError *gerr = NULL;
@@ -222,15 +222,15 @@ prepare_pipe(const gchar *cmd, const gchar *what, GList *var_table,
 }
 
 gboolean
-pipe_out(message *msg, GList *hdr_list, recipient *rcpt,
-         gchar **argv, gchar *cmd, guint flags)
+pipe_out(const message *msg, const GList *hdr_list, const recipient *rcpt,
+         gchar **argv, const gchar *cmd, guint flags)
 {
 	gchar *envp[40];
 	FILE *out;
 	gboolean ok = FALSE;
 	pid_t pid;
 	int status;
-	recipient *ancestor = addr_find_ancestor(rcpt);
+	const recipient *ancestor = addr_find_ancestor(rcpt);
 
 	/* set environment */
 	gint n = 0;

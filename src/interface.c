@@ -11,7 +11,7 @@
 #include <arpa/inet.h>
 
 static gboolean
-init_sockaddr(struct sockaddr_in *name, interface *iface)
+init_sockaddr(struct sockaddr_in *name, const interface *iface)
 {
 	struct hostent *he;
 	struct in_addr ia;
@@ -34,7 +34,7 @@ init_sockaddr(struct sockaddr_in *name, interface *iface)
 }
 
 int
-make_server_socket(interface *iface)
+make_server_socket(const interface *iface)
 {
 	int sock = -1;
 	struct sockaddr_in server;

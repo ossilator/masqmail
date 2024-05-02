@@ -58,8 +58,8 @@ sigterm_cb(gpointer user_data)
 **    e.g.  `-d 6'     `-d6'
 **             ^          ^
 */
-static gchar*
-get_optarg(char *argv[], gint *argp, char *cp)
+static const gchar*
+get_optarg(const char * const argv[], gint *argp, const char *cp)
 {
 	if (*cp) {
 		/* this kind: -xval */
@@ -75,7 +75,7 @@ get_optarg(char *argv[], gint *argp, char *cp)
 }
 
 static void
-makedir(char *dir, gboolean reown)
+makedir(const char *dir, gboolean reown)
 {
 	if (!mkdir(dir, 0755)) {
 		chmod(dir, 0755);  // override possible umask
@@ -182,8 +182,8 @@ mode_smtp(void)
 
 /* default mode if address args or -t is specified */
 static void
-mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
-		char **addresses, int addr_cnt)
+mode_accept(address *return_path, const gchar *full_sender_name, guint accept_flags,
+            const char * const *addresses, int addr_cnt)
 {
 	/* accept message on stdin */
 	accept_error err;
@@ -258,7 +258,7 @@ mode_accept(address *return_path, gchar *full_sender_name, guint accept_flags,
 **  return success if at least one message had been deleted
 */
 static int
-manipulate_queue(char *cmd, char *id[])
+manipulate_queue(const char *cmd, const char * const id[])
 {
 	gboolean ok = FALSE;
 
@@ -317,7 +317,7 @@ manipulate_queue(char *cmd, char *id[])
 
 /* -qo, -q (without argument), or called as runq */
 static void
-run_queue(gboolean do_runq_online, char *route_name)
+run_queue(gboolean do_runq_online, const char *route_name)
 {
 	/* queue runs */
 	verify_privileged_user("queue run");
@@ -334,8 +334,8 @@ run_queue(gboolean do_runq_online, char *route_name)
 static void
 mode_version(void)
 {
-	gchar *with_resolver = "";
-	gchar *with_auth = "";
+	const gchar *with_resolver = "";
+	const gchar *with_auth = "";
 
 #ifdef ENABLE_RESOLVER
 	with_resolver = " +resolver";
@@ -361,24 +361,24 @@ set_mode(enum mta_mode mode)
 }
 
 int
-main(int argc, char *argv[])
+main(int argc, const char * const argv[])
 {
-	gchar *progname;
-	char *opt;
+	const gchar *progname;
+	const char *opt;
 	gint arg;
 
 	gboolean do_listen = FALSE;
 	gboolean do_runq_online = FALSE;
 	gboolean do_queue = FALSE;
 	gint queue_interval = 0;
-	gchar *M_cmd = NULL;
+	const gchar *M_cmd = NULL;
 	gboolean opt_t = FALSE;
 	gboolean opt_i = FALSE;
-	gchar *conf_file = CONF_FILE;
-	gchar *route_name = NULL;
-	gchar *f_address = NULL;
+	const gchar *conf_file = CONF_FILE;
+	const gchar *route_name = NULL;
+	const gchar *f_address = NULL;
 	address *return_path = NULL;  /* may be changed by -f option */
-	gchar *full_sender_name = NULL;
+	const gchar *full_sender_name = NULL;
 	gint debug_level = -1;
 
 	ensure_stdio();
@@ -451,7 +451,7 @@ main(int argc, char *argv[])
 						"debug level.\n");
 				exit(1);
 			}
-			char *lvl = get_optarg(argv, &arg, opt+1);
+			const char *lvl = get_optarg(argv, &arg, opt+1);
 			if (!lvl) {
 				fprintf(stderr, "-d requires number arg.\n");
 				exit(1);
@@ -460,7 +460,7 @@ main(int argc, char *argv[])
 
 		} else if (strncmp(opt, "f", 1) == 0) {
 			/* set return path */
-			gchar *addr = get_optarg(argv, &arg, opt + 1);
+			const gchar *addr = get_optarg(argv, &arg, opt + 1);
 			if (!addr) {
 				fprintf(stderr, "-f requires address arg.\n");
 				exit(1);
@@ -508,7 +508,7 @@ main(int argc, char *argv[])
 
 		} else if (strncmp(opt, "q", 1) == 0) {
 			/* must be after the `qo' check */
-			gchar *optarg;
+			const gchar *optarg;
 
 			optarg = get_optarg(argv, &arg, opt+1);
 			if (optarg) {
@@ -665,7 +665,7 @@ main(int argc, char *argv[])
 	}
 
 	DEBUG(5) {
-		gchar **str = argv;
+		const gchar * const *str = argv;
 		debugf("args: \n");
 		while (*str) {
 			debugf("%s \n", *str);

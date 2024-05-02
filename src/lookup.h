@@ -13,10 +13,10 @@ typedef struct {
 } mxip_addr;
 
 
-typedef GList *(*resolve_func) (gchar *);
+typedef GList *(*resolve_func) (const gchar *);
 
-GList *resolve_dns_mx(gchar *domain);
-GList *resolve_byname(gchar *domain);
+GList *resolve_dns_mx(const gchar *domain);
+GList *resolve_byname(const gchar *domain);
 
 void destroy_mxip_addr(mxip_addr *mxip);
 void destroy_mxip_addr_list(GList *list);
