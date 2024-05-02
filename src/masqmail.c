@@ -160,7 +160,7 @@ mode_smtp(void)
 	} else if (errno != ENOTSOCK)
 		exit(1);
 
-	smtp_in(stdin, stderr, peername);
+	smtp_in(stdin, stdout, peername);
 }
 
 /* default mode if address args or -t is specified */
