@@ -14,7 +14,6 @@ online_query()
 {
 	gchar *pipe = conf.online_query;
 	pid_t pid;
-	void (*old_signal) (int);
 	int status;
 	int stdout_fd;
 	FILE *in;
@@ -32,8 +31,6 @@ online_query()
 		return NULL;
 	}
 
-	old_signal = signal(SIGCHLD, SIG_DFL);
-
 	gboolean ok = g_spawn_async_with_pipes(
 			NULL /* workdir */, argv, NULL /* env */,
 			G_SPAWN_DO_NOT_REAP_CHILD |
@@ -43,7 +40,6 @@ online_query()
 	g_strfreev(argv);
 	if (!ok) {
 		loggerror(LOG_ERR, gerr, "failed to launch online_query command");
-		signal(SIGCHLD, old_signal);
 		return NULL;
 	}
 
@@ -67,8 +63,6 @@ online_query()
 		g_free(name);
 		name = NULL;
 	}
-
-	signal(SIGCHLD, old_signal);
 
 	return name;
 }

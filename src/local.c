@@ -171,7 +171,6 @@ pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags
 	gboolean ok = FALSE;
 	gint i, n;
 	pid_t pid;
-	void (*old_signal) (int);
 	int status;
 	recipient *ancestor = addr_find_ancestor(rcpt);
 
@@ -196,8 +195,6 @@ pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags
 	envp[n++] = g_strdup_printf("QUALIFY_DOMAIN=%s", conf.host_name);
 
 	envp[n] = NULL;
-
-	old_signal = signal(SIGCHLD, SIG_DFL);
 
 	gchar **argv;
 	GError *gerr = NULL;
@@ -237,8 +234,6 @@ pipe_out(message *msg, GList *hdr_list, recipient *rcpt, gchar *cmd, guint flags
 	}
 
   fail:
-	signal(SIGCHLD, old_signal);
-
 	/* free environment */
 	for (i = 0; i < n; i++) {
 		g_free(envp[i]);

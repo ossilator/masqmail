@@ -6,29 +6,23 @@
 
 #include "masqmail.h"
 
+#include <glib-unix.h>
+
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 
 static void
-sigchld_handler(G_GNUC_UNUSED int sig)
+child_cb(GPid pid, gint status, G_GNUC_UNUSED gpointer user_data)
 {
-	pid_t pid;
-	int status;
-
-	pid = waitpid(0, &status, 0);
-	if (pid > 0) {
-		if (WEXITSTATUS(status) != 0) {
-			logwrite(LOG_WARNING, "process %d exited with %d\n",
-					pid, WEXITSTATUS(status));
-		}
-		if (WIFSIGNALED(status)) {
-			logwrite(LOG_WARNING, "process %d got signal: %d\n",
-					pid, WTERMSIG(status));
-		}
+	if (WIFSIGNALED(status)) {
+		logwrite(LOG_WARNING, "process %d got signal: %d\n",
+		         pid, WTERMSIG(status));
+	} else if (WEXITSTATUS(status) != 0) {
+		logwrite(LOG_WARNING, "process %d exited with %d\n",
+		         pid, WEXITSTATUS(status));
 	}
-	signal(SIGCHLD, sigchld_handler);
 }
 
 static void
@@ -44,7 +38,6 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 			rem_host, ntohs(sock_addr->sin_port));
 
 	/* start child for connection: */
-	signal(SIGCHLD, sigchld_handler);
 	pid = fork();
 	if (pid < 0) {
 		logerrno(LOG_ERR, "could not fork for incoming smtp connection");
@@ -55,6 +48,8 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 		in = fdopen(dup_sock, "r");
 		smtp_in(in, out, rem_host);
 		_exit(0);
+	} else {
+		g_child_watch_add(pid, child_cb, NULL);
 	}
 
 	g_free(rem_host);
@@ -62,20 +57,42 @@ accept_connect(int listen_sock, int sock, struct sockaddr_in *sock_addr)
 	close(dup_sock);
 }
 
+static gboolean
+listen_cb(gint sock, G_GNUC_UNUSED GIOCondition condition, G_GNUC_UNUSED gpointer user_data)
+{
+	struct sockaddr_in clientname;
+	socklen_t size = sizeof(clientname);
+
+	int new = accept(sock, (struct sockaddr *) &clientname, &size);
+	if (new < 0) {
+		logerrno(LOG_ERR, "accept()");
+	} else {
+		accept_connect(sock, new, &clientname);
+	}
+	return TRUE;
+}
+
+static gboolean
+queue_cb(G_GNUC_UNUSED gpointer user_data)
+{
+	pid_t pid = fork();
+	if (pid < 0) {
+		logerrno(LOG_ERR, "could not fork for queue run");
+	} else if (pid == 0) {
+		queue_run();
+		_exit(0);
+	} else {
+		g_child_watch_add(pid, child_cb, NULL);
+	}
+	return TRUE;
+}
+
 void
 listen_port(GList *iface_list, gint qival)
 {
-	int i;
-	fd_set active_fd_set, read_fd_set;
-	struct timeval tm;
-	time_t time_before, time_now;
-	struct sockaddr_in clientname;
-	size_t size;
 	GList *node, *node_next;
-	int sel_ret;
 
 	/* Create the sockets and set them up to accept connections. */
-	FD_ZERO(&active_fd_set);
 	for (node = g_list_first(iface_list); node; node = node_next) {
 		interface *iface = (interface *) (node->data);
 		int sock;
@@ -92,87 +109,10 @@ listen_port(GList *iface_list, gint qival)
 		logwrite(LOG_INFO, "listening on interface %s:%d\n",
 				iface->address, iface->port);
 		DEBUG(5) debugf("sock = %d\n", sock);
-		FD_SET(sock, &active_fd_set);
+		g_unix_fd_add(sock, G_IO_IN, listen_cb, NULL);
 	}
 
-	signal(SIGCHLD, sigchld_handler);
-
-	/*  sel_ret = 0; */
-	time(&time_before);
-	time_before -= qival;
-	sel_ret = -1;
-
-	while (1) {
-
-		/*
-		**  if we were interrupted by an incoming connection (or a
-		**  signal) we have to recalculate the time until the next
-		**  queue run should occur. select may put a value into tm,
-		**  but doc for select() says we should not use it.
-		*/
-		if (qival > 0) {
-			time(&time_now);
-			if (!sel_ret) {
-				/* either just starting or after a queue run */
-				tm.tv_sec = qival;
-				tm.tv_usec = 0;
-				time_before = time_now;
-			} else {
-				tm.tv_sec = qival - (time_now - time_before);
-				tm.tv_usec = 0;
-
-				/* race condition, unlikely (but possible): */
-				if (tm.tv_sec < 0) {
-					tm.tv_sec = 0;
-				}
-			}
-		}
-		/*
-		**  Block until input arrives on one or more active sockets,
-		**  or signal arrives, or queuing interval time elapsed
-		**  (if qival > 0)
-		*/
-		read_fd_set = active_fd_set;
-		if ((sel_ret = select(FD_SETSIZE, &read_fd_set, NULL, NULL,
-				qival > 0 ? &tm : NULL)) < 0) {
-			if (errno != EINTR) {
-				logerrno(LOG_ERR, "select: (terminating)");
-				exit(1);
-			}
-		} else if (sel_ret > 0) {
-			for (i = 0; i < FD_SETSIZE; i++) {
-				int sock = i;
-				int new;
-
-				if (!FD_ISSET(i, &read_fd_set)) {
-					continue;
-				}
-				size = sizeof(clientname);
-				new = accept(sock, (struct sockaddr *)
-						&clientname,
-						(socklen_t *)&size);
-				if (new < 0) {
-					logerrno(LOG_ERR, "accept: (ignoring)");
-				} else {
-					accept_connect(sock, new,
-							&clientname);
-				}
-			}
-		} else {
-			/*
-			**  If select returns 0, the interval time has elapsed.
-			**  We start a new queue runner process
-			*/
-			int pid;
-			signal(SIGCHLD, sigchld_handler);
-			if ((pid = fork()) == 0) {
-				queue_run();
-
-				_exit(0);
-			} else if (pid < 0) {
-				logerrno(LOG_ERR, "could not fork for "
-						"queue run");
-			}
-		}
+	if (qival > 0) {
+		g_timeout_add_seconds(qival, queue_cb, NULL);
 	}
 }

@@ -145,8 +145,12 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 
 	null_stdio();
 
+	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+
 	logwrite(LOG_INFO, "%s %s daemon starting\n", PACKAGE, VERSION);
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval);
+
+	g_main_loop_run(loop);
 }
 
 /* -bs or called as smtpd or in.smtpd */
