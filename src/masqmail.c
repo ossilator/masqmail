@@ -8,6 +8,8 @@
 #include "masqmail.h"
 #include "whereami.h"
 
+#include <glib-unix.h>
+
 #include <pwd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -32,14 +34,12 @@ enum mta_mode {
 static enum mta_mode mta_mode = MODE_NONE;
 
 static char *pidfile = NULL;
-static volatile int sigterm_in_progress = 0;
 
-static void
-sigterm_handler(int sig)
+static gboolean
+sigterm_cb(gpointer user_data)
 {
-	if (sigterm_in_progress)
-		raise(sig);
-	sigterm_in_progress = 1;
+	GMainLoop *loop = user_data;
+	g_main_loop_quit(loop);
 
 	if (pidfile) {
 		acquire_root();
@@ -48,8 +48,7 @@ sigterm_handler(int sig)
 		drop_root();  // we exit anyway after this, but whatever
 	}
 
-	signal(sig, SIG_DFL);
-	raise(sig);
+	return FALSE;
 }
 
 /*
@@ -141,16 +140,17 @@ mode_daemon(gboolean do_listen, gint queue_interval)
 		write_pidfile(getpid());
 	}
 
-	signal(SIGTERM, sigterm_handler);
-
 	null_stdio();
 
 	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+
+	g_unix_signal_add(SIGTERM, sigterm_cb, loop);
 
 	logwrite(LOG_INFO, "%s %s daemon starting\n", PACKAGE, VERSION);
 	listen_port(do_listen ? conf.listen_addresses : NULL, queue_interval);
 
 	g_main_loop_run(loop);
+	logwrite(LOG_INFO, PACKAGE_STRING " daemon quitting\n");
 }
 
 /* -bs or called as smtpd or in.smtpd */
