@@ -33,7 +33,6 @@ masqmail_SOURCES=\
 	accept.c\
 	address.c\
 	alias.c\
-	child.c\
 	connect.c\
 	conf.c\
 	deliver.c\

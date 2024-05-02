@@ -296,6 +296,13 @@ will be called, and all traffic will be piped to its stdin and
 from its stdout.
 The purpose is to enable tunneling, e.g., via SSL.
 
+The command is split according to
+.MR sh 1
+rules, but is
+.B not
+run through the shell.
+Therefore, you cannot use shell expansions and redirections.
+
 The command's stderr is forwarded to
 .MR masqmail 8 's
 log file.

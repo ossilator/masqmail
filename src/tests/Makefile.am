@@ -12,7 +12,6 @@ nodist_smtpsend_SOURCES = \
 	lookup.h \
 	accept.c \
 	address.c \
-	child.c \
 	connect.c \
 	header.c \
 	lookup.c \

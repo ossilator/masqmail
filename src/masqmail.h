@@ -308,9 +308,6 @@ typedef struct _smtp_connection {
 /* alias.c*/
 gboolean alias_expand(GList *globalias_table, GList *alias_table, GList *rcpt_list);
 
-/* child.c */
-int child(const char *command);
-
 /* conf.c */
 void init_conf(void);
 gboolean read_conf(void);
