@@ -151,14 +151,18 @@ mode_smtp(void)
 
 	struct sockaddr_in saddr;
 	gchar *peername = NULL;
-	socklen_t dummy = sizeof(saddr);
+	socklen_t size = sizeof(saddr);
 
 	DEBUG(5) debugf("accepting smtp message on stdin\n");
 
-	if (getpeername(0, (struct sockaddr *) (&saddr), &dummy) == 0) {
-		peername = g_strdup(inet_ntoa(saddr.sin_addr));
-	} else if (errno != ENOTSOCK)
+	if (getpeername(0, (struct sockaddr *) (&saddr), &size) == 0) {
+		if (size >= 2 && saddr.sin_family == AF_INET) {
+			peername = g_strdup(inet_ntoa(saddr.sin_addr));
+		}
+	} else if (errno != ENOTSOCK) {
+		logerrno(LOG_ERR, "getpeername() (terminating)");
 		exit(1);
+	}
 
 	smtp_in(stdin, stdout, peername);
 }
