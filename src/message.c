@@ -32,12 +32,12 @@ create_message()
 **  masqmail's internal format. Dots are also not stuffed in the
 **  internal format. Dot-stuffing is ignored in the size.
 */
-gint
+gssize
 msg_calc_size(message *msg, gboolean is_smtp)
 {
 	GList *node;
 	gint l_cnt = 0;  /* line count (we need to add so many '\r' for SMTP) */
-	gint c_cnt = 0;  /* character count */
+	gssize c_cnt = 0;  /* character count */
 
 	/* message header size */
 	if (msg->hdr_list) {

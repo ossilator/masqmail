@@ -314,10 +314,10 @@ smtp_helo(smtp_base *psb, gchar *helo)
 }
 
 static void
-smtp_cmd_mailfrom(smtp_base *psb, address *return_path, guint size)
+smtp_cmd_mailfrom(smtp_base *psb, address *return_path, gssize size)
 {
 	if (psb->use_size) {
-		smtp_cmd(psb, "MAIL FROM:%s SIZE=%d", addr_string(return_path), size);
+		smtp_cmd(psb, "MAIL FROM:%s SIZE=%" G_GSSIZE_FORMAT, addr_string(return_path), size);
 	} else {
 		smtp_cmd(psb, "MAIL FROM:%s", addr_string(return_path));
 	}
@@ -524,7 +524,7 @@ smtp_out_auth_cram_md5(smtp_base *psb)
 
 			DEBUG(5) debugf("smtp_out_auth_cram_md5():\n");
 			DEBUG(5) debugf("  encoded challenge = %s\n", chall64);
-			DEBUG(5) debugf("  decoded challenge = %.*s, size = %d\n",
+			DEBUG(5) debugf("  decoded challenge = %.*s, size = %" G_GSIZE_FORMAT "\n",
 			                (int) chall_size, chall, chall_size);
 			DEBUG(5) debugf("  secret = %s\n", psb->auth_secret);
 
@@ -574,7 +574,7 @@ smtp_out_auth_login(smtp_base *psb)
 				debugf("  encoded response = `%s'\n", resp64);
 				resp = g_base64_decode(resp64, &resp_size);
 				g_free(resp64);
-				debugf("  decoded response = `%.*s', size = %d\n",
+				debugf("  decoded response = `%.*s', size = %" G_GSIZE_FORMAT "\n",
 				       (int) resp_size, resp, resp_size);
 				g_free(resp);
 			}
@@ -588,7 +588,7 @@ smtp_out_auth_login(smtp_base *psb)
 						debugf("  encoded response = `%s'\n", resp64);
 						resp = g_base64_decode(resp64, &resp_size);
 						g_free(resp64);
-						debugf("  decoded response = `%.*s', size = %d\n",
+						debugf("  decoded response = `%.*s', size = %" G_GSIZE_FORMAT "\n",
 						       (int) resp_size, resp, resp_size);
 						g_free(resp);
 					}
@@ -666,7 +666,8 @@ gint
 smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 		GList *rcpt_list, GList *hdr_list)
 {
-	gint i, size;
+	gint i;
+	gssize size;
 	gboolean ok = TRUE;
 	int rcpt_cnt;
 	int rcpt_accept = 0;
@@ -686,8 +687,8 @@ smtp_out_msg(smtp_base *psb, message *msg, address *return_path,
 
 	/* respect maximum size given by server: */
 	if ((psb->max_size > 0) && (size > psb->max_size)) {
-		logwrite(LOG_WARNING, "%s == host=%s message size (%d) > "
-		                      "fixed maximum message size of server (%d)",
+		logwrite(LOG_WARNING, "%s == host=%s message size (%" G_GSSIZE_FORMAT ") > "
+		                      "fixed maximum message size of server (%" G_GSSIZE_FORMAT ")",
 		         msg->uid, psb->remote_host, size, psb->max_size);
 		psb->error = smtp_cancel;
 		ok = FALSE;

@@ -106,10 +106,10 @@ typedef struct _masqmail_conf {
 	GList *listen_addresses;
 
 	/*
-	**  ANSI C defines unsigned long to be at least 32bit
-	**  i.e. ca. 4GB max; that should be enough.
+	**  ANSI C defines signed long to be at least 32bit
+	**  i.e. ca. 2 GiB max; that should be enough.
 	*/
-	gulong max_msg_size;
+	gssize max_msg_size;
 
 	gboolean do_save_envelope_to;
 
@@ -203,7 +203,7 @@ typedef struct _message {
 	GList *hdr_list;
 	GList *data_list;
 
-	gint data_size;
+	gssize data_size;
 	time_t received_time;
 	time_t warned_time;
 
@@ -302,7 +302,7 @@ message *create_message(void);
 void destroy_message(message *msg);
 void destroy_msg_list(GList *msg_list);
 void msg_free_data(message *msg);
-gint msg_calc_size(message *msg, gboolean is_smtp);
+gssize msg_calc_size(message *msg, gboolean is_smtp);
 
 msg_out *create_msg_out(message *msg);
 msg_out *clone_msg_out(msg_out *msgout_orig);

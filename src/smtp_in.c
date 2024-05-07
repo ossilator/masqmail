@@ -44,7 +44,8 @@ get_id(const gchar *line)
 }
 
 static gboolean
-get_size(gchar *line, unsigned long *msize) {
+get_size(gchar *line, gssize *msize)
+{
 	gchar *s = NULL;
 
 	/* hope we need not to handle cases like SiZe= ...*/
@@ -57,7 +58,8 @@ get_size(gchar *line, unsigned long *msize) {
 	}
 	s += 5;
 	*msize = atol(s);
-	DEBUG(5) debugf("get_size(): line=%s, msize=%ld\n", line, *msize);
+	DEBUG(5) debugf("get_size(): line=%s, msize=%" G_GSSIZE_FORMAT "\n",
+	                line, *msize);
 
 	return TRUE;
 }
@@ -147,7 +149,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 	message *msg = NULL;
 	smtp_connection *psc;
 	int len;
-	unsigned long msize;
+	gssize msize;
 
 	DEBUG(5) debugf("smtp_in entered, remote_host = %s\n", remote_host);
 
@@ -185,7 +187,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 			psc->prot = PROT_ESMTP;
 			psc->helo_seen = TRUE;
 			smtp_printf(out, "250-%s Nice to meet you with ESMTP\r\n", conf.host_name);
-			smtp_printf(out, "250-SIZE %d\r\n", conf.max_msg_size);
+			smtp_printf(out, "250-SIZE %" G_GSSIZE_FORMAT "\r\n", conf.max_msg_size);
 			smtp_printf(out, "250-PIPELINING\r\n");
 			smtp_printf(out, "250 HELP\r\n");
 			break;
@@ -204,7 +206,8 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 					break;
 				}
 				if (get_size(buffer, &msize)) {
-					DEBUG(5) debugf("smtp_in(): get_size: msize=%ld, conf.mms=%d\n",
+					DEBUG(5) debugf("smtp_in(): get_size: msize=%" G_GSSIZE_FORMAT
+					                ", conf.mms=%" G_GSSIZE_FORMAT "\n",
 							msize, conf.max_msg_size);
 					if (conf.max_msg_size && (msize > conf.max_msg_size)) {
 						smtp_printf(out, "552 Message size exceeds fixed limit.\r\n");

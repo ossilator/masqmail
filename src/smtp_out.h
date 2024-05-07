@@ -39,7 +39,7 @@ typedef struct _smtp_base {
 	gboolean use_pipelining;
 	gboolean use_auth;
 
-	gint max_size;
+	gssize max_size;
 
 	gchar **auth_names;
 

@@ -46,7 +46,8 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 	int line_size = MAX_DATALINE;
 	gboolean in_headers = TRUE;
 	header *hdr = NULL;
-	gint line_cnt = 0, data_size = 0;
+	gssize data_size = 0;
+	gint line_cnt = 0;
 
 	line = g_malloc(line_size);
 	*line = '\0';
@@ -138,13 +139,13 @@ accept_message_stream(FILE *in, message *msg, guint flags)
 		}
 
 		if (conf.max_msg_size && (data_size > conf.max_msg_size)) {
-			DEBUG(4) debugf("accept_message_stream(): "
-					"received %d bytes (conf.max_msg_size=%d)\n",
+			DEBUG(4) debugf("accept_message_stream(): received %" G_GSSIZE_FORMAT
+			                " bytes (conf.max_msg_size=%" G_GSSIZE_FORMAT ")\n",
 			                data_size, conf.max_msg_size);
 			return AERR_SIZE;
 		}
 	}
-	DEBUG(4) debugf("received %d lines of data (%d bytes)\n",
+	DEBUG(4) debugf("received %d lines of data (%" G_GSSIZE_FORMAT " bytes)\n",
 			line_cnt, data_size);
 
 	if (!msg->data_list) {

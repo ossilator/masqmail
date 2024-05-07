@@ -491,7 +491,7 @@ read_conf(gchar *filename)
 		} else if(strcmp(lval, "max_msg_size")==0) {
 			conf.max_msg_size = atol(rval);
 			DEBUG(9) fprintf(stderr,
-					"rval=%s, conf.max_msg_size=%ld\n",
+			                 "rval=%s, conf.max_msg_size=%" G_GSSIZE_FORMAT "\n",
 			                 rval, conf.max_msg_size);
 		} else {
 			logwrite(LOG_WARNING, "var '%s' unknown: ignored\n",

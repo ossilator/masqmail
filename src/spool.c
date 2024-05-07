@@ -238,7 +238,7 @@ spool_write_header(message *msg)
 			fprintf(out, "ID:%s\n", msg->ident);
 
 		if (msg->data_size >= 0)
-			fprintf(out, "DS: %d\n", msg->data_size);
+			fprintf(out, "DS: %" G_GSSIZE_FORMAT "\n", msg->data_size);
 
 		if (msg->received_time > 0)
 			fprintf(out, "TR: %u\n", (int) (msg->received_time));
