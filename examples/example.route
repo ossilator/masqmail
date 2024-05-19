@@ -1,6 +1,10 @@
 # Example route file for masqmail
 # see also: man 5 masqmail.route
 
+# Note that local_hosts, local_addresses, and not_local_addresses
+# are considered first. This may result in mail being scheduled
+# for local delivery, for which routes are not relevant.
+
 #
 # mail properties tested for:
 #
@@ -11,7 +15,6 @@
 
 allowed_senders = "okurth"
 
-# local_hosts will be checked before this.
 # cpwright.com uses the dialup up list of dul.maps.vix.com,
 # so I cannot send any mail over this connection to that domain.
 # There are probably many others... :-( (No, this is okay. Nobody
