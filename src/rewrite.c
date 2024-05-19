@@ -9,20 +9,23 @@
 #endif
 
 static replacement *
-map_local_part(gchar *local_part, GList *table)
+map_local_part(gchar *local_part, GList *table, GList *table2)
 {
 	replacement *ret = table_find_fnmatch(table, local_part);
+	if (!ret) {
+		ret = table_find_fnmatch(table2, local_part);
+	}
 	return ret;
 }
 
 static replacement *
 map_address(const gchar *loc_beg, const gchar *loc_end,
-            GList *table)
+            GList *table, GList *table2)
 {
 	DEBUG(5) debugf("considering '%.*s' for rewrite\n",
 	                (int)(loc_end - loc_beg), loc_beg);
 	gchar *local_part = g_strndup(loc_beg, loc_end - loc_beg);
-	replacement *ret = map_local_part(local_part, table);
+	replacement *ret = map_local_part(local_part, table, table2);
 	g_free(local_part);
 	DEBUG(5) {
 		if (ret) {
@@ -35,7 +38,7 @@ map_address(const gchar *loc_beg, const gchar *loc_end,
 }
 
 static header *
-map_address_header(header *hdr, GList *table)
+map_address_header(header *hdr, GList *table, GList *table2)
 {
 	const gchar *op = hdr->header;
 	const gchar *p = hdr->value;
@@ -58,7 +61,7 @@ map_address_header(header *hdr, GList *table)
 			return FALSE;
 		}
 
-		replacement *rewr = map_address(loc_beg, loc_end, table);
+		replacement *rewr = map_address(loc_beg, loc_end, table, table2);
 
 		gchar *newer_hdr;
 		if (rewr) {
@@ -126,12 +129,13 @@ rewrite_headers(msg_out *msgout, const connect_route *route)
 		} else {
 			continue;
 		}
-		if (!table) {
+		GList *table2 = route->map_outgoing_addresses;
+		if (!table && !table2) {
 			DEBUG(5) debugf("no rewrite rules for header '%.*s'\n",
 			                (int)(hdr->value - hdr->header), hdr->header);
 			continue;
 		}
-		header *new_hdr = map_address_header(hdr, table);
+		header *new_hdr = map_address_header(hdr, table, table2);
 		if (!new_hdr) {
 			continue;
 		}
@@ -153,12 +157,12 @@ rewrite_return_path(msg_out *msgout, const connect_route *route)
 	const message *msg = msgout->msg;
 	DEBUG(5) debugf("considering return path '%s' for rewriting\n",
 	                msg->return_path->address);
-	if (!route->map_return_path_addresses) {
+	if (!route->map_return_path_addresses && !route->map_outgoing_addresses) {
 		DEBUG(5) debugf("=> no rules\n");
 		return;
 	}
-	const replacement *ret_path = map_local_part(
-			msg->return_path->local_part, route->map_return_path_addresses);
+	const replacement *ret_path = map_local_part(msg->return_path->local_part,
+			route->map_return_path_addresses, route->map_outgoing_addresses);
 	if (!ret_path) {
 		DEBUG(5) debugf("=> no match\n");
 		return;

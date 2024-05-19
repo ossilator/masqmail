@@ -434,6 +434,15 @@ map_return_path_addresses = \(dqjohn: jsmith@mail.academic.edu;
     charlie: cmiller@mx.commercial.com\(dq
 .fi
 
+.TP
+.BI "map_outgoing_addresses = " list
+
+Rewrite rules combining all the above.
+Display names are ignored for return-path rewriting.
+
+You probably should use this, rather than the individual rules.
+The latter are matched first if both are present.
+
 
 .SH AUTHOR
 

@@ -695,6 +695,9 @@ read_route(gchar *filename)
 		} else if (strcmp(lval, "map_h_mail_followup_to_addresses")==0) {
 			ok &= parse_rewrite_map(
 					rval, &route->map_h_mail_followup_to_addresses, A_RFC822);
+		} else if (strcmp(lval, "map_outgoing_addresses")==0) {
+			ok &= parse_rewrite_map(
+					rval, &route->map_outgoing_addresses, A_RFC822);
 		} else if (strcmp(lval, "resolve_list")==0) {
 			route->resolve_list = parse_resolve_list(rval);
 #ifdef ENABLE_AUTH
@@ -783,6 +786,7 @@ destroy_route(connect_route *r)
 	destroy_replacement_table(r->map_h_reply_to_addresses);
 	destroy_replacement_table(r->map_h_mail_followup_to_addresses);
 	destroy_replacement_table(r->map_return_path_addresses);
+	destroy_replacement_table(r->map_outgoing_addresses);
 	g_list_free(r->resolve_list);
 #ifdef ENABLE_AUTH
 	g_free(r->auth_name);
