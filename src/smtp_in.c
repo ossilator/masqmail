@@ -230,7 +230,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 				if (!addr) {
 					smtp_printf(out, "501 %s: syntax error.\r\n", buf);
 				} else if (!addr->domain) {
-					smtp_printf(out, "501 return path must be qualified.\r\n", buf);
+					smtp_printf(out, "501 return path must be qualified.\r\n");
 				} else {
 					psc->from_seen = TRUE;
 					msg->return_path = addr;
@@ -268,7 +268,7 @@ smtp_in(FILE *in, FILE *out, gchar *remote_host)
 				}
 				if (!addr->domain) {
 					/* TODO: ``postmaster'' may be unqualified */
-					smtp_printf(out, "501 recipient address must be qualified.\r\n", buf);
+					smtp_printf(out, "501 recipient address must be qualified.\r\n");
 					break;
 				}
 				if (!(conf.do_relay || addr_is_local(msg->return_path) || addr_is_local(addr))) {
