@@ -20,8 +20,7 @@ fail_msg(message *msg, gchar *template, GList *failed_rcpts, gchar *err_msg)
 	if (msg->return_path->local_part[0] == '\0') {
 		GList *node;
 
-		ret_path = create_address_qualified("postmaster", TRUE,
-				conf.host_name);
+		ret_path = create_address_raw("postmaster", conf.host_name);
 		foreach(failed_rcpts, node) {
 			address *addr = (address *) (node->data);
 

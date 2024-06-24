@@ -341,12 +341,9 @@ accept_message_prepare(message *msg, guint flags)
 		struct passwd *passwd = getpwuid(conf.orig_uid);
 		msg->ident = g_strdup(passwd->pw_name);
 		if (!msg->return_path) {
-			gchar *path = g_strdup_printf("<%s@%s>",
-					passwd->pw_name, conf.host_name);
-			DEBUG(3) debugf("setting return_path for local "
-					"accept: %s\n", path);
-			msg->return_path = create_address(path, TRUE);
-			g_free(path);
+			msg->return_path = create_address_raw(msg->ident, conf.host_name);
+			DEBUG(3) debugf("setting return_path for local accept: %s\n",
+			                msg->return_path->address);
 		}
 	}
 

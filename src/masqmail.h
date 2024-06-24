@@ -320,10 +320,10 @@ void destroy_ptr_list(GList *list);
 /* address.c */
 address *create_address(gchar *path, gboolean is_rfc821);
 address *create_address_qualified(gchar *path, gboolean is_rfc821, gchar *domain);
+address *create_address_raw(gchar *local_part, gchar *domain);
 address *create_address_pipe(gchar *path);
 void destroy_address(address *addr);
-address *copy_modify_address(const address *orig, gchar *l_part, gchar *dom);
-#define copy_address(addr) copy_modify_address(addr, NULL, NULL)
+#define copy_address(addr) create_address_raw(addr->local_part, addr->domain)
 gboolean addr_isequal(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
 gboolean addr_isequal_parent(address *addr1, address *addr2, int (*cmpfunc) (const char*, const char*));
 address *addr_find_ancestor(address *addr);
