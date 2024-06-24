@@ -372,6 +372,7 @@ read_conf(void)
 {
 	FILE *in;
 	gchar lval[256], rval[2048];
+	gchar *log_user_tmp = NULL;
 	GList *listen_addrs_tmp = NULL;
 	GList *warn_intervals_tmp = NULL;
 
@@ -485,7 +486,7 @@ read_conf(void)
 			}
 			conf.max_defer_time = ival;
 		} else if (strcmp(lval, "log_user")==0) {
-			conf.log_user = g_strdup(rval);
+			log_user_tmp = g_strdup(rval);
 		} else if(strcmp(lval, "max_msg_size")==0) {
 			conf.max_msg_size = atol(rval);
 			DEBUG(9) fprintf(stderr,
@@ -539,6 +540,14 @@ read_conf(void)
 		conf.local_hosts = parse_list(local_hosts_str, TRUE);
 		free(shortname);
 		free(local_hosts_str);
+	}
+	if (log_user_tmp) {
+		conf.log_user = create_recipient(log_user_tmp, conf.host_name);
+		if (!conf.log_user) {
+			logwrite(LOG_ERR, "invalid log_user address '%s': %s\n", log_user_tmp, parse_error);
+			return FALSE;
+		}
+		free(log_user_tmp);
 	}
 	if (!listen_addrs_tmp) {
 		conf.listen_addresses = g_list_append(NULL,

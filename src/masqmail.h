@@ -164,7 +164,7 @@ typedef struct _masqmail_conf {
 	GList *warn_intervals;
 	gint max_defer_time;
 
-	gchar *log_user;
+	recipient *log_user;
 } masqmail_conf;
 
 extern masqmail_conf conf;

@@ -782,14 +782,8 @@ deliver_msg_list(GList *msg_list, guint flags)
 
 		rcpt_list = copy_recipient_list(msgout->msg->rcpt_list);
 		if (conf.log_user) {
-			recipient *addr = create_recipient(conf.log_user, conf.host_name);
-			if (addr) {
-				rcpt_list = g_list_prepend(rcpt_list, addr);
-			} else {
-				logwrite(LOG_ERR, "invalid log_user "
-						"address `%s', ignoring\n",
-						conf.log_user);
-			}
+			rcpt_list = g_list_prepend(rcpt_list, conf.log_user);
+			conf.log_user->ref_count++;
 		}
 		if (!alias_expand(globalias_table, alias_table, rcpt_list)) {
 			delivery_failures(msgout->msg, rcpt_list, "Alias expansion failed");
