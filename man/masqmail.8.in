@@ -30,9 +30,11 @@ masqmail \- An offline Mail Transfer Agent
 
 .SH DESCRIPTION
 
-Masqmail is a mail server designed for hosts that do not have a permanent internet connection
-e.g. a home network or a single host at home.
-It has special support for connections to different ISPs.
+Masqmail is a mail server designed for hosts that do not have
+a permanent internet connection, e.g., portable devices and
+those on home networks.
+It supports dynamic choice of the delivery route
+and sender address rewriting (\(lqmasquerading\(rq).
 It replaces sendmail or other MTAs such as qmail or exim.
 
 
