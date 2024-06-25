@@ -43,7 +43,7 @@ Blank lines and lines starting with a hash `#' are ignored.
 .SH OPTIONS
 
 .TP
-\fBrun_as_user = \fIboolean\fR
+.BI "run_as_user = " boolean
 
 If this is set, masqmail runs with the user id of the user who
 invoked it and never changes it.
@@ -52,14 +52,14 @@ If the user is not root, masqmail will not be able to listen on a port < 1024
 and will not be able to deliver local mail to others than the user.
 
 .TP
-\fBuse_syslog = \fIboolean\fR
+.BI "use_syslog = " boolean
 
 If this is set, masqmail uses syslogd for logging.
 It uses facility MAIL.
 You still have to set \fBlog_dir\fR for debug files.
 
 .TP
-\fBdebug_level = \fIn\fR
+.BI "debug_level = " n
 
 Set the debug level.
 Valid values are 0 to 6 and 9.
@@ -72,51 +72,55 @@ Thus nothing but stderr is available.
 Level 9 is almost never interesting.
 
 .TP
-\fBlog_dir = \fIfile\fR
+.BI "log_dir = " dir
 
 The directory where logs are stored, if syslog is not used.
 Debug files are always stored in this directory if debugging is enabled.
-\fIfile\fR must be an absolute path.
+.I dir
+must be an absolute path.
 
 Default:
 .I @with_logdir@
 
 .TP
-\fBmail_dir = \fIfile\fR
+.BI "mail_dir = " dir
 
 The directory where local mail is stored,
 usually \fI/var/spool/mail\fR or \fI/var/mail\fR.
-\fIfile\fR must be an absolute path.
+.I dir
+must be an absolute path.
 
 Default: \fI/var/mail\fR
 
 .TP
-\fBspool_dir = \fIfile\fR
+.BI "spool_dir = " dir
 
 The directory where masqmail stores its spool files
 (and lock files if \fIrun_as_user\fP).
 Masqmail needs read and write permissions for this directory.
-\fIfile\fR must be an absolute path.
+.I dir
+must be an absolute path.
 
 Default:
 .I @with_spooldir@
 
 .TP
-\fBlock_dir = \fIfile\fR
+.BI "lock_dir = " dir
 
 The directory where masqmail stores its lock files.
 Masqmail needs read and write permissions for this directory.
+.I dir
+must be an absolute path.
 The default is
 .I @with_lockdir@
 for normal operation.
-\fIfile\fR must be an absolute path.
 The directory is created on startup if yet missing.
 
 If \fIrun_as_user\fP then lock files are stored in the \fIspool_dir\fP
 directly and the \fBlock_dir\fP setting is ignored.
 
 .TP
-\fBhost_name = \fIstring\fR
+.BI "host_name = " string
 
 This is used in different places: Masqmail identifies itself in
 the greeting banner on incoming connections and in the HELO/EHLO command
@@ -134,7 +138,7 @@ Use \fBlocal_hosts\fR for that.
 Default: none; \fBhost_name\fP MUST be set in the config file
 
 .TP
-\fBlocal_hosts = \fIlist\fR
+.BI "local_hosts = " list
 
 A semicolon `;' separated list of hostnames which are considered local.
 Can contain glob patterns, like
@@ -149,7 +153,7 @@ Example: \fIlocalhost;foo;foo.example.org\fR
 (if you have set \fBhost_name\fR to \fIfoo.example.org\fR)
 
 .TP
-\fBlocal_addresses = \fIlist\fR
+.BI "local_addresses = " list
 
 A semicolon `;' separated list of fully qualified email-addresses which are
 considered local although their domain name part is not in the list of
@@ -172,7 +176,7 @@ This means mail to person1@yourdomain will effectively go to
 person1@localhost, if not redirected by an alias.
 
 .TP
-\fBnot_local_addresses = \fIlist\fR
+.BI "not_local_addresses = " list
 
 A semicolon `;' separated list of fully qualified email-addresses which are
 considered not local although their domain name part is in the list of
@@ -195,7 +199,7 @@ not_local_addresses = "eric@mydomain.net"
 .IP
 
 .TP
-\fBlisten_addresses = \fIlist\fR
+.BI "listen_addresses = " list
 
 A semicolon `;' separated list of interfaces on which connections will
 be accepted.
@@ -212,7 +216,7 @@ use only one of them, otherwise you will get an error message.
 Default: \fIlocalhost:25\fR (i.e. only local processes can connect)
 
 .TP
-\fBdo_save_envelope_to = \fIboolean\fR
+.BI "do_save_envelope_to = " boolean
 
 If this is set to true, a possibly existing Envelope-to: header in
 an incoming mail which is received via either pop3 or smtp will be saved
@@ -226,7 +230,7 @@ It cannot be preserved because masqmail sets such a header by itself.
 Default is false.
 
 .TP
-\fBdo_relay = \fIboolean\fR
+.BI "do_relay = " boolean
 
 If this is set to false, mail with a return path that is not local
 and a destination that is also not local will not be accepted via smtp
@@ -237,7 +241,7 @@ Note that this will not protect you from spammers using open relays,
 but from users unable to set their address in their mail clients.
 
 .TP
-\fBdo_queue = \fIboolean\fR
+.BI "do_queue = " boolean
 
 If this is set, masqmail will not try to deliver mail
 immediately when accepted.
@@ -251,13 +255,13 @@ Usually you should leave this option unset.
 Default: false
 
 .TP
-\fBpermanent_routes\fR = \fIlist\fR
+.BI "permanent_routes = " list
 
 Set this to the filename (or a semicolon-separated list of filenames)
 of the route configuration for always available connections.
 
 .TP
-\fBquery_routes.\fIname\fR = \fIlist\fR
+.BI query_routes. name " = " list
 
 Replace \fIname\fR with a name to identify the connection.
 Set this to a filename (or a semicolon-separated list of filenames)
@@ -290,7 +294,7 @@ Masqmail will then read the specified file and send the mails.
 See \fBonline_query\fP.
 
 .TP
-\fBalias_file = \fIfile\fR
+.BI "alias_file = " file
 
 Set this to the location of your alias file.
 If not set, no aliasing will be done.
@@ -298,7 +302,7 @@ If not set, no aliasing will be done.
 Default: <not set> (i.e. no aliasing is done)
 
 .TP
-\fBglobalias_file = \fIfile\fR
+.BI "globalias_file = " file
 
 Set this to the location of a glob-pattern alias file.
 This kind of aliasing matches glob patterns against full email addresses,
@@ -314,7 +318,7 @@ glob aliasing may be expanded further by the normal aliasing mechanism.
 Default: <not set> (i.e. no glob aliasing is done)
 
 .TP
-\fBcaseless_matching = \fIboolean\fR
+.BI "caseless_matching = " boolean
 
 If this is set, aliasing and the matching for \fBlocal_addresses\fP and
 \fBnot_local_addresses\fP will be done caseless.
@@ -325,14 +329,14 @@ correct processing of queued messages is not guaranteed otherwise.
 Default: false
 
 .TP
-\fBpipe_fromline = \fIboolean\fR
+.BI "pipe_fromline = " boolean
 
 If this is set, a from line will be prepended to the output stream whenever
 a pipe command is called after an alias expansion.
 Default is false.
 
 .TP
-\fBpipe_fromhack = \fIboolean\fR
+.BI "pipe_fromhack = " boolean
 
 If this is set, each line beginning with `From ' is replaced with `>From '
 whenever a pipe command is called after an alias expansion.
@@ -340,7 +344,7 @@ You probably want this if you have set \fBpipe_fromline\fR above.
 Default is false.
 
 .TP
-\fBmbox_default = \fIstring\fR
+.BI "mbox_default = " string
 
 The default local delivery method.
 Can be mbox or mda.
@@ -350,18 +354,18 @@ You can override this for each user by using the \fBmbox_users\fR or
 Default: mbox.
 
 .TP
-\fBmbox_users = \fIlist\fR
+.BI "mbox_users = " list
 
 A list of users which wish delivery to an mbox style mail folder.
 
 .TP
-\fBmda_users = \fIlist\fR
+.BI "mda_users = " list
 
 A list of users which wish local delivery to an mda.
 You have to set \fBmda\fR (see below) as well.
 
 .TP
-\fBmda = \fIexpand string\fR
+.BI "mda = " command
 
 If you want local delivery to be transferred to an mda (Mail Delivery Agent),
 set this to a command.
@@ -426,14 +430,14 @@ the dollar sign `$' has to be escaped with a backslash,
 otherwise they will be tried to be expanded with the internal variables.
 
 .TP
-\fBmda_fromline = \fIboolean\fR
+.BI "mda_fromline = " boolean
 
 If this is set, a from line will be prepended to the output stream whenever
 a message is delivered to an mda.
 Default is false.
 
 .TP
-\fBmda_fromhack = \fIboolean\fR
+.BI "mda_fromhack = " boolean
 
 If this is set, each line beginning with `From ' is replaced with `>From '
 whenever a message is delivered to an mda.
@@ -441,7 +445,7 @@ You probably want this if you have set \fBmda_fromline\fR above.
 Default is false.
 
 .TP
-\fBonline_query = \fIcommand line\fR
+.BI "online_query = " command
 
 Defines the method masqmail uses to detect whether there exists
 an online connection currently.
@@ -498,7 +502,7 @@ use:
 .IP
 
 .TP
-\fBerrmsg_file = \fIfile\fR
+.BI "errmsg_file = " file
 
 Set this to a template which will be used to generate delivery failure reports.
 Variable parts within the template begin with a dollar sign and are identical
@@ -514,7 +518,7 @@ Default is
 .IR @xmmdatadir@/tpl/failmsg.tpl .
 
 .TP
-\fBwarnmsg_file = \fIfile\fR
+.BI "warnmsg_file = " file
 
 Set this to a template which will be used to generate delivery warning reports.
 It uses the same mechanisms for variables as \fBerrmsg_file\fR, see above.
@@ -523,7 +527,7 @@ Default is
 .IR @xmmdatadir@/tpl/warnmsg.tpl .
 
 .TP
-\fBwarn_intervals\fR = \fIlist\fR
+.BI "warn_intervals = " list
 
 Set this to a list of time intervals, at which delivery warnings
 (starting with the receiving time of the message) shall be generated.
@@ -536,7 +540,7 @@ if there was no attempt before.
 Default is "1h;4h;8h;1d;2d;3d"
 
 .TP
-\fBmax_defer_time\fR = \fItime\fR
+.BI "max_defer_time = " time
 
 This is the maximum time,
 in which a temporarily failed mail will be kept in the spool.
@@ -551,7 +555,7 @@ but you have not been online for that time, no bounce will be generated.
 Default is 4d (4 days)
 
 .TP
-\fBlog_user = \fIname\fR
+.BI "log_user = " name
 
 Replace \fIname\fR with a valid local or remote mail address.
 
@@ -564,7 +568,7 @@ for archiving purpose by placing an appropriate pipe command
 in masqmail.alias.
 
 .TP
-\fBmax_msg_size\fR = \fIbytes\fR
+.BI "max_msg_size = " bytes
 
 This option sets the maximum size in bytes masqmail will accept for delivery.
 This value is advertised to the SMTP client by the `SIZE' message during SMTP
@@ -577,7 +581,7 @@ A zero value disables the maximum size limit.
 Default is 0 (= unlimited).
 
 .TP
-\fBdefer_all\fR = \fIboolean\fR
+.BI "defer_all = " boolean
 
 If set to true, masqmail replies with ``421 service temporarily unavailable''
 to any SMTP request and shuts the connection down.

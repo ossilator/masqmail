@@ -60,7 +60,7 @@ from inetd.
 
 .TP
 .B Daemon (queue)
-.B \-q\fIINTERVAL
+.BI \-q INTERVAL
 
 Run as daemon.
 Do regular queue runs at the specified time interval.
@@ -189,19 +189,19 @@ but not all are implemented.
 The \fB\-qo\fP option is additional, and unique to masqmail.
 
 .TP
-\fB\-\-\fR
+.B \-\-
 
 Not a `real' option, it means that all following arguments are to be understood
 as arguments and not as options even if they begin with a leading dash `\-'.
 Mutt is known to call sendmail with this option.
 
 .TP
-\fB\-bd\fR
+.B \-bd
 
 ``Daemon (listen)'' mode. See above.
 
 .TP
-\fB\-bi\fR
+.B \-bi
 
 ``Rebuild alias database'' mode. See above.
 
@@ -211,22 +211,22 @@ Mutt is known to call sendmail with this option.
 ``Accept message'' mode. See above.
 
 .TP
-\fB\-bp\fR
+.B \-bp
 
 ``Print queue'' mode. See above.
 
 .TP
-\fB\-bs\fR
+.B \-bs
 
 ``Stand-alone SMTP server'' mode. See above.
 
 .TP
-\fB\-bV \fR
+.B \-bV
 
 ``Print version'' mode. See above.
 
 .TP
-\fB\-B \fIarg\fR
+.BI "\-B " arg
 
 \fIarg\fR is usually 8BITMIME.
 Some mailers use this to indicate that the message contains characters > 127.
@@ -239,7 +239,7 @@ masqmail does not advertise this itself.
 This is the same practice as that of exim (but different to sendmail).
 
 .TP
-\fB\-C \fIfilename\fR
+.BI "\-C " filename
 
 Use another configuration file than
 .IR @with_confdir@/masqmail.conf .
@@ -247,7 +247,7 @@ Useful for debugging purposes.
 If not invoked by a privileged user, masqmail will drop all privileges.
 
 .TP
-\fB\-d \fInumber\fR
+.BI "\-d " number
 
 Set the debug level.
 This takes precedence before the value of `debug_level' in the configuration file.
@@ -255,29 +255,29 @@ Read the warning in the description of the latter.
 Only root may set the debug level.
 
 .TP
-\fB\-f [\fIaddress\fB]\fR
+.BI "\-f " address
 
 Set the return path address to \fIaddress\fR.
 Only root, the user mail and anyone in group mail is allowed to do that.
 
 .TP
-\fB\-F [\fIstring\fB]\fR
+.BI "\-F " string
 
 Set the full sender name (in the From: header) to \fIstring\fR.
 
 .TP
-\fB\-i\fR
+.B \-i
 
 Same as \fB\-oi\fR, see below.
 Kept for compatibility.
 
 .TP
-\fB\-Mrm \fImsgid...\fR
+.BI "\-Mrm " msgid.\|.\|.
 
 ``Queue manipulation'' mode. See above.
 
 .TP
-\fB\-m\fR
+.B \-m
 
 ``Me too''
 This switch is ignored as,
@@ -287,14 +287,14 @@ masqmail never excludes the sender from any alias expansions.
 Kept for compatibility.
 
 .TP
-\fB\-odb\fR
+.B \-odb
 
 ``Deliver in Background''
 Masqmail always does this.
 Hence masqmail ignores this switch.
 
 .TP
-\fB\-odq\fR
+.B \-odq
 
 ``Do Queueing''
 Do not attempt to deliver immediately.
@@ -304,35 +304,35 @@ You get the same (but global) effect by setting the do_queue option in
 .IR @with_confdir@/masqmail.conf .
 
 .TP
-\fB\-oi\fR
+.B \-oi
 
 A dot as a single character in a line does not terminate the message.
 
 The same as \fB\-i\fP.
 
 .TP
-\fB\-oXXX\fR
+.B \-oXXX
 
 Any other switch starting with `\-o' is ignored.
 This especially affects \-om, \-oem, \-oee.
 
 .TP
-\fB\-q
+.B \-q
 
 ``Single queue run (normal)'' mode. See above.
 
 .TP
-\fB\-q\fIINTERVAL
+.BI \-q INTERVAL
 
 ``Daemon (queue)'' mode. See above.
 
 .TP
-\fB\-qo \fIname
+.BI "\-qo " name
 
 ``Single queue run (only named route)'' mode. See above.
 
 .TP
-\fB\-t\fR
+.B \-t
 
 Read recipients from mail headers and add them to the ones specified on the
 command line.
