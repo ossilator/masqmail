@@ -10,7 +10,7 @@ docs="/tmp/masqmail-opts-docs.$$"
 code="/tmp/masqmail-opts-code.$$"
 
 cat man/masqmail.*.5.in | sed -n 's,^\.BI "*\([a-z_.]*\).* = ".*,\1,p' |
-    sort -u >"$docs"
+    grep -v '^var$' | sort -u >"$docs"
 
 cat src/conf.c | grep 'lval,.*"' |
     sed 's,[^"]*",,; s,"\, [0-9]*,",; s,".*,,' | sort -u >"$code"

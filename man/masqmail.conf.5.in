@@ -13,31 +13,47 @@ Its usual location is
 The configuration consists of lines of the form
 
 .RS 8
-\fBval\fR = \fIexpression\fR
+.BI "var = " expression
 .RE
 
-Where \fBval\fR is a variable name and \fIexpression\fR a string,
-which can be quoted with double quotes `"'.
+Where
+.B var
+is a variable name and
+.I expression
+a string, which can be quoted with double quotes
+.RB ( \(dq ).
 If the expression is on multiple lines or contains characters other
-than letters,
-digits or the characters `.', `\-', `_', `/', ';', '@', ':', it must be quoted.
-You can use quotes inside quotes by escaping them with a backslash.
+than letters, digits, and the characters
+.BR @ ", " / ", " \- ", " _ ", " . ", " : ", and " ; ,
+it must be quoted.
+You can use quotes inside quotes by escaping them with a backslash
+.RB ( \e ),
+which also quotes itself.
 
-Each \fBval\fP has a type, which can be boolean, numeric, string or list.
-A boolean variable can be set with one of the values `on', `yes', and `true'
-or `off', `no' and `false'.
-List items are separated with semicolons `;'.
-The spaces around the equal sign `=' are optional.
+Each
+.B var
+has a type, which can be boolean, numeric, string or list.
+A boolean variable can be assigned one of the values
+.BR on ", " yes ", and " true
+or
+.BR off ", " no ", and " false .
+List items are separated by semicolons
+.RB ( ; ).
+The spaces around the equal sign are optional.
 
-All lists, except
-\fBquery_routes.\fIname\fR and \fBpermanent_routes\fR, accept absolute
-pathnames (leading slash `/') as entries, too.
-They can be intermixed with normal entries.
-The contents of these files will be included at this position in the list.
-This makes including large lists more convenient.
+To make specifying large lists more convenient, all list variables
+(except
+.BI query_routes. name
+and
+.BR permanent_routes )
+accept inclusion statements in the form of absolute pathnames
+as well; these can be intermixed with normal entries.
+The contents of these files are included at their position in the list.
 Within these files, each line is one entry; the semicolon is no separator.
 
-Blank lines and lines starting with a hash `#' are ignored.
+Blank lines and lines starting with a hash
+.RB ( # )
+are ignored in both the config file and in included files.
 
 
 .SH OPTIONS
