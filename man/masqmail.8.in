@@ -40,7 +40,7 @@ It replaces sendmail or other MTAs such as qmail or exim.
 
 .SH OPERATION MODES
 
-Masqmail operates in one of several exclusive modes.
+Masqmail operates in one of several modes.
 
 The daemon mode has two flavors that may be,
 and usually are, used in combination:
@@ -54,11 +54,16 @@ Run as daemon.
 Act as SMTP server and accept SMTP connections,
 on port 25 if not configured differently.
 
-This is normally used in the startup script at system boot
-and together with \fB\-q\fIINTERVAL\fR (see below).
+This is normally used in the startup script at system boot,
+together with
+.BI \-q INTERVAL
+(see below).
 
-Alternatively masqmail can be run with the \fB\-bs\fR option
-from inetd.
+Alternatively, masqmail can be run from
+.MR inetd 8
+with the
+.B \-bs
+option.
 
 .TP
 .B Daemon (queue)
@@ -66,19 +71,26 @@ from inetd.
 
 Run as daemon.
 Do regular queue runs at the specified time interval.
-This is normally used together with \fB\-bd\fR (see above).
+This is normally used together with
+.B \-bd
+(see above).
 
-An argument may be a time interval i.e. a numerical value followed by one
-of the letters s,m,h,d,w which are interpreted as
-seconds, minutes, hours, days or weeks respectively.
-Example: \fB\-q30m\fR.
-Combinations like \fB\-q1h30m\fR, which sendmail accepts, are not possible.
-
-Alternatively single queue runs (\fB\-q\fR) can be started from cron.
+The interval is a numerical value followed by one
+of the letters
+.BR s ", " m ", " h ", " d ", and " w ,
+which are interpreted as
+seconds, minutes, hours, days, and weeks, respectively.
+.br
+Example:
+.B \-q30m
+.br
+Combinations like
+.BR \-q1h30m ,
+which sendmail accepts, are not possible.
 
 .P
-The queue processing mode has two flavors that may be
-used in combination:
+Alternatively, at any time a single queue run can be started,
+in one of two variations:
 
 .TP
 .B Single queue run (normal)
@@ -87,26 +99,34 @@ used in combination:
 or invoked as
 .B runq
 
-Do a single queue run.
-Try to deliver all messages in the queue.
-Masqmail sends to addresses on the local host
-and to remote ones, if available online routes permit it.
+Masqmail tries to deliver to addresses on the local host,
+and also to remote ones if suitable routes are online.
 That means, masqmail sends all queued mail it can.
 Online detection is done with the configured
-method (see \fBonline_query\fR in \fBmasqmail.conf(5)\fR).
+command (see
+.B online_query
+in
+.MR masqmail.conf 5 ).
+
+You may want to use this option to trigger queue runs from
+.MR cron 8 .
 
 .TP
 .B Single queue run (only named route)
-.BI \-qo\  NAME
+.BI "\-qo " NAME
 
-Do a single queue run and deliver only using the specified online route.
+Masqmail tries to deliver using only the specified online route.
 
-The route configuration for \fINAME\fP is read and queued mail
+The route configuration
+.I NAME
+is read, and queued mail
 to matching remote recipients is sent.
-(See \fBquery_routes.\fINAME\fR in the main config file.)
+(See
+.BI query_routes. NAME
+in the main config file.)
 
 You may want to use this option in scripts that run as soon as a link
-to the internet has been set up (e.g. ip-up).
+to the internet has been set up (e.g., ip-up).
 
 .P
 The other modes are simple ones:
@@ -114,14 +134,12 @@ The other modes are simple ones:
 .TP
 .B Rebuild alias database
 .B \-bi
-or invoked as
-.B newaliases
 
 A no-op for masqmail, just exit.
 Old sendmail rebuilds its alias database when invoked with this option.
-Masqmail reads directly from its alias file
-(see config option `alias_file'),
-thus no database needs to be updated.
+Masqmail reads directly from its alias file (see config option
+.BR alias_file ),
+and thus no database needs to be updated.
 
 .TP
 .B Accept messages
@@ -129,12 +147,11 @@ thus no database needs to be updated.
 also the default mode
 
 Accept a text message on stdin.
-This is the default mode of operation.
-One will hardly use this switch as it is the default.
+One will hardly use this switch, as it is the default mode of operation.
 
 The command line options
-.BR \-f , \-F , \-i / \-oi , \-t
-are only used in this mode.
+.BR \-f ", " \-F ", " \-i / \-oi ", and " \-t
+are used only in this mode.
 
 .TP
 .B Print queue
@@ -147,8 +164,10 @@ Show the messages in the queue.
 .TP
 .B Stand-alone SMTP server
 .B \-bs
+or invoked as
+.B in.smtpd
 
-Act as SMTP server by reading commands from stdin
+Act as an SMTP server by reading commands from stdin
 and writing to stdout.
 Some mailers (e.g. pine) use this option as an interface.
 It can also be used to call masqmail from inetd.
@@ -174,58 +193,65 @@ The message identifiers are listed when printing the queue
 .P
 The default mode:
 .P
-When no mode had been specified by either one of the above command line
+When no mode has been specified by either one of the above command line
 options or by calling masqmail under a special name,
-then the default mode \fB\-bm\fR
-(i.e. accept messages on stdin) is entered.
+then the default mode
+.B \-bm
+(i.e., accept messages on stdin) is entered.
 However, if neither address arguments are specified nor
-\fB\-t\fR is given, then mail can not be sent,
-hence something more useful is done: \fB\-bV\fP is assumed.
+.B \-t
+is given, then mail cannot be sent,
+hence something more useful is done:
+.B \-bV
+is assumed.
 
 
 .SH OPTIONS
 
 Since masqmail is intended to replace sendmail,
 it uses the same command line options,
-but not all are implemented.
-The \fB\-qo\fP option is additional, and unique to masqmail.
+but not all of them are implemented.
+The
+.B \-qo
+option is unique to masqmail.
 
 .TP
 .B \-\-
 
-Not a `real' option, it means that all following arguments are to be understood
-as arguments and not as options even if they begin with a leading dash `\-'.
+Not a \(lqreal\(rq option.
+It means that all following arguments are not to be understood
+as options, even if they begin with a leading dash.
 Mutt is known to call sendmail with this option.
 
 .TP
 .B \-bd
 
-``Daemon (listen)'' mode. See above.
+\(lqDaemon (listen)\(rq mode. See above.
 
 .TP
 .B \-bi
 
-``Rebuild alias database'' mode. See above.
+\(lqRebuild alias database\(rq mode. See above.
 
 .TP
 .B \-bm
 
-``Accept message'' mode. See above.
+\(lqAccept message\(rq mode. See above.
 
 .TP
 .B \-bp
 
-``Print queue'' mode. See above.
+\(lqPrint queue\(rq mode. See above.
 
 .TP
 .B \-bs
 
-``Stand-alone SMTP server'' mode. See above.
+\(lqStand-alone SMTP server\(rq mode. See above.
 
 .TP
 .B \-bV
 
-``Print version'' mode. See above.
+\(lqPrint version\(rq mode. See above.
 
 .TP
 .BI "\-B " arg
@@ -237,8 +263,8 @@ which is very painful ;-).
 Note though that this violates some conventions:
 masqmail does not convert 8 bit messages to any MIME format if it encounters
 a mail server which does not advertise its 8BITMIME capability,
-masqmail does not advertise this itself.
-This is the same practice as that of exim (but different to sendmail).
+and masqmail does not advertise it, either.
+This is the same practice as that of exim (but different from sendmail).
 
 .TP
 .BI "\-C " filename
@@ -246,13 +272,16 @@ This is the same practice as that of exim (but different to sendmail).
 Use another configuration file than
 .IR @with_confdir@/masqmail.conf .
 Useful for debugging purposes.
-If not invoked by a privileged user, masqmail will drop all privileges.
+If not invoked by a privileged user, masqmail will drop all privileges
+it usually acquires by being set-uid root.
 
 .TP
 .BI "\-d " number
 
 Set the debug level.
-This takes precedence before the value of `debug_level' in the configuration file.
+This takes precedence over the value of
+.B debug_level
+in the configuration file.
 Read the warning in the description of the latter.
 Only root may set the debug level.
 
@@ -276,13 +305,13 @@ Kept for compatibility.
 .TP
 .BI "\-Mrm " msgid.\|.\|.
 
-``Queue manipulation'' mode. See above.
+\(lqQueue manipulation\(rq mode. See above.
 
 .TP
 .B \-m
 
-``Me too''
-This switch is ignored as,
+\(lqMe too.\(rq
+This switch is ignored, as
 masqmail never excludes the sender from any alias expansions.
 
 \fB\-m\fP is an ancient alias for \fB\-om\fP.
@@ -291,14 +320,14 @@ Kept for compatibility.
 .TP
 .B \-odb
 
-``Deliver in Background''
+\(lqDeliver in Background.\(rq
 Masqmail always does this.
 Hence masqmail ignores this switch.
 
 .TP
 .B \-odq
 
-``Do Queueing''
+\(lqDo Queueing.\(rq
 Do not attempt to deliver immediately.
 Any messages will be queued until the next queue running process picks them
 up and delivers them.
@@ -308,45 +337,46 @@ You get the same (but global) effect by setting the do_queue option in
 .TP
 .B \-oi
 
-A dot as a single character in a line does not terminate the message.
+Usually, a line consisting of only a dot character terminates the
+message. To send a literal dot, two dots must be used.
+This option disables this behavior.
 
 The same as \fB\-i\fP.
 
 .TP
 .B \-oXXX
 
-Any other switch starting with `\-o' is ignored.
-This especially affects \-om, \-oem, \-oee.
+Any other switch starting with \(lq\-o\(rq is ignored.
+This especially affects \-om, \-oem, and \-oee.
 
 .TP
 .B \-q
 
-``Single queue run (normal)'' mode. See above.
+\(lqSingle queue run (normal)\(rq mode. See above.
 
 .TP
 .BI \-q INTERVAL
 
-``Daemon (queue)'' mode. See above.
+\(lqDaemon (queue)\(rq mode. See above.
 
 .TP
 .BI "\-qo " name
 
-``Single queue run (only named route)'' mode. See above.
+\(lqSingle queue run (only named route)\(rq mode. See above.
 
 .TP
 .B \-t
 
 Read recipients from mail headers and add them to the ones specified on the
 command line.
-(Only To:, Cc:, and Bcc: headers are regarded.)
+(Only \(lqTo:\(rq, \(lqCc:\(rq, and \(lqBcc:\(rq headers are regarded.)
 
 .B WARNING: The behavior changed with version 0.3.1!
 
-In earlier versions command line argument addresses were ``substracted''
+In earlier versions command line argument addresses were \(lqsubtracted\(rq
 from header addresses.
 
-The old behavior was similar to exim's and smail's
-(which are anchesters of masqmail).
+The old behavior was similar to exim's and smail's.
 The new behavior is similar to the one of current postfix versions,
 which add the arguments to the set of header recipients.
 (Earlier postfix failed in case of address arguments with \-t.)
@@ -355,10 +385,10 @@ See
 .MR exim 8
 for further information.
 
-For masqmail the most simple approach had been taken.
+For masqmail the most simple approach has been taken.
 
 As the behavior of \-t together with command line address arguments
-differs among MTAs, one better not steps into this corner case.
+differs among MTAs, one better avoids this corner case.
 
 
 .SH ENVIRONMENT FOR PIPES AND MDAS
