@@ -400,8 +400,9 @@ differs among MTAs, one better avoids this corner case.
 
 .SH ENVIRONMENT FOR PIPES AND MDAS
 
-For security reasons, before any pipe command from an alias expansion or an mda is called,
-the environment variables will be completely discarded and newly set up. These are:
+For security reasons, before any pipe command from an alias expansion
+or an MDA is called, the environment variables will be completely
+discarded and newly set up. These are:
 
 SENDER, RETURN_PATH \(en the return path.
 
@@ -411,10 +412,12 @@ SENDER_LOCAL \(en the local part of the return path.
 
 RECEIVED_HOST \(en the host the message was received from (unless local).
 
+DOMAIN \(en the domain part of the (original) recipient.
+
 LOCAL_PART, USER, LOGNAME \(en the local part of the (original) recipient.
 
 MESSAGE_ID \(en the unique message id.
-This is not necessarily identical with the Message ID as given in the Message ID: header.
+This is an internal ID, and is at most part of the \(lqMessage-ID:\(rq header.
 
 QUALIFY_DOMAIN \(en the domain which will be appended to unqualified addresses.
 
