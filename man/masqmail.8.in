@@ -289,12 +289,19 @@ Only root may set the debug level.
 .BI "\-f " address
 
 Set the return path address to \fIaddress\fR.
-Only root, the user mail and anyone in group mail is allowed to do that.
+The default is the invoking user qualified with
+.BR host_name .
+Only root, the user mail, and anyone in the group mail
+is allowed to override that.
+
+The value is also used for the \(lqFrom:\(rq header if the message does
+not already have a \(lqFrom:\(rq or \(lqSender:\(rq header.
 
 .TP
 .BI "\-F " string
 
-Set the full sender name (in the From: header) to \fIstring\fR.
+If the message does not already have a \(lqFrom:\(rq or \(lqSender:\(rq
+header, this value is used as the display name for the \(lqFrom:\(rq header.
 
 .TP
 .B \-i
