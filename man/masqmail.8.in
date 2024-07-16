@@ -426,7 +426,7 @@ QUALIFY_DOMAIN \(en the domain which will be appended to unqualified addresses.
 
 .TP
 .I @with_confdir@/masqmail.conf
-The main configuration for masqmail.
+Masqmail's main configuration file.
 Depending on the settings in this file, you will also have other configuration
 files in
 .IR @with_confdir@/ .
@@ -438,16 +438,15 @@ The spool directory where masqmail stores its queued mails.
 .TP
 .I /var/spool/mail/
 The directory where locally delivered mail will be put,
-if not configured differently in \fImasqmail.conf\fR.
+if not configured differently in the config file.
 
 .TP
 .I @with_logdir@/
-The directory where masqmail stores its log messages.
+The directory where masqmail stores its log files.
 
 .P
-Any of the paths can be configured at compile time,
-and (except the main config file) also in the main config file.
-The typical paths are different, depending on the Unix system you use. 
+All these paths can be configured at compile time, and also
+in the main config file (except for the main config file itself).
 
 
 .SH CONFORMING TO
