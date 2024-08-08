@@ -71,27 +71,31 @@ and will not be able to deliver local mail to others than the user.
 .BI "use_syslog = " boolean
 
 If this is set, masqmail uses syslogd for logging.
-It uses facility MAIL.
-You still have to set \fBlog_dir\fR for debug files.
+It uses the facility
+.BR MAIL .
+Note that
+.B log_dir
+still needs to be set up.
 
 .TP
 .BI "debug_level = " n
 
 Set the debug level.
 Valid values are 0 to 6 and 9.
-Be careful if you set this as high as 5 or higher,
-the logs may very soon fill your hard drive.
-Level 9 enables printing of debug messages to stderr during reading of
-the config file.
-The debug file comes available for the first time after this step.
-Thus nothing but stderr is available.
-Level 9 is almost never interesting.
+Be careful when you set this to 5 or higher, as the logs may grow big
+very soon.
+Level 9 also enables printing of debug messages to stderr while reading
+the config file (the log files are not available at that time).
 
 .TP
 .BI "log_dir = " dir
 
-The directory where logs are stored, if syslog is not used.
-Debug files are always stored in this directory if debugging is enabled.
+The directory where logs are stored.
+.B masqmail.log
+is the main log, if syslog is not used.
+.B debug.log
+is a much more verbose log, which is created when debugging is enabled
+.RB ( debug_level "\ >\ 0)."
 .I dir
 must be an absolute path.
 
