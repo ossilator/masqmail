@@ -144,17 +144,18 @@ directly and the \fBlock_dir\fP setting is ignored.
 .TP
 .BI "host_name = " string
 
-This is used in different places: Masqmail identifies itself in
-the greeting banner on incoming connections and in the HELO/EHLO command
-for outgoing connections with this name, it is used in the Received: header
-and to qualify the sender of a locally originating message.
+This is used in different places: Masqmail identifies itself with this name
+in the greeting banner of incoming connections, and in the HELO/EHLO command
+for outgoing connections. It is also used in the \(lqReceived:\(rq header,
+and to qualify the sender of locally originating messages.
 
-If the string begins with a slash `/', it it assumed that it is a filename,
+If the string begins with a slash, it it assumed that it is a filename,
 and the first line of this file will be used.
-Usually this will be `/etc/mailname' to make masqmail conform to
-Debian policies.
+On Debian, this will usually be
+.I /etc/mailname
+to make masqmail conform to policy.
 
-It is not used to find whether an address is local.
+It is not (directly) used to find whether an address is local.
 Use \fBlocal_hosts\fR for that.
 
 Default: none; \fBhost_name\fP MUST be set in the config file
@@ -162,17 +163,19 @@ Default: none; \fBhost_name\fP MUST be set in the config file
 .TP
 .BI "local_hosts = " list
 
-A semicolon `;' separated list of hostnames which are considered local.
+A semicolon-separated list of hostnames which are considered local.
 Can contain glob patterns, like
-`*example.org' or `mail?.*mydomain.net'.
-Normally you should set it to "localhost;foo;foo.bar.com" if your host has the
-fully qualified domain name `foo.bar.com'.
+\(lq*example.org\(rq or \(lqmail?.*mydomain.net\(rq.
+Normally. you should set it to \(lqlocalhost;foo;foo.bar.com\(rq
+if your host has the fully qualified domain name \(lqfoo.bar.com\(rq.
 
 Default: localhost ; <value of \fBhost_name\fR cut at the first dot> ;
 <value of \fBhost_name\fR>
 
 Example: \fIlocalhost;foo;foo.example.org\fR
-(if you have set \fBhost_name\fR to \fIfoo.example.org\fR)
+(if you have set
+.B host_name
+to \(lqfoo.example.org\(rq)
 
 .TP
 .BI "local_addresses = " list
