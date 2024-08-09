@@ -329,26 +329,22 @@ See \fBonline_query\fP.
 .TP
 .BI "alias_file = " file
 
-Set this to the location of your alias file.
-If not set, no aliasing will be done.
+Set this to the location of your alias file; see
+.MR masqmail.aliases 5 .
+If not set, no aliasing will be done, which is the default.
 
-Default: <not set> (i.e. no aliasing is done)
+Aliasing causes messages to local recipients to be redirected.
 
 .TP
 .BI "globalias_file = " file
 
-Set this to the location of a glob-pattern alias file.
-This kind of aliasing matches glob patterns against full email addresses,
-not strings against local parts like in normal aliasing.
-You can use this to handle catch-all maildrops (``*@example.org'')
-and to split between virtual hosts on a single machine
-(e.g. ``info@foo.ex.org'' and ``info@bar.ex.org'').
+Set this to the location of a glob-pattern alias file; see
+.MR masqmail.aliases 5 .
+If not set, no aliasing will be done, which is the default.
 
 Glob aliasing is done before normal aliasing.
 If you have both kinds, glob and normal aliasing, then the results of the
 glob aliasing may be expanded further by the normal aliasing mechanism.
-
-Default: <not set> (i.e. no glob aliasing is done)
 
 .TP
 .BI "caseless_matching = " boolean

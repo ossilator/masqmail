@@ -6,18 +6,24 @@ masqmail.aliases \- masqmail alias file format
 
 .SH DESCRIPTION
 
-This man page describes the format of the masqmail alias file.
-It's usual location is \fI/etc/aliases\fR.
+This man page describes the format of the masqmail alias files.
 
-There exists also a variant of this format for glob patterns.
-It's used with the \fIglobalias_file\fP config option.
+Two types of aliases are supported: \(lqnormal\(rq and
+\(lqglob pattern\(rq.
+The difference between the two types is on the left-hand side:
+A normal alias file uses fixed strings that are compared with the
+addresses' local part,
+whereas a glob alias file uses glob patterns that are matched against
+the whole addresses.
+The right-hand side of the two types is identical.
 
-The difference between the two formats are only on the left-hand side.
-A normal alias file has a local_part there that gets string-compared
-against the local part;
-whereas a glob alias file has a glob pattern that is matched against
-the whole address. The right-hand side of the two aliasing kinds
-has the same format.
+The normal alias file's location is configured via the
+.B alias_file
+option, which is traditionally set to
+.IR /etc/aliases .
+The glob alias file is configured via the
+.B globalias_file
+option.
 
 
 .SH FILE FORMAT
@@ -34,15 +40,18 @@ Glob-pattern alias files consist of lines of the form:
 glob_pattern: item1, item2, ...
 .RE
 
-Items can be surrounded by double quotes `"'.
-If within the quotes other quotes are needed for an address they can be
-escaped with a leading backslash `\\'.
+Individual items can be surrounded by double quotes.
+If within the quotes other quotes are needed for an address,
+they can be escaped using backslashes, which can be escaped in turn.
 
-A leading backslash `\\' indicates that this address shall not be
-further expanded.
+An item with a leading backslash indicates that this address shall not
+be further expanded.
+If quotes are needed, the backslash must appear within the quotes,
+and be escaped.
 
-A leading pipe symbol `|' indicates that the item shall be treated as a
-pipe command.
+A leading pipe symbol
+.RB ( | )
+indicates that the item shall be treated as a pipe command.
 The content of the message will then be sent to the standard input of the
 command.
 The command will run under the user id and group id masqmail is running as.
@@ -50,13 +59,13 @@ If quotes are needed, the pipe symbol must appear within the quotes.
 
 Loops will be detected, the offending address will be ignored.
 
-Aliases will be expanded at delivery time.
+Aliases are read at delivery time.
 This means that if there is a message still in the queue and you change
 any alias which matches one of the recipient addresses,
-the change will have effect next time a delivery is attemped.
+the change will take effect next time a delivery is attempted.
 
 There is no need to restart masqmail or run any command when the alias
-file has been changed. (`masqmail -bi' is a no-op.)
+file has been changed. (\(lqmasqmail\ \-bi\(rq is a no-op.)
 
 
 .SH EXAMPLE
@@ -72,7 +81,7 @@ postmaster: root
 abuse: abuse@example.org
 
 # copy root's mail also to meillo
-root: \\root, meillo
+root: \eroot, meillo
 
 # pass mail to a script
 foo: |/usr/bin/foo
@@ -91,8 +100,8 @@ postmaster@*: ken
 info@foo.example.org: doug
 info@bar.example.org: rob
 
-# the order of entries is important
-# this must be before the catch-all line
+# the order of the entries is important;
+# this must come before the catch-all line
 list\-*@example.org: |/path/to/some/script
 
 # catch-all address forwarded to extern
