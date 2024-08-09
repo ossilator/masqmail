@@ -270,6 +270,8 @@ Default is true.
 
 Note that this will not protect you from spammers using open relays,
 but from users unable to set their address in their mail clients.
+It also does NOT prevent masqmail from being an open relay itself,
+as validity of the return path is not enforced.
 
 .TP
 .BI "do_queue = " boolean
