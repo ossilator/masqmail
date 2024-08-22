@@ -482,59 +482,45 @@ Default is false.
 .TP
 .BI "online_query = " command
 
-Defines the method masqmail uses to detect whether there exists
+Defines the command masqmail uses to detect whether there exists
 an online connection currently.
 
+.I command
+must start with an absolute path to an executable program.
+
 Masqmail executes the command given and reads from its standard output.
-The command should just print a route name, as defined
-with \fBquery_routes.\fIname\fR, to standard output and return
-a zero status code.
+The command should print a single route name (as defined by
+.BI query_routes. name\c
+) to standard output, and return a zero status code.
 Masqmail assumes it is offline if the script returns with a non-zero status.
 Leading and trailing whitespace is removed from the output.
 
-Simple example:
+Note that accepting new messages while a route is available
+does not cause already queued messages to be automatically
+delivered using that route \(em the queue needs to be emptied
+separately (see the
+.B \-q
+options).
+
+Simple example for a query script:
 
 .RS 8
 .nf
 #!/bin/sh
-test \-e /var/tmp/masqmail-route || exit 1
-cat /var/tmp/masqmail-route
+test \-e /var/tmp/masqmail\-route || exit 1
+cat /var/tmp/masqmail\-route
 exit 0
 .fi
 .RE
 .IP
 
-No matter how masqmail detects the online status,
-only messages that are accepted at online time will be
-delivered using the connection.
-The mail spool still needs to be emptied manually
-(\fB\-qo\fIconnection\fR).
-
-\fIcommand line\fR must start with an absolute path to an executable program.
-It can contain optional arguments.
-
-To simulate the old online_method=file, use:
+To query a masqdialer server, use:
 
 .RS 8
-\fI/bin/cat /path/to/file\fP
+.nf
+online_query = \(dq@xbindir@/mservdetect localhost 224\(dq
+.fi
 .RE
-.IP
-
-To be always online with connection `foo', use:
-
-.RS 8
-\fI/bin/echo foo\fP
-.RE
-.IP
-
-To query a masqdialer server
-(i.e. asking it whether a connection exists and what its name is)
-use:
-
-.RS 8
-\fI/usr/bin/mservdetect localhost 224\fP
-.RE
-.IP
 
 .TP
 .BI "errmsg_file = " file
