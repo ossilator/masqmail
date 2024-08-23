@@ -557,28 +557,28 @@ Default is
 .TP
 .BI "warn_intervals = " list
 
-Set this to a list of time intervals, at which delivery warnings
-(starting with the receiving time of the message) shall be generated.
+Set this to a list of time intervals (relative to the reception time
+of the message), at which delivery warnings shall be generated.
 
-A warning will only be generated just after an attempt to deliver the mail
-and if that attempt failed temporarily.
-So a warning may be generated after a longer time,
-if there was no attempt before.
+A warning will be generated only right after a temporarily failing
+attempt to deliver a mail.
+Therefore, warnings may be delayed or entirely skipped if no deliveries
+are attempted regularly.
 
-Default is "1h;4h;8h;1d;2d;3d"
+Default is \(lq1h;4h;8h;1d;2d;3d\(rq
 
 .TP
 .BI "max_defer_time = " time
 
-This is the maximum time,
-in which a temporarily failed mail will be kept in the spool.
+This is the maximum time for which a temporarily failed mail will be
+kept in the queue.
 When this time is exceeded, it will be handled as a delivery failure,
 and the message will be bounced.
 
-The excedence of this time will only be noticed if the message
-was actually tried to be delivered.
-If, for example, the message can only be delivered when online,
-but you have not been online for that time, no bounce will be generated.
+The passing of this time will be noticed only if an attempt at
+deliverung the message is actually made.
+If, for example, the message can be delivered only through a particular
+route, no bounce will be generated until that route goes online.
 
 Default is 4d (4 days)
 
