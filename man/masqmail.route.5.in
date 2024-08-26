@@ -160,12 +160,17 @@ for permanent routes.
 .TP
 .BI "mail_host = " string
 
-This is preferably the mail server of your ISP.
-All outgoing messages will be sent to this host which will distribute them to their destinations.
-If you do not set this mails will be sent directly.
-Because the mail server is probably `near' to you, mail transfer will be much faster if you use it.
+All outgoing messages will be sent to this host (called a smarthost),
+which will distribute them to their destinations.
+If you do not set this, mails will be sent directly.
 
-You can optionally give a port number following the host name and a colon, eg mail_host="mail.foo.com:25".
+Due to SPAM prevention measures, direct delivery is noadays virtually
+guaranteed to fail for anyone on \(lqdialupr\(rq (any connection with
+a dynamic IP address).
+Therefore, you should set this to your ISP's mail server.
+
+You can optionally specify a port number following the host name
+and a colon, e.g., mail_host=\(dqmail.foo.com:25\(dq.
 
 .TP
 .BI "resolve_list = " list
