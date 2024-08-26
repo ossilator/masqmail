@@ -191,35 +191,45 @@ The default is "dns_mx;dns_a;byname".
 .TP
 .BI "helo_name = " string
 
-Set the name given with the HELO/EHLO command. If this is not set,
-\fBhost_name\fR from \fImasqmail.conf\fR will be used,
-if the \fBdo_correct_helo\fR option (see below) is unset.
+Set the host name sent in the HELO/EHLO command.
+If neither this nor
+.B do_correct_helo
+(see below) is set,
+.B host_name
+from
+.MR masqmail.conf 5
+will be used.
+
+If you set
+.B instant_helo
+(see below),
+you will also need to supply the \-name option to openssl,
+as it sends its own EHLO command.
 
 .TP
 .BI "do_correct_helo = " boolean
 
 If this is set, masqmail tries to look up your host name as it appears
-on the internet and sends this in the HELO/EHLO command.
-Some servers are so picky that they want this.
-Which is really crazy.
-It just does not make any sense to lie about ones own identity,
-because it can always be looked up by the server.
-Nobody should believe in the name given by HELO/EHLO anyway.
-If this is not set, \fBhost_name\fR from \fImasqmail.conf\fR or as given with
-the \fBhelo_name\fR (see above) will be used.
+on the internet, and sends this in the HELO/EHLO command.
+While this is rather pointless, some servers still insist on it.
+
+Unset by default. See
+.B helo_name
+above.
 
 .TP
 .BI "instant_helo = " boolean
 
-If this is set, masqmail does not wait for the greeting of the SMTP server
-after opening the connection.
+If this is set, masqmail does not wait for the greeting from the SMTP
+server after opening a connection.
 Instead it says EHLO right away (ESMTP is assumed).
 Use this option with wrappers that eat the 220 greeting of the SMTP server.
-Common examples are STARTTLS wrappers, like `openssl s_client \-starttls smtp ...'.
+Common examples are STARTTLS wrappers,
+like \(lqopenssl s_client \-starttls smtp .\|.\|.\(rq.
 
-If this option is set and a 220 greeting is received though,
+If this option is set and a 220 greeting is received nonetheless,
 everything should still work.
-Please don't rely on that and keep in mind that RFC 2821 says that the client
+Please do not rely on that, and keep in mind that RFC 2821 says that the client
 SHOULD wait for the 220 greeting of the server.
 
 Default: false

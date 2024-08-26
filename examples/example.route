@@ -36,15 +36,19 @@ denied_recipients = "*@cpwright.com"
 mail_host = "mail.isp.com"
 
 # Make picky servers happy:
-# If set, we look up our own name as seen from the network
-# and send this in our HELO/EHLO message. Otherwise we send our host name,
-# which is probably different for dialup conections and may be unknown outside.
-# Some servers complain,
-# which is really crazy, since it is senseless to lie about it...
-# Unfortunately, some ISPs do not give you a name, just an ip address. In this case,
-# we have a delay until the DNS lookup fails.
+# If set, we look up our own name as seen from the outside, and send
+# this in our HELO/EHLO message. Otherwise we send our internal host
+# name, which probably differs from our reverse DNS lookup when we
+# are behind a masquerading gateway.
+# Some servers complain about such a mismatch, and therefore enabling
+# this option is necessary -- despite this being nonsense, as it is
+# useless to lie about the host name.
+# Conversely, some ISPs do not give you a name for your IP address.
+# In such cases, the doomed reverse DNS lookup just causes a delay,
+# so it is better to disable this option.
 
 do_correct_helo = true
+# As an alternative, the helo_name option is available.
 
 # 'forge' headers:
 
