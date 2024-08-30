@@ -49,4 +49,4 @@ issue tracker for bug reports and feature requests.
 
 .SH SEE ALSO
 
-\fBmasqmail(8)\fR
+.MR masqmail 8

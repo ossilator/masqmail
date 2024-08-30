@@ -120,4 +120,5 @@ issue tracker for bug reports and feature requests.
 
 .SH SEE ALSO
 
-\fBmasqmail.conf(5)\fR, \fBmasqmail(8)\fR, 
+.MR masqmail 8 ,
+.MR masqmail.conf 5

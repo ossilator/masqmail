@@ -6,7 +6,8 @@ masqmail.route \- masqmail route configuration file
 
 .SH DESCRIPTION
 
-This man page describes the syntax of the route configuration files of \fBmasqmail (8)\fR.
+This man page describes the syntax of the route configuration files of
+.MR masqmail 8 .
 Their usual location is in
 .IR @with_confdir@/ .
 
@@ -272,7 +273,9 @@ interactively on the command line.
 Purpose is to use gateways to uucp, fax, sms or whatever else.
 
 You can use variables to give as arguments to the command,
-these are the same as for the mda in the main configuration, see \fBmasqmail.conf(5)\fR.
+these are the same as for the MDA in the main configuration,
+see
+.MR masqmail.conf 5 .
 
 .TP
 .BI "pipe_fromline = " boolean
@@ -365,4 +368,5 @@ issue tracker for bug reports and feature requests.
 
 .SH SEE ALSO
 
-\fBmasqmail(8)\fR, \fBmasqmail.conf(5)\fR
+.MR masqmail 8
+.MR masqmail.conf 5

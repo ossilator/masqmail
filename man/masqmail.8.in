@@ -349,7 +349,9 @@ The new behavior is similar to the one of current postfix versions,
 which add the arguments to the set of header recipients.
 (Earlier postfix failed in case of address arguments with \-t.)
 Sendmail seems to behave differently, depending on the version.
-See exim(8) for further information.
+See
+.MR exim 8
+for further information.
 
 For masqmail the most simple approach had been taken.
 
@@ -434,4 +436,6 @@ issue tracker for bug reports and feature requests.
 
 .SH SEE ALSO
 
-\fBmasqmail.conf(5)\fR, \fBmasqmail.route(5)\fR, \fBmasqmail.aliases(5)\fR
+.MR masqmail.conf 5 ,
+.MR masqmail.route 5 ,
+.MR masqmail.aliases 5

@@ -285,8 +285,8 @@ query_routes.FastNet = \(dq@with_confdir@/fastnet.route\(dq
 .IP
 
 .I @with_confdir@/fastnet.route
-is the route configuration file,
-see \fBmasqmail.route(5)\fR.
+is the route configuration file, see
+.MR masqmail.route 5 .
 As soon as a link to FastNet has been set up,
 you call `masqmail \fB\-qo \fIFastNet\fR'.
 Masqmail will then read the specified file and send the mails.
@@ -424,7 +424,8 @@ mda="/usr/bin/procmail \-Y \-d ${rcpt_local}"
 
 For the mda, as for pipe commands,
 a few environment variables will be set as well.
-See \fBmasqmail(8)\fR.
+See
+.MR masqmail 8 .
 To use environment variables for the mda,
 the dollar sign `$' has to be escaped with a backslash,
 otherwise they will be tried to be expanded with the internal variables.
@@ -564,8 +565,8 @@ that passes through the masqmail system will also be sent
 to the given mail address.
 
 For example you can feed your mails into a program like hypermail
-for archiving purpose by placing an appropriate pipe command
-in masqmail.alias.
+for archiving purposes by placing an appropriate pipe command in
+.MR masqmail.aliases 5 .
 
 .TP
 .BI "max_msg_size = " bytes
@@ -609,4 +610,5 @@ issue tracker for bug reports and feature requests.
 
 .SH SEE ALSO
 
-\fBmasqmail(8)\fR, \fBmasqmail.route(5)\fR
+.MR masqmail 8 ,
+.MR masqmail.route 5
