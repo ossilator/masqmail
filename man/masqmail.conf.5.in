@@ -129,14 +129,14 @@ Default:
 .TP
 .BI "lock_dir = " dir
 
-The directory where masqmail stores its lock files.
+The directory where masqmail stores its spool lock files.
 Masqmail needs read and write permissions for this directory.
 .I dir
 must be an absolute path.
 The default is
 .I @with_lockdir@
 for normal operation.
-The directory is created on startup if yet missing.
+The directory is created at startup if missing.
 
 If \fIrun_as_user\fP then lock files are stored in the \fIspool_dir\fP
 directly and the \fBlock_dir\fP setting is ignored.
@@ -232,30 +232,35 @@ not_local_addresses = \(dqeric@mydomain.net\(dq
 .TP
 .BI "listen_addresses = " list
 
-A semicolon `;' separated list of interfaces on which connections will
+A semicolon-separated list of interfaces on which connections will
 be accepted.
-An interface ist defined by a hostname, optionally followed by a colon `:'
+An interface is defined by a hostname, optionally followed by a colon
+.RB ( : )
 and a number for the port.
-If this is left out, port 25 will be used.
+If the latter is left out, port 25 will be used.
 
-You can set this to "localhost:25;foo:25" if your hostname is `foo'.
+You can set this to \(lqlocalhost:25;foo:25\(rq if your hostname is
+\(lqfoo\(rq.
 
 Note that the names are resolved to IP addresses.
 If your host has different names which resolve to the same IP,
-use only one of them, otherwise you will get an error message.
+use only one of them, as otherwise you will get an error message.
 
-Default: \fIlocalhost:25\fR (i.e. only local processes can connect)
+Default:
+.I localhost:25
+(i.e., only local processes can connect)
 
 .TP
 .BI "do_save_envelope_to = " boolean
 
-If this is set to true, a possibly existing Envelope-to: header in
-an incoming mail which is received via either pop3 or smtp will be saved
-as an X-Orig-Envelope-to: header.
+If this is set to true, a possibly existing \(lqEnvelope-to:\(rq header
+in an incoming mail which is received via SMTP will be saved as an
+\(lqX-Orig-Envelope-to:\(rq header.
 
-This is useful if you retrieve mail from a pop3 server with fetchmail,
-and the server supports Envelope-to: headers,
-and you want to make use of those with a mail filtering tool, e.g. procmail.
+This is useful if you retrieve mail from a POP3 server with fetchmail,
+the server supports \(lqEnvelope-to:\(rq headers,
+and you want to make use of those with a mail filtering tool, e.g.,
+procmail.
 It cannot be preserved because masqmail sets such a header by itself.
 
 Default is false.
@@ -264,7 +269,7 @@ Default is false.
 .BI "do_relay = " boolean
 
 If this is set to false, mail with a return path that is not local
-and a destination that is also not local will not be accepted via smtp
+and a destination that is also not local will not be accepted via SMTP
 and a 550 reply will be given.
 Default is true.
 
@@ -280,7 +285,8 @@ If this is set, masqmail will not try to deliver mail
 immediately when accepted.
 Instead it will always queue it.
 (Note: Masqmail will always automatically queue mail if necessary,
-i.e. if it cannot deliver because no suitable route was available for example.)
+i.e., if it cannot deliver because no suitable route was available
+for example.)
 
 Same as calling masqmail with the \fB\-odq\fR option.
 Usually you should leave this option unset.
@@ -321,7 +327,7 @@ query_routes.FastNet = \(dq@with_confdir@/fastnet.route\(dq
 is the route configuration file, see
 .MR masqmail.route 5 .
 As soon as a link to FastNet has been set up,
-you call `masqmail \fB\-qo \fIFastNet\fR'.
+you call \(lqmasqmail\ \-qo\ FastNet\(rq.
 Masqmail will then read the specified file and send the mails.
 
 See \fBonline_query\fP.
@@ -350,10 +356,10 @@ glob aliasing may be expanded further by the normal aliasing mechanism.
 .BI "caseless_matching = " boolean
 
 If this is set, aliasing and the matching for \fBlocal_addresses\fP and
-\fBnot_local_addresses\fP will be done caseless.
+\fBnot_local_addresses\fP will be done caselessly.
 
-Note: Be sure to change this option only if the queue is empty as
-correct processing of queued messages is not guaranteed otherwise.
+Note: Be sure to change this option only while the queue is empty,
+as the change may impair the delivery of queued messages.
 
 Default: false
 
@@ -377,11 +383,14 @@ Default is false.
 .BI "mbox_default = " string
 
 The default local delivery method.
-Can be mbox or mda.
+Can be
+.B mbox
+or
+.BR mda .
 You can override this for each user by using the \fBmbox_users\fR or
 \fBmda_users\fR (see below).
 
-Default: mbox.
+Default: mbox
 
 .TP
 .BI "mbox_users = " list
@@ -391,16 +400,16 @@ A list of users which wish delivery to an mbox style mail folder.
 .TP
 .BI "mda_users = " list
 
-A list of users which wish local delivery to an mda.
-You have to set \fBmda\fR (see below) as well.
+A list of users which wish local delivery via an MDA.
+You need to set \fBmda\fR (see below) as well.
 
 .TP
 .BI "mda = " command
 
-If you want local delivery to be transferred to an mda (Mail Delivery Agent),
+If you want local delivery to be transferred to an MDA (Mail Delivery Agent),
 set this to a command.
-The argument will be expanded on delivery time,
-you can use variables beginning with a dolloar sign `$',
+The command is expanded at delivery time;
+you can use variables beginning with a dollar sign,
 optionally enclosed in curly braces.
 Variables you can use are:
 
@@ -408,8 +417,8 @@ Variables you can use are:
 .TP
 uid
 the unique message id.
-(This is not necessarily identical with the Message ID
-as given in the Message ID: header.)
+(This is not necessarily identical to the id found in the
+\(lqMessage-ID:\(rq header.)
 
 .TP
 received_host
@@ -442,17 +451,18 @@ the domain part of the recipient.
 .TP
 rcpt
 the complete recipient address.
+
 .RE
 .IP
 
 Example:
 
 .RS 8
-mda="/usr/bin/procmail \-Y \-d ${rcpt_local}"
+mda=\(dq/usr/bin/procmail \-Y \-d ${rcpt_local}\(dq
 .RE
 .IP
 
-For the mda, as for pipe commands,
+For the MDA, as for pipe commands,
 a few environment variables will be set as well.
 See
 .MR masqmail 8 .
@@ -583,7 +593,7 @@ Default is 4d (4 days)
 
 Replace \fIname\fR with a valid local or remote mail address.
 
-If this option is set, then a copy of every mail,
+If this option is set, then a copy of every mail
 that passes through the masqmail system will also be sent
 to the given mail address.
 
@@ -595,19 +605,18 @@ for archiving purposes by placing an appropriate pipe command in
 .BI "max_msg_size = " bytes
 
 This option sets the maximum size in bytes masqmail will accept for delivery.
-This value is advertised to the SMTP client by the `SIZE' message during SMTP
-session setup.
-Clients pretending to send, or actually send,
-more than \fIbytes\fR will get a 552 error message.
+This value is advertised to the SMTP client by the \(lqSIZE\(rq message
+during SMTP session setup.
+Clients trying to send bigger messages will get
+\(lq552 Error: message too large\(rq responses.
 
-A zero value disables the maximum size limit.
-
-Default is 0 (= unlimited).
+A zero value disables the size limit, which is the default.
 
 .TP
 .BI "defer_all = " boolean
 
-If set to true, masqmail replies with ``421 service temporarily unavailable''
+If set to true, masqmail replies with
+\(lq421 service temporarily unavailable\(rq
 to any SMTP request and shuts the connection down.
 Note: This option is for debugging purposes only.
 

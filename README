@@ -2,11 +2,11 @@ Masqmail README
 ===============
 
 Masqmail is a mail server designed for hosts that are not permanently
-connected to the internet. It handles outgoing messages, i.e. those
-that are to be sent over the non-permanent link (usually a ppp or slip
+connected to the internet. It handles outgoing messages, i.e., those
+that are to be sent over the non-permanent link (usually a PPP or SLIP
 connection over a modem or ISDN adapter) specially and delivers them
-only when explicitely told to do so. There is support for multiple
-providers, it is possible to write different configurations for each
+only when explicitly told to do so. There is support for multiple
+providers; it is possible to write different configurations for each
 one. The configuration chosen is selected at delivery time, so that if
 for example a delivery of a message failed while connected with
 provider 1, it may be delivered when connected to provider 2. For each
@@ -15,7 +15,7 @@ provider another mail host (or none) can be specified.
 Masqmail provides (a yet simple) mechanism to rewrite headers, also
 depending on the current connection. This makes it possible to deliver
 messages with a return address on the local network which will be
-rewitten at delivery time. The purpose of this is:
+rewritten at delivery time. The purpose of this is:
 
 - to allow delivery failure messages that are produced on the local
   network to be delivered immediately, while those that are produced
@@ -34,7 +34,7 @@ Masqmail shall once be a complete replacement for sendmail (or other
 MTAs such as exim, qmail or smail) on a local network, but it is NOT
 supposed to be installed in a network with a permanent internet
 connection (at least if it is not behind a secure firewall) because
-it has no ability to check for undesired relaying or spam filtering.
+it has no ability to check for undesired relaying and no SPAM filtering.
 
 
 Masqmail's website is:

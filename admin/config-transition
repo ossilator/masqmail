@@ -130,13 +130,13 @@ Replaced by 'denied_senders', if neither wildcards nor '@' is used. \
 "
 
 check["(^|[ 	])allowed_rcpt_domains"] = "route" SUBSEP "Removed in 0.3.2" SUBSEP "\
-Replaced by 'allowed_recipients', if the values are prepended with \
+Replaced by 'allowed_recipients', if the values are prefixed with \
 '*@', because 'allowed_recipients' matches complete addresses not just \
 domains. \
 "
 
 check["not_allowed_rcpt_domains"] = "route" SUBSEP "Removed in 0.3.2" SUBSEP "\
-Replaced by 'denied_recipients', if the values are prepended with \
+Replaced by 'denied_recipients', if the values are prefixed with \
 '*@', because 'allowed_recipients' matches complete addresses not just \
 domains. \
 "

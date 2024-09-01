@@ -29,7 +29,7 @@ The hostname where the masqdialer server is running.
 .TP
 \fBport\fR
 
-The port number where the masqdialer server is listening.
+The port number on which the masqdialer server is listening.
 
 
 .SH AUTHOR

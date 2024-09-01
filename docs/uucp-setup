@@ -26,7 +26,7 @@ address rewriting (user@example.org <-> org!example!user). But I
 don't know details -- if you do, please let me know.
 
 
-UUCP makes use of the -f (set return path address, i.e. from whom the
+UUCP makes use of the -f (set return path address, i.e., from whom the
 mail is) option of masqmail which is only permitted for user root,
 the trusted user (usually `mail'), and the trusted group (often group
 `mail'). UUCP, however, usually runs as user and group `uucp'.

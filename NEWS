@@ -1,5 +1,5 @@
 This NEWS file lists changes which may be important for you, especially
-in regard to compatiblity in upgrades.
+in regard to compatibility in upgrades.
 
 See the git log for more details and technical changes that don't
 affect users directly.
@@ -24,7 +24,7 @@ affect users directly.
   of the localnet because it is only part of the more general concept:
   permanent routes. `local_nets' are now represented by `allowed_recipients'
   in a permanent route. (See: examples/localnet.route) Now, there is no
-  more abiguity between `local' and `local net'. Run admin/config-transition
+  more ambiguity between `local' and `local net'. Run admin/config-transition
   on your config to learn how to update it.
 
 - Switched the default group for masqmail from `trusted' to `mail'.
@@ -87,7 +87,7 @@ affect users directly.
   it'll be smtp.
 
 - Now the Received headers are much friendlier to read. The header for
-  locally (i.e. non-SMTP) received mail is changed to the format postfix
+  locally (i.e., non-SMTP) received mail is changed to the format postfix
   uses.
 
 - Several improvements to the man pages.
@@ -115,14 +115,14 @@ affect users directly.
   likely change its behavior to something more useful in the future.
 
 - Command line address arguments are now added to the recipient
-  list instead of substracted, when -t is used. This coveres a rare
+  list instead of subtracted, when -t is used. This covers a rare
   corner-case. It is a change from exim's behavior to postfix's.
 
 - Several changes were made related to the operation modes: The situation
   within the modes was made clear (see man page of masqmail(8)). If more
   than one mode is specified then masqmail aborts. For the default operation
   mode ``accept messages on stdin'' the command line switch -bm was added
-  (similar to othe MTAs). If masqmail is called without arguments, the
+  (similar to other MTAs). If masqmail is called without arguments, the
   version information is printed now.
 
 - The command line option -m is recognized now (although ignored).
@@ -260,7 +260,7 @@ affect users directly.
 0.2.24
 ======
 
-- This version keeps on logging after an restart of the deamon, for
+- This version keeps on logging after a restart of the daemon, for
   instance when sending SIGHUP to the daemon process for rereading its
   config.
 
@@ -339,7 +339,7 @@ affect users directly.
   connection to a server fails. Because masqmail is designed for dialup
   networks, a connection failure will merely generate a warning by default.
   If you deliver in a local network and use the default local_net route,
-  this would generte a failure. You can change this behaviour by setting
+  this would generate a failure. You can change this behaviour by setting
   'connect_error_fail' to either true or false in the route configurations.
 
 
@@ -367,7 +367,7 @@ affect users directly.
   - do_pipelining will be used only in broken mail setups. Actually, I
     implemented it only to test such a setup.
   - helo_name for routes sets the helo_name. This may be useful for
-    eg. ssh tunneling, or if do_correcthelo does not work, because you are
+    e.g., ssh tunneling, or if do_correcthelo does not work, because you are
     behind a firewall.
 
 - the old 'remote_port' option should not be used any more. Set the
@@ -383,7 +383,7 @@ affect users directly.
 
 - the route files can now be mode 0400, owned by root. Previous
   versions had problems when sendmail was called directly by a
-  non-priviledged user, because the route files could not be read.
+  non-privileged user, because the route files could not be read.
 
 
 0.2.10
@@ -408,7 +408,7 @@ affect users directly.
 0.2.6
 =====
 
-- you can configure the prefered local delivery mechanism for each user. See
+- you can configure the preferred local delivery mechanism for each user. See
   man page masqmail.conf (5), options mbox_default, mbox_users, mda_users and
   maildir_users. BIT FAT NOTE: if you used an mda, set mbox_default = "mda"
   (or use the mda_users option). Just setting mda is not enough any more.
@@ -486,7 +486,7 @@ affect users directly.
 0.2.0
 =====
 
-This is the first release of he development branch of masqmail
+This is the first release of the development branch of masqmail
 
 - the default configuration is now /etc/masqmail/masqmail.conf
   (as it already was for the debian package). The --with-conffile
@@ -502,7 +502,7 @@ This is the first release of he development branch of masqmail
     in the queue until it was finally delivered, deleted or forever.
 
 - there is a new online detection method: pipe. This allows you more
-  flexibility to detect the current online status, eg. the DHCP status
+  flexibility to detect the current online status, e.g., the DHCP status
   on notebooks.
 
   This method will at some point replace the 'mserver' option,
@@ -531,7 +531,7 @@ This is the first release of he development branch of masqmail
 0.1.8
 =====
 
-- for pop retrieval and smtp sending you can use a wrapper for eg. ssl
+- for pop retrieval and smtp sending you can use a wrapper for e.g., SSL
   tunneling. See man pages.
 
 - a user can delete his mail from the spool with -Mrm if received
@@ -594,7 +594,7 @@ This is the first release of he development branch of masqmail
 
 
 UPDATE (Jan 2000): The new home location of MasqMail is
-http://www.innominate.org/~oku/masqmail/, the new email adress of the
+http://www.innominate.org/~oku/masqmail/, the new email address of the
 author is Oliver Kurth <kurth@innominate.de>.
 
 

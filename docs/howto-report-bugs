@@ -23,7 +23,7 @@ are essential, the others can also be added on request.
 - The relevant log files. Have a look at the value of use_syslog and
   log_dir in masqmail.conf. If use_syslog is enabled, the files are
   probably some of /var/log/mail*. If you don't use syslog, then the
-  files reside unter the path assigned to log_dir, or by default in
+  files reside under the path assigned to log_dir, or by default in
   /var/log/masqmail/. Take care to substitute confidential data if you
   send debug files. (It's good to run masqmail with `-d 5' or `-d 6' to
   generate debugging data that may help to track down the bug.

@@ -11,9 +11,9 @@ This man page describes the syntax of the route configuration files of
 Their usual location is in
 .IR @with_confdir@/ .
 
-Mail will be sent with the SMTP protocol to its destination, unless
-`pipe' is given.
-In this case the message will be piped to the given program.
+Mail will be sent to its destination using the SMTP protocol, unless
+\(lqpipe\(rq is configured.
+In the latter case the message will be piped to the given program.
 
 
 .SH ROUTE CONDITIONS
@@ -108,7 +108,7 @@ it is seen as a pattern for the local part only.
 
 Example: \(lqmeillo;*@*example.org;web*@example.com\(rq
 
-(\(lqmeillo\(rq equals \(lqmeillo@*\(rq, i.e. the local part.)
+(\(lqmeillo\(rq equals \(lqmeillo@*\(rq, i.e., the local part.)
 
 The message sender can set the \(lqFrom:\(rq address arbitrarily,
 so this is even less secure than the return path based options.
@@ -237,20 +237,19 @@ Default: false
 .TP
 .BI "do_pipelining = " boolean
 
-If this is set to false, masqmail will not use ESMTP PIPELINING,
-even if the server announces that it is able to cope with it.
+If this is set to false, masqmail will not use ESMTP PIPELINING
+even if the server announces support for it.
 Default is true.
 
-You do not want to set this to false unless the mail setup on the
-remote server side is really broken.
+You do not want to set this to false unless the remote server is
+really broken.
 Keywords: wingate.
-
 
 .TP
 .BI "auth_name = " string
 
 Set the authentication type for ESMTP AUTH authentication.
-Currently only `cram-md5' and `login' are supported.
+Currently only \(lqcram-md5\(rq and \(lqlogin\(rq are supported.
 
 .TP
 .BI "auth_login = " string
@@ -266,23 +265,24 @@ Your secret for ESMTP AUTH authentication.
 .BI "wrapper = " command
 
 If set, instead of opening a connection to a remote server,
-\fIcommand\fR will be called and all traffic will be piped to its stdin and from its stdout.
-Purpose is to tunnel ip traffic, eg. for ssl.
+.I command
+will be called, and all traffic will be piped to its stdin and
+from its stdout.
+The purpose is to enable tunneling, e.g., via SSL.
 
 Example for SMTP over SSL tunneling:
 .nf
-wrapper="/usr/bin/openssl s_client \-verify_return_error \-quiet \-connect mail.gmx.net:465 2>/dev/null"
+wrapper=\(dq/usr/bin/openssl s_client \-verify_return_error \-quiet \-connect mail.gmx.net:465 2>/dev/null\(dq
 .fi
 
 SMTP over SSL is supported since masqmail-0.1.8.
 It is marked obsolete by the IETF but is still in use.
 
-
 Example for encryption with STARTTLS (RFC-3207):
 .nf
 # don't forget the instant_helo, otherwise it won't work
 instant_helo=true
-wrapper="/usr/bin/openssl s_client \-verify_return_error \-quiet \-starttls smtp \-connect mail.gmx.net:25 2>/dev/null"
+wrapper=\(dq/usr/bin/openssl s_client \-verify_return_error \-quiet \-starttls smtp \-connect mail.gmx.net:25 2>/dev/null\(dq
 .fi
 
 This is supported since masqmail-0.2.28.
@@ -301,10 +301,10 @@ interactively on the command line.
 .BI "pipe = " command
 
 \fIcommand\fR will be called and the message will be piped to its stdin.
-Purpose is to use gateways to uucp, fax, sms or whatever else.
+Purpose is to use gateways to UUCP, fax, SMS, or whatever else.
 
-You can use variables to give as arguments to the command,
-these are the same as for the MDA in the main configuration,
+You can use variables to give as arguments to the command.
+These are the same as for the MDA in the main configuration;
 see
 .MR masqmail.conf 5 .
 
@@ -349,12 +349,16 @@ map_h_from_addresses = \(dqjohn: John Smith <jsmith@mail.academic.edu>;
 .TP
 .BI "map_h_reply_to_addresses = " list
 
-Same as \fBmap_h_from_addresses\fR, but for the `Reply-To:' header.
+Same as
+.BR map_h_from_addresses ,
+but for the \(lqReply-To:\(rq header.
 
 .TP
 .BI "map_h_mail_followup_to_addresses = " list
 
-Same as \fBmap_h_from_addresses\fR, but for the `Mail-Followup-To:' header.
+Same as
+.BR map_h_from_addresses ,
+but for the \(lqMail-Followup-To:\(rq header.
 Useful when replying to mailing lists.
 
 .TP

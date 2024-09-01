@@ -112,7 +112,7 @@ Making masqmail the default
 
 `sendmail' is the de-facto standard name of the system's MTA, no
 matter which MTA actually runs. If you want to make masqmail the
-system's MTA (i.e. replace sendmail, postfix, etc), make two symbolic
+system's MTA (i.e., replace sendmail, postfix, etc), make two symbolic
 links:
 
 	ln -s /usr/local/sbin/masqmail /usr/lib/sendmail
@@ -150,7 +150,7 @@ Create a minimal config with:
 
 (Substitute `HOSTNAME' with the real value, of course.)
 
-Such a setup (i.e. the default one) does:
+Such a setup (i.e., the default one) does:
 - deliver mail locally
 - accept mail on stdin (plain text)
 - accept mail on stdin (SMTP) (if started with -bs)

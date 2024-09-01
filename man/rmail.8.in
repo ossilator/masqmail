@@ -22,7 +22,7 @@ would generate this call to masqmail:
 
 masqmail \-i \-f user@host \-\- bob@example.org
 
-(If ``bob@example.org'' was the argument to the rmail call.))
+(If \(lqbob@example.org\(rq was the argument to the rmail call.)
 
 
 .SH AUTHOR

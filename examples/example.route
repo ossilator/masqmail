@@ -1,5 +1,5 @@
-# Example route file for masqmail
-# see also: man 5 masqmail.route
+# Example route file for masqmail.
+# See also: man 5 masqmail.route
 
 # Note that local_hosts, local_addresses, and not_local_addresses
 # are considered first. This may result in mail being scheduled
@@ -26,12 +26,12 @@ allowed_senders = "okurth"
 denied_recipients = "*@cpwright.com"
 
 #
-# settings:
+# Settings:
 #
 
-# the mail server which relays mail for you:
-# if this is not set, mail will be sent directly.
-# If your ISP gives has a mail server, it is wiser to use it:
+# The mail server which relays mail for you.
+# If this is not set, mail will be sent directly.
+# If your ISP provides a mail server, it is wiser to use it:
 
 mail_host = "mail.isp.com"
 
@@ -57,24 +57,27 @@ mail_host = "mail.isp.com"
 do_correct_helo = true
 # As an alternative, the helo_name option is available.
 
-# 'forge' headers:
-
-# return path and From: address are TWO different things:
 #
-# the return path is address where delivery failure messages will go
+# 'Forge' headers:
+#
+
+# The return path and the From: address are different things:
+#
+# The return path is address where delivery failure messages will go
 # to, and this address will be checked by many MTAs in the outside
 # world, so it should be valid. It canNOT contain a real name:
-# 'miller@foo.com' is a valid return path, but 'Charlie Miller <miller@foo.com>' is NOT.
+# 'miller@foo.com' is a valid return path, but
+# 'Charlie Miller <miller@foo.com>' is NOT.
 #
 # The From: address is the address the recipient sees, and where
 # replies will go to (if you do not set a Reply-to header). In most
 # cases it corresponds to the return path, but this is not
-# required. It CAN have a real name, both examples for Charlie above
+# required. It CAN have a real name; both examples for Charlie above
 # are correct, and it is more pretty to include a real name.
-#
+
 # The return path:
-# if we send the mail directly, we can set any valid address here,
-# use the one you prefer to get error messages to:
+# If we send the mail directly, we can set any valid address here.
+# Use the one you prefer to get error messages to.
 map_return_path_addresses = "okurth: kurth@innominate.de"
 
 # 'From:' header:
