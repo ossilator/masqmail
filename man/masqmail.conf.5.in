@@ -98,6 +98,7 @@ is a much more verbose log, which is created when debugging is enabled
 .RB ( debug_level "\ >\ 0)."
 .I dir
 must be an absolute path.
+The directory is created at startup if missing.
 
 Default:
 .I @with_logdir@
@@ -120,6 +121,7 @@ The directory where masqmail stores its spool files
 Masqmail needs read and write permissions for this directory.
 .I dir
 must be an absolute path.
+The directory is created at startup if missing.
 
 Default:
 .I @with_spooldir@
