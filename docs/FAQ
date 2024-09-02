@@ -73,20 +73,11 @@ map_h_from_addresses = "charlie:Charlie Miller <cmiller@foo.com>";
 Do not forget the Charlie Miller.
 
 
-With connection method file, I get the following message in
-the log file: "Could not open /tmp/connect_route: Permission
-denied".
-------------------------------------------------------------
-In your ip-up script, you have to set read permission to the user
-masqmail runs as. After you write the file with the connection
-name, set read permission to all with chmod ugo+r file.
-
-
-With connection method file, I get the following message in
-the log file: "route with name name not found.".
+When using online_query, I get the following message in
+the log file: "route list with name '<name>' not found.".
 -----------------------------------------------------------
-Check whether the name in the file is really identical to name you
-gave to the route configuration (case sensitive!).
+Check whether the name returned by the command is really identical
+to name you gave to the route configuration (case sensitive!).
 
 
 I found a bug.
