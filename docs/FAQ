@@ -50,17 +50,16 @@ Set the set-user-id-bit with chmod u+s /usr/sbin/masqmail.
 
 
 After starting masmail, I get the following message: "bind:
-(terminating): Address already in use"
+Address already in use"
 -----------------------------------------------------------
 This means that there is already a process listening on a port,
-usually 25. You either have another MTA running in background
-(sendmail, exim, etc...) or another instance of masqmail.
+usually 25. You either have another MTA running in the background
+(sendmail, exim, etc.) or another instance of MasqMail.
 
-It may also mean that the ports you configured MM to listen to
-(with 'listen_addresses') are on the same IP address, eg. you may
-have set your hostname to 127.0.0.1 and try to listen on localhost
-and your host name. In this case either set your hostname to
-another IP address or delete one of the conflicting entries.
+It may also mean that the ports you configured MasqMail to listen on
+(with 'listen_addresses') are on the same IP address, e.g., you may
+have made your hostname resolve to 127.0.0.1 (which is localhost).
+Do not do that.
 
 
 My friends told me that they do not see my full name in their
