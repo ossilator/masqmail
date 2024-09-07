@@ -539,15 +539,19 @@ use:
 .TP
 .BI "errmsg_file = " file
 
-Set this to a template which will be used to generate delivery failure reports.
-Variable parts within the template begin with a dollar sign and are identical
-to those which can be used as arguments for the mda command,
-see \fBmda\fR above.
-Additional information can be included with @failed_rcpts,
-@msg_headers and @msg_body,
-these must be at the beginning of a line and will be replaced
-with the list of the failed recipients,
-the message headers and the message body of the failed message.
+Set this to a template which will be used for generating delivery
+failure reports.
+Variable parts within the template begin with a dollar sign and are
+identical to those which can be used in arguments to the MDA command,
+see
+.B mda
+above.
+Additional information can be included using @failed_rcpts,
+@msg_headers, and @msg_body;
+these must appear at the beginning of a line and will be replaced
+with the list of failed recipients,
+the message headers, and the message body of the failed message,
+respectively.
 
 Default is
 .IR @xmmdatadir@/tpl/failmsg.tpl .
@@ -555,8 +559,11 @@ Default is
 .TP
 .BI "warnmsg_file = " file
 
-Set this to a template which will be used to generate delivery warning reports.
-It uses the same mechanisms for variables as \fBerrmsg_file\fR, see above.
+Set this to a template which will be used for generating delivery
+warning reports.
+Works like
+.BR errmsg_file ,
+see above.
 
 Default is
 .IR @xmmdatadir@/tpl/warnmsg.tpl .
