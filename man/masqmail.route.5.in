@@ -280,15 +280,15 @@ see
 .TP
 .BI "pipe_fromline = " boolean
 
-Only if `pipe' is used.
-A from line will be prepended to the output stream whenever a pipe command is called.
+If this is set, a \(lqFrom\ \(rq line will be prepended to the message
+whenever a pipe command is called.
 Default is false.
 
 .TP
 .BI "pipe_fromhack = " boolean
 
-Only if `pipe' is used.
-Each line beginning with `From ' is replaced with `>From ' whenever a pipe command is called.
+If this is set, each line beginning with \(lqFrom\ \(rq is replaced
+with \(lq>From\ \(rq whenever a pipe command is called.
 You probably want this if you have set \fBpipe_fromline\fR above.
 Default is false.
 

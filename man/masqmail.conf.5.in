@@ -364,15 +364,16 @@ Default: false
 .TP
 .BI "pipe_fromline = " boolean
 
-If this is set, a from line will be prepended to the output stream whenever
-a pipe command is called after an alias expansion.
+If this is set, a \(lqFrom\ \(rq line will be prepended to the message
+whenever a pipe command is called after an alias expansion.
 Default is false.
 
 .TP
 .BI "pipe_fromhack = " boolean
 
-If this is set, each line beginning with `From ' is replaced with `>From '
-whenever a pipe command is called after an alias expansion.
+If this is set, each line beginning with \(lqFrom\ \(rq is replaced
+with \(lq>From\ \(rq whenever a pipe command is called after an alias
+expansion.
 You probably want this if you have set \fBpipe_fromline\fR above.
 Default is false.
 
@@ -466,15 +467,15 @@ otherwise they will be tried to be expanded with the internal variables.
 .TP
 .BI "mda_fromline = " boolean
 
-If this is set, a from line will be prepended to the output stream whenever
-a message is delivered to an mda.
+If this is set, a \(lqFrom\ \(rq line is prepended to the message
+whenever one is delivered via an MDA.
 Default is false.
 
 .TP
 .BI "mda_fromhack = " boolean
 
-If this is set, each line beginning with `From ' is replaced with `>From '
-whenever a message is delivered to an mda.
+If this is set, each line beginning with \(lqFrom\ \(rq is replaced
+with \(lq>From\ \(rq whenever a message is delivered via an MDA.
 You probably want this if you have set \fBmda_fromline\fR above.
 Default is false.
 
