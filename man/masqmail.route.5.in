@@ -390,6 +390,13 @@ No angle brackets and display name may be included in this case,
 as the result would be meaningless.
 
 .TP
+.BI "map_h_sender_addresses = " list
+
+Same as
+.BR map_h_from_addresses ,
+but for the \(lqSender:\(rq header.
+
+.TP
 .BI "map_h_reply_to_addresses = " list
 
 Same as

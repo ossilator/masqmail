@@ -94,6 +94,7 @@ typedef struct _connect_route {
 	gchar *wrapper;
 
 	GList *map_h_from_addresses;
+	GList *map_h_sender_addresses;
 	GList *map_h_reply_to_addresses;
 	GList *map_h_mail_followup_to_addresses;
 	GList *map_return_path_addresses;

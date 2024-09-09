@@ -9,6 +9,7 @@ configure_mailhost_relay
 configure_relay_all
 cat >> "$ROUTE" <<EOF
 map_h_from_addresses = "foo: Dark Foo <fooish@example.com>"
+map_h_sender_addresses = "tippse: Elaine <elaine@example.com>"
 map_h_reply_to_addresses = "bar: Bar Man <drink@example-fail.com>"
 map_h_mail_followup_to_addresses = "baz: \"The Real Me\" <me@example.com>; bar: Bar Exam <admin@blackhole.com>"
 map_return_path_addresses = "sendy: dummy@example.com"
@@ -18,6 +19,7 @@ EOF
 # giving particular attention to the last element.
 send_mail -f sendy@$RELAY_HOST $RECV_ADDR <<EOF
 From: foo
+Sender: tippse
 Reply-To: Juice <bar>
 Mail-Followup-To: some@one, bar@$RELAY_HOST
 Mail-Followup-To: some@one, other@two.me, bar@$RELAY_HOST
@@ -31,6 +33,7 @@ EOF
 
 verify_remote_delivery
 verify_content '^From: Dark Foo <fooish@example\.com>$'
+verify_content '^Sender: Elaine <elaine@example\.com>$'
 verify_content '^Reply-To: Juice <drink@example-fail\.com>$'
 verify_content '^Mail-Followup-To: some@one, Bar Exam <admin@blackhole\.com>$'
 verify_content '^Mail-Followup-To: some@one, other@two.me, Bar Exam <admin@blackhole\.com>$'

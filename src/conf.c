@@ -686,6 +686,9 @@ read_route(gchar *filename)
 		} else if (strcmp(lval, "map_h_from_addresses")==0) {
 			ok &= parse_rewrite_map(
 					rval, &route->map_h_from_addresses, A_RFC822);
+		} else if (strcmp(lval, "map_h_sender_addresses")==0) {
+			ok &= parse_rewrite_map(
+					rval, &route->map_h_sender_addresses, A_RFC822);
 		} else if (strcmp(lval, "map_h_reply_to_addresses")==0) {
 			ok &= parse_rewrite_map(
 					rval, &route->map_h_reply_to_addresses, A_RFC822);
@@ -776,6 +779,7 @@ destroy_route(connect_route *r)
 	destroy_address_list(r->allowed_from_hdrs);
 	destroy_address_list(r->denied_from_hdrs);
 	destroy_replacement_table(r->map_h_from_addresses);
+	destroy_replacement_table(r->map_h_sender_addresses);
 	destroy_replacement_table(r->map_h_reply_to_addresses);
 	destroy_replacement_table(r->map_h_mail_followup_to_addresses);
 	destroy_replacement_table(r->map_return_path_addresses);

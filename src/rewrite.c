@@ -117,6 +117,8 @@ rewrite_headers(msg_out *msgout, const connect_route *route)
 		GList *table;
 		if (hdr->id == HEAD_FROM) {
 			table = route->map_h_from_addresses;
+		} else if (hdr->id == HEAD_SENDER) {
+			table = route->map_h_sender_addresses;
 		} else if (hdr->id == HEAD_REPLY_TO) {
 			table = route->map_h_reply_to_addresses;
 		} else if (hdr->id == HEAD_MAIL_FOLLOWUP_TO) {
