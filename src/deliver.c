@@ -896,6 +896,14 @@ deliver_msg_list(GList *msg_list, guint flags)
 	destroy_msg_out_list(msgout_list);
 }
 
+static void
+do_deliver(message *msg)
+{
+	GList *msg_list = g_list_append(NULL, msg);
+	deliver_msg_list(msg_list, DLVR_ALL);
+	g_list_free(msg_list);
+}
+
 /*
 **  deliver() is called when a message has just been received
 **  (mode_accept and smtp_in) and should be delivered immediately
@@ -905,6 +913,11 @@ deliver_msg_list(GList *msg_list, guint flags)
 void
 deliver(message *msg)
 {
+	if (!conf.do_background) {
+		do_deliver(msg);
+		return;
+	}
+
 	pid_t pid = fork();
 	if (pid < 0) {
 		logerrno(LOG_ERR, "could not fork for delivery");
@@ -917,9 +930,7 @@ deliver(message *msg)
 	// child
 	null_stdio();
 
-	GList *msg_list = g_list_append(NULL, msg);
-	deliver_msg_list(msg_list, DLVR_ALL);
-	g_list_free(msg_list);
+	do_deliver(msg);
 
 	exit(0);
 }

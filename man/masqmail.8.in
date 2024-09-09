@@ -328,8 +328,17 @@ Kept for compatibility.
 .B \-odb
 
 \(lqDeliver in Background.\(rq
-Masqmail always does this.
-Hence masqmail ignores this switch.
+Return immediately after receiving a message, and spawn a child process
+to do the delivery asynchronously.
+
+This makes each call faster, but if many calls are done in quick succession,
+it is likely to delay mail delivery due to relays and receivers limiting
+concurrent connections, causing the mails to be deferred.
+It is more reliable to use
+.B \-odq
+instead, followed by a run with
+.B \-q
+(see below).
 
 .TP
 .B \-odq

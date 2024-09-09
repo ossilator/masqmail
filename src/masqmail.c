@@ -485,6 +485,9 @@ main(int argc, char *argv[])
 		} else if (strcmp(opt, "odq") == 0) {
 			do_queue = TRUE;
 
+		} else if (strcmp(opt, "odb") == 0) {
+			conf.do_background = TRUE;
+
 		} else if (strcmp(opt, "oi") == 0) {
 			opt_i = TRUE;
 

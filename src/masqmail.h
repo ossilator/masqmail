@@ -121,6 +121,7 @@ typedef struct _masqmail_conf {
 	gboolean do_relay;
 
 	gboolean do_queue;
+	gboolean do_background;
 
 	gchar *mbox_default;
 	GList *mbox_users;
