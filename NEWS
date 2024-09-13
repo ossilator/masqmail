@@ -1,7 +1,7 @@
 This NEWS file lists changes which may be important for you, especially
 in regard to compatiblity in upgrades.
 
-See ChangeLog file for more details and technical changes that don't
+See the git log for more details and technical changes that don't
 affect users directly.
 
 The manual pages describe newly added options. Take them for reference.

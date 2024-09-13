@@ -26,8 +26,7 @@ server-side SMTP SIZE support.
 
 Steffen Rumberger for improving and maintaining the Debian package.
 
-... and many others.
-See ChangeLog, the code repository log, and the mailing list for more.
+... and many others; see the git log for the full view.
 Feel free to tell me if you think you are missing on this list.
 
 

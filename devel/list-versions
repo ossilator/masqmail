@@ -5,8 +5,6 @@
 
 (
 grep '^AC_INIT' /dev/null configure.*
-printf "Changelog:"
-sed -n '/^[0-9]\.[0-9]\{1,\}\.[0-9]\{1,\}/{p;q}' ChangeLog
 printf "NEWS:"
 sed -n '/^[0-9]\.[0-9]\{1,\}\.[0-9]\{1,\}/{p;q}' NEWS
 grep '^\.TH' /dev/null man/*.[0-9]
