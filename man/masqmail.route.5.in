@@ -320,16 +320,23 @@ Use \fBmap_return_path_addresses\fR for rewriting local parts.
 .TP
 \fBmap_h_from_addresses\fR = \fIlist\fR
 
+Address rewrite rules for \(lqFrom:\(rq headers.
 This is similar to \fBset_h_from_domain\fR, but more flexible.
-Set this to a list which maps local parts to a full RFC 822 compliant email address,
-the local parts (the keys) are separated from the addresses (the values) by colons (`:').
+This is a semicolon-separated list of colon-separated key-value pairs.
+The keys may contain glob patterns and are matched against the local
+parts of email addresses.
+The values are full RFC 822 compliant email addresses.
+These may include angle brackets and a display name.
+
+This is useful if you use private, externally unknown addresses inside
+your LAN, and want them to be replaced by the publicly known addresses
+when they go onto the internet.
 
 Example:
 .nf
-map_h_from_addresses = "john: John Smith <jsmith@mail.academic.edu>; charlie: Charlie Miller <cmiller@mx.commercial.com>"
+map_h_from_addresses = \(dqjohn: John Smith <jsmith@mail.academic.edu>;
+    charlie: Charlie Miller <cmiller@mx.commercial.com>\(dq
 .fi
-
-You can use patterns, eg. * as keys.
 
 .TP
 \fBmap_h_reply_to_addresses\fR = \fIlist\fR
@@ -345,18 +352,26 @@ Useful when replying to mailing lists.
 .TP
 \fBmap_return_path_addresses\fR = \fIlist\fR
 
+Rewrite rules for return-path (envelope from) addresses.
 This is similar to \fBset_return_path_domain\fR, but more flexible.
-Set this to a list which maps local parts to a full RFC 821 compliant email address,
-the local parts (the keys) are separated from the addresses (the values) by colons (`:').
-Note that this option takes RFC 821 addresses while \fBmap_h_from_addresses\fR takes RFC 822 addresses.
-The most important difference is that RFC 821 addresses have no full name.
+The syntax is the same as for the header rewrite rules above, except
+that the values are RFC 821 email addresses.
+Unlike RFC 822 addresses, these cannot include angle brackets and a
+display name.
+
+Bounce messages are sent to these addresses if something goes wrong.
+Therefore, it is best to use the users' usual public addresses.
+Additionally, some mail servers check whether the envelope matches the
+reverse DNS lookup for the IP address the connection is coming from,
+and even if the local part looks valid. If not, they reject the mail
+because they suspect spamming. Further down, messages with mismatching
+addresses may be quarantined or rejected due to DMARC policy.
 
 Example:
 .nf
-map_return_path_addresses = "john: <jsmith@mail.academic.edu>; charlie: <cmiller@mx.commercial.com>"
+map_return_path_addresses = \(dqjohn: jsmith@mail.academic.edu;
+    charlie: cmiller@mx.commercial.com\(dq
 .fi
-
-You can use patterns, eg. * as keys.
 
 
 .SH AUTHOR
