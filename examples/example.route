@@ -35,6 +35,13 @@ denied_recipients = "*@cpwright.com"
 
 mail_host = "mail.isp.com"
 
+# If your mail server outside uses the AUTH mechanism, set the following.
+# For auth_name, only 'cram-md5' and 'login' are supported.
+
+#auth_name = "cram-md5"
+#auth_login = "yourname"
+#auth_secret = "dontTellAnyBody"
+
 # Make picky servers happy:
 # If set, we look up our own name as seen from the outside, and send
 # this in our HELO/EHLO message. Otherwise we send our internal host
@@ -72,11 +79,3 @@ map_return_path_addresses = "okurth: kurth@innominate.de"
 
 # 'From:' header:
 map_h_from_addresses = "okurth: Oliver Kurth <kurth@innominate.de>"
-
-# if your mail server outside uses the AUTH machanism, set the following.
-# for auth_name, only 'cram-md5' and 'login' are supported.
-# see also: man 5 masqmail.route
-
-#auth_name="cram-md5"
-#auth_login="yourname"
-#auth_secret="dontTellAnyBody"
