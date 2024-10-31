@@ -78,7 +78,6 @@ create_header(header_id id, gchar *fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 
-	/* g_malloc() calls exit on failure */
 	hdr = g_malloc(sizeof(header));
 
 	hdr->id = id;

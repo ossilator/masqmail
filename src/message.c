@@ -11,9 +11,7 @@ message*
 create_message()
 {
 	message *msg = (message *) g_malloc0(sizeof(message));
-	if (msg) {
-		msg->data_size = -1;
-	}
+	msg->data_size = -1;
 	return msg;
 }
 
@@ -126,23 +124,21 @@ create_msg_out(message *msg)
 msg_out*
 clone_msg_out(msg_out *msgout_orig)
 {
-	if (msgout_orig) {
-		msg_out *msgout = create_msg_out(msgout_orig->msg);
-		if (msgout) {
-			if (msgout_orig->return_path)
-				msgout->return_path = copy_address(msgout_orig->return_path);
-			if (msgout_orig->hdr_list)
-				msgout->hdr_list = g_list_copy(msgout_orig->hdr_list);
-			/* FIXME: if this lives longer than the original
-			   and we access one of the xtra hdrs, we will segfault
-			   or cause some weird bugs: */
-			msgout->xtra_hdr_list = NULL;
-			if (msgout_orig->rcpt_list)
-				msgout->rcpt_list = g_list_copy(msgout_orig->rcpt_list);
-		}
-		return msgout;
+	if (!msgout_orig) {
+		return NULL;
 	}
-	return NULL;
+	msg_out *msgout = create_msg_out(msgout_orig->msg);
+	if (msgout_orig->return_path)
+		msgout->return_path = copy_address(msgout_orig->return_path);
+	if (msgout_orig->hdr_list)
+		msgout->hdr_list = g_list_copy(msgout_orig->hdr_list);
+	/* FIXME: if this lives longer than the original
+	   and we access one of the xtra hdrs, we will segfault
+	   or cause some weird bugs: */
+	msgout->xtra_hdr_list = NULL;
+	if (msgout_orig->rcpt_list)
+		msgout->rcpt_list = g_list_copy(msgout_orig->rcpt_list);
+	return msgout;
 }
 
 void
