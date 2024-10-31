@@ -161,7 +161,6 @@ clone_msg_out(msg_out *msgout_orig)
 	if (msgout_orig) {
 		msg_out *msgout = create_msg_out(msgout_orig->msg);
 		if (msgout) {
-			msgout->msg = msgout_orig->msg;
 			if (msgout_orig->return_path)
 				msgout->return_path = copy_address(msgout_orig->return_path);
 			if (msgout_orig->hdr_list)
