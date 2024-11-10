@@ -31,9 +31,10 @@ EOF
 verify_remote_delivery
 verify_content '^From: Dark Foo <fooish@example\.com>$'
 verify_content '^Reply-To: Bar Man <drink@example-fail\.com>$'
-verify_content '^Mail-Followup-To: some@one,Bar Exam <admin@blackhole\.com>$'
-verify_content '^Mail-Followup-To: some@one,other@two.me,Bar Exam <admin@blackhole\.com>$'
-verify_content '^Mail-Followup-To: \"The Real Me\" <me@example\.com>,list@example\.com,some@one$'
+verify_content '^Mail-Followup-To: some@one, Bar Exam <admin@blackhole\.com>$'
+verify_content '^Mail-Followup-To: some@one, other@two.me, Bar Exam <admin@blackhole\.com>$'
+verify_content '^Mail-Followup-To: \"The Real Me\" <me@example\.com>, list@example\.com	,$'
+verify_content '^	some@one$'
 verify_content '^Mail-Followup-To: some@one$'
 verify_content '^Mail-Followup-To: some@one,other@two.me$'
 verify_content '^Return-path: <dummy@example\.com>$'
