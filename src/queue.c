@@ -139,8 +139,8 @@ queue_list()
 		if (msg->data_size >= 0)
 			size_str = g_strdup_printf(" size=%" G_GSSIZE_FORMAT, msg->data_size);
 		if (msg->received_time > 0) {
-			gchar *tmp_str;
-			time_str = g_strdup_printf(" age=%s", tmp_str = format_difftime(difftime(time(NULL), msg->received_time)));
+			gchar *tmp_str = format_difftime(difftime(time(NULL), msg->received_time));
+			time_str = g_strdup_printf(" age=%s", tmp_str);
 			g_free(tmp_str);
 		}
 		if (msg->received_host != NULL)
