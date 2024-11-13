@@ -10,16 +10,7 @@ You want
 - let masqmail forward non-local mail through a smart host
 
 This is like the simple-local-setup plus the forwarding.
-
-
-Set up
-------
-
-Follow the description in INSTALL.
-
-Most times it's simply:
-
-    ./configure
+Only the differences are described here.
 
 
 Configuration
@@ -32,44 +23,8 @@ You need a config file like this one:
 
 (Substitute a real hostname, of course.)
 
-Addionally you need to create the route config file like:
-
-    # where to relay to; the address and port of the smart host
-    mail_host = "mail.gmx.net:25"
-    # use a wrapper to enable encryption
-    # for STARTTLS on port 25:
-    #instant_helo=true
-    #wrapper="/usr/bin/openssl s_client -quiet -starttls smtp -connect mail.gmx.net:25 2>/dev/null"
-    # for SMTP over SSL on port 465:
-    #wrapper = "/usr/bin/openssl s_client -quiet -connect mail.gmx.net:465 2>/dev/null"
-    
-    do_correct_helo = true
-    
-    # rewrite the From addresses to ones visible from the outside
-    map_return_path_addresses = "meillo: schnalke4@gmx.de"
-    map_h_from_addresses = "meillo: markus schnalke <schnalke4@gmx.de>"
-    
-    # it's good to use "login" only if the connection is encrypted
-    auth_name = "login"
-    #auth_name = "cram-md5"
-    auth_login = "UID_OR_EMAIL_ADDRESS"
-    auth_secret = "PASSWORD"
-
-
-
-Starting the daemon
--------------------
-
-Listening for SMTP connections on a port requires masqmail to run as
-daemon. You probably want to start masqmail as daemon each time the
-system comes up. How you have to do that is system dependent.
-/etc/rc.local is a good try to add the daemon call, because this file
-seems to be frequently available.
-
-    /usr/local/sbin/masqmail -bd -q10m
-
-This starts masqmail in daemon mode and does a queue run every ten
-minutes.
+Additionally you need to create the config file default.route.
+You can derive it from the shipped example.route file.
 
 
 Check the setup
@@ -113,12 +68,7 @@ route, each time it does a queue run (every ten minutes).
 In case of problems
 -------------------
 
-Have a look at the log file: /var/log/masqmail/masqmail.log
-
-Set the debug level in masqmail.conf, restart the daemon, redo the
-test, and look at the debug file: /var/log/masqmail/debug.log
+Like in simple-local-setup plus ...
 
 If you use a wrapper, test it manually and interactively on the
 command line.
-
-Ask on the project's discussion board on GitHub.
