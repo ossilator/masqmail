@@ -8,11 +8,11 @@
 # don't forget the instant_helo, otherwise it won't work,
 # because the wrapper eats the 220 greeting
 instant_helo=true
-wrapper="/usr/bin/openssl s_client -quiet -starttls smtp -connect mail.gmx.net:25 2>/dev/null"
+wrapper="/usr/bin/openssl s_client -verify_return_error -quiet -starttls smtp -connect mail.gmx.net:25 2>/dev/null"
 
 # The old way is SMTP over SSL; the IETF had marked it obsolete:
 # don't use instant_helo here
-#wrapper="/usr/bin/openssl s_client -quiet -connect mail.gmx.net:465 2>/dev/null"
+#wrapper="/usr/bin/openssl s_client -verify_return_error -quiet -connect mail.gmx.net:465 2>/dev/null"
 
 
 # which sender addresses are allowed for this route?

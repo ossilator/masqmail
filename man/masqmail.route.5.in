@@ -239,7 +239,7 @@ Purpose is to tunnel ip traffic, eg. for ssl.
 
 Example for SMTP over SSL tunneling:
 .nf
-wrapper="/usr/bin/openssl s_client \-quiet \-connect mail.gmx.net:465 2>/dev/null"
+wrapper="/usr/bin/openssl s_client \-verify_return_error \-quiet \-connect mail.gmx.net:465 2>/dev/null"
 .fi
 
 SMTP over SSL is supported since masqmail-0.1.8.
@@ -250,7 +250,7 @@ Example for encryption with STARTTLS (RFC-3207):
 .nf
 # don't forget the instant_helo, otherwise it won't work
 instant_helo=true
-wrapper="/usr/bin/openssl s_client \-quiet \-starttls smtp \-connect mail.gmx.net:25 2>/dev/null"
+wrapper="/usr/bin/openssl s_client \-verify_return_error \-quiet \-starttls smtp \-connect mail.gmx.net:25 2>/dev/null"
 .fi
 
 This is supported since masqmail-0.2.28.
