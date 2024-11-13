@@ -2,16 +2,20 @@
 # by Philipp Berndt
 
 
-# encryption is done by communicating through openssl
+# encryption is done by communicating through gnutls/openssl
 
 # Today usually STARTTLS (RFC-3207) is used:
 # don't forget the instant_helo, otherwise it won't work,
 # because the wrapper eats the 220 greeting
 instant_helo=true
-wrapper="/usr/bin/openssl s_client -verify_return_error -verify_quiet -quiet -starttls smtp -connect mail.gmx.net:25"
+wrapper="/usr/bin/gnutls-cli --logfile=/dev/null --starttls-proto=smtp mail.gmx.net -p 25"
+# This also works, but openssl insists on spamming the log.
+#wrapper="/usr/bin/openssl s_client -verify_return_error -verify_quiet -quiet -starttls smtp -connect mail.gmx.net:25"
 
 # The old way is SMTP over SSL; the IETF had marked it obsolete:
 # don't use instant_helo here
+#wrapper="/usr/bin/gnutls-cli --logfile=/dev/null mail.gmx.net -p 465"
+# See above.
 #wrapper="/usr/bin/openssl s_client -verify_return_error -verify_quiet -quiet -connect mail.gmx.net:465"
 
 
