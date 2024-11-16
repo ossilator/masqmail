@@ -409,7 +409,7 @@ smtp_out_mark_rcpts(smtp_base *psb, GList *rcpt_list)
 		addr_unmark_delivered(rcpt);
 
 		if ((psb->error == smtp_trylater) || (psb->error == smtp_timeout) || (psb->error == smtp_eof)) {
-			addr_mark_defered(rcpt);
+			addr_mark_deferred(rcpt);
 		} else {
 			addr_mark_failed(rcpt);
 		}
@@ -692,7 +692,7 @@ smtp_out_rcptto_resp(smtp_base *psb, message *msg, recipient *rcpt, int *rcpt_ac
 		return TRUE;
 	}
 	if (psb->error == smtp_trylater) {
-		addr_mark_defered(rcpt);
+		addr_mark_deferred(rcpt);
 	} else if (psb->error == smtp_fail) {
 		addr_mark_failed(rcpt);
 	} else {

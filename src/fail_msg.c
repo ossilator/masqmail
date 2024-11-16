@@ -151,12 +151,12 @@ warn_msg_is_due(const message *msg)
 }
 
 gboolean
-warn_msg(message *msg, const gchar *template, GList *defered_rcpts, const gchar *err_msg)
+warn_msg(message *msg, const gchar *template, GList *deferred_rcpts, const gchar *err_msg)
 {
 	time_t now = time(NULL);
 
 	if (warn_msg_is_due(msg)) {
-		if (fail_msg(msg, template, defered_rcpts, err_msg)) {
+		if (fail_msg(msg, template, deferred_rcpts, err_msg)) {
 			msg->warned_time = now;
 			return TRUE;
 		} else {

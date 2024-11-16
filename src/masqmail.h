@@ -32,7 +32,7 @@ typedef struct {
 } address;
 
 #define ADDR_FLAG_DELIVERED 0x01
-#define ADDR_FLAG_DEFERED 0x02
+#define ADDR_FLAG_DEFERRED 0x02
 #define ADDR_FLAG_FAILED 0x04
 #define ADDR_FLAG_ALIAS 0x10
 #define ADDR_FLAG_LAST_ROUTE 0x40
@@ -49,9 +49,9 @@ typedef struct _recipient {
 #define addr_unmark_delivered(addr) { addr->flags &= ~ADDR_FLAG_DELIVERED; }
 #define addr_is_delivered(addr) ((addr->flags & ADDR_FLAG_DELIVERED) != 0 )
 
-#define addr_mark_defered(addr) { addr->flags |= ADDR_FLAG_DEFERED; }
-#define addr_unmark_defered(addr) { addr->flags &= ~ADDR_FLAG_DEFERED; }
-#define addr_is_defered(addr) ((addr->flags & ADDR_FLAG_DEFERED) != 0 )
+#define addr_mark_deferred(addr) { addr->flags |= ADDR_FLAG_DEFERRED; }
+#define addr_unmark_deferred(addr) { addr->flags &= ~ADDR_FLAG_DEFERRED; }
+#define addr_is_deferred(addr) ((addr->flags & ADDR_FLAG_DEFERRED) != 0 )
 
 #define addr_mark_failed(addr) { addr->flags |= ADDR_FLAG_FAILED; }
 #define addr_unmark_failed(addr) { addr->flags &= ~ADDR_FLAG_FAILED; }

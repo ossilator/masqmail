@@ -24,17 +24,17 @@ delivery_failures(message *msg, GList *rcpt_list, gchar *err_msg)
 	gboolean ok_fail = TRUE, ok_warn = TRUE;
 	time_t now = time(NULL);
 
-	GList *failed_list = NULL, *defered_list = NULL;
+	GList *failed_list = NULL, *deferred_list = NULL;
 
 	foreach (recipient *rcpt, rcpt_list) {
-		if (addr_is_defered(rcpt)) {
+		if (addr_is_deferred(rcpt)) {
 			time_t pending = now - msg->received_time;
 			if (pending >= conf.max_defer_time) {
 				addr_mark_failed(rcpt);
 			} else {
 				DEBUG(5) debugf("not failing %s yet; %ld < %d\n",
 				                msg->uid, (long) pending, conf.max_defer_time);
-				defered_list = g_list_prepend(defered_list, rcpt);
+				deferred_list = g_list_prepend(deferred_list, rcpt);
 			}
 		}
 		if (addr_is_failed(rcpt)) {
@@ -45,9 +45,9 @@ delivery_failures(message *msg, GList *rcpt_list, gchar *err_msg)
 		ok_fail = fail_msg(msg, conf.errmsg_file, failed_list, err_msg);
 		g_list_free(failed_list);
 	}
-	if (defered_list) {
-		ok_warn = warn_msg(msg, conf.warnmsg_file, defered_list, err_msg);
-		g_list_free(defered_list);
+	if (deferred_list) {
+		ok_warn = warn_msg(msg, conf.warnmsg_file, deferred_list, err_msg);
+		g_list_free(deferred_list);
 	}
 	return ok_fail && ok_warn;
 }
@@ -80,7 +80,7 @@ deliver_local_mbox(const message *msg, const GList *hdr_list, recipient *rcpt,
 	if (errno != EAGAIN) {
 		addr_mark_failed(rcpt);
 	} else {
-		addr_mark_defered(rcpt);
+		addr_mark_deferred(rcpt);
 	}
 	return FALSE;
 }
@@ -110,7 +110,7 @@ deliver_local_pipe(message *msg, const GList *hdr_list, recipient *rcpt,
 	  fail:
 		addr_mark_failed(rcpt);
 	} else {
-		addr_mark_defered(rcpt);
+		addr_mark_deferred(rcpt);
 		/* has no effect yet, except that mail remains in spool */
 	}
 
@@ -146,7 +146,7 @@ deliver_local_mda(message *msg, const GList *hdr_list, recipient *rcpt)
 	  fail:
 		addr_mark_failed(rcpt);
 	} else {
-		addr_mark_defered(rcpt);
+		addr_mark_deferred(rcpt);
 		/* has no effect yet, except that mail remains in spool */
 	}
 
@@ -291,7 +291,7 @@ deliver_msglist_host_pipe(const connect_route *route, GList *msgout_list)
 				  fail:
 					addr_mark_failed(rcpt);
 				} else {
-					addr_mark_defered(rcpt);
+					addr_mark_deferred(rcpt);
 				}
 			}
 
@@ -350,7 +350,7 @@ deliver_msglist_host_smtp(const connect_route *route, GList *msgout_list,
 				if (route->connect_error_fail) {
 					addr_mark_failed(rcpt);
 				} else {
-					addr_mark_defered(rcpt);
+					addr_mark_deferred(rcpt);
 				}
 			}
 			if (delivery_failures(msgout->msg, msgout->rcpt_list, err_msg)) {
