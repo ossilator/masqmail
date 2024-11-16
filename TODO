@@ -1,23 +1,14 @@
 Todo list for masqmail
 ----------------------
-(Note: This file may not be up-to-date.)
 
-general:
-- look carefully were memory is not freed
-- add forwarding support
-- improve Mailer-Daemon error messages
-- ODMR support
-- temporary delivery delay notifications
-- check data types (int may only cover -32767 to +32767!)
+Currently, bounce mails (both warnings and errors) can be sent right
+before the next route succeeds. This isn't very nice, but is presumably
+rare, as queue runs are much more frequent than the warn intervals.
 
-conf:
-- less configuration options
-- make conf more fool proof
+Currently, online_query is pointlessly invoked even after successful
+delivery via a static route. Would have to move elimination of
+delivered addresses from start of deliver_route_msg_list() to its end.
 
-lookup:
-- optimize MX lookup
-
-...update this file from time to time...
-
-...and (you guessed it):
-- bug fixing
+Possibly add support for RFC 2645 On-Demand Mail Relay (ODMR).
+This is probably not too useful. Also, fetchmail supports it,
+so it can be used with MasqMail just like for POP3.
