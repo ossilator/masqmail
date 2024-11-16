@@ -208,7 +208,7 @@ Use a dedicated POP3 client, e.g. fetchmail, instead. \
 }
 
 function checkcomment() {
-	if (/^[ \t]*\#/) {
+	if (/^[ \t]*#/) {
 		return " (in a comment)"
 	}
 }
