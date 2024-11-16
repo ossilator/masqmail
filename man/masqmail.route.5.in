@@ -270,9 +270,13 @@ will be called, and all traffic will be piped to its stdin and
 from its stdout.
 The purpose is to enable tunneling, e.g., via SSL.
 
+The command's stderr is forwarded to
+.MR masqmail 8 's
+log file.
+
 Example for SMTP over SSL tunneling:
 .nf
-wrapper=\(dq/usr/bin/openssl s_client \-verify_return_error \-quiet \-connect mail.gmx.net:465 2>/dev/null\(dq
+wrapper=\(dq/usr/bin/openssl s_client \-verify_return_error \-verify_quiet \-quiet \-connect mail.gmx.net:465\(dq
 .fi
 
 SMTP over SSL is supported since masqmail-0.1.8.
@@ -282,14 +286,13 @@ Example for encryption with STARTTLS (RFC-3207):
 .nf
 # don't forget the instant_helo, otherwise it won't work
 instant_helo=true
-wrapper=\(dq/usr/bin/openssl s_client \-verify_return_error \-quiet \-starttls smtp \-connect mail.gmx.net:25 2>/dev/null\(dq
+wrapper=\(dq/usr/bin/openssl s_client \-verify_return_error \-verify_quiet \-quiet \-starttls smtp \-connect mail.gmx.net:25\(dq
 .fi
 
 This is supported since masqmail-0.2.28.
 STARTTLS supersedes SMTP over SSL.
 
 Note for openssl:
-Ensure that stderr is redirected.
 Do *not* use \-crlf in the wrapper command, because masqmail does already insert CRLF.
 However, you might want to specify \-crlf if you want to test your wrapper command
 interactively on the command line.

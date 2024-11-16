@@ -26,7 +26,6 @@ child(const char *command)
 
 			dup2(pipe[0], 0);
 			dup2(pipe[0], 1);
-			dup2(pipe[0], 2);
 
 			if (max_fd <= 0) {
 				max_fd = 64;

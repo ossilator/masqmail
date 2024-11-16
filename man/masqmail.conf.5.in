@@ -93,6 +93,8 @@ the config file (the log files are not available at that time).
 The directory where logs are stored.
 .B masqmail.log
 is the main log, if syslog is not used.
+Error messages from helper processes also end up in this file,
+regardless of syslog use.
 .B debug.log
 is a much more verbose log, which is created when debugging is enabled
 .RB ( debug_level "\ >\ 0)."
@@ -470,6 +472,10 @@ See
 To use environment variables for the mda,
 the dollar sign `$' has to be escaped with a backslash,
 otherwise they will be tried to be expanded with the internal variables.
+
+The command's stderr is forwarded to
+.MR masqmail 8 's
+log file.
 
 .TP
 .BI "mda_fromline = " boolean
