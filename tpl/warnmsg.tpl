@@ -15,7 +15,7 @@ This message was sent to you by the mailer daemon (${package} ${version})
 at ${host_name}.
 
 Sorry, but your mail could not yet be delivered to all recipients.
-Delivery to the following recipients has been defered:
+Delivery to the following recipients has been deferred:
 
 @failed_rcpts
 
