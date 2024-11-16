@@ -68,7 +68,7 @@ Here is a selection of the options with additional explanations:
 --with-piddir=PIDDIR
   sets the directory for the pid file of the daemon. The default and usual
   location is /var/run, but some GNU/Linux distributions have converted
-  to /run. It gets created on program startup if missing.
+  to /run/masqmail. It gets created on program startup if missing.
 
 --with-lockdir=LOCKDIR
   sets the default directory for lock file for spooled messages. Default

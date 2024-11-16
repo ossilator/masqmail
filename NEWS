@@ -4,8 +4,6 @@ in regard to compatiblity in upgrades.
 See the git log for more details and technical changes that don't
 affect users directly.
 
-The manual pages describe newly added options. Take them for reference.
-
 
 0.3.5
 =====
@@ -32,7 +30,6 @@ The manual pages describe newly added options. Take them for reference.
 - Switched the default group for masqmail from `trusted' to `mail'.
 
 - Fixed a problem with psb->remote_host, introduced in version 0.3.2
-(changeset 412385b57dc4).
 
 - Fixed a bug in matching of allowed recipients. Thanks to Juergen
   Daubert for finding and reporting the issue.
