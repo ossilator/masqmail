@@ -255,9 +255,6 @@ Default: false
 
 Set this to the filename (or a semicolon-separated list of filenames)
 of the route configuration for always available connections.
-Main purpose is to define a mail server with mail_host in your local network,
-or if masqmail should send mail directly to the target host.
-If you have only a single host, you can leave it unset.
 
 .TP
 \fBquery_routes.\fIname\fR = \fIlist\fR

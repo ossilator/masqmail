@@ -19,50 +19,45 @@ Configuration
 You need a config file like this one:
 
     host_name = "foo.example.org"
-    query_routes.default = /etc/masqmail/default.route
+    permanent_routes = /etc/masqmail/default.route
 
 (Substitute a real hostname, of course.)
 
 Additionally you need to create the config file default.route.
 You can derive it from the shipped example.route file.
 
+If the route is not permanently available, you need to make it a
+query route:
 
-Check the setup
----------------
+    query_routes.default = /etc/masqmail/default.route
+    online_query = /etc/masqmail/query_script
 
-Like in simple-local-setup plus ...
+The query script shall print the name of the preferred currently online
+route. It can dump a file maintained by ip-up/-down scripts, or it can
+use for example netstat. To query the availability of a port forward,
+you can use:
 
-Send a mail to a remote location:
+    #! /bin/sh
+    netstat -l -n -4 | fgrep -q ' 127.0.0.1:50025 ' && echo default
 
-    $ echo "some text" | mail foo@somewhereelse.example.org
-
-Check if it is queued:
-
-    $ masqmail -bp
-
-Deliver it with:
-
-    $ masqmail -qo default
-
-Check the queue contents again.
-
-You need to do such queue runs for online routes explicitely. For
-instance by cron.
-
+To query the availability of an interface, you could do something
+similar using the netstat -i option.
 
 Automatic queue runs
 --------------------
 
-You can also tell masqmail to send queued mails through a route each
-time the daemon does a queue run. Therefor you need to tell masqmail
-that it is online and can use the default route to deliver mail.
+Offline query routes and other temporary delivery errors cause messages
+to be deferred. To ensure that they are delivered at a later point,
+regular queue runs must be scheduled. This can be done either with the
+-q<interval> option or externally via a cron job.
 
-Add this to masqmail.conf:
+In addition to periodic queue runs, you can also trigger a queue run
+each time a route comes online. To achieve that, put a script containing
 
-    online_query = "/bin/echo default"
+    /usr/local/sbin/masqmail -qo default &
 
-Now masqmail will send online mail automatically through the default
-route, each time it does a queue run (every ten minutes).
+into a directory matching your network setup, for example
+/etc/network/ip-up.d or /etc/ppp/ip-up.d/.
 
 
 In case of problems
