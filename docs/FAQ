@@ -10,22 +10,19 @@ When do I need MasqMail?
 You do not *need* it. But it makes sending mails via a dialup
 connection a lot easier.
 
-It is useful if you dial to the internet from time to time via a
-modem and connect to different providers, each one with a
-different configuration. Other MTAs are not flexible enough if you
-have to send mails via different mail servers for each provider.
-With MasqMail you can configure a different one for each provider
-and even set your return addresses differently.
+Unlike nullmailer, ssmtp, esmtp, etc., it is a "proper" MTA which
+can also deliver local mail, and defer delivery in case of temporary
+failure, for example due to being offline.
 
-It is also useful if you have a LAN with a gateway which is
-connected to the internet via a modem because you can rewrite your
-address depending on whether the recipients are *inside* or
-*outside* your LAN. So responses and delivery failures on your LAN
-will be sent to you without leaving it, while those outside will
-be delivered to your address outside. (But it does not yet send
-delivery failures itself yet.)
+It supports easily configurable address rewriting (masquerading).
 
-MasqMail is also often used on notebooks.
+It supports multiple delivery route configurations, which are selected
+dynamically. The choice can be made dependent on the provider you are
+currently connected to, which may be useful on mobile devices. It is
+also possible to select based on the sender and recipients of each
+message, which is useful for having different users use different
+smarthost configurations, and rewriting addresses only when a recipient
+is outside your LAN.
 
 
 When do I not need MasqMail?
