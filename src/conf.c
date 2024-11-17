@@ -666,9 +666,6 @@ read_route(gchar *filename, gboolean is_perma)
 			route->expand_h_sender_address = parse_boolean(rval);
 		} else if (strcmp(lval, "resolve_list")==0) {
 			route->resolve_list = parse_resolve_list(rval);
-		} else if (strcmp(lval, "do_ssl")==0) {
-			/* we ignore this. This option is used by sqilconf */
-			;
 #ifdef ENABLE_AUTH
 		} else if (strcmp(lval, "auth_name")==0) {
 			route->auth_name = g_strdup(rval);
